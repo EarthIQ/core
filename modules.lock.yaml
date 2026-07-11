@@ -1,0 +1,4 @@
+selected:
+- name: hydrology-module
+  ref: 0.1.0
+  path: modules/hydrology-module

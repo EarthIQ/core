@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r --parallel dev",
+    "preview": "pnpm -r preview",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "turbo": "^2.10.4"
+  },
+  "packageManager": "pnpm@8.15.6",
+  "name": "with-vite-react"
+}

@@ -1,0 +1,18 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.139.0",
+    "pyyaml>=6.0.3",
+    "uvicorn>=0.51.0",
+]
+
+[tool.uv.workspace]
+members = ["../modules/hydrology-module/backend"]
+
+[tool.uv.sources]
+[tool.uv.sources.module_hello]
+workspace = true
