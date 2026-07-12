@@ -1,15 +1,61 @@
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+
+from app.core.config import get_settings
+from app.core.db import Base, engine
 from app.module_loader import load_modules
 
-app = FastAPI(title="Core App")
+# ── Core API routers ──────────────────────────────────────────────────────────
+from app.api.auth.router import router as auth_router
+from app.api.data.router import router as data_router
+from app.api.viz.router import router as viz_router
+from app.api.modules.router import router as modules_router
 
-app.add_middleware(
-    CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Create all tables on startup (use Alembic for production migrations)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    await engine.dispose()
+
+
+settings = get_settings()
+
+app = FastAPI(
+    title=settings.app_name,
+    version=settings.app_version,
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
+    lifespan=lifespan,
 )
 
-@app.get("/api/health")
-def health():
-    return {"status": "ok"}
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# ── Health ────────────────────────────────────────────────────────────────────
+@app.get("/api/health", tags=["platform"])
+async def health():
+    return {"status": "ok", "version": settings.app_version}
+
+
+# ── Core routers ──────────────────────────────────────────────────────────────
+app.include_router(auth_router, prefix="/api/auth")
+app.include_router(data_router, prefix="/api/data")
+app.include_router(viz_router, prefix="/api/viz")
+app.include_router(modules_router, prefix="/api/modules")
+
+# ── Pluggable module routers (from modules.lock.yaml) ─────────────────────────
 load_modules(app)

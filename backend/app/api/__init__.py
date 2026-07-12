@@ -1,0 +1,1 @@
+# EarthIQ API routers

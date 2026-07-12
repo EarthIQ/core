@@ -1,8 +1,10 @@
 {
-  "extends": "@repo/typescript-config/vite.json",
-  "include": ["src"],
+  "extends": "./tsconfig.paths.json",
+  "include": ["src", "../../../modules/*/frontend/src"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "strictNullChecks": true
   }
 }
+
+

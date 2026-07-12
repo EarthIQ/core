@@ -34,3 +34,10 @@ yarn-error.log*
 
 modules/*
 !modules/.gitkeep
+
+# --- EarthIQ Dynamic Module Setup Outputs ---
+modules.lock.yaml
+docker-compose.yaml
+frontend/apps/web/src/module-registry.generated.ts
+frontend/apps/web/modules.paths.json
+frontend/apps/web/tsconfig.paths.json
