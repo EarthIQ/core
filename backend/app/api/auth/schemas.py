@@ -29,3 +29,18 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class GroupRead(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class GroupCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+

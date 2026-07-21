@@ -21,14 +21,3 @@ dependencies = [
     "pydantic-settings>=2.2.0",
     "python-dotenv>=1.0.0",
 ]
-
-
-[tool.uv.workspace]
-members = []
-
-[tool.uv.sources]
-[tool.uv.sources.module_hello]
-workspace = true
-
-[tool.uv.sources.module_resources]
-workspace = true

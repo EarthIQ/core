@@ -15,6 +15,7 @@ from app.api.auth.router import router as auth_router
 from app.api.data.router import router as data_router
 from app.api.viz.router import router as viz_router
 from app.api.modules.router import router as modules_router
+from app.api.maps.router import router as maps_router
 
 
 @asynccontextmanager
@@ -56,6 +57,7 @@ app.include_router(auth_router, prefix="/api/auth")
 app.include_router(data_router, prefix="/api/data")
 app.include_router(viz_router, prefix="/api/viz")
 app.include_router(modules_router, prefix="/api/modules")
+app.include_router(maps_router, prefix="/api/maps")
 
 # ── Pluggable module routers (from modules.lock.yaml) ─────────────────────────
 load_modules(app)

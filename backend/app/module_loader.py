@@ -29,15 +29,31 @@ def load_modules(app: FastAPI) -> None:
         if not backend_cfg:
             continue
 
-        # Add the module's backend directory to sys.path so Python can locate the package
+        # ── 1. Inject module's backend directory into sys.path ─────────────────
         backend_dir = mod_path / "backend"
         if backend_dir.exists():
             backend_dir_str = str(backend_dir)
             if backend_dir_str not in sys.path:
                 sys.path.insert(0, backend_dir_str)
 
+        pkg_name = backend_cfg["package"]
+
+        # ── 2. Import ORM models (if declared) so Base.metadata is populated ──
+        models_attr = backend_cfg.get("models_attr")
+        if models_attr:
+            models_module = f"{pkg_name}.{models_attr}"
+            try:
+                importlib.import_module(models_module)
+                logger.info("Loaded models for module '%s' from %s", mod["name"], models_module)
+            except Exception as exc:
+                logger.error(
+                    "Failed to load models for module '%s': %s",
+                    mod["name"], exc, exc_info=True,
+                )
+
+        # ── 3. Import and mount the API router ────────────────────────────────
         module_path, attr = backend_cfg["router_attr"].split(":")
-        full_module = f'{backend_cfg["package"]}.{module_path}'
+        full_module = f"{pkg_name}.{module_path}"
         try:
             pkg = importlib.import_module(full_module)
             router = getattr(pkg, attr)

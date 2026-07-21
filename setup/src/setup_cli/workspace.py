@@ -6,12 +6,58 @@ BACKEND_PYPROJECT = ROOT / "backend" / "pyproject.toml"
 WEB_PACKAGE_JSON = ROOT / "frontend" / "apps" / "web" / "package.json"
 
 
+ALEMBIC_INI = ROOT / "backend" / "alembic.ini"           # gitignored — generated
+ALEMBIC_INI_TPL = ROOT / "backend" / "alembic.ini.tpl"  # committed template
+
+
 def update_backend_workspace(lock: dict) -> None:
     """
-    Backend module loading is handled dynamically at runtime by app.module_loader.
-    We leave backend/pyproject.toml pristine so core source repository is clean and un-modified.
+    Generate backend/alembic.versions.ini — a generated ini file that sets
+    version_locations to include every installed module's alembic/versions/ directory.
+
+    Alembic merges this via the --config flag or by configuring it in env.py.
+    We also write the path directly into alembic.ini's [alembic] section so
+    `alembic history` / `alembic upgrade head` from core/backend/ picks up all
+    module migrations without any extra flags.
+
+    backend/pyproject.toml is intentionally left untouched.
     """
-    pass
+    core_versions = "alembic/versions"  # relative to backend/
+    module_version_paths: list[str] = []
+
+    for mod in lock.get("selected", []):
+        meta = load_module_meta(mod["name"])
+        backend_cfg = meta.get("backend")
+        if not backend_cfg:
+            continue
+        # Absolute path to module's alembic/versions/
+        versions_dir = ROOT / mod["path"] / "backend" / "alembic" / "versions"
+        if versions_dir.is_dir():
+            module_version_paths.append(str(versions_dir))
+
+    all_locations = "\n\t".join([core_versions] + module_version_paths)
+
+    # alembic accepts space-separated paths in version_locations.
+    # Always regenerate from the clean template so there are no stale duplicates.
+    import re
+    all_locations = " ".join([core_versions] + module_version_paths)
+    ini_text = ALEMBIC_INI_TPL.read_text()
+    if re.search(r"^version_locations\s*=", ini_text, re.MULTILINE):
+        ini_text = re.sub(
+            r"^version_locations\s*=.*$",
+            f"version_locations = {all_locations}",
+            ini_text,
+            flags=re.MULTILINE,
+        )
+    else:
+        # Insert after sqlalchemy.url line
+        ini_text = re.sub(
+            r"(sqlalchemy\.url\s*=.*\n)",
+            rf"\1version_locations = {all_locations}\n",
+            ini_text,
+        )
+    ALEMBIC_INI.write_text(ini_text)
+
 
 
 def update_frontend_workspace(lock: dict) -> None:
