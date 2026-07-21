@@ -7,22 +7,11 @@ WEB_PACKAGE_JSON = ROOT / "frontend" / "apps" / "web" / "package.json"
 
 
 def update_backend_workspace(lock: dict) -> None:
-    doc = tomlkit.parse(BACKEND_PYPROJECT.read_text())
-    tool_uv = doc.setdefault("tool", {}).setdefault("uv", {})
-    workspace = tool_uv.setdefault("workspace", {})
-    sources = tool_uv.setdefault("sources", {})
-
-    members = tomlkit.array()
-    for mod in lock["selected"]:
-        meta = load_module_meta(mod["name"])
-        backend_cfg = meta.get("backend")
-        if not backend_cfg:
-            continue
-        members.append(f"../modules/{mod['name']}/backend")
-        sources[backend_cfg["package"]] = {"workspace": True}
-
-    workspace["members"] = members
-    BACKEND_PYPROJECT.write_text(tomlkit.dumps(doc))
+    """
+    Backend module loading is handled dynamically at runtime by app.module_loader.
+    We leave backend/pyproject.toml pristine so core source repository is clean and un-modified.
+    """
+    pass
 
 
 def update_frontend_workspace(lock: dict) -> None:
