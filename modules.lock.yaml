@@ -1,7 +1,7 @@
 selected:
-- name: hydrology-module
-  ref: 0.1.0
-  path: modules/hydrology-module
 - name: resources-module
   ref: 0.1.0
   path: modules/resources-module
+- name: hydrology-module
+  ref: 0.1.0
+  path: modules/hydrology-module

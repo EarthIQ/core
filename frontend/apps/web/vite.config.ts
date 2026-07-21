@@ -9,9 +9,12 @@ const pathsFile = resolve(__dirname, "./modules.paths.json");
 
 if (fs.existsSync(pathsFile)) {
   try {
-    const paths = JSON.parse(fs.readFileSync(pathsFile, "utf-8"));
+    const paths: Record<string, string> = JSON.parse(fs.readFileSync(pathsFile, "utf-8"));
     for (const [key, val] of Object.entries(paths)) {
-      moduleAliases[key] = resolve(__dirname, val as string);
+      const absPath = resolve(__dirname, val);
+      moduleAliases[key] = absPath;
+      const dirPath = absPath.substring(0, absPath.lastIndexOf("/"));
+      moduleAliases[`${key}/*`] = `${dirPath}/*`;
     }
   } catch (e) {
     console.error("Failed to parse modules.paths.json:", e);

@@ -1,5 +1,6 @@
 import importlib
 import logging
+import sys
 from pathlib import Path
 import yaml
 from fastapi import FastAPI
@@ -28,13 +29,20 @@ def load_modules(app: FastAPI) -> None:
         if not backend_cfg:
             continue
 
+        # Add the module's backend directory to sys.path so Python can locate the package
+        backend_dir = mod_path / "backend"
+        if backend_dir.exists():
+            backend_dir_str = str(backend_dir)
+            if backend_dir_str not in sys.path:
+                sys.path.insert(0, backend_dir_str)
+
         module_path, attr = backend_cfg["router_attr"].split(":")
         full_module = f'{backend_cfg["package"]}.{module_path}'
         try:
             pkg = importlib.import_module(full_module)
             router = getattr(pkg, attr)
         except Exception as exc:
-            logger.error("Failed to load module '%s': %s", mod["name"], exc)
+            logger.error("Failed to load module '%s': %s", mod["name"], exc, exc_info=True)
             continue
 
         prefix = "/api" + backend_cfg.get("prefix", f"/{mod['name']}")

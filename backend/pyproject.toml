@@ -24,10 +24,7 @@ dependencies = [
 
 
 [tool.uv.workspace]
-members = [
-  "../modules/hydrology-module/backend",
-  "../modules/resources-module/backend",
-]
+members = []
 
 [tool.uv.sources]
 [tool.uv.sources.module_hello]
