@@ -1,4 +1,7 @@
 modules:
+  - name: ai-module
+    version: 0.1.0
+    repo: git@github.com:EarthIQ/ai.git
   - name: hydrology-module
     version: 1.0.0
     repo: git@github.com:EarthIQ/hydrology.git

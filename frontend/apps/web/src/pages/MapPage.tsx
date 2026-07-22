@@ -8,6 +8,7 @@ import {
   MapItem,
   MapLayerItem,
 } from "@/lib/maps";
+import { useModules } from "@/lib/modules";
 
 interface LayerItem {
   id: string;
@@ -94,6 +95,8 @@ export default function MapPage() {
 
   const [saving, setSaving] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
+
+  const { isAvailable } = useModules();
 
   // 1. Fetch available maps list for selector
   useEffect(() => {
@@ -315,6 +318,12 @@ export default function MapPage() {
             <LayerRow key={l.id} layer={l} onToggle={toggleRaster} />
           ))}
         </div>
+
+        {isAvailable("hydrology-module") && (
+          <div className="eq-map-sidebar__section">
+            <div className="eq-map-sidebar__title">Hydrology Module</div>
+          </div>
+        )}
 
         {/* Save button for users with write/admin permission */}
         {canEdit && (
