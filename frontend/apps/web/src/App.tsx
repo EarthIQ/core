@@ -12,6 +12,7 @@ import { Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { AuthProvider } from "@/lib/auth";
+import { ThemeProvider } from "@/lib/theme";
 import { useModules } from "@/lib/modules";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppShell } from "@/components/AppShell";
@@ -19,6 +20,8 @@ import { AppShell } from "@/components/AppShell";
 import LoginPage from "@/pages/LoginPage";
 import DashboardPage from "@/pages/DashboardPage";
 import MapPage from "@/pages/MapPage";
+import ProjectsPage from "@/pages/ProjectsPage";
+import DataPage from "@/pages/DataPage";
 
 // AUTO-GENERATED — never import module names directly here
 import { moduleRegistry, type ModuleBundle } from "./module-registry.generated";
@@ -127,7 +130,9 @@ function ProtectedRoutes() {
     <Routes>
       <Route index element={<Navigate to="/dashboard" replace />} />
       <Route path="dashboard" element={<DashboardPage />} />
+      <Route path="projects" element={<ProjectsPage />} />
       <Route path="map" element={<MapPage />} />
+      <Route path="data" element={<DataPage />} />
 
       {/* Module routes — available once bundles finish resolving */}
       {!resolving &&
@@ -157,27 +162,29 @@ function ProtectedRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public */}
-          <Route path="/login" element={<LoginPage />} />
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Public */}
+            <Route path="/login" element={<LoginPage />} />
 
-          {/* Protected shell */}
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <AppShell>
-                  <Suspense fallback={<PageFallback />}>
-                    <ProtectedRoutes />
-                  </Suspense>
-                </AppShell>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+            {/* Protected shell */}
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <AppShell>
+                    <Suspense fallback={<PageFallback />}>
+                      <ProtectedRoutes />
+                    </Suspense>
+                  </AppShell>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
   fetchMaps,
@@ -223,6 +223,18 @@ export default function MapPage() {
       <aside className="eq-map-sidebar">
         {/* Map Selector & Header */}
         <div className="eq-map-sidebar__section">
+          <Link
+            to="/projects"
+            className="eq-btn-back"
+            style={{
+              marginBottom: "0.85rem",
+              width: "100%",
+              justifyContent: "center",
+              padding: "0.45rem",
+            }}
+          >
+            ← Back to Projects
+          </Link>
           <div className="eq-map-sidebar__title">Configured Maps</div>
           <select
             value={mapId || ""}
