@@ -7,7 +7,8 @@ const SAMPLE_PROJECTS: MapItem[] = [
   {
     id: "sample-global-climate",
     title: "Global Climate & Land Use Model 2026",
-    description: "Multi-spectral Sentinel-2 satellite analysis of forest canopy changes, land surface temperature, and urban growth corridors.",
+    description:
+      "Multi-spectral Sentinel-2 satellite analysis of forest canopy changes, land surface temperature, and urban growth corridors.",
     center_lng: 13.405,
     center_lat: 52.52,
     zoom: 5,
@@ -17,8 +18,18 @@ const SAMPLE_PROJECTS: MapItem[] = [
     group_access: [],
     user_permission: "admin",
     layers_config: [
-      { id: "sentinel-2-rgb", name: "Sentinel-2 RGB", type: "raster", visible: true },
-      { id: "land-use", name: "Land Use / LULC", type: "vector", visible: true },
+      {
+        id: "sentinel-2-rgb",
+        name: "Sentinel-2 RGB",
+        type: "raster",
+        visible: true,
+      },
+      {
+        id: "land-use",
+        name: "Land Use / LULC",
+        type: "vector",
+        visible: true,
+      },
     ],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -26,7 +37,8 @@ const SAMPLE_PROJECTS: MapItem[] = [
   {
     id: "sample-hydrology-risk",
     title: "River Basin Hydrology & Flood Risk Assessment",
-    description: "Elevation contour mapping and watershed runoff simulation layers for environmental hazard monitoring.",
+    description:
+      "Elevation contour mapping and watershed runoff simulation layers for environmental hazard monitoring.",
     center_lng: -95.7129,
     center_lat: 37.0902,
     zoom: 4,
@@ -36,7 +48,12 @@ const SAMPLE_PROJECTS: MapItem[] = [
     group_access: [],
     user_permission: "write",
     layers_config: [
-      { id: "elevation-contours", name: "Elevation Contours", type: "vector", visible: true },
+      {
+        id: "elevation-contours",
+        name: "Elevation Contours",
+        type: "vector",
+        visible: true,
+      },
       { id: "dem-30m", name: "DEM 30m", type: "raster", visible: true },
     ],
     created_at: new Date().toISOString(),
@@ -45,7 +62,8 @@ const SAMPLE_PROJECTS: MapItem[] = [
   {
     id: "sample-urban-transit",
     title: "Metropolitan Transit & Infrastructure Grid",
-    description: "Vector administrative boundaries overlaid with population density raster heatmaps.",
+    description:
+      "Vector administrative boundaries overlaid with population density raster heatmaps.",
     center_lng: 139.6917,
     center_lat: 35.6895,
     zoom: 10,
@@ -55,7 +73,12 @@ const SAMPLE_PROJECTS: MapItem[] = [
     group_access: [],
     user_permission: "admin",
     layers_config: [
-      { id: "admin-boundaries", name: "Admin Boundaries", type: "vector", visible: true },
+      {
+        id: "admin-boundaries",
+        name: "Admin Boundaries",
+        type: "vector",
+        visible: true,
+      },
     ],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -67,7 +90,9 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<MapItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "public" | "private">("all");
+  const [filterType, setFilterType] = useState<"all" | "public" | "private">(
+    "all",
+  );
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,7 +108,10 @@ export default function ProjectsPage() {
         if (data && data.length > 0) {
           // Merge API data with sample projects for rich demo view
           const apiIds = new Set(data.map((p) => p.id));
-          const combined = [...data, ...SAMPLE_PROJECTS.filter((s) => !apiIds.has(s.id))];
+          const combined = [
+            ...data,
+            ...SAMPLE_PROJECTS.filter((s) => !apiIds.has(s.id)),
+          ];
           setProjects(combined);
         } else {
           setProjects(SAMPLE_PROJECTS);
@@ -98,7 +126,8 @@ export default function ProjectsPage() {
   const filteredProjects = projects.filter((p) => {
     const matchesSearch =
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      (p.description &&
+        p.description.toLowerCase().includes(searchQuery.toLowerCase()));
     if (filterType === "public") return matchesSearch && p.is_public;
     if (filterType === "private") return matchesSearch && !p.is_public;
     return matchesSearch;
@@ -153,40 +182,34 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="eq-content-inner">
+    <div className="max-w-7xl mx-auto">
       {/* Header */}
-      <div className="eq-page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
         <div>
-          <div className="eq-page-header__eyebrow">Workspace Projects</div>
-          <h1 style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <span style={{ color: "var(--eq-accent)" }}>📁</span> Geospatial Projects
+          <div className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">
+            Workspace Projects
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-text-primary flex items-center gap-3">
+            <span className="text-primary">📁</span> Geospatial Projects
           </h1>
-          <p style={{ marginTop: "0.4rem", maxWidth: "650px" }}>
-            Explore active GIS mapping projects, manage layers & boundaries, and create interactive spatial analytics dashboards.
+          <p className="mt-2 text-text-secondary text-sm sm:text-base max-w-2xl">
+            Explore active GIS mapping projects, manage layers & boundaries, and
+            create interactive spatial analytics dashboards.
           </p>
         </div>
 
         <button
           onClick={() => setIsModalOpen(true)}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.65rem 1.25rem",
-            borderRadius: "var(--eq-radius-md)",
-            background: "linear-gradient(135deg, var(--eq-accent), #10b981)",
-            color: "#080d14",
-            fontWeight: 700,
-            border: "none",
-            cursor: "pointer",
-            fontSize: "0.875rem",
-            boxShadow: "0 4px 16px rgba(34,211,160,0.25)",
-            transition: "transform var(--eq-transition), box-shadow var(--eq-transition)",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+          className="btn btn-primary btn-md shrink-0 gap-2 bg-gradient-to-br from-primary to-success shadow-primary hover-lift"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
@@ -195,20 +218,18 @@ export default function ProjectsPage() {
       </div>
 
       {/* Filter Bar */}
-      <div
-        className="eq-card"
-        style={{
-          padding: "0.85rem 1.25rem",
-          marginBottom: "2rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "1rem",
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flex: 1, minWidth: "260px" }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--eq-text-muted)" strokeWidth="2">
+      <div className="card p-3.5 px-5 mb-8 flex items-center justify-between gap-4 flex-wrap">
+        {/* Search */}
+        <div className="flex items-center gap-3 flex-1 min-w-[260px]">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="text-text-tertiary shrink-0"
+          >
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
@@ -217,32 +238,17 @@ export default function ProjectsPage() {
             placeholder="Search projects by title or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              color: "var(--eq-text-primary)",
-              width: "100%",
-              fontSize: "0.875rem",
-            }}
+            className="bg-transparent border-none outline-none text-text-primary w-full text-sm placeholder:text-text-tertiary"
           />
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span style={{ fontSize: "0.8125rem", color: "var(--eq-text-muted)" }}>Filter:</span>
+        {/* Filter Select */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-text-tertiary">Filter:</span>
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as any)}
-            style={{
-              background: "var(--eq-bg-elevated)",
-              border: "1px solid var(--eq-border)",
-              borderRadius: "var(--eq-radius-md)",
-              color: "var(--eq-text-primary)",
-              padding: "0.4rem 0.75rem",
-              fontSize: "0.8125rem",
-              outline: "none",
-              cursor: "pointer",
-            }}
+            className="input input-sm text-sm"
           >
             <option value="all">All Projects ({projects.length})</option>
             <option value="public">Public Maps</option>
@@ -253,66 +259,76 @@ export default function ProjectsPage() {
 
       {/* Projects Grid */}
       {loading ? (
-        <div style={{ padding: "4rem", textAlign: "center", color: "var(--eq-text-muted)" }}>
+        <div className="py-16 text-center text-text-tertiary">
           Loading geospatial projects...
         </div>
       ) : filteredProjects.length === 0 ? (
-        <div className="eq-card" style={{ textAlign: "center", padding: "4rem 2rem" }}>
-          <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>🗺️</div>
-          <h3>No Projects Found</h3>
-          <p style={{ marginTop: "0.5rem" }}>No map projects matched your search criteria.</p>
+        <div className="card text-center py-16 px-8">
+          <div className="text-5xl mb-4">🗺️</div>
+          <h3 className="text-lg font-bold text-text-primary">
+            No Projects Found
+          </h3>
+          <p className="mt-2 text-text-secondary text-sm">
+            No map projects matched your search criteria.
+          </p>
         </div>
       ) : (
-        <div className="eq-projects-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filteredProjects.map((p) => (
             <div
               key={p.id}
-              className="eq-project-card"
+              className="card card-interactive cursor-pointer group flex flex-col overflow-hidden hover-lift"
               onClick={() => navigate(`/map?mapId=${p.id}`)}
             >
-              <div className="eq-project-card__thumb">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--eq-accent)" strokeWidth="1.5" style={{ opacity: 0.8 }}>
+              {/* Thumbnail / Visual Header */}
+              <div className="relative flex items-center justify-center h-36 bg-gradient-to-br from-bg-tertiary to-bg-recessed">
+                <svg
+                  width="48"
+                  height="48"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="text-primary opacity-60 group-hover:opacity-100 transition-opacity duration-200"
+                >
                   <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
                   <line x1="8" y1="2" x2="8" y2="18" />
                   <line x1="16" y1="6" x2="16" y2="22" />
                 </svg>
 
                 <span
-                  style={{
-                    position: "absolute",
-                    top: "0.75rem",
-                    right: "0.75rem",
-                    padding: "0.2rem 0.6rem",
-                    borderRadius: "999px",
-                    fontSize: "0.7rem",
-                    fontWeight: 600,
-                    background: p.is_public ? "rgba(34,211,160,0.15)" : "rgba(99,102,241,0.15)",
-                    color: p.is_public ? "var(--eq-accent)" : "#818cf8",
-                    border: `1px solid ${p.is_public ? "rgba(34,211,160,0.3)" : "rgba(99,102,241,0.3)"}`,
-                  }}
+                  className={`absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-[0.7rem] font-semibold border ${
+                    p.is_public
+                      ? "bg-success/10 text-success border-success/30"
+                      : "bg-accent/10 text-accent border-accent/30"
+                  }`}
                 >
                   {p.is_public ? "Public" : "Private"}
                 </span>
               </div>
 
-              <div className="eq-project-card__body">
-                <div>
-                  <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--eq-text-primary)" }}>
+              {/* Card Body */}
+              <div className="flex flex-col flex-1 p-4 gap-2">
+                <div className="flex-1">
+                  <h3 className="text-base font-bold text-text-primary line-clamp-1">
                     {p.title}
                   </h3>
-                  <p style={{ fontSize: "0.8125rem", color: "var(--eq-text-secondary)", marginTop: "0.4rem" }}>
+                  <p className="text-sm text-text-secondary mt-1.5 line-clamp-2">
                     {p.description || "No project description provided."}
                   </p>
                 </div>
 
-                <div style={{ marginTop: "auto", paddingTop: "0.75rem", borderTop: "1px solid var(--eq-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: "0.75rem", color: "var(--eq-text-muted)", display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                    <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--eq-accent)" }} />
+                {/* Footer Meta */}
+                <div className="mt-auto pt-3 border-t border-border-secondary flex items-center justify-between">
+                  <span className="text-xs text-text-tertiary flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                     Basemap: {p.basemap || "Dark"}
                   </span>
-
-                  <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--eq-accent)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                    Open Map →
+                  <span className="text-sm font-semibold text-primary flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
+                    Open Map
+                    <span className="inline-block transition-transform duration-200 group-hover:translate-x-0.5">
+                      →
+                    </span>
                   </span>
                 </div>
               </div>
@@ -323,49 +339,62 @@ export default function ProjectsPage() {
 
       {/* Create Project Modal */}
       {isModalOpen && (
-        <div className="eq-modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="eq-modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="eq-modal-header">
-              <h2 style={{ fontSize: "1.25rem" }}>Create New Map Project</h2>
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center p-4 overlay animate-fade-in"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border-primary">
+              <h2 className="text-xl font-bold text-text-primary">
+                Create New Map Project
+              </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                style={{ background: "transparent", border: "none", color: "var(--eq-text-muted)", cursor: "pointer", fontSize: "1.2rem" }}
+                className="btn btn-ghost btn-icon btn-sm text-text-tertiary hover:text-text-primary"
+                aria-label="Close"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleCreateProject} className="eq-form">
-              <div className="eq-field">
-                <label className="eq-field__label">Project Title</label>
+            {/* Modal Form */}
+            <form
+              onSubmit={handleCreateProject}
+              className="p-6 flex flex-col gap-4"
+            >
+              <div className="form-field">
+                <label className="form-label">Project Title</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Coastal Wetland Vulnerability Index"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="eq-field__input"
+                  className="input"
                 />
               </div>
 
-              <div className="eq-field">
-                <label className="eq-field__label">Description</label>
+              <div className="form-field">
+                <label className="form-label">Description</label>
                 <textarea
                   rows={3}
                   placeholder="Brief overview of spatial layers, objectives, and area of interest..."
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
-                  className="eq-field__input"
-                  style={{ resize: "vertical" }}
+                  className="input textarea"
                 />
               </div>
 
-              <div className="eq-field">
-                <label className="eq-field__label">Default Basemap</label>
+              <div className="form-field">
+                <label className="form-label">Default Basemap</label>
                 <select
                   value={newBasemap}
                   onChange={(e) => setNewBasemap(e.target.value)}
-                  className="eq-field__input"
+                  className="input select"
                 >
                   <option value="dataviz-dark">Dark Matter (Vector)</option>
                   <option value="dataviz-light">Positron (Light)</option>
@@ -373,46 +402,37 @@ export default function ProjectsPage() {
                 </select>
               </div>
 
-              <div className="eq-field" style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              {/* Public Toggle */}
+              <div className="flex items-center justify-between gap-4 py-1">
                 <div>
-                  <div className="eq-field__label">Public Access</div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--eq-text-muted)" }}>Allow team members to view this map project</div>
+                  <div className="text-sm font-medium text-text-primary">
+                    Public Access
+                  </div>
+                  <div className="text-xs text-text-tertiary mt-0.5">
+                    Allow team members to view this map project
+                  </div>
                 </div>
                 <input
                   type="checkbox"
                   checked={newPublic}
                   onChange={(e) => setNewPublic(e.target.checked)}
-                  style={{ width: "18px", height: "18px", accentColor: "var(--eq-accent)", cursor: "pointer" }}
+                  className="w-[18px] h-[18px] accent-primary cursor-pointer rounded"
                 />
               </div>
 
-              <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end", marginTop: "1rem" }}>
+              {/* Actions */}
+              <div className="flex gap-3 justify-end mt-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  style={{
-                    padding: "0.6rem 1rem",
-                    borderRadius: "var(--eq-radius-md)",
-                    background: "var(--eq-bg-elevated)",
-                    border: "1px solid var(--eq-border)",
-                    color: "var(--eq-text-secondary)",
-                    cursor: "pointer",
-                  }}
+                  className="btn btn-secondary btn-md"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  style={{
-                    padding: "0.6rem 1.25rem",
-                    borderRadius: "var(--eq-radius-md)",
-                    background: "var(--eq-accent)",
-                    color: "#080d14",
-                    fontWeight: 700,
-                    border: "none",
-                    cursor: "pointer",
-                  }}
+                  className="btn btn-primary btn-md"
                 >
                   {creating ? "Creating..." : "Create Project"}
                 </button>

@@ -1,0 +1,97 @@
+/* src/styles/utilities/layout.css */
+
+/* =============================================
+   Layout Utilities
+   ============================================= */
+
+@layer utilities {
+  /* Container with max-width and centering */
+  .container-narrow {
+    max-width: var(--container-4xl);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .container-wide {
+    max-width: var(--container-7xl);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Stack (vertical spacing) */
+  .stack-xs > * + * {
+    margin-top: var(--space-1);
+  }
+
+  .stack-sm > * + * {
+    margin-top: var(--space-2);
+  }
+
+  .stack-md > * + * {
+    margin-top: var(--space-4);
+  }
+
+  .stack-lg > * + * {
+    margin-top: var(--space-6);
+  }
+
+  .stack-xl > * + * {
+    margin-top: var(--space-8);
+  }
+
+  /* Visually hidden but accessible */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .sr-only-focusable:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: inherit;
+    margin: inherit;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+
+  /* Sticky header offset */
+  .sticky-offset {
+    scroll-margin-top: var(--size-navbar-height);
+  }
+
+  /* Full bleed */
+  .full-bleed {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+  }
+
+  /* Aspect ratio containers */
+  .aspect-golden {
+    aspect-ratio: var(--aspect-golden);
+  }
+
+  .aspect-photo {
+    aspect-ratio: var(--aspect-photo);
+  }
+
+  .aspect-wide {
+    aspect-ratio: var(--aspect-wide);
+  }
+}

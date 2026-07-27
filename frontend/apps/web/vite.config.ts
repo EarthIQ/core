@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { domToCodePlugin } from "dom-to-code/vite";
 import { resolve } from "path";
 import fs from "fs";
 
@@ -10,7 +11,9 @@ const pathsFile = resolve(__dirname, "./modules.paths.json");
 
 if (fs.existsSync(pathsFile)) {
   try {
-    const paths: Record<string, string> = JSON.parse(fs.readFileSync(pathsFile, "utf-8"));
+    const paths: Record<string, string> = JSON.parse(
+      fs.readFileSync(pathsFile, "utf-8"),
+    );
     for (const [key, val] of Object.entries(paths)) {
       const absPath = resolve(__dirname, val);
       moduleAliases[key] = absPath;
@@ -23,7 +26,7 @@ if (fs.existsSync(pathsFile)) {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), domToCodePlugin()],
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),
@@ -41,5 +44,3 @@ export default defineConfig({
     },
   },
 });
-
-

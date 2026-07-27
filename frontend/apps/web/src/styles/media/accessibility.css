@@ -1,0 +1,128 @@
+/* src/styles/media/accessibility.css */
+
+/* =============================================
+   Accessibility & Reduced Motion
+   ============================================= */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .skeleton {
+    animation: none !important;
+    background: var(--bg-tertiary) !important;
+  }
+
+  .progress-indeterminate .progress-bar {
+    animation: none !important;
+  }
+
+  .bg-gradient-animated {
+    animation: none !important;
+  }
+}
+
+/* Reduced transparency */
+@media (prefers-reduced-transparency: reduce) {
+  .backdrop-blur-overlay {
+    backdrop-filter: none;
+    background-color: var(--bg-primary);
+    opacity: 0.98;
+  }
+
+  .navbar {
+    backdrop-filter: none;
+    background-color: var(--bg-primary);
+  }
+
+  .overlay,
+  .overlay-light,
+  .overlay-heavy {
+    opacity: 1;
+    background-color: var(--bg-primary);
+  }
+}
+
+/* High contrast */
+@media (prefers-contrast: more) {
+  :root {
+    --border-primary: oklch(0.7 0.01 220);
+    --text-secondary: oklch(0.35 0.02 220);
+    --text-tertiary: oklch(0.45 0.015 220);
+  }
+
+  .dark {
+    --border-primary: oklch(0.5 0.02 235);
+    --text-secondary: oklch(0.8 0.01 220);
+    --text-tertiary: oklch(0.65 0.01 220);
+  }
+}
+
+/* Forced colors (Windows high contrast) */
+@media (forced-colors: active) {
+  .btn,
+  .input,
+  .card,
+  .badge,
+  .toggle,
+  .alert {
+    border: 1px solid ButtonText;
+  }
+
+  .btn-primary {
+    background-color: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+
+  .btn:disabled {
+    color: GrayText;
+    border-color: GrayText;
+  }
+
+  a {
+    color: LinkText;
+  }
+
+  :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  .toggle[data-state="checked"],
+  .toggle[aria-checked="true"] {
+    background-color: Highlight;
+  }
+}
+
+/* Focus within styling */
+.focus-within-highlight:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+/* Skip link */
+.skip-to-main {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: var(--z-max);
+  padding: 0.75rem 1.5rem;
+  background-color: var(--primary);
+  color: var(--text-on-primary);
+  font-weight: var(--font-semibold);
+  border-radius: 0 0 var(--radius-md) 0;
+  transition: top var(--transition-fast) var(--ease-out);
+}
+
+.skip-to-main:focus {
+  top: 0;
+}

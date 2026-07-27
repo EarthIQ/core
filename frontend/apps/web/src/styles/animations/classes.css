@@ -1,0 +1,137 @@
+/* src/styles/animations/classes.css */
+
+/* =============================================
+   Animation Utility Classes
+   ============================================= */
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn var(--transition-normal) var(--ease-out);
+  }
+
+  .animate-fade-out {
+    animation: fadeOut var(--transition-normal) var(--ease-out);
+  }
+
+  .animate-slide-up {
+    animation: slideUp var(--transition-slow) var(--ease-out);
+  }
+
+  .animate-slide-down {
+    animation: slideDown var(--transition-slow) var(--ease-out);
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft var(--transition-slow) var(--ease-out);
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight var(--transition-slow) var(--ease-out);
+  }
+
+  .animate-scale-in {
+    animation: scaleIn var(--transition-normal) var(--ease-out);
+  }
+
+  .animate-scale-out {
+    animation: scaleOut var(--transition-normal) var(--ease-out);
+  }
+
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-bounce {
+    animation: bounce 1s infinite;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp var(--transition-slow) var(--ease-out) forwards;
+  }
+
+  .animate-fade-in-down {
+    animation: fadeInDown var(--transition-slow) var(--ease-out) forwards;
+  }
+
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+
+  .animate-ping {
+    animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-wiggle {
+    animation: wiggle 1s ease-in-out infinite;
+  }
+
+  .animate-blink {
+    animation: blink 1s step-end infinite;
+  }
+
+  .animate-marquee {
+    animation: marquee 20s linear infinite;
+  }
+
+  /* Stagger delays */
+  .stagger-1 {
+    animation-delay: var(--stagger-1);
+  }
+  .stagger-2 {
+    animation-delay: var(--stagger-2);
+  }
+  .stagger-3 {
+    animation-delay: var(--stagger-3);
+  }
+  .stagger-4 {
+    animation-delay: var(--stagger-4);
+  }
+  .stagger-5 {
+    animation-delay: var(--stagger-5);
+  }
+  .stagger-6 {
+    animation-delay: var(--stagger-6);
+  }
+  .stagger-7 {
+    animation-delay: var(--stagger-7);
+  }
+  .stagger-8 {
+    animation-delay: var(--stagger-8);
+  }
+  .stagger-9 {
+    animation-delay: var(--stagger-9);
+  }
+  .stagger-10 {
+    animation-delay: var(--stagger-10);
+  }
+
+  /* Fill mode */
+  .animate-fill-forwards {
+    animation-fill-mode: forwards;
+  }
+
+  .animate-fill-backwards {
+    animation-fill-mode: backwards;
+  }
+
+  .animate-fill-both {
+    animation-fill-mode: both;
+  }
+
+  /* Play state */
+  .animate-paused {
+    animation-play-state: paused;
+  }
+
+  .animate-running {
+    animation-play-state: running;
+  }
+}

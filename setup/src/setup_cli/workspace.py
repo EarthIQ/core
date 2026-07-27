@@ -100,7 +100,7 @@ def update_frontend_workspace(lock: dict) -> None:
     # 4. Save tsconfig.paths.json for TypeScript compiler consumption
     tsconfig_paths_file = WEB_PACKAGE_JSON.parent / "tsconfig.paths.json"
     tsconfig_paths_content = {
-        "extends": "@repo/typescript-config/vite.json",
+        "extends": "@packages/typescript-config/vite.json",
         "compilerOptions": {
             "baseUrl": ".",
             "paths": tsconfig_paths

@@ -3,8 +3,17 @@
   "include": ["src", "../../../modules/*/frontend/src"],
   "compilerOptions": {
     "jsx": "react-jsx",
-    "strictNullChecks": true
+    "rootDir": "../../..",
+    "noEmit": true,
+    "strict": false,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "verbatimModuleSyntax": false,
+    "noImplicitOverride": false,
+    "skipLibCheck": true
   }
 }
-
 

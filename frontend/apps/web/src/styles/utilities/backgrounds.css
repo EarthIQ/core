@@ -1,0 +1,97 @@
+/* src/styles/utilities/backgrounds.css */
+
+/* =============================================
+   Background Utilities
+   ============================================= */
+
+@layer utilities {
+  .bg-base {
+    background-color: var(--bg-primary);
+  }
+
+  .bg-surface {
+    background-color: var(--surface);
+  }
+
+  .bg-surface-hover {
+    background-color: var(--surface-hover);
+  }
+
+  .bg-surface-active {
+    background-color: var(--surface-active);
+  }
+
+  .bg-elevated {
+    background-color: var(--bg-elevated);
+  }
+
+  .bg-recessed {
+    background-color: var(--bg-recessed);
+  }
+
+  .bg-canvas {
+    background-color: var(--bg-canvas);
+  }
+
+  .bg-wash {
+    background-color: var(--bg-wash);
+  }
+
+  /* Status backgrounds */
+  .bg-success-subtle {
+    background-color: var(--success-bg);
+  }
+
+  .bg-warning-subtle {
+    background-color: var(--warning-bg);
+  }
+
+  .bg-error-subtle {
+    background-color: var(--error-bg);
+  }
+
+  .bg-info-subtle {
+    background-color: var(--info-bg);
+  }
+
+  /* Pattern backgrounds */
+  .bg-dots {
+    background-image: radial-gradient(
+      var(--border-primary) 1px,
+      transparent 1px
+    );
+    background-size: 1rem 1rem;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(var(--border-secondary) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border-secondary) 1px, transparent 1px);
+    background-size: 2rem 2rem;
+  }
+
+  .bg-mesh {
+    background-color: var(--bg-primary);
+    background-image:
+      radial-gradient(
+        at 40% 20%,
+        oklch(0.68 0.1 220 / 0.15) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 80% 0%,
+        oklch(0.6 0.12 195 / 0.12) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 0% 50%,
+        oklch(0.6 0.15 280 / 0.1) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 80% 80%,
+        oklch(0.6 0.18 145 / 0.08) 0px,
+        transparent 50%
+      );
+  }
+}

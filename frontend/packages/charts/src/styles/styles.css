@@ -1,0 +1,419 @@
+/* =========================================
+   Chart Theme Extension
+   Extends the main design system with chart-specific styles
+   ========================================= */
+
+/* =========================================
+   Chart Color Variables
+   ========================================= */
+:root {
+  /* Chart Colors - Light Mode
+     Using OKLCH to match the main design system */
+  --chart-1: oklch(0.55 0.15 250); /* Blue */
+  --chart-2: oklch(0.55 0.18 145); /* Green - matches primary */
+  --chart-3: oklch(0.7 0.15 85); /* Amber/Orange */
+  --chart-4: oklch(0.55 0.15 300); /* Purple */
+  --chart-5: oklch(0.55 0.18 25); /* Red/Rose */
+  --chart-6: oklch(0.6 0.15 200); /* Cyan */
+
+  /* Additional chart colors for extended palettes */
+  --chart-7: oklch(0.6 0.12 60); /* Yellow */
+  --chart-8: oklch(0.5 0.15 330); /* Pink */
+
+  /* Chart-specific surfaces */
+  --chart-bg: var(--surface);
+  --chart-grid: oklch(0.92 0.005 240);
+  --chart-axis: var(--text-tertiary);
+  --chart-tooltip-bg: var(--bg-elevated);
+  --chart-tooltip-border: var(--border-primary);
+}
+
+/* =========================================
+   Dark Mode Chart Overrides
+   ========================================= */
+:root.dark,
+.dark {
+  /* Chart Colors - Dark Mode
+     Slightly brighter for visibility on dark backgrounds */
+  --chart-1: oklch(0.65 0.15 250); /* Blue */
+  --chart-2: oklch(0.6 0.18 145); /* Green */
+  --chart-3: oklch(0.75 0.15 85); /* Amber/Orange */
+  --chart-4: oklch(0.65 0.15 300); /* Purple */
+  --chart-5: oklch(0.65 0.18 25); /* Red/Rose */
+  --chart-6: oklch(0.7 0.15 200); /* Cyan */
+
+  /* Additional chart colors */
+  --chart-7: oklch(0.7 0.12 60); /* Yellow */
+  --chart-8: oklch(0.6 0.15 330); /* Pink */
+
+  /* Chart-specific surfaces - dark mode */
+  --chart-grid: oklch(0.28 0.02 260);
+  --chart-axis: var(--text-tertiary);
+}
+
+/* =========================================
+   Tailwind Theme Extension for Charts
+   ========================================= */
+@theme {
+  /* Chart Colors */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+
+  /* Chart-specific animations
+     Note: These extend the animations in the main CSS file */
+  --animate-chart-fade-in: chart-fade-in 0.4s ease-out;
+  --animate-chart-draw: chart-draw 1s ease-out;
+  --animate-chart-grow: chart-grow 0.6s ease-out;
+}
+
+/* =========================================
+   Chart Keyframes
+   ========================================= */
+@keyframes chart-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes chart-draw {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes chart-grow {
+  from {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+  to {
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+}
+
+@keyframes chart-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* =========================================
+   Chart Utility Classes
+   ========================================= */
+@layer utilities {
+  /* Chart container */
+  .chart-container {
+    background-color: var(--chart-bg);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+  }
+
+  /* Custom scrollbar for chart containers
+     Extends the main scrollbar styles */
+  .chart-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .chart-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .chart-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
+  }
+
+  .chart-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+
+  /* Chart animation utilities */
+  .animate-chart-fade-in {
+    animation: chart-fade-in 0.4s ease-out;
+  }
+
+  .animate-chart-draw {
+    animation: chart-draw 1s ease-out forwards;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+
+  .animate-chart-grow {
+    animation: chart-grow 0.6s ease-out forwards;
+  }
+
+  .animate-chart-pop {
+    animation: chart-pop 0.3s ease-out forwards;
+  }
+
+  /* Staggered animation delays for chart elements */
+  .chart-delay-1 {
+    animation-delay: 0.1s;
+  }
+  .chart-delay-2 {
+    animation-delay: 0.2s;
+  }
+  .chart-delay-3 {
+    animation-delay: 0.3s;
+  }
+  .chart-delay-4 {
+    animation-delay: 0.4s;
+  }
+  .chart-delay-5 {
+    animation-delay: 0.5s;
+  }
+  .chart-delay-6 {
+    animation-delay: 0.6s;
+  }
+}
+
+/* =========================================
+   Recharts Customizations
+   ========================================= */
+.recharts-wrapper {
+  font-family: inherit;
+}
+
+/* Tooltip styling */
+.recharts-default-tooltip {
+  background-color: var(--chart-tooltip-bg) !important;
+  border: 1px solid var(--chart-tooltip-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.recharts-tooltip-wrapper {
+  outline: none;
+  z-index: var(--z-tooltip);
+}
+
+.recharts-tooltip-label {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.recharts-tooltip-item {
+  color: var(--text-secondary) !important;
+  padding: 0.125rem 0 !important;
+}
+
+.recharts-tooltip-item-name {
+  color: var(--text-secondary) !important;
+}
+
+.recharts-tooltip-item-value {
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+}
+
+/* Legend styling */
+.recharts-legend-wrapper {
+  padding-top: 1rem !important;
+}
+
+.recharts-legend-item {
+  cursor: pointer;
+  transition: opacity var(--transition-fast) ease;
+}
+
+.recharts-legend-item:hover {
+  opacity: 0.7;
+}
+
+.recharts-legend-item-text {
+  color: var(--text-secondary) !important;
+  font-size: 0.875rem !important;
+}
+
+/* Axis styling */
+.recharts-cartesian-axis-tick-value {
+  fill: var(--chart-axis) !important;
+  font-size: 0.75rem !important;
+}
+
+.recharts-cartesian-axis-line,
+.recharts-cartesian-axis-tick-line {
+  stroke: var(--chart-grid) !important;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--chart-grid) !important;
+}
+
+/* Reference line */
+.recharts-reference-line line {
+  stroke: var(--border-primary) !important;
+}
+
+/* Pie/Donut chart */
+.recharts-pie-sector {
+  transition: transform var(--transition-fast) ease;
+}
+
+.recharts-pie-sector:hover {
+  transform: scale(1.02);
+}
+
+/* Bar chart */
+.recharts-bar-rectangle {
+  transition: opacity var(--transition-fast) ease;
+}
+
+.recharts-bar-rectangle:hover {
+  opacity: 0.8;
+}
+
+/* Line chart */
+.recharts-line-curve {
+  transition: stroke-width var(--transition-fast) ease;
+}
+
+.recharts-line:hover .recharts-line-curve {
+  stroke-width: 3;
+}
+
+/* Area chart */
+.recharts-area-area {
+  transition: opacity var(--transition-fast) ease;
+}
+
+.recharts-area:hover .recharts-area-area {
+  opacity: 0.9;
+}
+
+/* Dot styling */
+.recharts-dot {
+  transition: r var(--transition-fast) ease;
+}
+
+.recharts-active-dot circle {
+  fill: var(--primary) !important;
+  stroke: var(--surface) !important;
+  stroke-width: 2 !important;
+}
+
+/* =========================================
+   Chart Component Classes
+   ========================================= */
+
+/* Chart card wrapper */
+.chart-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.chart-card-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--divider);
+}
+
+.chart-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.chart-card-description {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.chart-card-content {
+  padding: 1.25rem;
+}
+
+.chart-card-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--divider);
+  background-color: var(--bg-tertiary);
+}
+
+/* Chart loading state */
+.chart-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary) 25%,
+    var(--bg-secondary) 50%,
+    var(--bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite ease-in-out;
+  border-radius: var(--radius-md);
+}
+
+/* Chart empty state */
+.chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: 2rem;
+}
+
+.chart-empty-icon {
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.chart-empty-text {
+  font-size: 0.875rem;
+}
+
+/* =========================================
+   Reduced Motion
+   ========================================= */
+@media (prefers-reduced-motion: reduce) {
+  .recharts-pie-sector,
+  .recharts-bar-rectangle,
+  .recharts-line-curve,
+  .recharts-area-area,
+  .recharts-dot,
+  .recharts-legend-item {
+    transition: none !important;
+  }
+
+  .animate-chart-fade-in,
+  .animate-chart-draw,
+  .animate-chart-grow,
+  .animate-chart-pop {
+    animation: none !important;
+  }
+}

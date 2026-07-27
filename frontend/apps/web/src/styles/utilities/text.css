@@ -1,0 +1,109 @@
+/* src/styles/utilities/text.css */
+
+/* =============================================
+   Text Utilities
+   ============================================= */
+
+@layer utilities {
+  .text-base-color {
+    color: var(--text-primary);
+  }
+
+  .text-muted {
+    color: var(--text-secondary);
+  }
+
+  .text-subtle {
+    color: var(--text-tertiary);
+  }
+
+  .text-faint {
+    color: var(--text-quaternary);
+  }
+
+  .text-inverse {
+    color: var(--text-inverse);
+  }
+
+  .text-on-primary {
+    color: var(--text-on-primary);
+  }
+
+  /* Tabular numbers */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Proportional numbers */
+  .proportional-nums {
+    font-variant-numeric: proportional-nums;
+  }
+
+  /* Oldstyle figures */
+  .oldstyle-nums {
+    font-variant-numeric: oldstyle-nums;
+  }
+
+  /* Text balance */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Truncate */
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-5 {
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Prose width */
+  .prose-sm {
+    max-width: var(--prose-width-sm);
+  }
+
+  .prose-md {
+    max-width: var(--prose-width-md);
+  }
+
+  .prose-lg {
+    max-width: var(--prose-width-lg);
+  }
+
+  .prose-xl {
+    max-width: var(--prose-width-xl);
+  }
+}

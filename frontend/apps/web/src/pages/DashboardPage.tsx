@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useModules, ModuleInfo } from "@/lib/modules";
-import { Badge } from "@repo/ui";
+import { Badge, Button } from "@packages/ui";
 import {
   fetchMaps,
   createMap,
@@ -20,9 +20,12 @@ function CapChips({ caps }: { caps: ModuleInfo["capabilities"] }) {
   if (caps.has_infra) chips.push("infra");
   caps.extras?.forEach((e) => chips.push(e));
   return (
-    <div className="eq-module-card__caps">
+    <div className="flex flex-wrap gap-1.5 mt-3">
       {chips.map((c) => (
-        <span key={c} className="eq-cap-chip">
+        <span
+          key={c}
+          className="px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20"
+        >
           {c}
         </span>
       ))}
@@ -49,26 +52,37 @@ function ModuleIcon() {
 
 function ModuleCard({ mod }: { mod: ModuleInfo }) {
   return (
-    <div className="eq-module-card" id={`module-card-${mod.name}`}>
-      <div className="eq-module-card__header">
-        <div
-          style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}
-        >
-          <div className="eq-module-card__icon">
+    <div
+      className="card p-4 flex flex-col gap-2"
+      id={`module-card-${mod.name}`}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex gap-3 items-start">
+          <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <ModuleIcon />
           </div>
           <div>
-            <div className="eq-module-card__name">{mod.name}</div>
-            <div className="eq-module-card__version">v{mod.version}</div>
+            <div className="font-semibold text-sm text-text-primary">
+              {mod.name}
+            </div>
+            <div className="text-xs text-text-tertiary mt-0.5">
+              v{mod.version}
+            </div>
           </div>
         </div>
         <Badge
-          status={mod.enabled ? "available" : "unavailable"}
-          pulse={mod.enabled}
-        />
+          variant={mod.enabled ? "success" : "default"}
+          size="sm"
+          dot={mod.enabled}
+          dotColor={mod.enabled ? "success" : "primary"}
+        >
+          {mod.enabled ? "Available" : "Unavailable"}
+        </Badge>
       </div>
       {mod.description && (
-        <p className="eq-module-card__desc">{mod.description}</p>
+        <p className="text-sm text-text-secondary leading-relaxed">
+          {mod.description}
+        </p>
       )}
       <CapChips caps={mod.capabilities} />
     </div>
@@ -77,44 +91,20 @@ function ModuleCard({ mod }: { mod: ModuleInfo }) {
 
 function StatsBar({ modules }: { modules: ModuleInfo[] }) {
   const enabled = modules.filter((m) => m.enabled).length;
+  const stats = [
+    { label: "Installed modules", value: modules.length },
+    { label: "Active", value: enabled },
+    { label: "Inactive", value: modules.length - enabled },
+  ];
+
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: "2rem",
-        padding: "1rem 1.5rem",
-        background: "var(--eq-bg-surface)",
-        border: "1px solid var(--eq-border)",
-        borderRadius: "var(--eq-radius-lg)",
-        marginBottom: "2rem",
-      }}
-    >
-      {[
-        { label: "Installed modules", value: modules.length },
-        { label: "Active", value: enabled },
-        { label: "Inactive", value: modules.length - enabled },
-      ].map((s) => (
+    <div className="flex gap-8 p-4 px-6 bg-surface border border-border-primary rounded-lg mb-8">
+      {stats.map((s) => (
         <div key={s.label}>
-          <div
-            style={{
-              fontSize: "1.75rem",
-              fontWeight: 700,
-              fontFamily: "var(--eq-font-display)",
-              color: "var(--eq-text-primary)",
-              lineHeight: 1,
-            }}
-          >
+          <div className="text-3xl font-bold text-text-primary leading-none tabular-nums">
             {s.value}
           </div>
-          <div
-            style={{
-              fontSize: "0.75rem",
-              color: "var(--eq-text-muted)",
-              marginTop: "0.25rem",
-            }}
-          >
-            {s.label}
-          </div>
+          <div className="text-xs text-text-tertiary mt-1">{s.label}</div>
         </div>
       ))}
     </div>
@@ -135,145 +125,113 @@ function MapCard({
   const navigate = useNavigate();
 
   return (
-    <div
-      className="eq-module-card"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        gap: "0.75rem",
-      }}
-    >
+    <div className="card p-4 flex flex-col justify-between gap-3">
+      {/* Header */}
       <div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <div style={{ fontWeight: 700, fontSize: "1rem", color: "#e2e8f0" }}>
+        <div className="flex justify-between items-start">
+          <div className="font-bold text-base text-text-primary">
             {mapItem.title}
           </div>
           <span
-            style={{
-              fontSize: "0.65rem",
-              fontWeight: 700,
-              padding: "0.15rem 0.5rem",
-              borderRadius: "999px",
-              background: mapItem.is_public
-                ? "rgba(34,211,160,0.12)"
-                : "rgba(99,102,241,0.12)",
-              color: mapItem.is_public ? "#22d3a0" : "#818cf8",
-              border: `1px solid ${mapItem.is_public ? "rgba(34,211,160,0.3)" : "rgba(99,102,241,0.3)"}`,
-            }}
+            className={`text-[0.65rem] font-bold px-2 py-0.5 rounded-full border ${
+              mapItem.is_public
+                ? "bg-success/10 text-success border-success/30"
+                : "bg-accent/10 text-accent border-accent/30"
+            }`}
           >
             {mapItem.is_public ? "Public" : "Private"}
           </span>
         </div>
-        <p
-          style={{
-            fontSize: "0.8125rem",
-            color: "#94a3b8",
-            marginTop: "0.35rem",
-            minHeight: "2.4rem",
-          }}
-        >
+        <p className="text-sm text-text-secondary mt-1.5 min-h-[2.4rem] line-clamp-2">
           {mapItem.description || "No description provided."}
         </p>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: "0.5rem",
-          flexWrap: "wrap",
-          fontSize: "0.7rem",
-          color: "#64748b",
-        }}
-      >
-        <span
-          style={{
-            padding: "0.1rem 0.4rem",
-            borderRadius: "4px",
-            background: "rgba(255,255,255,0.05)",
-          }}
-        >
-          Basemap: {mapItem.basemap}
-        </span>
-        <span
-          style={{
-            padding: "0.1rem 0.4rem",
-            borderRadius: "4px",
-            background: "rgba(255,255,255,0.05)",
-          }}
-        >
-          Zoom: {mapItem.zoom}
-        </span>
-        <span
-          style={{
-            padding: "0.1rem 0.4rem",
-            borderRadius: "4px",
-            background: "rgba(255,255,255,0.05)",
-          }}
-        >
-          Perm: {mapItem.user_permission}
-        </span>
+      {/* Meta chips */}
+      <div className="flex gap-2 flex-wrap text-[0.7rem] text-text-tertiary">
+        {[
+          `Basemap: ${mapItem.basemap}`,
+          `Zoom: ${mapItem.zoom}`,
+          `Perm: ${mapItem.user_permission}`,
+        ].map((label) => (
+          <span key={label} className="px-1.5 py-0.5 rounded bg-surface-hover">
+            {label}
+          </span>
+        ))}
       </div>
 
-      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
-        <button
+      {/* Actions */}
+      <div className="flex gap-2 mt-2">
+        <Button
+          variant="primary"
+          size="sm"
+          fullWidth
           onClick={() => navigate(`/map?mapId=${mapItem.id}`)}
-          style={{
-            flex: 1,
-            padding: "0.4rem 0.75rem",
-            borderRadius: "0.375rem",
-            background: "#22d3a0",
-            color: "#090d16",
-            fontWeight: 700,
-            border: "none",
-            cursor: "pointer",
-            fontSize: "0.75rem",
-          }}
         >
           Open Map ↗
-        </button>
+        </Button>
 
         {mapItem.user_permission === "admin" && (
           <>
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => onTogglePublic(mapItem)}
               title="Toggle Public Access"
-              style={{
-                padding: "0.4rem 0.6rem",
-                borderRadius: "0.375rem",
-                background: "rgba(255,255,255,0.06)",
-                color: "#e2e8f0",
-                border: "1px solid rgba(255,255,255,0.1)",
-                cursor: "pointer",
-                fontSize: "0.75rem",
-              }}
             >
               {mapItem.is_public ? "Make Private" : "Make Public"}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="error"
+              size="sm"
               onClick={() => onDelete(mapItem.id)}
               title="Delete Map"
-              style={{
-                padding: "0.4rem 0.6rem",
-                borderRadius: "0.375rem",
-                background: "rgba(239,68,68,0.12)",
-                color: "#f87171",
-                border: "1px solid rgba(239,68,68,0.25)",
-                cursor: "pointer",
-                fontSize: "0.75rem",
-              }}
             >
               Delete
-            </button>
+            </Button>
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── Shimmer Skeleton ───────────────────────────────────────────────────────────
+
+function ShimmerRows() {
+  return (
+    <div className="flex flex-col gap-3">
+      {[70, 50, 90].map((w) => (
+        <div
+          key={w}
+          className="h-5 rounded-lg skeleton"
+          style={{ width: `${w}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Empty State ────────────────────────────────────────────────────────────────
+
+function EmptyState({
+  message,
+  action,
+}: {
+  message: string;
+  action?: { label: string; onClick: () => void };
+}) {
+  return (
+    <div className="py-12 px-8 text-center text-text-tertiary border-[1.5px] border-dashed border-border-primary rounded-xl">
+      <p>{message}</p>
+      {action && (
+        <button
+          onClick={action.onClick}
+          className="mt-3 btn btn-primary btn-sm"
+        >
+          {action.label}
+        </button>
+      )}
     </div>
   );
 }
@@ -324,149 +282,52 @@ function CreateMapModal({
   }
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 999,
-        background: "rgba(0,0,0,0.6)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "1rem",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "480px",
-          background: "var(--eq-bg-surface, #0e1623)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: "1rem",
-          padding: "1.5rem",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "1.25rem",
-            fontWeight: 700,
-            margin: 0,
-            color: "#e2e8f0",
-          }}
-        >
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 overlay animate-fade-in">
+      <div className="w-full max-w-[480px] bg-elevated border border-border-primary rounded-2xl p-6 flex flex-col gap-4 animate-scale-in shadow-2xl">
+        <h2 className="text-xl font-bold text-text-primary">
           Create Configurable Map
         </h2>
 
         {error && (
-          <div
-            style={{
-              padding: "0.5rem",
-              background: "rgba(239,68,68,0.1)",
-              color: "#f87171",
-              borderRadius: "0.375rem",
-              fontSize: "0.8rem",
-            }}
-          >
+          <div className="p-3 rounded-md bg-error-subtle text-error text-sm border border-error/20">
             {error}
           </div>
         )}
 
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-        >
-          <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.75rem",
-                color: "#94a3b8",
-                marginBottom: "0.25rem",
-              }}
-            >
-              Map Title
-            </label>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Title */}
+          <div className="form-field">
+            <label className="form-label">Map Title</label>
             <input
               type="text"
               required
               placeholder="e.g. Global River Quality Dashboard"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                padding: "0.5rem 0.75rem",
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "0.375rem",
-                color: "#e2e8f0",
-                fontSize: "0.875rem",
-              }}
+              className="input"
             />
           </div>
 
-          <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.75rem",
-                color: "#94a3b8",
-                marginBottom: "0.25rem",
-              }}
-            >
-              Description
-            </label>
+          {/* Description */}
+          <div className="form-field">
+            <label className="form-label">Description</label>
             <textarea
               rows={3}
               placeholder="Brief summary of layers & viewport"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                padding: "0.5rem 0.75rem",
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "0.375rem",
-                color: "#e2e8f0",
-                fontSize: "0.875rem",
-              }}
+              className="input textarea"
             />
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "1rem",
-            }}
-          >
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "0.75rem",
-                  color: "#94a3b8",
-                  marginBottom: "0.25rem",
-                }}
-              >
-                Default Basemap
-              </label>
+          {/* Basemap + Public toggle */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="form-field">
+              <label className="form-label">Default Basemap</label>
               <select
                 value={basemap}
                 onChange={(e) => setBasemap(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem 0.75rem",
-                  background: "#090d16",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "0.375rem",
-                  color: "#e2e8f0",
-                  fontSize: "0.875rem",
-                }}
+                className="input select"
               >
                 <option value="dataviz-dark">DataViz Dark</option>
                 <option value="dataviz-light">DataViz Light</option>
@@ -474,68 +335,36 @@ function CreateMapModal({
               </select>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                marginTop: "1.25rem",
-              }}
-            >
+            <div className="flex items-center gap-2 mt-5">
               <input
                 type="checkbox"
                 id="is_public_cb"
                 checked={isPublic}
                 onChange={(e) => setIsPublic(e.target.checked)}
-                style={{ cursor: "pointer" }}
+                className="cursor-pointer accent-primary w-4 h-4"
               />
               <label
                 htmlFor="is_public_cb"
-                style={{
-                  fontSize: "0.8125rem",
-                  color: "#e2e8f0",
-                  cursor: "pointer",
-                }}
+                className="text-sm text-text-primary cursor-pointer select-none"
               >
-                Make Publicly Accessibly
+                Make Publicly Accessible
               </label>
             </div>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "0.75rem",
-              justifyContent: "flex-end",
-              marginTop: "0.5rem",
-            }}
-          >
+          {/* Actions */}
+          <div className="flex gap-3 justify-end mt-2">
             <button
               type="button"
               onClick={onClose}
-              style={{
-                padding: "0.5rem 1rem",
-                background: "transparent",
-                color: "#94a3b8",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "0.375rem",
-                cursor: "pointer",
-              }}
+              className="btn btn-secondary btn-md"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              style={{
-                padding: "0.5rem 1rem",
-                background: "#22d3a0",
-                color: "#090d16",
-                fontWeight: 700,
-                border: "none",
-                borderRadius: "0.375rem",
-                cursor: "pointer",
-              }}
+              className="btn btn-primary btn-md"
             >
               {loading ? "Creating..." : "Create Map"}
             </button>
@@ -543,6 +372,31 @@ function CreateMapModal({
         </form>
       </div>
     </div>
+  );
+}
+
+// ── Tab Button ─────────────────────────────────────────────────────────────────
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-4 py-2 rounded-md border-none cursor-pointer text-sm transition-all duration-150 ${
+        active
+          ? "font-bold bg-primary/15 text-primary"
+          : "font-medium bg-transparent text-text-tertiary hover:text-text-secondary hover:bg-surface-hover"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -598,168 +452,82 @@ export default function DashboardPage() {
   };
 
   return (
-    <div>
-      <div className="eq-page-header">
-        <div className="eq-page-header__eyebrow">Platform Overview</div>
-        <h1 className="eq-gradient-text">Dashboard</h1>
-        <p style={{ marginTop: "0.5rem", color: "var(--eq-text-secondary)" }}>
+    <div className="max-w-7xl mx-auto">
+      {/* Page Header */}
+      <div className="mb-8">
+        <div className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">
+          Platform Overview
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-bold text-gradient">
+          Dashboard
+        </h1>
+        <p className="mt-2 text-text-secondary text-sm sm:text-base max-w-2xl">
           Geospatial intelligence at your fingertips. Manage configurable maps
           and monitor active modules.
         </p>
 
-        {/* Tab switcher */}
-        <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
-          <button
+        {/* Tab Switcher */}
+        <div className="flex gap-2 mt-4">
+          <TabButton
+            active={activeTab === "maps"}
             onClick={() => setActiveTab("maps")}
-            style={{
-              padding: "0.45rem 1rem",
-              borderRadius: "0.375rem",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "0.8125rem",
-              fontWeight: activeTab === "maps" ? 700 : 500,
-              background:
-                activeTab === "maps" ? "rgba(34,211,160,0.15)" : "transparent",
-              color: activeTab === "maps" ? "#22d3a0" : "#94a3b8",
-            }}
           >
             Configurable Maps ({maps.length})
-          </button>
-          <button
+          </TabButton>
+          <TabButton
+            active={activeTab === "modules"}
             onClick={() => setActiveTab("modules")}
-            style={{
-              padding: "0.45rem 1rem",
-              borderRadius: "0.375rem",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "0.8125rem",
-              fontWeight: activeTab === "modules" ? 700 : 500,
-              background:
-                activeTab === "modules"
-                  ? "rgba(34,211,160,0.15)"
-                  : "transparent",
-              color: activeTab === "modules" ? "#22d3a0" : "#94a3b8",
-            }}
           >
             Installed Modules ({modules.length})
-          </button>
+          </TabButton>
         </div>
       </div>
 
       {/* ── MAPS TAB ── */}
       {activeTab === "maps" && (
-        <div
-          style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
+        <div className="flex flex-col gap-6">
+          {/* Maps Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
-              <h2
-                style={{
-                  fontSize: "1.125rem",
-                  fontWeight: 700,
-                  margin: 0,
-                  color: "#e2e8f0",
-                }}
-              >
+              <h2 className="text-lg font-bold text-text-primary">
                 Maps Dashboard
               </h2>
-              <p
-                style={{
-                  fontSize: "0.8rem",
-                  color: "#94a3b8",
-                  marginTop: "0.15rem",
-                }}
-              >
+              <p className="text-sm text-text-secondary mt-0.5">
                 Maps accessible to your user role and group permissions
               </p>
             </div>
-
             <button
               onClick={() => setIsModalOpen(true)}
-              style={{
-                padding: "0.5rem 1rem",
-                borderRadius: "0.375rem",
-                background: "#22d3a0",
-                color: "#090d16",
-                fontWeight: 700,
-                border: "none",
-                cursor: "pointer",
-                fontSize: "0.8125rem",
-              }}
+              className="btn btn-primary btn-md shrink-0"
             >
               + Create New Map
             </button>
           </div>
 
-          {mapsLoading && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.75rem",
-              }}
-            >
-              {[70, 50, 90].map((w) => (
-                <div
-                  key={w}
-                  style={{
-                    height: "1.25rem",
-                    width: `${w}%`,
-                    borderRadius: "0.5rem",
-                    background:
-                      "linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.1) 50%,rgba(255,255,255,0.04) 75%)",
-                    backgroundSize: "200% 100%",
-                    animation: "eq-shimmer 1.4s ease-in-out infinite",
-                  }}
-                />
-              ))}
-            </div>
-          )}
+          {/* Loading */}
+          {mapsLoading && <ShimmerRows />}
 
+          {/* Error */}
           {mapsError && (
-            <div className="eq-form__error">
+            <div className="p-4 rounded-lg bg-error-subtle text-error text-sm border border-error/20">
               Could not load maps: {mapsError}
             </div>
           )}
 
+          {/* Empty */}
           {!mapsLoading && !mapsError && maps.length === 0 && (
-            <div
-              style={{
-                padding: "3rem 2rem",
-                textAlign: "center",
-                color: "var(--eq-text-muted)",
-                border: "1.5px dashed var(--eq-border)",
-                borderRadius: "var(--eq-radius-xl)",
+            <EmptyState
+              message="No maps configured yet."
+              action={{
+                label: "Create your first map",
+                onClick: () => setIsModalOpen(true),
               }}
-            >
-              <p>No maps configured yet.</p>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                style={{
-                  marginTop: "0.75rem",
-                  padding: "0.4rem 0.875rem",
-                  borderRadius: "0.375rem",
-                  background: "#22d3a0",
-                  color: "#090d16",
-                  fontWeight: 700,
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "0.8rem",
-                }}
-              >
-                Create your first map
-              </button>
-            </div>
+            />
           )}
 
+          {/* Map Grid */}
           {!mapsLoading && !mapsError && maps.length > 0 && (
-            <div className="eq-dashboard__grid">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {maps.map((m) => (
                 <MapCard
                   key={m.id}
@@ -782,54 +550,24 @@ export default function DashboardPage() {
       {/* ── MODULES TAB ── */}
       {activeTab === "modules" && (
         <>
-          {modulesLoading && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.75rem",
-              }}
-            >
-              {[70, 50, 90].map((w) => (
-                <div
-                  key={w}
-                  style={{
-                    height: "1.25rem",
-                    width: `${w}%`,
-                    borderRadius: "0.5rem",
-                    background:
-                      "linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.1) 50%,rgba(255,255,255,0.04) 75%)",
-                    backgroundSize: "200% 100%",
-                    animation: "eq-shimmer 1.4s ease-in-out infinite",
-                  }}
-                />
-              ))}
-            </div>
-          )}
+          {/* Loading */}
+          {modulesLoading && <ShimmerRows />}
 
+          {/* Error */}
           {modulesError && (
-            <div className="eq-form__error">
+            <div className="p-4 rounded-lg bg-error-subtle text-error text-sm border border-error/20">
               Could not load module status: {modulesError}
             </div>
           )}
 
+          {/* Content */}
           {!modulesLoading && !modulesError && (
             <>
               <StatsBar modules={modules} />
               {modules.length === 0 ? (
-                <div
-                  style={{
-                    padding: "4rem 2rem",
-                    textAlign: "center",
-                    color: "var(--eq-text-muted)",
-                    border: "1.5px dashed var(--eq-border)",
-                    borderRadius: "var(--eq-radius-xl)",
-                  }}
-                >
-                  <p>No modules are currently installed.</p>
-                </div>
+                <EmptyState message="No modules are currently installed." />
               ) : (
-                <div className="eq-dashboard__grid">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {modules.map((m) => (
                     <ModuleCard key={m.name} mod={m} />
                   ))}

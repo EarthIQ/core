@@ -1,0 +1,53 @@
+/* src/styles/utilities/safe-area.css */
+
+/* =============================================
+   Mobile Safe Area Utilities
+   ============================================= */
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  }
+
+  .pt-safe {
+    padding-top: max(env(safe-area-inset-top), 0px);
+  }
+
+  .px-safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .p-safe {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+
+  .mt-safe {
+    margin-top: env(safe-area-inset-top);
+  }
+
+  /* Min height minus safe areas */
+  .min-h-screen-safe {
+    min-height: calc(
+      100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
+  }
+
+  /* Height minus navbar and safe area */
+  .h-screen-nav {
+    height: calc(100vh - var(--size-navbar-height));
+  }
+
+  .h-screen-nav-safe {
+    height: calc(
+      100vh - var(--size-navbar-height) - env(safe-area-inset-bottom)
+    );
+  }
+}

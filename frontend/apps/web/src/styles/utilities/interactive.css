@@ -1,0 +1,105 @@
+/* src/styles/utilities/interactive.css */
+
+/* =============================================
+   Interactive State Utilities
+   ============================================= */
+
+@layer utilities {
+  /* Hover lift effect */
+  .hover-lift {
+    transition:
+      transform var(--transition-fast) var(--ease-out),
+      box-shadow var(--transition-fast) var(--ease-out);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Scale on hover */
+  .hover-scale {
+    transition: transform var(--transition-fast) var(--ease-out);
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.02);
+  }
+
+  .hover-scale-sm:hover {
+    transform: scale(1.01);
+  }
+
+  .hover-scale-lg:hover {
+    transform: scale(1.05);
+  }
+
+  /* Opacity on hover */
+  .hover-dim {
+    transition: opacity var(--transition-fast) var(--ease-out);
+  }
+
+  .hover-dim:hover {
+    opacity: 0.8;
+  }
+
+  /* Active press effect */
+  .active-press:active {
+    transform: scale(0.98);
+  }
+
+  .active-press-sm:active {
+    transform: scale(0.99);
+  }
+
+  /* Disabled overlay */
+  .disabled-overlay {
+    position: relative;
+  }
+
+  .disabled-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--bg-primary);
+    opacity: var(--opacity-disabled);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  /* No pointer events */
+  .pointer-none {
+    pointer-events: none;
+  }
+
+  /* Grab cursor */
+  .cursor-grab {
+    cursor: grab;
+  }
+
+  .cursor-grab:active {
+    cursor: grabbing;
+  }
+
+  /* Smooth scroll */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+
+  /* Snap scroll */
+  .snap-x {
+    scroll-snap-type: x mandatory;
+  }
+
+  .snap-y {
+    scroll-snap-type: y mandatory;
+  }
+
+  .snap-start {
+    scroll-snap-align: start;
+  }
+
+  .snap-center {
+    scroll-snap-align: center;
+  }
+}

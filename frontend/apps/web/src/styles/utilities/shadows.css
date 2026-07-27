@@ -1,0 +1,32 @@
+/* src/styles/utilities/shadows.css */
+
+/* =============================================
+   Shadow Utilities
+   ============================================= */
+
+@layer utilities {
+  .shadow-base {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .shadow-floating {
+    box-shadow: var(--shadow-floating);
+  }
+
+  /* Colored shadows */
+  .shadow-primary-glow {
+    box-shadow: var(--glow-primary);
+  }
+
+  .shadow-secondary-glow {
+    box-shadow: var(--glow-secondary);
+  }
+
+  .shadow-accent-glow {
+    box-shadow: var(--glow-accent);
+  }
+}

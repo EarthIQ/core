@@ -1,0 +1,61 @@
+/* src/styles/utilities/borders.css */
+
+/* =============================================
+   Border Utilities
+   ============================================= */
+
+@layer utilities {
+  .border-base {
+    border-color: var(--border-primary);
+  }
+
+  .border-subtle {
+    border-color: var(--border-secondary);
+  }
+
+  .border-faint {
+    border-color: var(--border-tertiary);
+  }
+
+  .border-hover-color {
+    border-color: var(--border-hover);
+  }
+
+  /* Divider */
+  .divider {
+    border-color: var(--divider);
+  }
+
+  .divider-strong {
+    border-color: var(--divider-strong);
+  }
+
+  /* Divider line (horizontal) */
+  .divider-line {
+    width: 100%;
+    height: 1px;
+    background-color: var(--divider);
+    border: none;
+  }
+
+  /* Divider line (vertical) */
+  .divider-line-vertical {
+    width: 1px;
+    height: 100%;
+    background-color: var(--divider);
+    border: none;
+  }
+
+  /* Ring utilities */
+  .ring-primary {
+    box-shadow: 0 0 0 var(--ring-width) oklch(from var(--primary) l c h / 0.2);
+  }
+
+  .ring-error {
+    box-shadow: 0 0 0 var(--ring-width) oklch(from var(--error) l c h / 0.2);
+  }
+
+  .ring-success {
+    box-shadow: 0 0 0 var(--ring-width) oklch(from var(--success) l c h / 0.2);
+  }
+}

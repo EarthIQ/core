@@ -1,0 +1,92 @@
+/* src/styles/tokens/shadows.css */
+
+/* =============================================
+   Shadow Design Tokens
+   ============================================= */
+
+:root {
+  /* ─── Elevation Shadows ─── */
+  --shadow-xs: 0 1px 2px 0 oklch(0.25 0.02 220 / 0.04);
+  --shadow-sm:
+    0 1px 3px 0 oklch(0.25 0.02 220 / 0.06),
+    0 1px 2px -1px oklch(0.25 0.02 220 / 0.06);
+  --shadow-md:
+    0 4px 6px -1px oklch(0.25 0.02 220 / 0.08),
+    0 2px 4px -2px oklch(0.25 0.02 220 / 0.06);
+  --shadow-lg:
+    0 10px 15px -3px oklch(0.25 0.02 220 / 0.1),
+    0 4px 6px -4px oklch(0.25 0.02 220 / 0.06);
+  --shadow-xl:
+    0 20px 25px -5px oklch(0.25 0.02 220 / 0.12),
+    0 8px 10px -6px oklch(0.25 0.02 220 / 0.06);
+  --shadow-2xl: 0 25px 50px -12px oklch(0.25 0.02 220 / 0.25);
+  --shadow-3xl: 0 35px 60px -15px oklch(0.25 0.02 220 / 0.35);
+
+  /* ─── Inner Shadows ─── */
+  --shadow-inner: inset 0 2px 4px 0 oklch(0.25 0.02 220 / 0.06);
+  --shadow-inner-sm: inset 0 1px 2px 0 oklch(0.25 0.02 220 / 0.04);
+  --shadow-inner-lg: inset 0 4px 8px 0 oklch(0.25 0.02 220 / 0.08);
+
+  /* ─── Colored Shadows ─── */
+  --shadow-primary: 0 4px 14px 0 oklch(0.68 0.1 220 / 0.35);
+  --shadow-primary-lg: 0 8px 24px 0 oklch(0.68 0.1 220 / 0.3);
+  --shadow-secondary: 0 4px 14px 0 oklch(0.6 0.12 195 / 0.35);
+  --shadow-accent: 0 4px 14px 0 oklch(0.6 0.15 280 / 0.35);
+  --shadow-success: 0 4px 14px 0 oklch(0.6 0.18 145 / 0.3);
+  --shadow-error: 0 4px 14px 0 oklch(0.6 0.2 25 / 0.3);
+  --shadow-warning: 0 4px 14px 0 oklch(0.75 0.15 75 / 0.3);
+
+  /* ─── Ring Shadows (for focus states) ─── */
+  --shadow-ring: 0 0 0 var(--ring-width) oklch(0.68 0.1 220 / 0.2);
+  --shadow-ring-error: 0 0 0 var(--ring-width) oklch(0.6 0.2 25 / 0.2);
+  --shadow-ring-success: 0 0 0 var(--ring-width) oklch(0.6 0.18 145 / 0.2);
+
+  /* ─── Glow Effects ─── */
+  --glow-primary: 0 0 20px oklch(0.68 0.1 220 / 0.2);
+  --glow-secondary: 0 0 20px oklch(0.6 0.12 195 / 0.2);
+  --glow-accent: 0 0 20px oklch(0.6 0.15 280 / 0.2);
+
+  /* ─── Component Shadows ─── */
+  --shadow-card: var(--shadow-sm);
+  --shadow-card-hover: var(--shadow-md);
+  --shadow-dropdown: var(--shadow-lg);
+  --shadow-modal: var(--shadow-xl);
+  --shadow-tooltip: var(--shadow-md);
+  --shadow-popover: var(--shadow-lg);
+  --shadow-navbar: var(--shadow-sm);
+  --shadow-button: var(--shadow-xs);
+  --shadow-button-hover: var(--shadow-sm);
+  --shadow-floating: var(--shadow-2xl);
+}
+
+/* Dark mode shadow overrides */
+:root.dark,
+.dark {
+  --shadow-xs: 0 1px 2px 0 oklch(0 0 0 / 0.2);
+  --shadow-sm:
+    0 1px 3px 0 oklch(0 0 0 / 0.3), 0 1px 2px -1px oklch(0 0 0 / 0.2);
+  --shadow-md:
+    0 4px 6px -1px oklch(0 0 0 / 0.35), 0 2px 4px -2px oklch(0 0 0 / 0.25);
+  --shadow-lg:
+    0 10px 15px -3px oklch(0 0 0 / 0.4), 0 4px 6px -4px oklch(0 0 0 / 0.3);
+  --shadow-xl:
+    0 20px 25px -5px oklch(0 0 0 / 0.45), 0 8px 10px -6px oklch(0 0 0 / 0.35);
+  --shadow-2xl: 0 25px 50px -12px oklch(0 0 0 / 0.6);
+  --shadow-3xl: 0 35px 60px -15px oklch(0 0 0 / 0.7);
+
+  --shadow-inner: inset 0 2px 4px 0 oklch(0 0 0 / 0.3);
+  --shadow-inner-sm: inset 0 1px 2px 0 oklch(0 0 0 / 0.2);
+  --shadow-inner-lg: inset 0 4px 8px 0 oklch(0 0 0 / 0.4);
+
+  --shadow-primary: 0 4px 14px 0 oklch(0.72 0.1 220 / 0.3);
+  --shadow-primary-lg: 0 8px 24px 0 oklch(0.72 0.1 220 / 0.25);
+  --shadow-secondary: 0 4px 14px 0 oklch(0.65 0.12 195 / 0.3);
+  --shadow-accent: 0 4px 14px 0 oklch(0.65 0.15 280 / 0.3);
+
+  --shadow-ring: 0 0 0 var(--ring-width) oklch(0.72 0.1 220 / 0.25);
+  --shadow-ring-error: 0 0 0 var(--ring-width) oklch(0.65 0.18 25 / 0.25);
+
+  --glow-primary: 0 0 25px oklch(0.72 0.1 220 / 0.15);
+  --glow-secondary: 0 0 25px oklch(0.65 0.12 195 / 0.15);
+  --glow-accent: 0 0 25px oklch(0.65 0.15 280 / 0.15);
+}

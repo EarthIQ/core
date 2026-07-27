@@ -1,0 +1,96 @@
+/* src/styles/utilities/gradients.css */
+
+/* =============================================
+   Gradient Utilities
+   ============================================= */
+
+@layer utilities {
+  /* Text gradients */
+  .text-gradient {
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-accent {
+    background: linear-gradient(to right, var(--primary), var(--accent));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-secondary {
+    background: linear-gradient(to right, var(--secondary), var(--accent));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-rainbow {
+    background: linear-gradient(
+      to right,
+      var(--error),
+      var(--warning),
+      var(--success),
+      var(--info),
+      var(--accent)
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  /* Background gradients */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  }
+
+  .bg-gradient-hero {
+    background: linear-gradient(
+      135deg,
+      var(--primary),
+      var(--secondary),
+      var(--accent)
+    );
+  }
+
+  .bg-gradient-subtle {
+    background: linear-gradient(180deg, var(--bg-primary), var(--bg-tertiary));
+  }
+
+  /* Border gradient */
+  .border-gradient {
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    background-origin: border-box;
+    background-image:
+      linear-gradient(var(--surface), var(--surface)),
+      linear-gradient(135deg, var(--primary), var(--accent));
+  }
+
+  /* Animated gradient */
+  .bg-gradient-animated {
+    background: linear-gradient(
+      -45deg,
+      var(--primary),
+      var(--secondary),
+      var(--accent),
+      var(--primary-light)
+    );
+    background-size: 400% 400%;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+}

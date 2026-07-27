@@ -1,0 +1,71 @@
+/* src/styles/tokens/motion.css */
+
+/* =============================================
+   Motion / Transition / Animation Tokens
+   ============================================= */
+
+:root {
+  /* ─── Durations ─── */
+  --transition-instant: 50ms;
+  --transition-fast: 150ms;
+  --transition-normal: 200ms;
+  --transition-slow: 300ms;
+  --transition-slower: 500ms;
+  --transition-slowest: 700ms;
+
+  /* ─── Easing Functions ─── */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Spring-like easings */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+
+  /* Emphasis easings */
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+
+  /* ─── Transition Properties Shorthand ─── */
+  --transition-colors:
+    color, background-color, border-color, text-decoration-color, fill, stroke;
+  --transition-opacity: opacity;
+  --transition-shadow: box-shadow;
+  --transition-transform: transform;
+  --transition-all: all;
+
+  /* ─── Animation Delays ─── */
+  --delay-none: 0ms;
+  --delay-75: 75ms;
+  --delay-100: 100ms;
+  --delay-150: 150ms;
+  --delay-200: 200ms;
+  --delay-300: 300ms;
+  --delay-500: 500ms;
+  --delay-700: 700ms;
+  --delay-1000: 1000ms;
+
+  /* ─── Stagger Delays (for lists/grids) ─── */
+  --stagger-1: 50ms;
+  --stagger-2: 100ms;
+  --stagger-3: 150ms;
+  --stagger-4: 200ms;
+  --stagger-5: 250ms;
+  --stagger-6: 300ms;
+  --stagger-7: 350ms;
+  --stagger-8: 400ms;
+  --stagger-9: 450ms;
+  --stagger-10: 500ms;
+
+  /* ─── Transform Values ─── */
+  --translate-enter: 0;
+  --translate-exit: 0.5rem;
+  --scale-enter: 1;
+  --scale-exit: 0.95;
+  --rotate-quarter: 90deg;
+  --rotate-half: 180deg;
+  --rotate-full: 360deg;
+}
