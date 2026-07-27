@@ -1,89 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchMaps, createMap, MapItem } from "@/lib/maps";
-
-// Fallback project data to show rich preview if backend map count is small
-const SAMPLE_PROJECTS: MapItem[] = [
-  {
-    id: "sample-global-climate",
-    title: "Global Climate & Land Use Model 2026",
-    description:
-      "Multi-spectral Sentinel-2 satellite analysis of forest canopy changes, land surface temperature, and urban growth corridors.",
-    center_lng: 13.405,
-    center_lat: 52.52,
-    zoom: 5,
-    basemap: "dataviz-dark",
-    is_public: true,
-    owner_id: "system",
-    group_access: [],
-    user_permission: "admin",
-    layers_config: [
-      {
-        id: "sentinel-2-rgb",
-        name: "Sentinel-2 RGB",
-        type: "raster",
-        visible: true,
-      },
-      {
-        id: "land-use",
-        name: "Land Use / LULC",
-        type: "vector",
-        visible: true,
-      },
-    ],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "sample-hydrology-risk",
-    title: "River Basin Hydrology & Flood Risk Assessment",
-    description:
-      "Elevation contour mapping and watershed runoff simulation layers for environmental hazard monitoring.",
-    center_lng: -95.7129,
-    center_lat: 37.0902,
-    zoom: 4,
-    basemap: "satellite",
-    is_public: true,
-    owner_id: "system",
-    group_access: [],
-    user_permission: "write",
-    layers_config: [
-      {
-        id: "elevation-contours",
-        name: "Elevation Contours",
-        type: "vector",
-        visible: true,
-      },
-      { id: "dem-30m", name: "DEM 30m", type: "raster", visible: true },
-    ],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "sample-urban-transit",
-    title: "Metropolitan Transit & Infrastructure Grid",
-    description:
-      "Vector administrative boundaries overlaid with population density raster heatmaps.",
-    center_lng: 139.6917,
-    center_lat: 35.6895,
-    zoom: 10,
-    basemap: "dataviz-dark",
-    is_public: false,
-    owner_id: "user-1",
-    group_access: [],
-    user_permission: "admin",
-    layers_config: [
-      {
-        id: "admin-boundaries",
-        name: "Admin Boundaries",
-        type: "vector",
-        visible: true,
-      },
-    ],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
+import { Button } from "@packages/ui";
+import { Plus } from "lucide-react";
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
@@ -106,19 +25,13 @@ export default function ProjectsPage() {
     fetchMaps()
       .then((data) => {
         if (data && data.length > 0) {
-          // Merge API data with sample projects for rich demo view
-          const apiIds = new Set(data.map((p) => p.id));
-          const combined = [
-            ...data,
-            ...SAMPLE_PROJECTS.filter((s) => !apiIds.has(s.id)),
-          ];
-          setProjects(combined);
+          setProjects(data);
         } else {
-          setProjects(SAMPLE_PROJECTS);
+          setProjects([]);
         }
       })
       .catch(() => {
-        setProjects(SAMPLE_PROJECTS);
+        setProjects([]);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -187,34 +100,18 @@ export default function ProjectsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
         <div>
           <div className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">
-            Workspace Projects
+            Projects
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-text-primary flex items-center gap-3">
-            <span className="text-primary">📁</span> Geospatial Projects
-          </h1>
-          <p className="mt-2 text-text-secondary text-sm sm:text-base max-w-2xl">
-            Explore active GIS mapping projects, manage layers & boundaries, and
-            create interactive spatial analytics dashboards.
-          </p>
         </div>
 
-        <button
+        <Button
           onClick={() => setIsModalOpen(true)}
-          className="btn btn-primary btn-md shrink-0 gap-2 bg-gradient-to-br from-primary to-success shadow-primary hover-lift"
+          variant="primary"
+          size="md"
+          leftIcon={<Plus />}
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
           Create Project
-        </button>
+        </Button>
       </div>
 
       {/* Filter Bar */}
@@ -350,11 +247,11 @@ export default function ProjectsPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border-primary">
               <h2 className="text-xl font-bold text-text-primary">
-                Create New Map Project
+                Create New Project
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="btn btn-ghost btn-icon btn-sm text-text-tertiary hover:text-text-primary"
+                className="btn btn-ghost btn-icon btn-sm text-text-tertiary hover:text-text-primary cursor-pointer transition-colors duration-150"
                 aria-label="Close"
               >
                 ✕

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
   fetchMaps,
@@ -9,7 +9,16 @@ import {
   MapLayerItem,
 } from "@/lib/maps";
 import { useModules } from "@/lib/modules";
+import { useAuth } from "@/lib/auth";
 import { Button, Switch, Tooltip } from "@packages/ui";
+import {
+  ArrowLeft,
+  Search,
+  Share2,
+  ChevronRight,
+  ChevronLeft,
+} from "lucide-react";
+import AIChatPanel from "@/components/Map/AIChatPanel";
 
 interface LayerItem {
   id: string;
@@ -124,6 +133,7 @@ function LayerPanel({
   onSave,
   statusMsg,
   isAvailableModule,
+  aiOpen,
 }: {
   availableMaps: MapItem[];
   mapId: string | null;
@@ -138,17 +148,27 @@ function LayerPanel({
   onSave: () => void;
   statusMsg: string | null;
   isAvailableModule: (id: string) => boolean;
+  aiOpen?: boolean;
 }) {
   const [minimized, setMinimized] = useState(false);
 
+  const leftStyle = minimized
+    ? aiOpen
+      ? { left: 360 + 12 }
+      : { left: 12 }
+    : aiOpen
+    ? { left: 360 + 12 }
+    : undefined;
+
   return (
     <div
-      className={`absolute top-3 left-3 z-20 flex flex-col bg-elevated/95 backdrop-blur-xl border border-border-primary rounded-xl shadow-xl transition-all duration-300 ease-in-out ${
+      className={`absolute top-16 z-20 flex flex-col bg-elevated/95 backdrop-blur-xl border border-border-primary rounded-xl shadow-xl transition-all duration-300 ease-in-out ${
         minimized ? "w-10" : "w-64"
       }`}
+      style={leftStyle}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-border-secondary shrink-0">
+      <div className="flex items-center justify-between px-1 py-1 border-b border-border-secondary shrink-0">
         {!minimized && (
           <div className="flex items-center gap-2">
             <span className="text-sm">🗂️</span>
@@ -160,14 +180,12 @@ function LayerPanel({
           placement="right"
         >
           <Button
-            variant="ghost"
-            size="xs"
             iconOnly
             id="layer-panel-toggle"
             onClick={() => setMinimized((v) => !v)}
             aria-label={minimized ? "Expand panel" : "Collapse panel"}
           >
-            {minimized ? "›" : "‹"}
+            {minimized ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </Button>
         </Tooltip>
       </div>
@@ -175,30 +193,6 @@ function LayerPanel({
       {/* Body — hidden when minimized */}
       {!minimized && (
         <div className="flex flex-col gap-4 p-3 overflow-y-auto max-h-[calc(100vh-12rem)] scrollbar-thin">
-          {/* Map Selector */}
-          <div className="flex flex-col gap-1.5">
-            <SectionTitle>Active Map</SectionTitle>
-            <select
-              value={mapId || ""}
-              onChange={(e) => onMapChange(e.target.value)}
-              className="input input-sm text-xs"
-            >
-              {availableMaps.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.title} ({m.is_public ? "Public" : "Private"})
-                </option>
-              ))}
-            </select>
-            {currentMap && (
-              <div className="text-[0.7rem] text-text-tertiary">
-                Access:{" "}
-                <span className="text-primary font-medium">
-                  {currentMap.user_permission}
-                </span>
-              </div>
-            )}
-          </div>
-
           {/* Vector Layers */}
           <div className="flex flex-col gap-1">
             <SectionTitle>Vector Layers</SectionTitle>
@@ -243,16 +237,6 @@ function LayerPanel({
               )}
             </div>
           )}
-
-          {/* Back Link */}
-          <div className="pt-1 border-t border-border-secondary">
-            <Link
-              to="/projects"
-              className="flex items-center gap-1.5 text-xs text-text-tertiary hover:text-primary transition-colors duration-150 py-1 no-underline"
-            >
-              ← Back to Projects
-            </Link>
-          </div>
         </div>
       )}
     </div>
@@ -272,6 +256,8 @@ function MapBottomBar({
   availableMaps,
   mapId,
   onMapChange,
+  mapReady,
+  onToggleAI,
 }: {
   zoomLevel: number;
   onZoomIn: () => void;
@@ -282,12 +268,27 @@ function MapBottomBar({
   availableMaps: MapItem[];
   mapId: string | null;
   onMapChange: (id: string) => void;
+  mapReady: boolean;
+  onToggleAI: () => void;
 }) {
   const [basemapOpen, setBasemapOpen] = useState(false);
   const activeOption = BASEMAP_OPTIONS.find((b) => b.id === activeBasemap);
 
   return (
     <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center gap-1 px-3 h-10 bg-elevated/90 backdrop-blur-lg border-t border-border-primary text-xs">
+      <Tooltip content="Toggle AI Assistant" placement="top">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleAI}
+          className="text-text-secondary hover:text-text-primary gap-1"
+        >
+          <span>✨</span>
+          <span className="font-semibold text-xs">AI</span>
+        </Button>
+      </Tooltip>
+      {/* Divider */}
+      <div className="w-px h-5 bg-border-primary mx-1.5" />
       {/* Zoom Controls */}
       <Tooltip content="Zoom out" placement="top">
         <Button
@@ -296,6 +297,7 @@ function MapBottomBar({
           iconOnly
           id="zoom-out"
           onClick={onZoomOut}
+          disabled={!mapReady}
           aria-label="Zoom out"
           className="text-text-secondary hover:text-text-primary"
         >
@@ -314,6 +316,7 @@ function MapBottomBar({
           iconOnly
           id="zoom-in"
           onClick={onZoomIn}
+          disabled={!mapReady}
           aria-label="Zoom in"
           className="text-text-secondary hover:text-text-primary"
         >
@@ -331,6 +334,7 @@ function MapBottomBar({
           size="sm"
           id="basemap-dropdown-trigger"
           onClick={() => setBasemapOpen((v) => !v)}
+          disabled={!mapReady}
           className="text-text-secondary hover:text-text-primary gap-1.5"
         >
           <span>{activeOption?.icon ?? "🗺️"}</span>
@@ -346,6 +350,7 @@ function MapBottomBar({
               <button
                 key={bm.id}
                 id={`basemap-${bm.id}`}
+                type="button"
                 className={`dropdown-item w-full gap-2 ${
                   activeBasemap === bm.id ? "text-primary font-semibold" : ""
                 }`}
@@ -368,26 +373,6 @@ function MapBottomBar({
           </div>
         )}
       </div>
-
-      {/* Divider */}
-      <div className="w-px h-5 bg-border-primary mx-1.5" />
-
-      {/* Map Selector */}
-      {availableMaps.length > 0 && (
-        <select
-          className="input input-sm text-xs max-w-[10rem] bg-transparent border-border-secondary"
-          value={mapId || ""}
-          onChange={(e) => onMapChange(e.target.value)}
-          id="bottom-bar-map-select"
-          title="Switch map"
-        >
-          {availableMaps.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.title}
-            </option>
-          ))}
-        </select>
-      )}
 
       {/* Spacer */}
       <div className="flex-1" />
@@ -429,6 +414,7 @@ function MapActionBar({
           <Tooltip content={btn.label} placement="top">
             <button
               id={`action-btn-${btn.id}`}
+              type="button"
               className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1.5 rounded-xl border-none cursor-pointer transition-all duration-150 min-w-[3rem] ${
                 activeAction === btn.id
                   ? "bg-primary/15 text-primary shadow-sm"
@@ -451,14 +437,107 @@ function MapActionBar({
 }
 
 /* ──────────────────────────────────────────────────────────── */
-/*  Main MapPage                                               */
+/*  MapNavbar                                                   */
+/* ──────────────────────────────────────────────────────────── */
+function MapNavbar({
+  projectName,
+  onBack,
+  onShare,
+}: {
+  projectName: string;
+  onBack: () => void;
+  onShare: () => void;
+}) {
+  const { user } = useAuth();
+  const [searchVal, setSearchVal] = useState("");
+  const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : "U";
+
+  return (
+    <header className="absolute top-0 left-0 right-0 z-30 h-14 bg-elevated/90 backdrop-blur-xl border-b border-border-primary flex items-center justify-between px-4">
+      {/* Left: Back button & Project Name */}
+      <div className="flex items-center gap-3">
+        <Tooltip content="Back to projects" placement="bottom">
+          <Button
+            variant="ghost"
+            size="sm"
+            iconOnly
+            onClick={onBack}
+            aria-label="Back"
+            className="text-text-secondary hover:text-text-primary animate-fade-in"
+          >
+            <ArrowLeft size={18} />
+          </Button>
+        </Tooltip>
+        <span className="w-px h-5 bg-border-primary" />
+        <div className="flex flex-col">
+          <span className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider leading-none">
+            Project
+          </span>
+          <span
+            className="text-sm font-bold text-text-primary truncate max-w-[200px]"
+            title={projectName}
+          >
+            {projectName}
+          </span>
+        </div>
+      </div>
+
+      {/* Center: Search Locations */}
+      <div className="flex-1 max-w-md mx-4">
+        <div className="relative flex items-center bg-surface-hover/50 border border-border-secondary rounded-lg px-3 py-1 hover:border-border-primary transition-colors">
+          <Search size={16} className="text-text-tertiary mr-2 shrink-0" />
+          <input
+            type="text"
+            placeholder="Search locations..."
+            className="input input-sm border-none bg-transparent w-full p-0 text-xs focus:ring-0 focus:outline-none placeholder:text-text-quaternary"
+            value={searchVal}
+            onChange={(e) => setSearchVal(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Right: User icon & Share button */}
+      <div className="flex items-center gap-2">
+        <Tooltip content={user?.email || "User Profile"} placement="bottom">
+          <div className="w-8 h-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0 border border-primary/20 cursor-pointer">
+            {userInitial}
+          </div>
+        </Tooltip>
+        <span className="w-px h-5 bg-border-primary" />
+        <Tooltip content="Share map" placement="bottom">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onShare}
+            leftIcon={<Share2 size={16} />}
+            className="text-text-secondary hover:text-text-primary gap-1.5"
+          >
+            <span className="text-xs font-semibold hidden sm:inline">
+              Share
+            </span>
+          </Button>
+        </Tooltip>
+      </div>
+    </header>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────── */
+/*  Main MapPage                                                */
 /* ──────────────────────────────────────────────────────────── */
 export default function MapPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const mapId = searchParams.get("mapId");
+  const navigate = useNavigate();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
+  // Holds the last-requested camera position/zoom while the map instance
+  // (or its style) isn't fully ready yet. Applied as soon as it is.
+  const pendingFlyToRef = useRef<{
+    center: [number, number];
+    zoom: number;
+  } | null>(null);
 
   const [availableMaps, setAvailableMaps] = useState<MapItem[]>([]);
   const [currentMap, setCurrentMap] = useState<MapItem | null>(null);
@@ -470,15 +549,25 @@ export default function MapPage() {
   const [saving, setSaving] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
+  const [mapReady, setMapReady] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(2.5);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
     null,
   );
   const [activeAction, setActiveAction] = useState<string | null>(null);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
 
   const { isAvailable } = useModules();
 
-  // 1. Fetch available maps
+  useEffect(() => {
+    if (mapRef.current) {
+      setTimeout(() => {
+        mapRef.current?.resize();
+      }, 300);
+    }
+  }, [aiChatOpen]);
+
+  /* ── 1. Fetch available maps ─────────────────────────────── */
   useEffect(() => {
     fetchMaps()
       .then((data) => {
@@ -488,9 +577,61 @@ export default function MapPage() {
         }
       })
       .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 2. Load map configuration
+  /* ── 2. Initialize MapLibre — runs exactly ONCE ──────────── */
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+    let cancelled = false;
+
+    import("maplibre-gl").then(({ Map }) => {
+      if (cancelled || !mapContainerRef.current) return;
+
+      const map = new Map({
+        container: mapContainerRef.current,
+        style: BASEMAP_URLS[activeBasemap] || BASEMAP_URLS["dataviz-dark"],
+        center: [0, 20],
+        zoom: 2.5,
+        attributionControl: false,
+      });
+
+      map.on("load", () => {
+        setMapReady(true);
+        setZoomLevel(map.getZoom());
+        const c = map.getCenter();
+        setCoords({ lat: c.lat, lng: c.lng });
+
+        // Apply any camera move that was requested before the map was ready.
+        if (pendingFlyToRef.current) {
+          map.jumpTo(pendingFlyToRef.current);
+          pendingFlyToRef.current = null;
+        }
+      });
+
+      map.on("zoom", () => setZoomLevel(map.getZoom()));
+      map.on("mousemove", (e: any) => {
+        setCoords({ lat: e.lngLat.lat, lng: e.lngLat.lng });
+      });
+
+      mapRef.current = map;
+    });
+
+    return () => {
+      cancelled = true;
+      if (mapRef.current?.remove) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      setMapReady(false);
+    };
+    // Intentionally empty deps — the map instance is created once and
+    // reused for the life of this component. Camera/style changes are
+    // applied imperatively via flyTo/setStyle in the effects below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* ── 3. Load map configuration whenever mapId changes ───────── */
   useEffect(() => {
     if (!mapId) return;
     fetchMapById(mapId)
@@ -505,57 +646,56 @@ export default function MapPage() {
           const rasters = mapData.layers_config.filter(
             (l) => l.type === "raster",
           );
-          if (vectors.length) setVectorLayers(vectors as LayerItem[]);
-          if (rasters.length) setRasterLayers(rasters as LayerItem[]);
+          setVectorLayers(
+            vectors.length ? (vectors as LayerItem[]) : DEFAULT_VECTOR_LAYERS,
+          );
+          setRasterLayers(
+            rasters.length ? (rasters as LayerItem[]) : DEFAULT_RASTER_LAYERS,
+          );
+        } else {
+          setVectorLayers(DEFAULT_VECTOR_LAYERS);
+          setRasterLayers(DEFAULT_RASTER_LAYERS);
         }
 
-        if (mapRef.current?.flyTo) {
-          mapRef.current.flyTo({
-            center: [mapData.center_lng, mapData.center_lat],
-            zoom: mapData.zoom,
-          });
+        const target: { center: [number, number]; zoom: number } = {
+          center: [mapData.center_lng, mapData.center_lat],
+          zoom: mapData.zoom,
+        };
+
+        const map = mapRef.current;
+        if (map && mapReady) {
+          map.flyTo(target);
+        } else {
+          // Map isn't created/loaded yet — apply once it is.
+          pendingFlyToRef.current = target;
         }
       })
       .catch((err) => setStatusMsg("Failed to load map: " + String(err)));
-  }, [mapId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapId, mapReady]);
 
-  // 3. Initialize MapLibre
+  /* ── 4. Basemap switching ─────────────────────────────────── */
   useEffect(() => {
-    if (!mapContainerRef.current) return;
+    const map = mapRef.current;
+    if (!map?.setStyle || !mapReady) return;
 
-    import("maplibre-gl").then(({ Map }) => {
-      const map = new Map({
-        container: mapContainerRef.current!,
-        style: BASEMAP_URLS[activeBasemap] || BASEMAP_URLS["dataviz-dark"],
-        center: currentMap
-          ? [currentMap.center_lng, currentMap.center_lat]
-          : [0, 20],
-        zoom: currentMap ? currentMap.zoom : 2.5,
-      });
+    // Preserve camera across style swaps (setStyle can reset it in some
+    // versions depending on options), so capture then restore.
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+    const bearing = map.getBearing?.() ?? 0;
+    const pitch = map.getPitch?.() ?? 0;
 
-      map.on("zoom", () => setZoomLevel(map.getZoom()));
-      map.on("mousemove", (e: any) => {
-        setCoords({ lat: e.lngLat.lat, lng: e.lngLat.lng });
-      });
-
-      mapRef.current = map;
-    });
-
-    return () => {
-      if (mapRef.current?.remove) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
-  }, [mapId]);
-
-  // Basemap switching
-  useEffect(() => {
-    if (!mapRef.current?.setStyle) return;
     const url = BASEMAP_URLS[activeBasemap] || BASEMAP_URLS["dataviz-dark"];
-    mapRef.current.setStyle(url);
+    map.setStyle(url);
+
+    map.once("styledata", () => {
+      map.jumpTo({ center, zoom, bearing, pitch });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBasemap]);
 
+  /* ── Layer toggles ───────────────────────────────────────── */
   function toggleVector(id: string) {
     setVectorLayers((prev) =>
       prev.map((l) => (l.id === id ? { ...l, visible: !l.visible } : l)),
@@ -569,27 +709,37 @@ export default function MapPage() {
   }
 
   function handleMapChange(id: string) {
+    if (id === mapId) return;
     setSearchParams({ mapId: id });
   }
 
+  /* ── Zoom controls — actually drive the map now ─────────── */
   const handleZoomIn = useCallback(() => {
-    if (mapRef.current?.zoomIn) mapRef.current.zoomIn();
+    const map = mapRef.current;
+    if (map?.zoomIn) map.zoomIn({ duration: 200 });
   }, []);
 
   const handleZoomOut = useCallback(() => {
-    if (mapRef.current?.zoomOut) mapRef.current.zoomOut();
+    const map = mapRef.current;
+    if (map?.zoomOut) map.zoomOut({ duration: 200 });
   }, []);
 
+  const handleToggleAI = useCallback(() => {
+    setAiChatOpen((v) => !v);
+  }, []);
+
+  /* ── Save current viewport/config ────────────────────────── */
   async function handleSaveConfig() {
     if (!mapId || !currentMap) return;
     setSaving(true);
     setStatusMsg(null);
     try {
-      const center = mapRef.current?.getCenter() || {
+      const map = mapRef.current;
+      const center = map?.getCenter?.() || {
         lng: currentMap.center_lng,
         lat: currentMap.center_lat,
       };
-      const zoom = mapRef.current?.getZoom() || currentMap.zoom;
+      const zoom = map?.getZoom ? map.getZoom() : currentMap.zoom;
       const allLayers: MapLayerItem[] = [...vectorLayers, ...rasterLayers];
 
       const updated = await updateMap(mapId, {
@@ -609,18 +759,40 @@ export default function MapPage() {
     }
   }
 
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setStatusMsg("Map link copied to clipboard!");
+    setTimeout(() => setStatusMsg(null), 3000);
+  };
+
   const canEdit =
     currentMap?.user_permission === "admin" ||
     currentMap?.user_permission === "write";
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-bg-primary">
+      <MapNavbar
+        projectName={currentMap?.title || "EarthIQ Map"}
+        onBack={() => navigate("/projects")}
+        onShare={handleShare}
+      />
+
       {/* Full-bleed map canvas */}
       <div
-        className="absolute inset-0 z-0"
+        className="absolute z-0 h-full"
         ref={mapContainerRef}
         id="map-canvas"
+        style={{ top: 0, right: 0, bottom: 0, left: aiChatOpen ? 360 : 0 }}
       />
+
+      {/* Loading overlay until map style has loaded */}
+      {!mapReady && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-bg-primary/60 backdrop-blur-sm pointer-events-none">
+          <span className="text-xs text-text-tertiary animate-pulse">
+            Loading map…
+          </span>
+        </div>
+      )}
 
       {/* Floating Layer Panel (left) */}
       <LayerPanel
@@ -637,6 +809,7 @@ export default function MapPage() {
         onSave={handleSaveConfig}
         statusMsg={statusMsg}
         isAvailableModule={isAvailable}
+        aiOpen={aiChatOpen}
       />
 
       {/* Action Toolbar */}
@@ -658,7 +831,14 @@ export default function MapPage() {
         availableMaps={availableMaps}
         mapId={mapId}
         onMapChange={handleMapChange}
+        mapReady={mapReady}
+        onToggleAI={handleToggleAI}
       />
+
+      {/* AI Chat Panel (left) */}
+      <div className="absolute top-14 left-0 bottom-0 z-20">
+        <AIChatPanel isOpen={aiChatOpen} onClose={() => setAiChatOpen(false)} />
+      </div>
     </div>
   );
 }

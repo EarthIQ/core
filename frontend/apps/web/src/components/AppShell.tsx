@@ -7,6 +7,8 @@ import {
   moduleRegistry,
   type ModuleBundle,
 } from "../module-registry.generated";
+import { Button } from "@packages/ui";
+import { Settings, Sun, Moon, Search } from "lucide-react";
 
 interface NavItem {
   label: string;
@@ -68,40 +70,6 @@ function ChevronIcon({ collapsed }: { collapsed: boolean }) {
   );
 }
 
-function SearchIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      className="text-text-tertiary shrink-0"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
-
-function SettingsIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      className="shrink-0"
-    >
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-    </svg>
-  );
-}
-
 function LogoutIcon() {
   return (
     <svg
@@ -153,25 +121,26 @@ function UserMenuPopover({
           <span className="text-base">
             {activeTheme === "dark" ? "☀️" : "🌙"}
           </span>
-          {activeTheme === "dark"
-            ? "Switch to Light Theme"
-            : "Switch to Dark Theme"}
+          {activeTheme === "dark" ? "Light" : "Dark"}
         </button>
 
-        <button className="dropdown-item w-full" onClick={onSettings}>
-          <SettingsIcon />
+        <Button
+          className="dropdown-item w-full"
+          onClick={onSettings}
+          leftIcon={<Settings size={16} />}
+        >
           Settings
-        </button>
+        </Button>
 
         <div className="dropdown-divider" />
 
-        <button
+        <Button
           className="dropdown-item dropdown-item-danger w-full"
           onClick={onLogout}
+          leftIcon={<LogoutIcon />}
         >
-          <LogoutIcon />
           Sign Out / Logout
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -314,31 +283,42 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         className={`fixed top-0 left-0 h-full z-30 flex flex-col bg-surface border-r border-border-primary transition-all duration-300 ease-in-out ${sidebarWidth} overflow-hidden`}
       >
         {/* Brand Header */}
-        <div className="flex items-center justify-between px-4 h-14 shrink-0 border-b border-border-secondary">
-          <NavLink
-            to="/dashboard"
-            className="flex items-center gap-2.5 text-text-primary no-underline hover:text-primary transition-colors duration-150"
-          >
-            <span className="w-2.5 h-2.5 rounded-full bg-primary shadow-primary shrink-0" />
-            {!isCollapsed && (
-              <span className="font-bold text-sm tracking-tight">EarthIQ</span>
-            )}
-          </NavLink>
+        <div className={`flex items-center shrink-0 border-b border-border-secondary h-14 ${isCollapsed ? "justify-center px-0" : "justify-between px-4"}`}>
+          {!isCollapsed ? (
+            <>
+              <NavLink
+                to="/dashboard"
+                className="flex items-center gap-2.5 text-text-primary no-underline hover:text-primary transition-colors duration-150"
+              >
+                <span className="w-2.5 h-2.5 rounded-full bg-primary shadow-lg shadow-primary/30 shrink-0" />
+                <span className="font-bold text-sm tracking-tight">EarthIQ</span>
+              </NavLink>
 
-          <button
-            className="btn btn-ghost btn-icon btn-xs text-text-tertiary hover:text-text-primary"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            aria-label="Toggle sidebar"
-          >
-            <ChevronIcon collapsed={isCollapsed} />
-          </button>
+              <button
+                className="btn btn-ghost btn-icon btn-xs text-text-tertiary hover:text-text-primary cursor-pointer"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                title="Collapse sidebar"
+                aria-label="Toggle sidebar"
+              >
+                <ChevronIcon collapsed={false} />
+              </button>
+            </>
+          ) : (
+            <button
+              className="btn btn-ghost btn-icon btn-sm text-text-tertiary hover:text-text-primary cursor-pointer"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              title="Expand sidebar"
+              aria-label="Toggle sidebar"
+            >
+              <ChevronIcon collapsed={true} />
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-0.5">
+        <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-1">
           {!isCollapsed && (
-            <div className="px-2 mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-text-quaternary select-none">
+            <div className="px-3 mb-2 text-[0.6rem] font-bold uppercase tracking-widest text-text-quaternary select-none">
               Main Navigation
             </div>
           )}
@@ -349,9 +329,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               to={item.to}
               title={isCollapsed ? item.label : undefined}
               className={({ isActive }) =>
-                `nav-item ${
-                  isActive ? "nav-item-active" : ""
-                } ${isCollapsed ? "justify-center px-0" : ""}`
+                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-150 ${
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+                } ${isCollapsed ? "justify-center px-0 w-10 h-10 mx-auto" : "w-full"}`
               }
             >
               <span className="text-base leading-none shrink-0">
@@ -388,15 +370,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* User Button */}
           <button
             id="user-menu-btn"
-            className={`w-full flex items-center gap-2.5 p-2 rounded-lg transition-colors duration-150 cursor-pointer border-none text-left ${
+            className={`flex items-center transition-colors duration-150 cursor-pointer border-none text-left rounded-xl ${
               isUserMenuOpen
                 ? "bg-surface-active"
                 : "bg-transparent hover:bg-surface-hover"
-            } ${isCollapsed ? "justify-center" : ""}`}
+            } ${isCollapsed ? "w-10 h-10 mx-auto justify-center p-0" : "w-full gap-2.5 p-2"}`}
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
             title="User Profile & Settings"
           >
-            <div className="w-8 h-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0 border border-primary/10">
               {userInitial}
             </div>
             {!isCollapsed && (
@@ -418,54 +400,43 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${mainOffset}`}
       >
         {/* Topbar */}
-        <header className="navbar shrink-0">
-          {/* Left */}
-          <div className="flex items-center">
-            {isMapView ? (
-              <button
-                className="btn btn-ghost btn-sm text-text-secondary hover:text-text-primary"
-                onClick={() => navigate("/projects")}
-                title="Return to Projects catalog"
-              >
-                ← Back to Projects
-              </button>
-            ) : (
-              <div className="text-sm font-semibold text-text-secondary">
-                EarthIQ GIS Core
-              </div>
-            )}
-          </div>
-
-          {/* Center — Search */}
-          <div className="flex-1 max-w-xl mx-auto px-4">
-            <div className="relative flex items-center">
-              <div className="absolute left-3 pointer-events-none">
-                <SearchIcon />
-              </div>
-              <input
-                type="text"
-                className="input input-sm pl-9 pr-10 w-full"
-                placeholder="Search projects, layers, datasets, tools..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <kbd className="absolute right-3 pointer-events-none text-[0.65rem] font-mono text-text-quaternary bg-surface-hover border border-border-primary rounded px-1.5 py-0.5">
-                /
-              </kbd>
+        {!isMapView && (
+          <header className="navbar shrink-0 flex items-center justify-between px-4 h-14">
+            {/* Left */}
+            <div className="flex items-center">
             </div>
-          </div>
 
-          {/* Right */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={toggleTheme}
-              title={`Switch to ${activeTheme === "dark" ? "Light" : "Dark"} theme`}
-              className="btn btn-secondary btn-sm"
-            >
-              {activeTheme === "dark" ? "☀️ Light" : "🌙 Dark"}
-            </button>
-          </div>
-        </header>
+            {/* Center — Search */}
+            <div className="flex-1 max-w-xl mx-auto px-4 py-1 border border-border-secondary rounded-lg bg-surface-hover">
+              <div className="relative flex items-center">
+                <div className="absolute left-3 pointer-events-none">
+                  <Search size={16} />
+                </div>
+                <input
+                  type="text"
+                  className="input input-sm pl-9 pr-10 w-full"
+                  placeholder="Search projects, layers, datasets, tools..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <kbd className="absolute right-3 pointer-events-none text-[0.65rem] font-mono text-text-quaternary bg-surface-hover border border-border-primary rounded px-1.5 py-0.5">
+                  /
+                </kbd>
+              </div>
+            </div>
+
+            {/* Right */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={toggleTheme}
+                title={`Switch to ${activeTheme === "dark" ? "Light" : "Dark"} theme`}
+                className="cursor-pointer text-sm font-medium text-text-secondary hover:text-text-primary transition-colors duration-150  "
+              >
+                {activeTheme === "dark" ? "☀️ Light" : "🌙 Dark"}
+              </button>
+            </div>
+          </header>
+        )}
 
         {/* Content */}
         <main

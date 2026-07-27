@@ -24,10 +24,14 @@ services:
     build:
       context: .
       dockerfile: infra/docker/backend.Dockerfile
+      target: development
     ports: ["8000:8000"]
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./backend:/app/backend
+      - ./modules:/app/modules
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=postgresql+asyncpg://earthiq:earthiq@db:5432/earthiq
@@ -39,8 +43,14 @@ services:
     build:
       context: .
       dockerfile: infra/docker/frontend.Dockerfile
+      target: development
     ports: ["3000:3000"]
     depends_on: [backend]
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+      - /app/frontend/apps/web/node_modules
+      - ./modules:/app/modules
     environment:
       - VITE_API_URL=http://localhost:8000
 
