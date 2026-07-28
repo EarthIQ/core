@@ -34,6 +34,13 @@ class Settings(BaseSettings):
     # ── Tiles ─────────────────────────────────────────────────────────────────
     maptiler_key: str = ""
 
+    # ── Object Storage (RustFS / S3-compatible) ───────────────────────────────
+    storage_endpoint: str = "http://localhost:9000"
+    storage_access_key: str = "earthiq"
+    storage_secret_key: str = "earthiq"
+    storage_bucket: str = "earthiq"
+    storage_region: str = "us-east-1"  # Required by boto3; RustFS ignores it
+
 
 @lru_cache
 def get_settings() -> Settings:

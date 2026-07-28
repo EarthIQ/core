@@ -20,6 +20,28 @@ services:
     restart: unless-stopped
     ports: ["6379:6379"]
 
+  rustfs:
+    image: rustfs/rustfs:latest
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - rustfs_data:/data
+    environment:
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-earthiq}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-earthiq}
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: :9000
+      RUSTFS_CONSOLE_ADDRESS: :9001
+      RUSTFS_CONSOLE_ENABLE: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
   backend:
     build:
       context: .
@@ -28,6 +50,8 @@ services:
     ports: ["8000:8000"]
     depends_on:
       db:
+        condition: service_healthy
+      rustfs:
         condition: service_healthy
     volumes:
       - ./backend:/app/backend
@@ -38,6 +62,11 @@ services:
       - JWT_SECRET=${JWT_SECRET:-change-me-in-dev}
       - CORS_ORIGINS=["http://localhost:3000"]
       - DEBUG=false
+      - STORAGE_ENDPOINT=http://rustfs:9000
+      - STORAGE_ACCESS_KEY=${RUSTFS_ACCESS_KEY:-earthiq}
+      - STORAGE_SECRET_KEY=${RUSTFS_SECRET_KEY:-earthiq}
+      - STORAGE_BUCKET=${STORAGE_BUCKET:-earthiq}
+      - STORAGE_REGION=us-east-1
 
   frontend:
     build:
@@ -57,3 +86,4 @@ services:
 
 volumes:
   postgres_data:
+  rustfs_data:

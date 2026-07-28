@@ -8,6 +8,7 @@ from sqlalchemy import text
 
 from app.core.config import get_settings
 from app.core.db import Base, engine
+from app.core import storage as object_storage
 from app.module_loader import load_modules
 
 # ── Core API routers ──────────────────────────────────────────────────────────
@@ -16,6 +17,7 @@ from app.api.data.router import router as data_router
 from app.api.viz.router import router as viz_router
 from app.api.modules.router import router as modules_router
 from app.api.maps.router import router as maps_router
+from app.api.storage.router import router as storage_router
 
 
 @asynccontextmanager
@@ -23,6 +25,8 @@ async def lifespan(app: FastAPI):
     # Create all tables on startup (use Alembic for production migrations)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    # Ensure the object-storage bucket exists in RustFS
+    await object_storage.ensure_bucket()
     yield
     await engine.dispose()
 
@@ -58,6 +62,7 @@ app.include_router(data_router, prefix="/api/data")
 app.include_router(viz_router, prefix="/api/viz")
 app.include_router(modules_router, prefix="/api/modules")
 app.include_router(maps_router, prefix="/api/maps")
+app.include_router(storage_router, prefix="/api/storage")
 
 # ── Pluggable module routers (from modules.lock.yaml) ─────────────────────────
 load_modules(app)
