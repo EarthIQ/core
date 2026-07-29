@@ -19,6 +19,10 @@ from app.api.modules.router import router as modules_router
 from app.api.maps.router import router as maps_router
 from app.api.storage.router import router as storage_router
 
+# ── Ensure all ORM models are registered with Base.metadata ──────────────────
+import app.api.auth.models  # noqa: F401 — registers User, Group, Permission
+import app.api.data.models  # noqa: F401 — registers GeoDataset, GeoFeature
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

@@ -1,6 +1,19 @@
 import React, { useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useFloating, offset, flip, shift } from "@floating-ui/react";
+import {
+  useFloating,
+  useHover,
+  useFocus,
+  useDismiss,
+  useRole,
+  useInteractions,
+  useTransitionStyles,
+  FloatingPortal,
+  offset,
+  flip,
+  shift,
+  arrow,
+} from "@floating-ui/react";
 import { cn } from "../../../utils/cn";
 
 interface TooltipProps {
@@ -21,58 +34,113 @@ export function Tooltip({
   className,
 }: TooltipProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<ReturnType<typeof setTimeout>>();
+  const arrowRef = React.useRef<HTMLDivElement>(null);
 
-  const { refs, floatingStyles } = useFloating({
-    open: isOpen,
+  const {
+    refs,
+    floatingStyles,
+    context,
+    middlewareData,
+    placement: finalPlacement,
+  } = useFloating({
+    open: isOpen && !disabled,
+    onOpenChange: setIsOpen,
     placement,
-    middleware: [offset(8), flip(), shift({ padding: 8 })],
+    strategy: "fixed",
+    middleware: [
+      offset(8),
+      flip(),
+      shift({ padding: 8 }),
+      arrow({ element: arrowRef }),
+    ],
   });
 
-  const handleMouseEnter = () => {
-    if (disabled) return;
-    const id = setTimeout(() => setIsOpen(true), delay);
-    setTimeoutId(id);
-  };
+  const hover = useHover(context, {
+    delay: { open: delay, close: 0 },
+    move: false,
+  });
+  const focus = useFocus(context);
+  const dismiss = useDismiss(context);
+  const role = useRole(context, { role: "tooltip" });
 
-  const handleMouseLeave = () => {
-    if (timeoutId) clearTimeout(timeoutId);
-    setIsOpen(false);
-  };
+  const { getReferenceProps, getFloatingProps } = useInteractions([
+    hover,
+    focus,
+    dismiss,
+    role,
+  ]);
+
+  const { isMounted, styles: transitionStyles } = useTransitionStyles(context, {
+    duration: 100,
+    initial: { opacity: 0, transform: "scale(0.95)" },
+  });
+
+  // Arrow position
+  const side = finalPlacement.split("-")[0] as
+    | "top"
+    | "right"
+    | "bottom"
+    | "left";
+  const staticSide = {
+    top: "bottom",
+    right: "left",
+    bottom: "top",
+    left: "right",
+  }[side];
 
   return (
-    <div className="inline-block">
+    <>
       <div
         ref={refs.setReference}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onFocus={handleMouseEnter}
-        onBlur={handleMouseLeave}
+        className="inline-block"
+        {...getReferenceProps()}
       >
         {children}
       </div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            ref={refs.setFloating}
-            style={{
-              ...floatingStyles,
-              color: "var(--text-primary)",
-            }}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.1 }}
-            className={cn(
-              "bg-elevated border-base shadow-elevated z-50 rounded-lg border px-3 py-1.5 text-sm backdrop-blur-sm",
-              className
-            )}
-          >
-            {content}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      <FloatingPortal>
+        <AnimatePresence>
+          {isMounted && !disabled && (
+            <div
+              ref={refs.setFloating}
+              style={{
+                ...floatingStyles,
+                color: "var(--text-primary)",
+                zIndex: 9999,
+              }}
+              {...getFloatingProps()}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.1 }}
+                className={cn(
+                  "bg-elevated border-base shadow-elevated rounded-lg border px-3 py-1.5 text-sm whitespace-nowrap backdrop-blur-sm",
+                  className
+                )}
+              >
+                {content}
+                <div
+                  ref={arrowRef}
+                  className="bg-elevated border-base absolute h-2 w-2 rotate-45"
+                  style={{
+                    left:
+                      middlewareData.arrow?.x != null
+                        ? `${middlewareData.arrow.x}px`
+                        : "",
+                    top:
+                      middlewareData.arrow?.y != null
+                        ? `${middlewareData.arrow.y}px`
+                        : "",
+                    [staticSide as string]: "-4px",
+                  }}
+                />
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </FloatingPortal>
+    </>
   );
 }

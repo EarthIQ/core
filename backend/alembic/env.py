@@ -23,6 +23,7 @@ from app.core.db import Base
 # ── Core models (always imported) ─────────────────────────────────────────────
 from app.api.auth.models import User, Group, Permission, UserGroup, GroupPermission  # noqa: F401
 from app.api.maps.models import MapModel, MapGroupAccess  # noqa: F401
+from app.api.data.models import GeoDataset, GeoFeature  # noqa: F401
 
 # ── Dynamically discover installed modules ────────────────────────────────────
 _lock_file = ROOT / "modules.lock.yaml"
