@@ -22,6 +22,7 @@ import DashboardPage from "@/pages/DashboardPage";
 import MapPage from "@/pages/MapPage";
 import ProjectsPage from "@/pages/ProjectsPage";
 import DataPage from "@/pages/DataPage";
+import AdminUsersPage from "@/pages/AdminUsersPage";
 
 // AUTO-GENERATED — never import module names directly here
 import { moduleRegistry, type ModuleBundle } from "./module-registry.generated";
@@ -76,7 +77,9 @@ let _resolvedModulesCache: ActiveModule[] | null = null;
  */
 function useActiveModules() {
   const { modules, isLoading: modulesLoading } = useModules();
-  const [activeModules, setActiveModules] = useState<ActiveModule[]>(_resolvedModulesCache ?? []);
+  const [activeModules, setActiveModules] = useState<ActiveModule[]>(
+    _resolvedModulesCache ?? [],
+  );
   const [resolving, setResolving] = useState(false);
 
   useEffect(() => {
@@ -89,7 +92,9 @@ function useActiveModules() {
       return;
     }
 
-    const enabled = modules.filter((m) => m.enabled && m.name in moduleRegistry);
+    const enabled = modules.filter(
+      (m) => m.enabled && m.name in moduleRegistry,
+    );
     if (!enabled.length) {
       // No modules registered — cache the empty result and stop.
       _resolvedModulesCache = [];
@@ -107,8 +112,8 @@ function useActiveModules() {
             ? bundle.routePath.slice(1)
             : bundle.routePath,
           Page: bundle.Page,
-        }))
-      )
+        })),
+      ),
     ).then((resolved) => {
       _resolvedModulesCache = resolved;
       setActiveModules(resolved);
@@ -130,6 +135,7 @@ function ProtectedRoutes() {
     <Routes>
       <Route index element={<Navigate to="/dashboard" replace />} />
       <Route path="dashboard" element={<DashboardPage />} />
+      <Route path="admin" element={<AdminUsersPage />} />
       <Route path="projects" element={<ProjectsPage />} />
       <Route path="map" element={<MapPage />} />
       <Route path="data" element={<DataPage />} />
@@ -146,8 +152,15 @@ function ProtectedRoutes() {
           path="*"
           element={
             <div style={{ padding: "4rem 2rem", textAlign: "center" }}>
-              <h2 style={{ color: "var(--eq-text-primary)" }}>404 — Not Found</h2>
-              <p style={{ color: "var(--eq-text-secondary)", marginTop: "0.5rem" }}>
+              <h2 style={{ color: "var(--eq-text-primary)" }}>
+                404 — Not Found
+              </h2>
+              <p
+                style={{
+                  color: "var(--eq-text-secondary)",
+                  marginTop: "0.5rem",
+                }}
+              >
                 This page doesn't exist.
               </p>
             </div>

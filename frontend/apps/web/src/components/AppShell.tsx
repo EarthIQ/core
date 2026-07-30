@@ -247,7 +247,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const popoverRef = useRef<HTMLDivElement>(null);
   const moduleNav = useModuleNavItems();
-  const allNav = [...CORE_NAV, ...moduleNav];
+  const adminNav = user?.is_superuser
+    ? [{ label: "Admin", to: "/admin", icon: "🛡️" }]
+    : [];
+  const allNav = [...CORE_NAV, ...adminNav, ...moduleNav];
 
   const isMapView = location.pathname.startsWith("/map");
 
@@ -283,7 +286,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         className={`fixed top-0 left-0 h-full z-30 flex flex-col bg-surface border-r border-border-primary transition-all duration-300 ease-in-out ${sidebarWidth} overflow-hidden`}
       >
         {/* Brand Header */}
-        <div className={`flex items-center shrink-0 border-b border-border-secondary h-14 ${isCollapsed ? "justify-center px-0" : "justify-between px-4"}`}>
+        <div
+          className={`flex items-center shrink-0 border-b border-border-secondary h-14 ${isCollapsed ? "justify-center px-0" : "justify-between px-4"}`}
+        >
           {!isCollapsed ? (
             <>
               <NavLink
@@ -291,7 +296,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className="flex items-center gap-2.5 text-text-primary no-underline hover:text-primary transition-colors duration-150"
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-primary shadow-lg shadow-primary/30 shrink-0" />
-                <span className="font-bold text-sm tracking-tight">EarthIQ</span>
+                <span className="font-bold text-sm tracking-tight">
+                  EarthIQ
+                </span>
               </NavLink>
 
               <button
@@ -403,8 +410,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {!isMapView && (
           <header className="navbar shrink-0 flex items-center justify-between px-4 h-14">
             {/* Left */}
-            <div className="flex items-center">
-            </div>
+            <div className="flex items-center"></div>
 
             {/* Center — Search */}
             <div className="flex-1 max-w-xl mx-auto px-4 py-1 border border-border-secondary rounded-lg bg-surface-hover">

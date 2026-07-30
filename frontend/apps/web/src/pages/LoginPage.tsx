@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
+import { Button, Input } from "@packages/ui";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -73,51 +74,43 @@ export default function LoginPage() {
           )}
 
           {/* Email */}
-          <div className="form-field">
-            <label htmlFor="login-email" className="form-label">
-              Email address
-            </label>
-            <input
-              id="login-email"
-              type="email"
-              className="input"
-              placeholder="you@organization.com"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+          <label htmlFor="login-email" className="form-label">
+            Email address
+          </label>
+          <Input
+            type="email"
+            id="login-email"
+            placeholder="you@organization.com"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
           {/* Password */}
-          <div className="form-field">
-            <label htmlFor="login-password" className="form-label">
-              Password
-            </label>
-            <input
-              id="login-password"
-              type="password"
-              className="input"
-              placeholder="••••••••"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+          <label htmlFor="login-password" className="form-label">
+            Password
+          </label>
+          <Input
+            type="password"
+            id="login-password"
+            placeholder="••••••••"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
           {/* Submit */}
-          <button
+          <Button
+            variant="primary"
             type="submit"
             id="login-submit"
-            disabled={loading}
-            className="btn btn-primary btn-md w-full mt-1 justify-center"
+            loading={loading}
+            loadingText="Signing in…"
           >
-            {loading && (
-              <span className="w-4 h-4 rounded-full border-2 border-text-on-primary border-t-transparent animate-spin" />
-            )}
-            {loading ? "Signing in…" : "Sign in"}
-          </button>
+            Sign in
+          </Button>
         </form>
 
         {/* Footer */}
