@@ -1,0 +1,251 @@
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { fetchMapById, MapItem } from "@/lib/maps";
+import { BASEMAP_URLS } from "@/hooks/useMapLibre";
+import { Globe, Layers, ZoomIn, ZoomOut, Compass } from "lucide-react";
+
+export default function PublicMapPage() {
+  const { mapId } = useParams<{ mapId: string }>();
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
+  const [mapData, setMapData] = useState<MapItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const [layersList, setLayersList] = useState<any[]>([]);
+
+  // Fetch map details on mount
+  useEffect(() => {
+    if (!mapId) return;
+    fetchMapById(mapId)
+      .then((data) => {
+        setMapData(data);
+        setLayersList(data.layers_config || []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setErrorMsg("This map could not be loaded. It may be private or deleted.");
+        setLoading(false);
+      });
+  }, [mapId]);
+
+  // Initialize MapLibre
+  useEffect(() => {
+    if (loading || errorMsg || !mapData || !mapContainerRef.current) return;
+
+    let cancelled = false;
+    import("maplibre-gl").then(({ Map }) => {
+      if (cancelled || !mapContainerRef.current) return;
+
+      const map = new Map({
+        container: mapContainerRef.current,
+        style: BASEMAP_URLS[mapData.basemap] || BASEMAP_URLS["dataviz-dark"],
+        center: [mapData.center_lng, mapData.center_lat],
+        zoom: mapData.zoom,
+        attributionControl: false,
+      });
+
+      map.on("load", () => {
+        setMapReady(true);
+        // Add layers if any are configured
+        (mapData.layers_config || []).forEach((layer: any) => {
+          if (!layer.url) return;
+          try {
+            if (layer.type === "raster") {
+              map.addSource(layer.id, {
+                type: "raster",
+                tiles: [layer.url],
+                tileSize: 256,
+              });
+              map.addLayer({
+                id: layer.id,
+                type: "raster",
+                source: layer.id,
+                layout: {
+                  visibility: layer.visible ? "visible" : "none",
+                },
+              });
+            } else {
+              // Assume vector
+              map.addSource(layer.id, {
+                type: "vector",
+                tiles: [layer.url],
+              });
+              map.addLayer({
+                id: layer.id,
+                type: "fill",
+                source: layer.id,
+                "source-layer": "default",
+                paint: {
+                  "fill-color": layer.style?.color || "#3b82f6",
+                  "fill-opacity": layer.style?.opacity ?? 0.6,
+                },
+                layout: {
+                  visibility: layer.visible ? "visible" : "none",
+                },
+              });
+            }
+          } catch (e) {
+            console.error("Error adding map layer:", e);
+          }
+        });
+      });
+
+      mapRef.current = map;
+    });
+
+    return () => {
+      cancelled = true;
+      if (mapRef.current?.remove) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      setMapReady(false);
+    };
+  }, [loading, errorMsg, mapData]);
+
+  // Sync layer toggles to MapLibre layers
+  const toggleLayerVisibility = (layerId: string) => {
+    setLayersList((prev) =>
+      prev.map((l) => {
+        if (l.id === layerId) {
+          const nextVal = !l.visible;
+          const map = mapRef.current;
+          if (map && mapReady && map.getLayer(layerId)) {
+            map.setLayoutProperty(layerId, "visibility", nextVal ? "visible" : "none");
+          }
+          return { ...l, visible: nextVal };
+        }
+        return l;
+      })
+    );
+  };
+
+  const handleZoomIn = () => mapRef.current?.zoomIn();
+  const handleZoomOut = () => mapRef.current?.zoomOut();
+  const handleResetNorth = () => mapRef.current?.resetNorthPitch();
+
+  if (loading) {
+    return (
+      <div className="w-screen h-screen flex flex-col items-center justify-center bg-[#090d16] text-text-primary">
+        <Globe size={40} className="text-primary animate-spin mb-4" />
+        <span className="text-sm font-semibold tracking-wider animate-pulse">Loading map dashboard...</span>
+      </div>
+    );
+  }
+
+  if (errorMsg || !mapData) {
+    return (
+      <div className="w-screen h-screen flex flex-col items-center justify-center bg-[#090d16] text-text-primary px-6 text-center">
+        <div className="text-5xl mb-4">🔒</div>
+        <h3 className="text-lg font-bold text-text-primary">Access Denied</h3>
+        <p className="mt-2 text-text-secondary text-sm max-w-sm">
+          {errorMsg || "This published map has been restricted or removed by the administrator."}
+        </p>
+        <a href="/projects" className="btn btn-primary btn-md mt-6">
+          Back to Dashboard
+        </a>
+      </div>
+    );
+  }
+
+  const widgets = mapData.widgets_config || {};
+
+  return (
+    <div className="relative w-screen h-screen overflow-hidden bg-bg-primary select-none">
+      {/* Map Container */}
+      <div ref={mapContainerRef} className="w-full h-full absolute inset-0 z-0" />
+
+      {/* Title Card Widget */}
+      {widgets.titleCard && (
+        <div className="absolute top-4 left-4 z-10 max-w-sm bg-elevated/90 backdrop-blur-xl border border-border-primary rounded-xl p-4 shadow-xl animate-fade-in flex flex-col gap-1.5">
+          <h1 className="text-sm font-bold text-text-primary tracking-wide">
+            {mapData.title}
+          </h1>
+          {mapData.description && (
+            <p className="text-[11px] text-text-secondary leading-relaxed">
+              {mapData.description}
+            </p>
+          )}
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+            <span className="text-[9px] font-mono tracking-widest text-success uppercase font-bold">
+              Published View
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Layer Toggle Widget */}
+      {widgets.layerList && layersList.filter((l) => l.url).length > 0 && (
+        <div className="absolute top-4 right-4 z-10 w-60 bg-elevated/90 backdrop-blur-xl border border-border-primary rounded-xl p-3.5 shadow-xl animate-fade-in flex flex-col gap-2">
+          <div className="flex items-center gap-1.5 border-b border-border-secondary/60 pb-1.5 mb-1">
+            <Layers size={13} className="text-primary" />
+            <span className="text-xs font-bold text-text-primary">
+              Map Layers
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto scrollbar-thin">
+            {layersList.map((layer) => (
+              <label
+                key={layer.id}
+                className="flex items-center justify-between gap-2.5 p-1.5 rounded hover:bg-surface-hover/50 cursor-pointer text-xs text-text-secondary hover:text-text-primary transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={!!layer.visible}
+                    onChange={() => toggleLayerVisibility(layer.id)}
+                    className="w-3.5 h-3.5 accent-primary rounded cursor-pointer"
+                  />
+                  <span className="truncate max-w-[140px]">{layer.name}</span>
+                </div>
+                {layer.style?.color && (
+                  <span
+                    className="w-2.5 h-2.5 rounded-full border border-white/10 shrink-0"
+                    style={{ backgroundColor: layer.style.color }}
+                  />
+                )}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Zoom Controls Widget */}
+      {widgets.zoomControls && (
+        <div className="absolute bottom-6 right-6 z-10 flex flex-col gap-1.5">
+          <button
+            onClick={handleZoomIn}
+            className="w-8 h-8 rounded-lg bg-elevated/90 backdrop-blur-xl border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
+            title="Zoom In"
+          >
+            <ZoomIn size={15} />
+          </button>
+          <button
+            onClick={handleZoomOut}
+            className="w-8 h-8 rounded-lg bg-elevated/90 backdrop-blur-xl border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
+            title="Zoom Out"
+          >
+            <ZoomOut size={15} />
+          </button>
+          <button
+            onClick={handleResetNorth}
+            className="w-8 h-8 rounded-lg bg-elevated/90 backdrop-blur-xl border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
+            title="Reset North"
+          >
+            <Compass size={15} />
+          </button>
+        </div>
+      )}
+
+      {/* Footer Branding */}
+      <div className="absolute bottom-3 left-4 z-10 text-[9px] text-text-quaternary select-none">
+        Powered by <span className="font-bold text-primary">EarthIQ Core</span>
+      </div>
+    </div>
+  );
+}

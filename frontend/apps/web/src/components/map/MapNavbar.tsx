@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Search, Share2, ChevronDown, Check } from "lucide-react";
+import { ArrowLeft, Search, Share2, ChevronDown, Check, Map } from "lucide-react";
 import { Button, Tooltip } from "@packages/ui";
 import { useAuth } from "@/lib/auth";
 import type { MapItem } from "@/lib/maps";
@@ -12,6 +12,9 @@ interface MapNavbarProps {
   availableMaps: MapItem[];
   activeMapId: string | null;
   canManageSharing?: boolean;
+  publishedMapsOpen?: boolean;
+  publishedMapsCount?: number;
+  onTogglePublishedMaps?: () => void;
   onSelectMap: (id: string) => void;
   onBack: () => void;
 }
@@ -22,6 +25,9 @@ export function MapNavbar({
   availableMaps,
   activeMapId,
   canManageSharing = true,
+  publishedMapsOpen = false,
+  publishedMapsCount = 0,
+  onTogglePublishedMaps,
   onSelectMap,
   onBack,
 }: MapNavbarProps) {
@@ -151,6 +157,30 @@ export function MapNavbar({
               {userInitial}
             </div>
           </Tooltip>
+          {/* Published Maps button */}
+          {onTogglePublishedMaps && (
+            <Tooltip content="Published maps" placement="bottom">
+              <button
+                type="button"
+                onClick={onTogglePublishedMaps}
+                className={`relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                  publishedMapsOpen
+                    ? "bg-primary/15 text-primary border border-primary/30"
+                    : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+                }`}
+                aria-label="Toggle published maps"
+              >
+                <Map size={15} />
+                <span className="hidden sm:inline">Maps</span>
+                {publishedMapsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-primary text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                    {publishedMapsCount}
+                  </span>
+                )}
+              </button>
+            </Tooltip>
+          )}
+
           <span className="w-px h-5 bg-border-primary" />
 
           <Tooltip content="Share map  (⌘⇧S)" placement="bottom">

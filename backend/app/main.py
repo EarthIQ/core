@@ -17,11 +17,15 @@ from app.api.data.router import router as data_router
 from app.api.viz.router import router as viz_router
 from app.api.modules.router import router as modules_router
 from app.api.maps.router import router as maps_router
+from app.api.projects.router import router as projects_router
 from app.api.storage.router import router as storage_router
 
 # ── Ensure all ORM models are registered with Base.metadata ──────────────────
 import app.api.auth.models  # noqa: F401 — registers User, Group, Permission
 import app.api.data.models  # noqa: F401 — registers GeoDataset, GeoFeature
+import app.api.projects.models  # noqa: F401
+import app.api.maps.models  # noqa: F401
+
 
 
 @asynccontextmanager
@@ -66,6 +70,7 @@ app.include_router(data_router, prefix="/api/data")
 app.include_router(viz_router, prefix="/api/viz")
 app.include_router(modules_router, prefix="/api/modules")
 app.include_router(maps_router, prefix="/api/maps")
+app.include_router(projects_router, prefix="/api/projects")
 app.include_router(storage_router, prefix="/api/storage")
 
 # ── Pluggable module routers (from modules.lock.yaml) ─────────────────────────

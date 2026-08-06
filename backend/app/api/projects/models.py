@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from typing import Any, List, Optional, TYPE_CHECKING
+from typing import Any, List, Optional
 
 from sqlalchemy import Boolean, DateTime, Float, ForeignKey, String, Text, UniqueConstraint, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -10,42 +10,31 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.db import Base
 from app.api.auth.models import User, Group
 
-if TYPE_CHECKING:
-    from app.api.projects.models import ProjectModel
+class ProjectModel(Base):
+    """Geospatial Project workspace."""
 
-
-class MapModel(Base):
-    """Configurable Map entity with viewport, basemap, layers, and ownership."""
-
-    __tablename__ = "maps"
+    __tablename__ = "projects"
 
     id: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    
+
     # Viewport config
     center_lng: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     center_lat: Mapped[float] = mapped_column(Float, default=20.0, nullable=False)
     zoom: Mapped[float] = mapped_column(Float, default=2.5, nullable=False)
     basemap: Mapped[str] = mapped_column(String(100), default="dataviz-dark", nullable=False)
-    
-    # Layer configurations (vector/raster layer JSON)
-    layers_config: Mapped[Any] = mapped_column(JSON, default=list, nullable=False)
-    
-    # Project relationship and widgets
-    project_id: Mapped[Optional[str]] = mapped_column(
-        String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=True, index=True
-    )
-    widgets_config: Mapped[Any] = mapped_column(JSON, default=dict, nullable=False)
 
-    # Access control
-    is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
+    # Layer configurations
+    layers_config: Mapped[Any] = mapped_column(JSON, default=list, nullable=False)
+
+    # Ownership
     owner_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
@@ -56,28 +45,31 @@ class MapModel(Base):
     )
 
     owner: Mapped[User] = relationship("User", lazy="selectin")
-    project: Mapped[Optional[ProjectModel]] = relationship("ProjectModel", back_populates="maps", lazy="selectin")
-    group_access: Mapped[List[MapGroupAccess]] = relationship(
-        "MapGroupAccess", back_populates="map_item", cascade="all, delete-orphan", lazy="selectin"
+    group_access: Mapped[List[ProjectGroupAccess]] = relationship(
+        "ProjectGroupAccess", back_populates="project_item", cascade="all, delete-orphan", lazy="selectin"
+    )
+
+    maps: Mapped[List[MapModel]] = relationship(
+        "MapModel", back_populates="project", cascade="all, delete-orphan", lazy="selectin"
     )
 
     def __repr__(self) -> str:  # pragma: no cover
-        return f"<MapModel id={self.id} title={self.title!r} public={self.is_public}>"
+        return f"<ProjectModel id={self.id} title={self.title!r}>"
 
 
-class MapGroupAccess(Base):
-    """Maps group permissions to specific Map items."""
+class ProjectGroupAccess(Base):
+    """Projects group permissions to specific Project workspaces."""
 
-    __tablename__ = "map_group_access"
+    __tablename__ = "project_group_access"
     __table_args__ = (
-        UniqueConstraint("map_id", "group_id", name="uq_map_group_access"),
+        UniqueConstraint("project_id", "group_id", name="uq_project_group_access"),
     )
 
     id: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
-    map_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("maps.id", ondelete="CASCADE"), nullable=False, index=True
+    project_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True
     )
     group_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("groups.id", ondelete="CASCADE"), nullable=False, index=True
@@ -86,8 +78,8 @@ class MapGroupAccess(Base):
         String(20), default="read", nullable=False
     )  # read | write | admin
 
-    map_item: Mapped[MapModel] = relationship("MapModel", back_populates="group_access")
+    project_item: Mapped[ProjectModel] = relationship("ProjectModel", back_populates="group_access")
     group: Mapped[Group] = relationship("Group", lazy="selectin")
 
     def __repr__(self) -> str:  # pragma: no cover
-        return f"<MapGroupAccess map_id={self.map_id} group_id={self.group_id} perm={self.permission}>"
+        return f"<ProjectGroupAccess project_id={self.project_id} group_id={self.group_id} perm={self.permission}>"

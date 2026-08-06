@@ -30,9 +30,6 @@ interface LayerPanelProps {
   onOpenImport: () => void;
   onOpenImportForFolder: (folderId: string) => void;
   canEdit: boolean;
-  saving: boolean;
-  onSave: () => void;
-  statusMsg: string | null;
   isAvailableModule: (id: string) => boolean;
   aiOpen?: boolean;
 }
@@ -83,9 +80,6 @@ export function LayerPanel({
   onOpenImport,
   onOpenImportForFolder,
   canEdit,
-  saving,
-  onSave,
-  statusMsg,
   isAvailableModule,
   aiOpen,
 }: LayerPanelProps) {
@@ -274,25 +268,6 @@ export function LayerPanel({
             </div>
           )}
 
-          {canEdit && (
-            <div className="flex flex-col gap-1.5 pt-1">
-              <Button
-                variant="primary"
-                size="sm"
-                fullWidth
-                loading={saving}
-                loadingText="Saving…"
-                onClick={onSave}
-              >
-                💾 Save Viewport
-              </Button>
-              {statusMsg && (
-                <div className="text-[0.7rem] text-primary text-center animate-fade-in">
-                  {statusMsg}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       )}
     </div>

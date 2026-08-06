@@ -1,7 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { fetchMaps, fetchMapById, updateMap, MapItem } from "@/lib/maps";
+import { deleteMap, updateMap, MapItem } from "@/lib/maps";
+import {
+  fetchProjectById,
+  updateProject,
+  publishMapFromProject,
+  ProjectItem,
+} from "@/lib/projects";
 import { useModules } from "@/lib/modules";
 import AIChatPanel from "@/components/map/AIChatPanel";
 import { MapNavbar } from "@/components/map/MapNavbar";
@@ -21,17 +27,16 @@ import {
 } from "@/components/map/layer-panel/serialize";
 import type { TreeNode } from "@/components/map/layer-panel/types";
 import { useMapLibre } from "@/hooks/useMapLibre";
+import { PublishedMapsPanel } from "@/components/map/PublishedMapsPanel";
 
 export default function MapPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const mapId = searchParams.get("mapId");
+  const [searchParams] = useSearchParams();
+  const projectId = searchParams.get("projectId");
   const navigate = useNavigate();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const [availableMaps, setAvailableMaps] = useState<MapItem[]>([]);
-  const [currentMap, setCurrentMap] = useState<MapItem | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const [currentProject, setCurrentProject] = useState<ProjectItem | null>(null);
+  const [publishedMaps, setPublishedMaps] = useState<MapItem[]>([]);
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [importPortalOpen, setImportPortalOpen] = useState(false);
@@ -39,8 +44,9 @@ export default function MapPage() {
   const [styledLayer, setStyledLayer] = useState<TreeNode | null>(null);
   const [bookmarkActive, setBookmarkActive] = useState(false);
   const [commentsActive, setCommentsActive] = useState(false);
-  const [undoStack, setUndoStack] = useState<any[]>([]);
-  const [redoStack, setRedoStack] = useState<any[]>([]);
+  const [undoStack] = useState<any[]>([]);
+  const [redoStack] = useState<any[]>([]);
+  const [publishedPanelOpen, setPublishedPanelOpen] = useState(false);
 
   const { isAvailable } = useModules();
 
@@ -64,37 +70,27 @@ export default function MapPage() {
     if (mapRef.current) setTimeout(() => mapRef.current?.resize(), 300);
   }, [aiChatOpen, mapRef]);
 
-  /* Fetch available maps */
+  /* Load selected project workspace */
   useEffect(() => {
-    fetchMaps()
-      .then((data) => {
-        setAvailableMaps(data);
-        if (!mapId && data.length > 0) setSearchParams({ mapId: data[0].id });
-      })
-      .catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  /* Load selected map */
-  useEffect(() => {
-    if (!mapId) return;
-    fetchMapById(mapId)
-      .then((mapData) => {
-        setCurrentMap(mapData);
-        setBasemap(mapData.basemap || "dataviz-dark");
+    if (!projectId) return;
+    fetchProjectById(projectId)
+      .then((projData) => {
+        setCurrentProject(projData);
+        setPublishedMaps(projData.maps || []);
+        setBasemap(projData.basemap || "dataviz-dark");
         tree.setNodes(
-          mapData.layers_config?.length
-            ? fromMapLayerItems(mapData.layers_config as any)
+          projData.layers_config?.length
+            ? fromMapLayerItems(projData.layers_config as any)
             : [],
         );
         flyOrQueue({
-          center: [mapData.center_lng, mapData.center_lat],
-          zoom: mapData.zoom,
+          center: [projData.center_lng, projData.center_lat],
+          zoom: projData.zoom,
         });
       })
-      .catch((err) => setStatusMsg("Failed to load map: " + String(err)));
+      .catch((err) => setStatusMsg("Failed to load project: " + String(err)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapId]);
+  }, [projectId]);
 
   function handleImportLayers(
     layers: NewLayerInput[],
@@ -107,37 +103,98 @@ export default function MapPage() {
     );
   }
 
-  async function handleSaveConfig() {
-    if (!mapId || !currentMap) return;
-    setSaving(true);
-    setStatusMsg(null);
+  // Stable ref so the unmount cleanup can always call the latest version
+  const saveConfigRef = useRef<() => Promise<void>>(async () => {});
+
+  const handleSaveConfig = useCallback(async () => {
+    if (!projectId || !currentProject) return;
     try {
       const map = mapRef.current;
       const center = map?.getCenter?.() || {
-        lng: currentMap.center_lng,
-        lat: currentMap.center_lat,
+        lng: currentProject.center_lng,
+        lat: currentProject.center_lat,
       };
-      const zoom = map?.getZoom ? map.getZoom() : currentMap.zoom;
-      const updated = await updateMap(mapId, {
+      const zoom = map?.getZoom ? map.getZoom() : currentProject.zoom;
+      const updated = await updateProject(projectId, {
         center_lng: center.lng,
         center_lat: center.lat,
         zoom: Number(zoom.toFixed(2)),
         basemap,
         layers_config: toMapLayerItems(tree.nodes),
       });
-      setCurrentMap(updated);
-      setStatusMsg("Map configuration saved!");
-      setTimeout(() => setStatusMsg(null), 3000);
+      setCurrentProject(updated);
     } catch (err) {
-      setStatusMsg("Save failed: " + String(err));
-    } finally {
-      setSaving(false);
+      console.error("Auto-save failed:", err);
     }
+  }, [projectId, currentProject, basemap, tree.nodes]);
+
+  // Keep ref in sync so the unmount effect can use latest state
+  useEffect(() => {
+    saveConfigRef.current = handleSaveConfig;
+  });
+
+  // Auto-save viewport when the user leaves the page
+  useEffect(() => {
+    return () => {
+      saveConfigRef.current();
+    };
+  }, []);
+
+  // Published maps handlers
+  async function handlePublishMap(
+    title: string,
+    desc: string,
+    isPublic: boolean,
+    widgets: any,
+  ) {
+    if (!projectId || !currentProject) return;
+    const map = mapRef.current;
+    const center = map?.getCenter?.() || {
+      lng: currentProject.center_lng,
+      lat: currentProject.center_lat,
+    };
+    const zoom = map?.getZoom ? map.getZoom() : currentProject.zoom;
+
+    const newMap = await publishMapFromProject(projectId, {
+      title,
+      description: desc,
+      center_lng: center.lng,
+      center_lat: center.lat,
+      zoom: Number(zoom.toFixed(2)),
+      basemap,
+      layers_config: toMapLayerItems(tree.nodes),
+      is_public: isPublic,
+      widgets_config: widgets,
+    });
+    setPublishedMaps([newMap, ...publishedMaps]);
+    setStatusMsg("Map published successfully!");
+    setTimeout(() => setStatusMsg(null), 3000);
+  }
+
+  async function handleDeletePublishedMap(mapId: string) {
+    await deleteMap(mapId);
+    setPublishedMaps(publishedMaps.filter((m) => m.id !== mapId));
+    setStatusMsg("Published map deleted.");
+    setTimeout(() => setStatusMsg(null), 3000);
+  }
+
+  async function handleUpdatePublishedMap(
+    mapId: string,
+    isPublic: boolean,
+    widgets: any,
+  ) {
+    const updated = await updateMap(mapId, {
+      is_public: isPublic,
+      widgets_config: widgets,
+    });
+    setPublishedMaps(publishedMaps.map((m) => (m.id === mapId ? updated : m)));
+    setStatusMsg("Published map configuration updated.");
+    setTimeout(() => setStatusMsg(null), 3000);
   }
 
   const canEdit =
-    currentMap?.user_permission === "admin" ||
-    currentMap?.user_permission === "write";
+    currentProject?.user_permission === "admin" ||
+    currentProject?.user_permission === "write";
   const folderOptions = tree.nodes
     .filter((n) => n.kind === "folder")
     .map((f) => ({ id: f.id, name: f.name }));
@@ -145,13 +202,19 @@ export default function MapPage() {
   return (
     <div className="relative w-full h-full overflow-hidden bg-bg-primary">
       <MapNavbar
-        projectName={currentMap?.title || "EarthIQ Map"}
-        mapId={mapId}
-        availableMaps={availableMaps}
-        activeMapId={mapId}
-        canManageSharing={currentMap?.user_permission === "admin"}
-        onSelectMap={(id) => setSearchParams({ mapId: id })}
-        onBack={() => navigate("/projects")}
+        projectName={currentProject?.title || "EarthIQ Project"}
+        mapId={projectId}
+        availableMaps={[]}
+        activeMapId={projectId}
+        canManageSharing={currentProject?.user_permission === "admin"}
+        publishedMapsOpen={publishedPanelOpen}
+        publishedMapsCount={publishedMaps.length}
+        onTogglePublishedMaps={() => setPublishedPanelOpen((v) => !v)}
+        onSelectMap={() => {}}
+        onBack={async () => {
+          await handleSaveConfig();
+          navigate("/projects");
+        }}
       />
 
       <div
@@ -193,13 +256,24 @@ export default function MapPage() {
             setImportPortalOpen(true);
           }}
           canEdit={!!canEdit}
-          saving={saving}
-          onSave={handleSaveConfig}
-          statusMsg={statusMsg}
           isAvailableModule={isAvailable}
           aiOpen={aiChatOpen}
         />
       </LayerDndProvider>
+
+      {/* Published Maps Side Panel */}
+      {projectId && (
+        <PublishedMapsPanel
+          maps={publishedMaps}
+          projectId={projectId}
+          isOpen={publishedPanelOpen}
+          onClose={() => setPublishedPanelOpen(false)}
+          onPublish={handlePublishMap}
+          onDelete={handleDeletePublishedMap}
+          onUpdate={handleUpdatePublishedMap}
+          canEdit={!!canEdit}
+        />
+      )}
 
       {styledLayer && styledLayer.kind === "layer" && (
         <StylePanel
@@ -237,12 +311,8 @@ export default function MapPage() {
         onToggleComments={() => setCommentsActive((v) => !v)}
         canUndo={undoStack.length > 0}
         canRedo={redoStack.length > 0}
-        onUndo={() => {
-          /* pop undoStack */
-        }}
-        onRedo={() => {
-          /* pop redoStack */
-        }}
+        onUndo={() => {}}
+        onRedo={() => {}}
       />
 
       <MapBottomBar

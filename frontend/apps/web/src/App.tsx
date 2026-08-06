@@ -23,6 +23,7 @@ import MapPage from "@/pages/MapPage";
 import ProjectsPage from "@/pages/ProjectsPage";
 import DataPage from "@/pages/DataPage";
 import AdminUsersPage from "@/pages/AdminUsersPage";
+import PublicMapPage from "@/pages/PublicMapPage";
 
 // AUTO-GENERATED — never import module names directly here
 import { moduleRegistry, type ModuleBundle } from "./module-registry.generated";
@@ -181,6 +182,7 @@ export default function App() {
           <Routes>
             {/* Public */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/share/map/:mapId" element={<PublicMapPage />} />
 
             {/* Protected shell */}
             <Route

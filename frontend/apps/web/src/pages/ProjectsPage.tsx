@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchMaps, createMap, MapItem } from "@/lib/maps";
+import { fetchProjects, createProject, ProjectItem } from "@/lib/projects";
 import { Button } from "@packages/ui";
 import { Plus } from "lucide-react";
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState<MapItem[]>([]);
+  const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<"all" | "public" | "private">(
@@ -22,7 +22,7 @@ export default function ProjectsPage() {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    fetchMaps()
+    fetchProjects()
       .then((data) => {
         if (data && data.length > 0) {
           setProjects(data);
@@ -41,8 +41,6 @@ export default function ProjectsPage() {
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (p.description &&
         p.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    if (filterType === "public") return matchesSearch && p.is_public;
-    if (filterType === "private") return matchesSearch && !p.is_public;
     return matchesSearch;
   });
 
@@ -52,23 +50,23 @@ export default function ProjectsPage() {
     setCreating(true);
 
     try {
-      const created = await createMap({
+      const created = await createProject({
         title: newTitle.trim(),
         description: newDesc.trim(),
         basemap: newBasemap,
-        is_public: newPublic,
         center_lng: 0,
         center_lat: 20,
         zoom: 3,
+        layers_config: [],
       });
       setProjects([created, ...projects]);
       setIsModalOpen(false);
       setNewTitle("");
       setNewDesc("");
-      navigate(`/map?mapId=${created.id}`);
+      navigate(`/map?projectId=${created.id}`);
     } catch {
       // Fallback local addition if backend offline
-      const mockProject: MapItem = {
+      const mockProject: ProjectItem = {
         id: `project-${Date.now()}`,
         title: newTitle.trim(),
         description: newDesc.trim(),
@@ -76,19 +74,19 @@ export default function ProjectsPage() {
         center_lat: 20,
         zoom: 3,
         basemap: newBasemap,
-        is_public: newPublic,
         owner_id: "current-user",
         group_access: [],
         user_permission: "admin",
         layers_config: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        maps: [],
       };
       setProjects([mockProject, ...projects]);
       setIsModalOpen(false);
       setNewTitle("");
       setNewDesc("");
-      navigate(`/map?mapId=${mockProject.id}`);
+      navigate(`/map?projectId=${mockProject.id}`);
     } finally {
       setCreating(false);
     }
@@ -138,20 +136,6 @@ export default function ProjectsPage() {
             className="bg-transparent border-none outline-none text-text-primary w-full text-sm placeholder:text-text-tertiary"
           />
         </div>
-
-        {/* Filter Select */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-text-tertiary">Filter:</span>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value as any)}
-            className="input input-sm text-sm"
-          >
-            <option value="all">All Projects ({projects.length})</option>
-            <option value="public">Public Maps</option>
-            <option value="private">My Private Maps</option>
-          </select>
-        </div>
       </div>
 
       {/* Projects Grid */}
@@ -175,7 +159,7 @@ export default function ProjectsPage() {
             <div
               key={p.id}
               className="card card-interactive cursor-pointer group flex flex-col overflow-hidden hover-lift"
-              onClick={() => navigate(`/map?mapId=${p.id}`)}
+              onClick={() => navigate(`/map?projectId=${p.id}`)}
             >
               {/* Thumbnail / Visual Header */}
               <div className="relative flex items-center justify-center h-36 bg-gradient-to-br from-bg-tertiary to-bg-recessed">
@@ -194,13 +178,9 @@ export default function ProjectsPage() {
                 </svg>
 
                 <span
-                  className={`absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-[0.7rem] font-semibold border ${
-                    p.is_public
-                      ? "bg-success/10 text-success border-success/30"
-                      : "bg-accent/10 text-accent border-accent/30"
-                  }`}
+                  className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-[0.7rem] font-semibold border bg-primary/10 text-primary border-primary/30"
                 >
-                  {p.is_public ? "Public" : "Private"}
+                  {(p.maps || []).length} published {(p.maps || []).length === 1 ? "map" : "maps"}
                 </span>
               </div>
 
@@ -222,7 +202,7 @@ export default function ProjectsPage() {
                     Basemap: {p.basemap || "Dark"}
                   </span>
                   <span className="text-sm font-semibold text-primary flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
-                    Open Map
+                    Open Project
                     <span className="inline-block transition-transform duration-200 group-hover:translate-x-0.5">
                       →
                     </span>
@@ -297,24 +277,6 @@ export default function ProjectsPage() {
                   <option value="dataviz-light">Positron (Light)</option>
                   <option value="satellite">Satellite Imagery</option>
                 </select>
-              </div>
-
-              {/* Public Toggle */}
-              <div className="flex items-center justify-between gap-4 py-1">
-                <div>
-                  <div className="text-sm font-medium text-text-primary">
-                    Public Access
-                  </div>
-                  <div className="text-xs text-text-tertiary mt-0.5">
-                    Allow team members to view this map project
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={newPublic}
-                  onChange={(e) => setNewPublic(e.target.checked)}
-                  className="w-[18px] h-[18px] accent-primary cursor-pointer rounded"
-                />
               </div>
 
               {/* Actions */}
