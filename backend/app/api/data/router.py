@@ -223,7 +223,7 @@ async def get_mvt_tile(
                     bounds.geom
                 )
         )
-        SELECT ST_AsMVT(mvt_features.*, :layer_name, 4096, 'geom') AS tile
+        SELECT ST_AsMVT(mvt_features.*, 'default', 4096, 'geom') AS tile
         FROM mvt_features
     """)
 
@@ -234,7 +234,6 @@ async def get_mvt_tile(
             "x": x,
             "y": y,
             "dataset_id": dataset_id,
-            "layer_name": dataset.name[:64],
         },
     )
     row = result.one_or_none()

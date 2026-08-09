@@ -47,6 +47,7 @@ export default function MapPage() {
   const [undoStack] = useState<any[]>([]);
   const [redoStack] = useState<any[]>([]);
   const [publishedPanelOpen, setPublishedPanelOpen] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
   const { isAvailable } = useModules();
 
@@ -88,9 +89,115 @@ export default function MapPage() {
           zoom: projData.zoom,
         });
       })
-      .catch((err) => setStatusMsg("Failed to load project: " + String(err)));
+      .catch((err) => console.error("Failed to load project:", err));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
+
+  // Synchronize layer tree nodes with MapLibre map sources and layers
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+
+    const syncLayers = () => {
+      if (!map.isStyleLoaded()) {
+        map.once("styledata", syncLayers);
+        return;
+      }
+
+      const leafLayers = tree.nodes.filter(
+        (n) => n.kind === "layer" && (n as any).tileUrl
+      );
+      const leafIds = new Set(leafLayers.map((l) => l.id));
+
+      // 1. Remove layers whose URL changed
+      leafLayers.forEach((layer: any) => {
+        const existingSource = map.getSource(layer.id) as any;
+        if (existingSource) {
+          const tiles: string[] = existingSource.tiles || [];
+          if (tiles[0] !== layer.tileUrl) {
+            if (map.getLayer(layer.id)) map.removeLayer(layer.id);
+            map.removeSource(layer.id);
+          }
+        }
+      });
+
+      // 2. Remove stale layers not present in the layer tree
+      const style = map.getStyle();
+      if (style && style.layers) {
+        style.layers.forEach((lyr: any) => {
+          if (map.getSource(lyr.id) && !leafIds.has(lyr.id)) {
+            try {
+              if (map.getLayer(lyr.id)) map.removeLayer(lyr.id);
+              if (map.getSource(lyr.id)) map.removeSource(lyr.id);
+            } catch (err) {
+              console.error("Error removing stale map layer/source:", err);
+            }
+          }
+        });
+      }
+
+      // 3. Add or update layers
+      leafLayers.forEach((layer: any) => {
+        try {
+          if (!map.getSource(layer.id)) {
+            if (layer.layerType === "raster") {
+              map.addSource(layer.id, {
+                type: "raster",
+                tiles: [layer.tileUrl],
+                tileSize: 256,
+              });
+              map.addLayer({
+                id: layer.id,
+                type: "raster",
+                source: layer.id,
+                layout: {
+                  visibility: layer.visible ? "visible" : "none",
+                },
+              });
+            } else {
+              map.addSource(layer.id, {
+                type: "vector",
+                tiles: [layer.tileUrl],
+              });
+              map.addLayer({
+                id: layer.id,
+                type: "fill",
+                source: layer.id,
+                "source-layer": "default",
+                paint: {
+                  "fill-color": layer.color || "#3b82f6",
+                  "fill-opacity": layer.opacity ?? 0.6,
+                },
+                layout: {
+                  visibility: layer.visible ? "visible" : "none",
+                },
+              });
+            }
+          } else {
+            const visibility = layer.visible ? "visible" : "none";
+            if (map.getLayer(layer.id)) {
+              if (map.getLayoutProperty(layer.id, "visibility") !== visibility) {
+                map.setLayoutProperty(layer.id, "visibility", visibility);
+              }
+              if (layer.layerType === "vector") {
+                map.setPaintProperty(layer.id, "fill-color", layer.color || "#3b82f6");
+                map.setPaintProperty(layer.id, "fill-opacity", layer.opacity ?? 0.6);
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Error syncing layer:", layer.name, e);
+        }
+      });
+    };
+
+    syncLayers();
+
+    map.on("style.load", syncLayers);
+    return () => {
+      map.off("style.load", syncLayers);
+    };
+  }, [mapReady, basemap, tree.nodes]);
 
   function handleImportLayers(
     layers: NewLayerInput[],
