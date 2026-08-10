@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchProjects, createProject, ProjectItem } from "@/lib/projects";
 import { Button } from "@packages/ui";
-import { Plus } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
@@ -177,10 +177,9 @@ export default function ProjectsPage() {
                   <line x1="16" y1="6" x2="16" y2="22" />
                 </svg>
 
-                <span
-                  className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-[0.7rem] font-semibold border bg-primary/10 text-primary border-primary/30"
-                >
-                  {(p.maps || []).length} published {(p.maps || []).length === 1 ? "map" : "maps"}
+                <span className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-[0.7rem] font-semibold border bg-primary/10 text-primary border-primary/30">
+                  {(p.maps || []).length} published{" "}
+                  {(p.maps || []).length === 1 ? "map" : "maps"}
                 </span>
               </div>
 
@@ -295,6 +294,13 @@ export default function ProjectsPage() {
                 >
                   {creating ? "Creating..." : "Create Project"}
                 </button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  leftIcon={<Download className="h-4 w-4" />}
+                >
+                  Export CSV
+                </Button>
               </div>
             </form>
           </div>

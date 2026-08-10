@@ -58,7 +58,7 @@ function RootDropZone({
       className={`h-8 rounded-md border border-dashed flex items-center justify-center text-[0.65rem] transition-colors animate-fade-in ${
         over
           ? "border-primary/60 bg-primary/5 text-primary"
-          : "border-border-secondary/50 text-text-quaternary"
+          : "border-border-secondary/50 text-subtle"
       }`}
     >
       Drop here to move to root
@@ -114,7 +114,7 @@ export function LayerPanel({
 
   return (
     <div
-      className={`absolute top-16 z-20 flex flex-col bg-elevated/95 backdrop-blur-xl border border-border-primary rounded-xl shadow-xl transition-all duration-300 ease-in-out ${
+      className={`absolute top-16 z-20 flex flex-col bg-elevated/95 backdrop-blur-xl border border-border-primary rounded-xl shadow-elevated transition-all duration-300 ease-in-out ${
         minimized ? "w-10" : "w-64"
       }`}
       style={leftStyle}
@@ -128,7 +128,7 @@ export function LayerPanel({
               onClick={() => setLayersMenuOpen((v) => !v)}
               className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-surface-hover transition-colors group"
             >
-              <Layers size={14} className="text-text-secondary" />
+              <Layers size={14} className="text-muted" />
               <span className="text-xs font-bold text-text-primary">
                 Layers
               </span>
@@ -139,17 +139,17 @@ export function LayerPanel({
               )}
               <ChevronDown
                 size={12}
-                className={`text-text-quaternary transition-transform duration-200 ${
+                className={`text-subtle transition-transform duration-200 ${
                   layersMenuOpen ? "rotate-180" : ""
                 }`}
               />
             </button>
 
             {layersMenuOpen && (
-              <div className="absolute left-0 top-full mt-1.5 w-52 bg-elevated border border-border-primary rounded-xl shadow-dropdown py-1.5 z-50 animate-fade-in">
+              <div className="absolute left-0 top-full mt-1.5 w-52 bg-elevated border border-border-primary rounded-xl shadow-elevated py-1.5 z-50 animate-fade-in">
                 <button
                   type="button"
-                  className="dropdown-item w-full gap-2.5"
+                  className="dropdown-item flex w-full gap-2.5 justify-start align-center p-2.5"
                   onClick={() => {
                     setLayersMenuOpen(false);
                     onOpenImport();
@@ -160,7 +160,7 @@ export function LayerPanel({
                 </button>
                 <button
                   type="button"
-                  className="dropdown-item w-full gap-2.5"
+                  className="dropdown-item flex w-full gap-2.5 justify-start align-center p-2.5"
                   onClick={() => {
                     setLayersMenuOpen(false);
                     onAddFolder(null);
@@ -173,7 +173,7 @@ export function LayerPanel({
                 {isAvailableModule("resource-module") && (
                   <button
                     type="button"
-                    className="dropdown-item w-full gap-2.5"
+                    className="dropdown-item flex w-full gap-2.5 justify-start align-center p-2.5"
                     onClick={() => {
                       setLayersMenuOpen(false);
                       onOpenImport();
@@ -186,8 +186,8 @@ export function LayerPanel({
 
                 {totalLayers > 0 && (
                   <>
-                    <div className="h-px bg-border-secondary mx-2 my-1" />
-                    <div className="px-3 py-1 text-[0.7rem] text-text-tertiary">
+                    <div className="h-px bg-divider mx-2 my-1" />
+                    <div className="px-3 py-1 text-[0.7rem] text-subtle">
                       📋 {totalLayers} layer{totalLayers !== 1 ? "s" : ""}{" "}
                       loaded
                     </div>
@@ -216,8 +216,8 @@ export function LayerPanel({
         <div className="flex flex-col gap-3 p-3 overflow-y-auto max-h-[calc(100vh-12rem)] scrollbar-thin">
           {rootNodes.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-5 text-center">
-              <Layers size={24} className="text-text-quaternary opacity-40" />
-              <div className="text-[0.72rem] text-text-tertiary leading-snug">
+              <Layers size={24} className="text-subtle opacity-40" />
+              <div className="text-[0.72rem] text-subtle leading-snug">
                 No layers yet.
               </div>
               <div className="flex gap-1.5 mt-1">
@@ -259,15 +259,6 @@ export function LayerPanel({
               }
             />
           )}
-
-          {isAvailableModule("hydrology-module") && (
-            <div className="flex flex-col gap-1 pt-1 border-t border-border-secondary">
-              <div className="text-[0.65rem] font-semibold uppercase tracking-widest text-text-quaternary mb-1">
-                Hydrology Module
-              </div>
-            </div>
-          )}
-
         </div>
       )}
     </div>

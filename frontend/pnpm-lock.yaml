@@ -59,6 +59,12 @@ importers:
 
   apps/web:
     dependencies:
+      '@packages/charts':
+        specifier: workspace:*
+        version: link:../../packages/charts
+      '@packages/cookie-consent':
+        specifier: workspace:*
+        version: link:../../packages/cookie-consent
       '@packages/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -109,7 +115,7 @@ importers:
         specifier: ^8.57.0
         version: 8.57.1
       tailwindcss:
-        specifier: ^4.0.0
+        specifier: ^4.1.18
         version: 4.3.3
       typescript:
         specifier: 5.5.4

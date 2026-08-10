@@ -182,8 +182,7 @@ const buttonVariants = cva(
  * Button component props
  */
 export interface ButtonProps
-  extends
-    Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color">,
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color">,
     VariantProps<typeof buttonVariants> {
   /**
    * Icon element to display before the button text
