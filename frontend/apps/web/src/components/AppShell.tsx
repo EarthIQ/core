@@ -3,6 +3,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { useModules } from "@/lib/modules";
+import { usePermissions } from "@/lib/usePermissions";
 import {
   moduleRegistry,
   type ModuleBundle,
@@ -23,6 +24,20 @@ const CORE_NAV: NavItem[] = [
 ];
 
 /**
+ * Configurable icon map for installed modules.
+ * Can be configured via icon name or module name.
+ */
+const MODULE_ICON_MAP: Record<string, string> = {
+  "ai-module": "🤖",
+  "hydrology-module": "💧",
+  "resources-module": "📚",
+  "analytics-module": "📈",
+  "climate-module": "🌍",
+  "biodiversity-module": "🌿",
+  "satellite-module": "🛰️",
+};
+
+/**
  * Loads navItem from each enabled module's bundle (lazy, cached).
  */
 function useModuleNavItems(): NavItem[] {
@@ -39,7 +54,7 @@ function useModuleNavItems(): NavItem[] {
       enabled.map((m) =>
         moduleRegistry[m.name]().then((bundle: ModuleBundle) => ({
           ...bundle.navItem,
-          icon: "🧩",
+          icon: bundle.navItem.icon || MODULE_ICON_MAP[m.name] || "🧩",
         })),
       ),
     ).then(setNavItems);
@@ -246,11 +261,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const popoverRef = useRef<HTMLDivElement>(null);
+  const { canView } = usePermissions();
   const moduleNav = useModuleNavItems();
   const adminNav = user?.is_superuser
     ? [{ label: "Admin", to: "/admin", icon: "🛡️" }]
     : [];
-  const allNav = [...CORE_NAV, ...adminNav, ...moduleNav];
+  const rawNav = [...CORE_NAV, ...adminNav, ...moduleNav];
+  
+  // Filter nav items based on user's view permission
+  const allNav = rawNav.filter((item) => {
+    const compName = item.to.replace("/", "");
+    return compName === "dashboard" || canView(compName);
+  });
 
   const isMapView = location.pathname.startsWith("/map");
 

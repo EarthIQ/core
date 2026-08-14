@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchProjects, createProject, ProjectItem } from "@/lib/projects";
+import { usePermissions } from "@/lib/usePermissions";
 import { Button } from "@packages/ui";
 import { Download, Plus } from "lucide-react";
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
+  const { canAdd } = usePermissions();
   const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -102,14 +104,16 @@ export default function ProjectsPage() {
           </div>
         </div>
 
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          variant="primary"
-          size="md"
-          leftIcon={<Plus />}
-        >
-          Create Project
-        </Button>
+        {canAdd("projects") && (
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            variant="primary"
+            size="md"
+            leftIcon={<Plus />}
+          >
+            Create Project
+          </Button>
+        )}
       </div>
 
       {/* Filter Bar */}
@@ -294,13 +298,6 @@ export default function ProjectsPage() {
                 >
                   {creating ? "Creating..." : "Create Project"}
                 </button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  leftIcon={<Download className="h-4 w-4" />}
-                >
-                  Export CSV
-                </Button>
               </div>
             </form>
           </div>

@@ -49,7 +49,7 @@ def generate_frontend_routes(lock: dict) -> None:
         "  /** URL path this module mounts at (e.g. \"/hydrology\"). */",
         "  routePath: string;",
         "  /** Top-nav entry for this module. */",
-        "  navItem: { label: string; to: string };",
+        "  navItem: { label: string; to: string; icon?: string };",
         "}",
         "",
         "/**",

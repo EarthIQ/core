@@ -17,6 +17,7 @@ export interface AuthUser {
   is_active: boolean;
   is_superuser: boolean;
   created_at: string;
+  effective_permissions?: string[];
 }
 
 interface AuthContextValue {

@@ -3,7 +3,7 @@ import typer
 import questionary
 from rich.console import Console
 
-from .registry import load_registry, load_lock
+from .registry import ROOT, load_registry, load_lock
 from .installer import install_selected, remove_module, clone_module
 from .workspace import update_backend_workspace, update_frontend_workspace
 from .codegen import generate_frontend_routes
@@ -18,6 +18,15 @@ def _rewire(lock: dict):
     update_frontend_workspace(lock)
     generate_frontend_routes(lock)
     generate_compose(lock)
+
+    # Automatically install frontend packages & update pnpm lockfile
+    frontend_dir = ROOT / "frontend"
+    if frontend_dir.exists():
+        console.print("[cyan]Installing frontend packages...[/]")
+        try:
+            subprocess.run(["pnpm", "install"], cwd=str(frontend_dir), check=False)
+        except FileNotFoundError:
+            console.print("[yellow]pnpm command not found. Skipping auto frontend package install.[/]")
 
 
 @app.command()

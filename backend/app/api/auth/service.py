@@ -259,3 +259,67 @@ async def authenticate_user(
     if not user.is_active:
         return None
     return user
+
+
+async def get_user_effective_permissions(db: AsyncSession, user: User) -> list[str]:
+    """
+    Computes effective permissions for a user.
+    Superusers automatically receive full access (*).
+    Regular users inherit all permissions granted to their assigned groups.
+    """
+    if user.is_superuser:
+        return ["*"]
+
+    user_with_groups = await get_user_by_id(db, user.id)
+    if not user_with_groups or not user_with_groups.groups:
+        return []
+
+    perms: set[str] = set()
+    for group in user_with_groups.groups:
+        # Load group permissions
+        full_group = await get_group_by_id(db, group.id)
+        if full_group and full_group.permissions:
+            for p in full_group.permissions:
+                perms.add(p.name)
+
+    return sorted(list(perms))
+
+
+async def ensure_default_component_permissions(db: AsyncSession) -> None:
+    """
+    Automatically seeds view, add, edit, delete permissions for core components and installed modules.
+    """
+    core_components = ["projects", "maps", "users", "groups", "permissions", "data", "admin"]
+    actions = ["view", "add", "edit", "delete"]
+
+    # Discover components from installed modules.lock.yaml if present
+    import yaml
+    from pathlib import Path
+    lock_file = Path("modules.lock.yaml")
+    module_components: list[str] = []
+    if lock_file.exists():
+        try:
+            lock = yaml.safe_load(lock_file.read_text()) or {}
+            for item in lock.get("selected", []):
+                mod_name = item.get("name", "").replace("-module", "")
+                if mod_name:
+                    module_components.append(mod_name)
+        except Exception:
+            pass
+
+    all_components = sorted(list(set(core_components + module_components)))
+    existing_perms_res = await db.execute(select(Permission.name))
+    existing_perm_names = set(existing_perms_res.scalars().all())
+
+    new_permissions = []
+    for comp in all_components:
+        for act in actions:
+            perm_name = f"{comp}:{act}"
+            if perm_name not in existing_perm_names:
+                desc = f"Permission to {act} {comp}"
+                new_permissions.append(Permission(name=perm_name, description=desc))
+
+    if new_permissions:
+        db.add_all(new_permissions)
+        await db.flush()
+

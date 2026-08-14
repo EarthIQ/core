@@ -33,6 +33,12 @@ async def lifespan(app: FastAPI):
     # Create all tables on startup (use Alembic for production migrations)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    # Ensure default permissions for core components & installed modules
+    from app.core.db import AsyncSessionLocal
+    from app.api.auth.service import ensure_default_component_permissions
+    async with AsyncSessionLocal() as db:
+        await ensure_default_component_permissions(db)
+        await db.commit()
     # Ensure the object-storage bucket exists in RustFS
     await object_storage.ensure_bucket()
     yield

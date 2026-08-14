@@ -70,5 +70,25 @@ def remove_module(name: str) -> dict:
     save_lock(lock)
     dest = MODULES_DIR / name
     if dest.exists():
-        shutil.rmtree(dest)
+        try:
+            shutil.rmtree(dest)
+        except Exception:
+            # Files created inside Docker containers are owned by root:root.
+            # Use docker run/exec to remove root-owned directory cleanly.
+            try:
+                subprocess.run(
+                    ["docker", "run", "--rm", "-v", f"{dest.parent.resolve()}:/modules", "alpine", "rm", "-rf", f"/modules/{name}"],
+                    check=True,
+                    capture_output=True
+                )
+            except Exception:
+                # If docker is not available or fails, fallback to chmod/rm via shell
+                import os, stat
+                def handle_remove_readonly(func, path, exc_info):
+                    try:
+                        os.chmod(path, stat.S_IWRITE | stat.S_IWUSR | stat.S_IRUSR)
+                        func(path)
+                    except Exception:
+                        pass
+                shutil.rmtree(dest, onerror=handle_remove_readonly)
     return lock

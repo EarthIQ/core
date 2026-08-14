@@ -1,5 +1,6 @@
 import { type FormEvent } from "react";
 import { CheckboxList } from "./CheckboxList";
+import { PermissionMatrix } from "./PermissionMatrix";
 import {
   type GroupFormState,
   type PermissionSummary,
@@ -52,17 +53,11 @@ export function GroupForm({
       </div>
 
       <div className="form-field">
-        <label className="form-label">Permissions</label>
-        <CheckboxList
-          options={permissions.map((p) => ({ id: p.id, label: p.name }))}
-          selected={form.permissions}
-          emptyMessage="Create a permission first to assign it here."
-          onChange={(id) =>
-            onChange({
-              ...form,
-              permissions: toggleSelection(form.permissions, id),
-            })
-          }
+        <label className="form-label">Component Permissions Matrix (View, Add, Edit, Delete)</label>
+        <PermissionMatrix
+          permissions={permissions}
+          selectedPermissionIds={form.permissions}
+          onChange={(nextIds) => onChange({ ...form, permissions: nextIds })}
         />
       </div>
 
