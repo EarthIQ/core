@@ -41,9 +41,13 @@ class UserRead(BaseModel):
     is_active: bool
     is_superuser: bool
     created_at: datetime
-    effective_permissions: list[str] = Field(default_factory=list)
 
     model_config = {"from_attributes": True}
+
+
+class UserMeRead(UserRead):
+    """Extended schema for the /me endpoint — includes computed effective permissions."""
+    effective_permissions: list[str] = Field(default_factory=list)
 
 
 class UserAdminRead(UserRead):

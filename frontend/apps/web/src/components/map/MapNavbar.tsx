@@ -3,6 +3,7 @@ import { ArrowLeft, Search, Share2, ChevronDown, Check, Map } from "lucide-react
 import { Button, Tooltip } from "@packages/ui";
 import { useAuth } from "@/lib/auth";
 import type { MapItem } from "@/lib/maps";
+import type { CollaboratorState } from "@/lib/useCollaboration";
 import { ShareDialog } from "./share/ShareDialog";
 import { Avatar } from "./share/Avatar";
 
@@ -17,6 +18,9 @@ interface MapNavbarProps {
   onTogglePublishedMaps?: () => void;
   onSelectMap: (id: string) => void;
   onBack: () => void;
+  /** Active collaborators (excluding self) */
+  collaborators?: CollaboratorState[];
+  isCollabConnected?: boolean;
 }
 
 export function MapNavbar({
@@ -30,6 +34,8 @@ export function MapNavbar({
   onTogglePublishedMaps,
   onSelectMap,
   onBack,
+  collaborators = [],
+  isCollabConnected = false,
 }: MapNavbarProps) {
   const { user } = useAuth();
   const [searchVal, setSearchVal] = useState("");
@@ -152,6 +158,47 @@ export function MapNavbar({
 
         {/* Right: collaborators + share */}
         <div className="flex items-center gap-2">
+          {/* Collaborator avatars — Google Docs style */}
+          {collaborators.length > 0 && (
+            <div className="flex items-center">
+              {/* Show up to 4 avatars, stacked with overlap */}
+              {collaborators.slice(0, 4).map((c) => (
+                <Tooltip
+                  key={c.user_id}
+                  content={
+                    <span className="flex flex-col gap-0.5">
+                      <span className="font-semibold">{c.full_name || c.email}</span>
+                      <span className="text-[10px] text-text-tertiary">{c.email}</span>
+                      <span className="text-[10px] text-emerald-400">● Editing now</span>
+                    </span>
+                  }
+                  placement="bottom"
+                >
+                  <div className="relative -ml-2 first:ml-0">
+                    <Avatar email={c.email} name={c.full_name ?? undefined} size={30} />
+                    {/* Live pulse dot */}
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-elevated rounded-full animate-pulse" />
+                  </div>
+                </Tooltip>
+              ))}
+              {collaborators.length > 4 && (
+                <div className="-ml-2 w-[30px] h-[30px] rounded-full bg-surface-hover border border-border-primary text-text-secondary text-[10px] font-semibold flex items-center justify-center shrink-0">
+                  +{collaborators.length - 4}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Connection status dot */}
+          {isCollabConnected && (
+            <Tooltip content="Live collaboration active" placement="bottom">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+            </Tooltip>
+          )}
+
+          <span className="w-px h-5 bg-border-primary" />
+
+          {/* Self avatar */}
           <Tooltip content={user?.email || "User Profile"} placement="bottom">
             <div className="w-8 h-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0 border border-primary/20 cursor-pointer">
               {userInitial}

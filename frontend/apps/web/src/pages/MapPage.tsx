@@ -28,6 +28,8 @@ import {
 import type { TreeNode } from "@/components/map/layer-panel/types";
 import { useMapLibre } from "@/hooks/useMapLibre";
 import { PublishedMapsPanel } from "@/components/map/PublishedMapsPanel";
+import { useCollaboration } from "@/lib/useCollaboration";
+import { CollaboratorCursors } from "@/components/map/CollaboratorCursors";
 
 export default function MapPage() {
   const [searchParams] = useSearchParams();
@@ -66,6 +68,12 @@ export default function MapPage() {
   } = useMapLibre(mapContainerRef, "dataviz-dark");
 
   const tree = useLayerTree([]);
+
+  // ── Real-time collaboration ──────────────────────────────────────────────────
+  const { collaborators, isConnected: isCollabConnected } = useCollaboration(
+    projectId,
+    mapRef
+  );
 
   useEffect(() => {
     if (mapRef.current) setTimeout(() => mapRef.current?.resize(), 300);
@@ -322,6 +330,8 @@ export default function MapPage() {
           await handleSaveConfig();
           navigate("/projects");
         }}
+        collaborators={collaborators}
+        isCollabConnected={isCollabConnected}
       />
 
       <div
@@ -330,6 +340,14 @@ export default function MapPage() {
         id="map-canvas"
         style={{ top: 0, right: 0, bottom: 0, left: aiChatOpen ? 360 : 0 }}
       />
+
+      {/* Collaborator cursor overlay — sits just above the map canvas */}
+      {mapReady && (
+        <CollaboratorCursors
+          collaborators={collaborators}
+          mapRef={mapRef}
+        />
+      )}
 
       {!mapReady && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-bg-primary/60 backdrop-blur-sm pointer-events-none">

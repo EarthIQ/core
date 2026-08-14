@@ -17,6 +17,7 @@ from app.api.auth.schemas import (
     UserAdminRead,
     UserCreate,
     UserLogin,
+    UserMeRead,
     UserRead,
     UserUpdate,
 )
@@ -95,7 +96,7 @@ async def _require_admin(current_user: User = Depends(_get_current_user)):
     return current_user
 
 
-@router.get("/me", response_model=UserRead)
+@router.get("/me", response_model=UserMeRead)
 async def me(current_user=Depends(_get_current_user), db: AsyncSession = Depends(get_db)):
     from app.api.auth.service import get_user_effective_permissions
     perms = await get_user_effective_permissions(db, current_user)
