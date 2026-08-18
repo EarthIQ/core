@@ -14,6 +14,68 @@ export interface UserSummary {
   groups?: GroupSummary[];
 }
 
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface UserFilterState {
+  search: string;
+  is_superuser: string; // 'all' | 'true' | 'false'
+  group_id: string; // 'all' | <id>
+  sort_by: "created_at" | "email" | "full_name";
+  sort_order: "asc" | "desc";
+  page: number;
+  page_size: number;
+}
+
+export const defaultUserFilterState: UserFilterState = {
+  search: "",
+  is_superuser: "all",
+  group_id: "all",
+  sort_by: "created_at",
+  sort_order: "desc",
+  page: 1,
+  page_size: 10,
+};
+
+export interface GroupFilterState {
+
+  search: string;
+  sort_by: "name" | "created_at";
+  sort_order: "asc" | "desc";
+  page: number;
+  page_size: number;
+}
+
+export const defaultGroupFilterState: GroupFilterState = {
+  search: "",
+  sort_by: "name",
+  sort_order: "asc",
+  page: 1,
+  page_size: 10,
+};
+
+export interface PermissionFilterState {
+  search: string;
+  sort_by: "name";
+  sort_order: "asc" | "desc";
+  page: number;
+  page_size: number;
+}
+
+export const defaultPermissionFilterState: PermissionFilterState = {
+  search: "",
+  sort_by: "name",
+  sort_order: "asc",
+  page: 1,
+  page_size: 10,
+};
+
+
 export interface GroupSummary {
   id: string;
   name: string;
@@ -22,6 +84,7 @@ export interface GroupSummary {
   permissions?: PermissionSummary[];
   users?: UserSummary[];
 }
+
 
 export interface UserFormState {
   email: string;

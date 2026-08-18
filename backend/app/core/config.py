@@ -41,6 +41,19 @@ class Settings(BaseSettings):
     storage_bucket: str = "earthiq"
     storage_region: str = "us-east-1"  # Required by boto3; RustFS ignores it
 
+    # ── Email / SMTP ──────────────────────────────────────────────────────────
+    # Leave smtp_host empty to disable email sending entirely (graceful no-op)
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "noreply@earthiq.io"
+    smtp_tls: bool = True  # Use STARTTLS (port 587). Set False for port 465 SSL.
+
+    # ── Frontend ──────────────────────────────────────────────────────────────
+    # Used to construct invite accept links sent in emails
+    frontend_url: str = "http://localhost:3000"
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-from sqlalchemy import select
+import math
+from sqlalchemy import distinct, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -25,13 +26,61 @@ async def get_user_by_id(db: AsyncSession, user_id: str) -> Optional[User]:
     return result.scalar_one_or_none()
 
 
-async def list_users(db: AsyncSession) -> list[User]:
-    result = await db.execute(
-        select(User)
-        .options(selectinload(User.groups))
-        .order_by(User.created_at.desc())
+async def list_users(
+    db: AsyncSession,
+    search: Optional[str] = None,
+    is_superuser: Optional[bool] = None,
+    group_id: Optional[str] = None,
+    sort_by: str = "created_at",
+    sort_order: str = "desc",
+    page: int = 1,
+    page_size: int = 20,
+) -> tuple[list[User], int, int]:
+    base_query = select(User)
+
+    if group_id:
+        base_query = base_query.join(User.groups).where(Group.id == group_id)
+
+    if search:
+        search_pattern = f"%{search.strip()}%"
+        base_query = base_query.where(
+            or_(
+                User.email.ilike(search_pattern),
+                User.full_name.ilike(search_pattern),
+            )
+        )
+
+    if is_superuser is not None:
+        base_query = base_query.where(User.is_superuser == is_superuser)
+
+    # Count total matching rows
+    count_query = select(func.count(distinct(User.id))).select_from(base_query.subquery())
+    total_result = await db.execute(count_query)
+    total = total_result.scalar_one() or 0
+
+    # Sorting
+    sort_column = getattr(User, sort_by, User.created_at)
+    if sort_order.lower() == "asc":
+        order_clause = sort_column.asc()
+    else:
+        order_clause = sort_column.desc()
+
+    total_pages = max(1, math.ceil(total / page_size)) if total > 0 else 1
+    offset = (page - 1) * page_size
+
+    # Fetch users with preloaded groups
+    data_query = (
+        base_query.options(selectinload(User.groups))
+        .distinct()
+        .order_by(order_clause)
+        .offset(offset)
+        .limit(page_size)
     )
-    return list(result.scalars().unique().all())
+    result = await db.execute(data_query)
+    users = list(result.scalars().unique().all())
+
+    return users, total, total_pages
+
 
 
 async def create_user(
@@ -105,9 +154,42 @@ async def delete_user(db: AsyncSession, user: User) -> None:
     await db.flush()
 
 
-async def list_permissions(db: AsyncSession) -> list[Permission]:
-    result = await db.execute(select(Permission).order_by(Permission.name))
-    return list(result.scalars().all())
+async def list_permissions(
+    db: AsyncSession,
+    search: Optional[str] = None,
+    sort_by: str = "name",
+    sort_order: str = "asc",
+    page: Optional[int] = None,
+    page_size: Optional[int] = None,
+) -> tuple[list[Permission], int, int]:
+    base_query = select(Permission)
+    if search:
+        search_pattern = f"%{search.strip()}%"
+        base_query = base_query.where(
+            or_(
+                Permission.name.ilike(search_pattern),
+                Permission.description.ilike(search_pattern),
+            )
+        )
+
+    count_query = select(func.count(distinct(Permission.id))).select_from(base_query.subquery())
+    total_result = await db.execute(count_query)
+    total = total_result.scalar_one() or 0
+
+    sort_column = getattr(Permission, sort_by, Permission.name)
+    order_clause = sort_column.asc() if sort_order.lower() == "asc" else sort_column.desc()
+
+    if page is not None and page_size is not None:
+        total_pages = max(1, math.ceil(total / page_size)) if total > 0 else 1
+        offset = (page - 1) * page_size
+        data_query = base_query.order_by(order_clause).offset(offset).limit(page_size)
+    else:
+        total_pages = 1
+        data_query = base_query.order_by(order_clause)
+
+    result = await db.execute(data_query)
+    permissions = list(result.scalars().all())
+    return permissions, total, total_pages
 
 
 async def create_permission(db: AsyncSession, data: PermissionCreate) -> Permission:
@@ -136,13 +218,53 @@ async def delete_permission(db: AsyncSession, permission: Permission) -> None:
     await db.flush()
 
 
-async def list_groups(db: AsyncSession) -> list[Group]:
-    result = await db.execute(
-        select(Group)
-        .options(selectinload(Group.permissions), selectinload(Group.users))
-        .order_by(Group.name)
-    )
-    return list(result.scalars().unique().all())
+async def list_groups(
+    db: AsyncSession,
+    search: Optional[str] = None,
+    sort_by: str = "name",
+    sort_order: str = "asc",
+    page: Optional[int] = None,
+    page_size: Optional[int] = None,
+) -> tuple[list[Group], int, int]:
+    base_query = select(Group)
+    if search:
+        search_pattern = f"%{search.strip()}%"
+        base_query = base_query.where(
+            or_(
+                Group.name.ilike(search_pattern),
+                Group.description.ilike(search_pattern),
+            )
+        )
+
+    count_query = select(func.count(distinct(Group.id))).select_from(base_query.subquery())
+    total_result = await db.execute(count_query)
+    total = total_result.scalar_one() or 0
+
+    sort_column = getattr(Group, sort_by, Group.name)
+    order_clause = sort_column.asc() if sort_order.lower() == "asc" else sort_column.desc()
+
+    if page is not None and page_size is not None:
+        total_pages = max(1, math.ceil(total / page_size)) if total > 0 else 1
+        offset = (page - 1) * page_size
+        data_query = (
+            base_query.options(selectinload(Group.permissions), selectinload(Group.users))
+            .distinct()
+            .order_by(order_clause)
+            .offset(offset)
+            .limit(page_size)
+        )
+    else:
+        total_pages = 1
+        data_query = (
+            base_query.options(selectinload(Group.permissions), selectinload(Group.users))
+            .distinct()
+            .order_by(order_clause)
+        )
+
+    result = await db.execute(data_query)
+    groups = list(result.scalars().unique().all())
+    return groups, total, total_pages
+
 
 
 async def create_group(

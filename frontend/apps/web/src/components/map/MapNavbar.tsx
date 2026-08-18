@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Search, Share2, ChevronDown, Check, Map } from "lucide-react";
+import {
+  ArrowLeft,
+  Search,
+  Share2,
+  ChevronDown,
+  Check,
+  Map,
+} from "lucide-react";
 import { Button, Tooltip } from "@packages/ui";
 import { useAuth } from "@/lib/auth";
 import type { MapItem } from "@/lib/maps";
@@ -167,15 +174,25 @@ export function MapNavbar({
                   key={c.user_id}
                   content={
                     <span className="flex flex-col gap-0.5">
-                      <span className="font-semibold">{c.full_name || c.email}</span>
-                      <span className="text-[10px] text-text-tertiary">{c.email}</span>
-                      <span className="text-[10px] text-emerald-400">● Editing now</span>
+                      <span className="font-semibold">
+                        {c.full_name || c.email}
+                      </span>
+                      <span className="text-[10px] text-text-tertiary">
+                        {c.email}
+                      </span>
+                      <span className="text-[10px] text-emerald-400">
+                        ● Editing now
+                      </span>
                     </span>
                   }
                   placement="bottom"
                 >
                   <div className="relative -ml-2 first:ml-0">
-                    <Avatar email={c.email} name={c.full_name ?? undefined} size={30} />
+                    <Avatar
+                      email={c.email}
+                      name={c.full_name ?? undefined}
+                      size={30}
+                    />
                     {/* Live pulse dot */}
                     <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-elevated rounded-full animate-pulse" />
                   </div>

@@ -7,7 +7,7 @@ from sqlalchemy import select, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.auth.models import User, UserGroup
-from app.api.maps.models import MapModel, MapGroupAccess
+from app.api.maps.models import MapModel, MapGroupAccess, MapUserAccess
 from app.api.maps.schemas import MapCreate, MapUpdate, MapShareUpdate, MapRead, GroupAccessSchema, PermissionLevel
 
 
@@ -17,15 +17,38 @@ def compute_user_permission(map_item: MapModel, user: Optional[User]) -> Optiona
     Returns "admin" | "write" | "read" | None.
     """
     if not user:
-        return "read" if map_item.is_public else None
+        if map_item.is_public:
+            return "read"
+        if getattr(map_item, "share_link_enabled", False):
+            link_role = getattr(map_item, "share_link_role", "viewer")
+            return "write" if link_role == "editor" else "read"
+        return None
 
     if user.is_superuser or map_item.owner_id == user.id:
         return "admin"
 
-    user_group_ids = {g.id for g in user.groups} if hasattr(user, "groups") and user.groups else set()
-    
-    highest_perm: Optional[PermissionLevel] = "read" if map_item.is_public else None
+    highest_perm: Optional[PermissionLevel] = None
 
+    if map_item.is_public:
+        highest_perm = "read"
+
+    if getattr(map_item, "share_link_enabled", False):
+        link_role = getattr(map_item, "share_link_role", "viewer")
+        highest_perm = "write" if link_role == "editor" else "read"
+
+    # Check direct per-user access
+    if hasattr(map_item, "user_access") and map_item.user_access:
+        for u_acc in map_item.user_access:
+            if u_acc.user_id == user.id and not u_acc.pending:
+                if u_acc.role == "owner":
+                    return "admin"
+                if u_acc.role == "editor":
+                    highest_perm = "write"
+                elif u_acc.role in ("commenter", "viewer") and highest_perm is None:
+                    highest_perm = "read"
+
+    # Check group access
+    user_group_ids = {g.id for g in user.groups} if hasattr(user, "groups") and user.groups else set()
     for access in map_item.group_access:
         if access.group_id in user_group_ids:
             perm = access.permission
@@ -147,6 +170,17 @@ async def create_map(db: AsyncSession, owner: User, body: MapCreate) -> MapRead:
     )
     db.add(map_item)
     await db.flush()
+
+    # Automatically grant owner role in user access table
+    owner_user_access = MapUserAccess(
+        id=str(uuid.uuid4()),
+        map_id=map_item.id,
+        user_id=owner.id,
+        email=owner.email,
+        role="owner",
+        pending=False,
+    )
+    db.add(owner_user_access)
 
     for ga in body.group_access:
         access = MapGroupAccess(

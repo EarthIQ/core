@@ -31,64 +31,86 @@ export function GroupForm({
   onSubmit,
   onCancel,
 }: GroupFormProps) {
-  const fields = (
+  const content = (
     <form className="space-y-4" onSubmit={onSubmit}>
-      <div className="form-field">
-        <label className="form-label">Name</label>
+      <div className="space-y-1.5">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+          Group Name <span className="text-danger">*</span>
+        </label>
         <input
-          className="input"
+          type="text"
+          placeholder="e.g. Editors, Analysts, Managers"
+          className="input w-full rounded-lg border border-border-primary bg-surface px-3.5 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           value={form.name}
           onChange={(e) => onChange({ ...form, name: e.target.value })}
           required
         />
       </div>
 
-      <div className="form-field">
-        <label className="form-label">Description</label>
+      <div className="space-y-1.5">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+          Description
+        </label>
         <textarea
-          className="input min-h-[80px]"
+          placeholder="Brief description of the group's purpose and responsibilities..."
+          className="input min-h-[72px] w-full rounded-lg border border-border-primary bg-surface px-3.5 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           value={form.description}
           onChange={(e) => onChange({ ...form, description: e.target.value })}
         />
       </div>
 
-      <div className="form-field">
-        <label className="form-label">Component Permissions Matrix (View, Add, Edit, Delete)</label>
-        <PermissionMatrix
-          permissions={permissions}
-          selectedPermissionIds={form.permissions}
-          onChange={(nextIds) => onChange({ ...form, permissions: nextIds })}
-        />
+      <div className="space-y-1.5">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+          Component Permissions Matrix (View, Add, Edit, Delete)
+        </label>
+        <div className="max-h-60 overflow-y-auto rounded-lg border border-border-primary bg-surface p-1">
+          <PermissionMatrix
+            permissions={permissions}
+            selectedPermissionIds={form.permissions}
+            onChange={(nextIds) => onChange({ ...form, permissions: nextIds })}
+          />
+        </div>
       </div>
 
-      <div className="form-field">
-        <label className="form-label">Members</label>
-        <CheckboxList
-          options={users.map((u) => ({ id: u.id, label: u.email }))}
-          selected={form.user_ids}
-          emptyMessage="Create users first to add them to a group."
-          onChange={(id) =>
-            onChange({
-              ...form,
-              user_ids: toggleSelection(form.user_ids, id),
-            })
-          }
-        />
+      <div className="space-y-1.5">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+          Assigned Members
+        </label>
+        <div className="max-h-40 overflow-y-auto rounded-lg border border-border-primary bg-surface p-3">
+          <CheckboxList
+            options={users.map((u) => ({
+              id: u.id,
+              label: u.full_name ? `${u.full_name} (${u.email})` : u.email,
+            }))}
+            selected={form.user_ids}
+            emptyMessage="No users available yet."
+            onChange={(id) =>
+              onChange({
+                ...form,
+                user_ids: toggleSelection(form.user_ids, id),
+              })
+            }
+          />
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <button type="submit" className="btn btn-primary" disabled={submitting}>
-          {submitting ? "Saving…" : submitLabel}
-        </button>
+      <div className="mt-6 flex items-center justify-end gap-3 border-t border-border-primary pt-4">
         {onCancel && (
           <button
             type="button"
-            className="btn btn-secondary"
+            className="rounded-lg border border-border-primary px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
             onClick={onCancel}
           >
             Cancel
           </button>
         )}
+        <button
+          type="submit"
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:opacity-50"
+          disabled={submitting}
+        >
+          {submitting ? "Saving…" : submitLabel}
+        </button>
       </div>
     </form>
   );
@@ -96,15 +118,12 @@ export function GroupForm({
   if (title) {
     return (
       <section className="card p-6">
-        <h2 className="mb-4 text-xl font-semibold text-text-primary">
-          {title}
-        </h2>
-        {fields}
+        <h2 className="mb-4 text-xl font-semibold text-text-primary">{title}</h2>
+        {content}
       </section>
     );
   }
 
-  return (
-    <div className="mt-4 border-t border-border-primary pt-4">{fields}</div>
-  );
+  return content;
 }
+

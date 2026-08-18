@@ -1,6 +1,6 @@
-from __future__ import annotations
+from typing import Optional, Union
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +10,9 @@ from app.api.auth.schemas import (
     GroupCreate,
     GroupRead,
     GroupUpdate,
+    PaginatedGroupsResponse,
+    PaginatedPermissionsResponse,
+    PaginatedUsersResponse,
     PermissionCreate,
     PermissionRead,
     PermissionUpdate,
@@ -21,6 +24,8 @@ from app.api.auth.schemas import (
     UserRead,
     UserUpdate,
 )
+
+
 from app.api.auth.service import (
     authenticate_user,
     create_group,
@@ -107,12 +112,36 @@ async def me(current_user=Depends(_get_current_user), db: AsyncSession = Depends
 
 # ── User management ─────────────────────────────────────────────────────────
 
-@router.get("/users", response_model=list[UserAdminRead], summary="List all users")
+@router.get("/users", response_model=PaginatedUsersResponse, summary="List all users")
 async def get_users(
+    search: Optional[str] = Query(None, description="Search by email or full name"),
+    is_superuser: Optional[bool] = Query(None, description="Filter by superuser status"),
+    group_id: Optional[str] = Query(None, description="Filter by group ID"),
+    sort_by: str = Query("created_at", description="Sort field (created_at, email, full_name)"),
+    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(_require_admin),
 ):
-    return await list_users(db)
+    users, total, total_pages = await list_users(
+        db,
+        search=search,
+        is_superuser=is_superuser,
+        group_id=group_id,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        page=page,
+        page_size=page_size,
+    )
+    return PaginatedUsersResponse(
+        items=users,
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+    )
+
 
 
 @router.post(
@@ -175,12 +204,37 @@ async def delete_user_route(
 
 # ── Groups & Permissions ───────────────────────────────────────────────────────
 
-@router.get("/permissions", response_model=list[PermissionRead], summary="List all permissions")
+@router.get(
+    "/permissions",
+    response_model=Union[PaginatedPermissionsResponse, list[PermissionRead]],
+    summary="List all permissions",
+)
 async def get_permissions(
+    search: Optional[str] = Query(None, description="Search by permission name or description"),
+    sort_by: str = Query("name", description="Sort field"),
+    sort_order: str = Query("asc", regex="^(asc|desc)$", description="Sort order"),
+    page: Optional[int] = Query(None, ge=1, description="Page number"),
+    page_size: Optional[int] = Query(None, ge=1, le=100, description="Items per page"),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(_require_admin),
 ):
-    return await list_permissions(db)
+    perms, total, total_pages = await list_permissions(
+        db,
+        search=search,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        page=page,
+        page_size=page_size,
+    )
+    if page is not None and page_size is not None:
+        return PaginatedPermissionsResponse(
+            items=perms,
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+        )
+    return perms
 
 
 @router.post(
@@ -225,12 +279,38 @@ async def delete_permission_route(
     return None
 
 
-@router.get("/groups", response_model=list[GroupRead], summary="List all groups")
+@router.get(
+    "/groups",
+    response_model=Union[PaginatedGroupsResponse, list[GroupRead]],
+    summary="List all groups",
+)
 async def list_groups_route(
+    search: Optional[str] = Query(None, description="Search by group name or description"),
+    sort_by: str = Query("name", description="Sort field"),
+    sort_order: str = Query("asc", regex="^(asc|desc)$", description="Sort order"),
+    page: Optional[int] = Query(None, ge=1, description="Page number"),
+    page_size: Optional[int] = Query(None, ge=1, le=100, description="Items per page"),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(_require_admin),
 ):
-    return await list_groups(db)
+    groups, total, total_pages = await list_groups(
+        db,
+        search=search,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        page=page,
+        page_size=page_size,
+    )
+    if page is not None and page_size is not None:
+        return PaginatedGroupsResponse(
+            items=groups,
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+        )
+    return groups
+
 
 
 @router.post(

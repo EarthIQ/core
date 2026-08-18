@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@packages/ui";
@@ -8,12 +8,19 @@ import { UsersTab } from "@/components/admin/UsersTab";
 import { GroupsTab } from "@/components/admin/GroupsTab";
 import { PermissionsTab } from "@/components/admin/PermissionsTab";
 import {
+  type GroupFilterState,
   type GroupFormState,
   type GroupSummary,
+  type PaginatedResponse,
+  type PermissionFilterState,
   type PermissionFormState,
   type PermissionSummary,
+  type UserFilterState,
   type UserFormState,
   type UserSummary,
+  defaultGroupFilterState,
+  defaultPermissionFilterState,
+  defaultUserFilterState,
   emptyGroupForm,
   emptyPermissionForm,
   emptyUserForm,
@@ -75,77 +82,56 @@ function PermissionsIcon() {
 export default function AdminUsersPage() {
   const { user } = useAuth();
 
-  // ── Data ──────────────────────────────────────────────────────────────────
+  // ── Users Data ────────────────────────────────────────────────────────────
   const [users, setUsers] = useState<UserSummary[]>([]);
+  const [allUsers, setAllUsers] = useState<UserSummary[]>([]); // For group member pickers
+  const [userTotal, setUserTotal] = useState(0);
+  const [userTotalPages, setUserTotalPages] = useState(1);
+  const [userFilters, setUserFilters] = useState<UserFilterState>(defaultUserFilterState);
+  const [usersLoading, setUsersLoading] = useState(true);
+
+  // ── Groups Data ───────────────────────────────────────────────────────────
   const [groups, setGroups] = useState<GroupSummary[]>([]);
+  const [allGroups, setAllGroups] = useState<GroupSummary[]>([]); // For user group pickers
+  const [groupTotal, setGroupTotal] = useState(0);
+  const [groupTotalPages, setGroupTotalPages] = useState(1);
+  const [groupFilters, setGroupFilters] = useState<GroupFilterState>(defaultGroupFilterState);
+  const [groupsLoading, setGroupsLoading] = useState(true);
+
+  // ── Permissions Data ──────────────────────────────────────────────────────
   const [permissions, setPermissions] = useState<PermissionSummary[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [allPermissions, setAllPermissions] = useState<PermissionSummary[]>([]); // For permission matrix
+  const [permissionTotal, setPermissionTotal] = useState(0);
+  const [permissionTotalPages, setPermissionTotalPages] = useState(1);
+  const [permissionFilters, setPermissionFilters] = useState<PermissionFilterState>(defaultPermissionFilterState);
+  const [permissionsLoading, setPermissionsLoading] = useState(true);
+
+  // ── General Status ────────────────────────────────────────────────────────
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // ── Create forms ─────────────────────────────────────────────────────────
+  // ── Create modals & forms ────────────────────────────────────────────────
+  const [createUserModalOpen, setCreateUserModalOpen] = useState(false);
   const [userForm, setUserForm] = useState<UserFormState>(emptyUserForm);
+
+  const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
   const [groupForm, setGroupForm] = useState<GroupFormState>(emptyGroupForm);
-  const [permissionForm, setPermissionForm] =
-    useState<PermissionFormState>(emptyPermissionForm);
+
+  const [createPermissionModalOpen, setCreatePermissionModalOpen] = useState(false);
+  const [permissionForm, setPermissionForm] = useState<PermissionFormState>(emptyPermissionForm);
 
   // ── Edit state ────────────────────────────────────────────────────────────
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [editUserForm, setEditUserForm] =
-    useState<UserFormState>(emptyUserForm);
+  const [editUserForm, setEditUserForm] = useState<UserFormState>(emptyUserForm);
 
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
-  const [editGroupForm, setEditGroupForm] =
-    useState<GroupFormState>(emptyGroupForm);
+  const [editGroupForm, setEditGroupForm] = useState<GroupFormState>(emptyGroupForm);
 
-  const [editingPermissionId, setEditingPermissionId] = useState<string | null>(
-    null,
-  );
-  const [editPermissionForm, setEditPermissionForm] =
-    useState<PermissionFormState>(emptyPermissionForm);
+  const [editingPermissionId, setEditingPermissionId] = useState<string | null>(null);
+  const [editPermissionForm, setEditPermissionForm] = useState<PermissionFormState>(emptyPermissionForm);
 
   const isAdmin = Boolean(user?.is_superuser);
-
-  // ── Load data ─────────────────────────────────────────────────────────────
-
-  const loadData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [usersRes, groupsRes, permissionsRes] = await Promise.all([
-        api.get<UserSummary[]>("/api/auth/users"),
-        api.get<GroupSummary[]>("/api/auth/groups"),
-        api.get<PermissionSummary[]>("/api/auth/permissions"),
-      ]);
-      setUsers(usersRes);
-      setGroups(groupsRes);
-      setPermissions(permissionsRes);
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Unable to load admin data",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!isAdmin) {
-      setLoading(false);
-      return;
-    }
-    void loadData();
-  }, [isAdmin]);
-
-  const summaryCards = useMemo(
-    () => [
-      { label: "Users", value: users.length },
-      { label: "Groups", value: groups.length },
-      { label: "Permissions", value: permissions.length },
-    ],
-    [users.length, groups.length, permissions.length],
-  );
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -158,6 +144,149 @@ export default function AdminUsersPage() {
     setError(err instanceof ApiError ? err.message : fallback);
     setNotice(null);
   }
+
+  // ── Load Users ────────────────────────────────────────────────────────────
+
+  const loadUsers = useCallback(
+    async (filters: UserFilterState) => {
+      setUsersLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (filters.search) params.set("search", filters.search);
+        if (filters.is_superuser !== "all") params.set("is_superuser", filters.is_superuser);
+        if (filters.group_id !== "all") params.set("group_id", filters.group_id);
+        params.set("sort_by", filters.sort_by);
+        params.set("sort_order", filters.sort_order);
+        params.set("page", String(filters.page));
+        params.set("page_size", String(filters.page_size));
+
+        const res = await api.get<PaginatedResponse<UserSummary>>(
+          `/api/auth/users?${params.toString()}`,
+        );
+        setUsers(res.items);
+        setUserTotal(res.total);
+        setUserTotalPages(res.total_pages);
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : "Unable to load users");
+      } finally {
+        setUsersLoading(false);
+      }
+    },
+    [],
+  );
+
+  // ── Load Groups ───────────────────────────────────────────────────────────
+
+  const loadGroups = useCallback(
+    async (filters: GroupFilterState) => {
+      setGroupsLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (filters.search) params.set("search", filters.search);
+        params.set("sort_by", filters.sort_by);
+        params.set("sort_order", filters.sort_order);
+        params.set("page", String(filters.page));
+        params.set("page_size", String(filters.page_size));
+
+        const res = await api.get<PaginatedResponse<GroupSummary>>(
+          `/api/auth/groups?${params.toString()}`,
+        );
+        setGroups(res.items);
+        setGroupTotal(res.total);
+        setGroupTotalPages(res.total_pages);
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : "Unable to load groups");
+      } finally {
+        setGroupsLoading(false);
+      }
+    },
+    [],
+  );
+
+  // ── Load Permissions ──────────────────────────────────────────────────────
+
+  const loadPermissions = useCallback(
+    async (filters: PermissionFilterState) => {
+      setPermissionsLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (filters.search) params.set("search", filters.search);
+        params.set("sort_by", filters.sort_by);
+        params.set("sort_order", filters.sort_order);
+        params.set("page", String(filters.page));
+        params.set("page_size", String(filters.page_size));
+
+        const res = await api.get<PaginatedResponse<PermissionSummary>>(
+          `/api/auth/permissions?${params.toString()}`,
+        );
+        setPermissions(res.items);
+        setPermissionTotal(res.total);
+        setPermissionTotalPages(res.total_pages);
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : "Unable to load permissions");
+      } finally {
+        setPermissionsLoading(false);
+      }
+    },
+    [],
+  );
+
+  // ── Load Raw Metadata (all groups, all permissions, all users for form pickers) ──
+
+  const loadMetadata = useCallback(async () => {
+    try {
+      const [groupsRes, permsRes, usersRes] = await Promise.all([
+        api.get<GroupSummary[]>("/api/auth/groups"),
+        api.get<PermissionSummary[]>("/api/auth/permissions"),
+        api.get<PaginatedResponse<UserSummary>>("/api/auth/users?page_size=100"),
+      ]);
+      setAllGroups(Array.isArray(groupsRes) ? groupsRes : (groupsRes as PaginatedResponse<GroupSummary>).items);
+      setAllPermissions(Array.isArray(permsRes) ? permsRes : (permsRes as PaginatedResponse<PermissionSummary>).items);
+      setAllUsers(usersRes.items || []);
+    } catch {
+      // Non-critical background metadata fetch
+    }
+  }, []);
+
+  // Debounced load triggers
+  useEffect(() => {
+    if (!isAdmin) return;
+    const timer = setTimeout(() => {
+      void loadUsers(userFilters);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [isAdmin, userFilters, loadUsers]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    const timer = setTimeout(() => {
+      void loadGroups(groupFilters);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [isAdmin, groupFilters, loadGroups]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    const timer = setTimeout(() => {
+      void loadPermissions(permissionFilters);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [isAdmin, permissionFilters, loadPermissions]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      void loadMetadata();
+    }
+  }, [isAdmin, loadMetadata]);
+
+  const summaryCards = useMemo(
+    () => [
+      { label: "Users", value: userTotal },
+      { label: "Groups", value: groupTotal },
+      { label: "Permissions", value: permissionTotal },
+    ],
+    [userTotal, groupTotal, permissionTotal],
+  );
 
   // ── User handlers ─────────────────────────────────────────────────────────
 
@@ -172,9 +301,11 @@ export default function AdminUsersPage() {
         is_superuser: userForm.is_superuser,
         groups: userForm.groups,
       });
-      setUsers((prev) => [created, ...prev]);
       setUserForm(emptyUserForm);
+      setCreateUserModalOpen(false);
       notify(`Created user ${created.email}`);
+      void loadUsers(userFilters);
+      void loadMetadata();
     } catch (err) {
       fail(err, "Unable to create user");
     } finally {
@@ -210,10 +341,11 @@ export default function AdminUsersPage() {
         `/api/auth/users/${editingUserId}`,
         payload,
       );
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
       setEditingUserId(null);
       setEditUserForm(emptyUserForm);
       notify(`Updated user ${updated.email}`);
+      void loadUsers(userFilters);
+      void loadMetadata();
     } catch (err) {
       fail(err, "Unable to update user");
     } finally {
@@ -222,13 +354,12 @@ export default function AdminUsersPage() {
   };
 
   const deleteUser = async (userId: string) => {
-    const target = users.find((u) => u.id === userId);
-    if (!target || !window.confirm(`Delete ${target.email}?`)) return;
     setSubmitting(true);
     try {
       await api.delete(`/api/auth/users/${userId}`);
-      setUsers((prev) => prev.filter((u) => u.id !== userId));
-      notify(`Deleted user ${target.email}`);
+      notify("User deleted successfully");
+      void loadUsers(userFilters);
+      void loadMetadata();
     } catch (err) {
       fail(err, "Unable to delete user");
     } finally {
@@ -248,9 +379,11 @@ export default function AdminUsersPage() {
         permissions: groupForm.permissions,
         user_ids: groupForm.user_ids,
       });
-      setGroups((prev) => [created, ...prev]);
       setGroupForm(emptyGroupForm);
+      setCreateGroupModalOpen(false);
       notify(`Created group ${created.name}`);
+      void loadGroups(groupFilters);
+      void loadMetadata();
     } catch (err) {
       fail(err, "Unable to create group");
     } finally {
@@ -282,10 +415,11 @@ export default function AdminUsersPage() {
           user_ids: editGroupForm.user_ids,
         },
       );
-      setGroups((prev) => prev.map((g) => (g.id === updated.id ? updated : g)));
       setEditingGroupId(null);
       setEditGroupForm(emptyGroupForm);
       notify(`Updated group ${updated.name}`);
+      void loadGroups(groupFilters);
+      void loadMetadata();
     } catch (err) {
       fail(err, "Unable to update group");
     } finally {
@@ -294,13 +428,12 @@ export default function AdminUsersPage() {
   };
 
   const deleteGroup = async (groupId: string) => {
-    const target = groups.find((g) => g.id === groupId);
-    if (!target || !window.confirm(`Delete ${target.name}?`)) return;
     setSubmitting(true);
     try {
       await api.delete(`/api/auth/groups/${groupId}`);
-      setGroups((prev) => prev.filter((g) => g.id !== groupId));
-      notify(`Deleted group ${target.name}`);
+      notify("Group deleted successfully");
+      void loadGroups(groupFilters);
+      void loadMetadata();
     } catch (err) {
       fail(err, "Unable to delete group");
     } finally {
@@ -321,9 +454,11 @@ export default function AdminUsersPage() {
           description: permissionForm.description || undefined,
         },
       );
-      setPermissions((prev) => [created, ...prev]);
       setPermissionForm(emptyPermissionForm);
+      setCreatePermissionModalOpen(false);
       notify(`Created permission ${created.name}`);
+      void loadPermissions(permissionFilters);
+      void loadMetadata();
     } catch (err) {
       fail(err, "Unable to create permission");
     } finally {
@@ -351,12 +486,11 @@ export default function AdminUsersPage() {
           description: editPermissionForm.description || undefined,
         },
       );
-      setPermissions((prev) =>
-        prev.map((p) => (p.id === updated.id ? updated : p)),
-      );
       setEditingPermissionId(null);
       setEditPermissionForm(emptyPermissionForm);
       notify(`Updated permission ${updated.name}`);
+      void loadPermissions(permissionFilters);
+      void loadMetadata();
     } catch (err) {
       fail(err, "Unable to update permission");
     } finally {
@@ -365,13 +499,12 @@ export default function AdminUsersPage() {
   };
 
   const deletePermission = async (permissionId: string) => {
-    const target = permissions.find((p) => p.id === permissionId);
-    if (!target || !window.confirm(`Delete ${target.name}?`)) return;
     setSubmitting(true);
     try {
       await api.delete(`/api/auth/permissions/${permissionId}`);
-      setPermissions((prev) => prev.filter((p) => p.id !== permissionId));
-      notify(`Deleted permission ${target.name}`);
+      notify("Permission deleted successfully");
+      void loadPermissions(permissionFilters);
+      void loadMetadata();
     } catch (err) {
       fail(err, "Unable to delete permission");
     } finally {
@@ -425,21 +558,21 @@ export default function AdminUsersPage() {
           <TabsTrigger value="users" icon={<UsersIcon />}>
             Users
             <span className="ml-1.5 rounded-full bg-surface-hover px-2 py-0.5 text-xs text-text-tertiary">
-              {users.length}
+              {userTotal}
             </span>
           </TabsTrigger>
 
           <TabsTrigger value="groups" icon={<GroupsIcon />}>
             Groups
             <span className="ml-1.5 rounded-full bg-surface-hover px-2 py-0.5 text-xs text-text-tertiary">
-              {groups.length}
+              {groupTotal}
             </span>
           </TabsTrigger>
 
           <TabsTrigger value="permissions" icon={<PermissionsIcon />}>
             Permissions
             <span className="ml-1.5 rounded-full bg-surface-hover px-2 py-0.5 text-xs text-text-tertiary">
-              {permissions.length}
+              {permissionTotal}
             </span>
           </TabsTrigger>
         </TabsList>
@@ -447,9 +580,24 @@ export default function AdminUsersPage() {
         <TabsContent value="users">
           <UsersTab
             users={users}
-            groups={groups}
-            loading={loading}
+            total={userTotal}
+            totalPages={userTotalPages}
+            groups={allGroups}
+            loading={usersLoading}
             submitting={submitting}
+            filters={userFilters}
+            onFilterChange={(next) =>
+              setUserFilters((prev) => ({ ...prev, ...next }))
+            }
+            createModalOpen={createUserModalOpen}
+            onOpenCreateModal={() => {
+              setUserForm(emptyUserForm);
+              setCreateUserModalOpen(true);
+            }}
+            onCloseCreateModal={() => {
+              setCreateUserModalOpen(false);
+              setUserForm(emptyUserForm);
+            }}
             createForm={userForm}
             onCreateFormChange={setUserForm}
             onCreateSubmit={createUser}
@@ -469,9 +617,25 @@ export default function AdminUsersPage() {
         <TabsContent value="groups">
           <GroupsTab
             groups={groups}
-            users={users}
-            permissions={permissions}
+            total={groupTotal}
+            totalPages={groupTotalPages}
+            users={allUsers}
+            permissions={allPermissions}
+            loading={groupsLoading}
             submitting={submitting}
+            filters={groupFilters}
+            onFilterChange={(next) =>
+              setGroupFilters((prev) => ({ ...prev, ...next }))
+            }
+            createModalOpen={createGroupModalOpen}
+            onOpenCreateModal={() => {
+              setGroupForm(emptyGroupForm);
+              setCreateGroupModalOpen(true);
+            }}
+            onCloseCreateModal={() => {
+              setCreateGroupModalOpen(false);
+              setGroupForm(emptyGroupForm);
+            }}
             createForm={groupForm}
             onCreateFormChange={setGroupForm}
             onCreateSubmit={createGroup}
@@ -491,7 +655,23 @@ export default function AdminUsersPage() {
         <TabsContent value="permissions">
           <PermissionsTab
             permissions={permissions}
+            total={permissionTotal}
+            totalPages={permissionTotalPages}
+            loading={permissionsLoading}
             submitting={submitting}
+            filters={permissionFilters}
+            onFilterChange={(next) =>
+              setPermissionFilters((prev) => ({ ...prev, ...next }))
+            }
+            createModalOpen={createPermissionModalOpen}
+            onOpenCreateModal={() => {
+              setPermissionForm(emptyPermissionForm);
+              setCreatePermissionModalOpen(true);
+            }}
+            onCloseCreateModal={() => {
+              setCreatePermissionModalOpen(false);
+              setPermissionForm(emptyPermissionForm);
+            }}
             createForm={permissionForm}
             onCreateFormChange={setPermissionForm}
             onCreateSubmit={createPermission}
@@ -511,3 +691,4 @@ export default function AdminUsersPage() {
     </div>
   );
 }
+

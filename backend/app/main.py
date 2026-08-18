@@ -20,12 +20,14 @@ from app.api.maps.router import router as maps_router
 from app.api.projects.router import router as projects_router
 from app.api.storage.router import router as storage_router
 from app.api.collab.router import router as collab_router
+from app.api.maps.share.router import router as share_util_router
+from app.api.maps.share.router import map_share_router
 
 # ── Ensure all ORM models are registered with Base.metadata ──────────────────
 import app.api.auth.models  # noqa: F401 — registers User, Group, Permission
 import app.api.data.models  # noqa: F401 — registers GeoDataset, GeoFeature
 import app.api.projects.models  # noqa: F401
-import app.api.maps.models  # noqa: F401
+import app.api.maps.models  # noqa: F401 — registers MapModel, MapGroupAccess, MapUserAccess
 
 
 
@@ -80,6 +82,12 @@ app.include_router(maps_router, prefix="/api/maps")
 app.include_router(projects_router, prefix="/api/projects")
 app.include_router(storage_router, prefix="/api/storage")
 app.include_router(collab_router, prefix="/api/collab")
+
+# ── Share utility routes (people search & invite accept) ─────────────────────
+app.include_router(share_util_router, prefix="/api")
+
+# ── Per-map share routes ──────────────────────────────────────────────────────
+app.include_router(map_share_router, prefix="/api/maps/{map_id}/share")
 
 # ── Pluggable module routers (from modules.lock.yaml) ─────────────────────────
 load_modules(app)

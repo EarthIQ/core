@@ -37,7 +37,9 @@ export default function MapPage() {
   const navigate = useNavigate();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const [currentProject, setCurrentProject] = useState<ProjectItem | null>(null);
+  const [currentProject, setCurrentProject] = useState<ProjectItem | null>(
+    null,
+  );
   const [publishedMaps, setPublishedMaps] = useState<MapItem[]>([]);
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [aiChatOpen, setAiChatOpen] = useState(false);
@@ -72,7 +74,7 @@ export default function MapPage() {
   // ── Real-time collaboration ──────────────────────────────────────────────────
   const { collaborators, isConnected: isCollabConnected } = useCollaboration(
     projectId,
-    mapRef
+    mapRef,
   );
 
   useEffect(() => {
@@ -113,7 +115,7 @@ export default function MapPage() {
       }
 
       const leafLayers = tree.nodes.filter(
-        (n) => n.kind === "layer" && (n as any).tileUrl
+        (n) => n.kind === "layer" && (n as any).tileUrl,
       );
       const leafIds = new Set(leafLayers.map((l) => l.id));
 
@@ -184,12 +186,22 @@ export default function MapPage() {
           } else {
             const visibility = layer.visible ? "visible" : "none";
             if (map.getLayer(layer.id)) {
-              if (map.getLayoutProperty(layer.id, "visibility") !== visibility) {
+              if (
+                map.getLayoutProperty(layer.id, "visibility") !== visibility
+              ) {
                 map.setLayoutProperty(layer.id, "visibility", visibility);
               }
               if (layer.layerType === "vector") {
-                map.setPaintProperty(layer.id, "fill-color", layer.color || "#3b82f6");
-                map.setPaintProperty(layer.id, "fill-opacity", layer.opacity ?? 0.6);
+                map.setPaintProperty(
+                  layer.id,
+                  "fill-color",
+                  layer.color || "#3b82f6",
+                );
+                map.setPaintProperty(
+                  layer.id,
+                  "fill-opacity",
+                  layer.opacity ?? 0.6,
+                );
               }
             }
           }
@@ -343,10 +355,7 @@ export default function MapPage() {
 
       {/* Collaborator cursor overlay — sits just above the map canvas */}
       {mapReady && (
-        <CollaboratorCursors
-          collaborators={collaborators}
-          mapRef={mapRef}
-        />
+        <CollaboratorCursors collaborators={collaborators} mapRef={mapRef} />
       )}
 
       {!mapReady && (

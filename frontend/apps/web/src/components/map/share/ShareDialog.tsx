@@ -30,6 +30,7 @@ export function ShareDialog({
   open,
   onClose,
   mapId,
+
   mapTitle,
   shareUrl,
   canManage = true,
@@ -218,6 +219,7 @@ export function ShareDialog({
                       chips={chips}
                       onChange={setChips}
                       existingEmails={existingEmails}
+                      mapId={mapId ?? undefined}
                     />
                   </div>
                   {inviteMode && (

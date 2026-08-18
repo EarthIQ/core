@@ -50,8 +50,53 @@ class UserMeRead(UserRead):
     effective_permissions: list[str] = Field(default_factory=list)
 
 
+class GroupRead(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    created_at: datetime
+    permissions: list[PermissionRead] = Field(default_factory=list)
+    users: list[UserRead] = Field(default_factory=list)
+
+    model_config = {"from_attributes": True}
+
+
+class GroupSummaryRead(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class UserAdminRead(UserRead):
-    groups: list["GroupRead"] = Field(default_factory=list)
+    groups: list[GroupSummaryRead] = Field(default_factory=list)
+
+
+class PaginatedUsersResponse(BaseModel):
+    items: list[UserAdminRead]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class PaginatedGroupsResponse(BaseModel):
+    items: list[GroupRead]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class PaginatedPermissionsResponse(BaseModel):
+    items: list[PermissionRead]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
 
 
 class UserLogin(BaseModel):
@@ -62,17 +107,6 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
-
-
-class GroupRead(BaseModel):
-    id: str
-    name: str
-    description: Optional[str] = None
-    created_at: datetime
-    permissions: list[PermissionRead] = Field(default_factory=list)
-    users: list[UserRead] = Field(default_factory=list)
-
-    model_config = {"from_attributes": True}
 
 
 class GroupCreate(BaseModel):
@@ -93,6 +127,4 @@ class PermissionUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
 
-
-UserAdminRead.model_rebuild()
 
