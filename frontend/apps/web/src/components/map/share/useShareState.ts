@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { shareApi } from "./shareApi";
+import { shareApi, type ShareEntityType } from "./shareApi";
 import type {
   AccessEntry,
   GeneralAccess,
@@ -8,7 +8,11 @@ import type {
   ShareState,
 } from "./types";
 
-export function useShareState(mapId: string | null, open: boolean) {
+export function useShareState(
+  entityType: ShareEntityType,
+  entityId: string | null,
+  open: boolean,
+) {
   const [state, setState] = useState<ShareState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,12 +27,12 @@ export function useShareState(mapId: string | null, open: boolean) {
   }, []);
 
   useEffect(() => {
-    if (!open || !mapId) return;
+    if (!open || !entityId) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
     shareApi
-      .getShareState(mapId)
+      .getShareState(entityType, entityId)
       .then((s) => !cancelled && setState(s))
       .catch(
         (e) => !cancelled && setError(e?.message ?? "Failed to load sharing"),
@@ -37,7 +41,7 @@ export function useShareState(mapId: string | null, open: boolean) {
     return () => {
       cancelled = true;
     };
-  }, [mapId, open]);
+  }, [entityType, entityId, open]);
 
   const markBusy = (id: string, busy: boolean) =>
     setBusyIds((prev) => {
@@ -54,10 +58,11 @@ export function useShareState(mapId: string | null, open: boolean) {
       message: string,
       notifyPeople: boolean,
     ) => {
-      if (!mapId || emails.length === 0) return;
+      if (!entityId || emails.length === 0) return;
       try {
         const created = await shareApi.invite(
-          mapId,
+          entityType,
+          entityId,
           emails,
           role,
           message,
@@ -78,12 +83,12 @@ export function useShareState(mapId: string | null, open: boolean) {
         throw e;
       }
     },
-    [mapId, notify],
+    [entityType, entityId, notify],
   );
 
   const updateRole = useCallback(
     async (entryId: string, role: Role) => {
-      if (!mapId || !state) return;
+      if (!entityId || !state) return;
       const prev = state;
       setState({
         ...state,
@@ -93,7 +98,7 @@ export function useShareState(mapId: string | null, open: boolean) {
       });
       markBusy(entryId, true);
       try {
-        await shareApi.updateRole(mapId, entryId, role);
+        await shareApi.updateRole(entityType, entityId, entryId, role);
       } catch {
         setState(prev);
         notify("Could not update access");
@@ -101,12 +106,12 @@ export function useShareState(mapId: string | null, open: boolean) {
         markBusy(entryId, false);
       }
     },
-    [mapId, state, notify],
+    [entityType, entityId, state, notify],
   );
 
   const removeAccess = useCallback(
     async (entryId: string) => {
-      if (!mapId || !state) return;
+      if (!entityId || !state) return;
       const prev = state;
       const removed = state.entries.find((e) => e.id === entryId);
       setState({
@@ -114,19 +119,19 @@ export function useShareState(mapId: string | null, open: boolean) {
         entries: state.entries.filter((e) => e.id !== entryId),
       });
       try {
-        await shareApi.removeAccess(mapId, entryId);
+        await shareApi.removeAccess(entityType, entityId, entryId);
         notify(`Removed ${removed?.name ?? removed?.email ?? "person"}`);
       } catch {
         setState(prev);
         notify("Could not remove access");
       }
     },
-    [mapId, state, notify],
+    [entityType, entityId, state, notify],
   );
 
   const transferOwnership = useCallback(
     async (entryId: string) => {
-      if (!mapId || !state) return;
+      if (!entityId || !state) return;
       const prev = state;
       setState({
         ...state,
@@ -138,7 +143,7 @@ export function useShareState(mapId: string | null, open: boolean) {
       });
       markBusy(entryId, true);
       try {
-        await shareApi.transferOwnership(mapId, entryId);
+        await shareApi.transferOwnership(entityType, entityId, entryId);
         notify("Ownership transferred");
       } catch {
         setState(prev);
@@ -147,38 +152,38 @@ export function useShareState(mapId: string | null, open: boolean) {
         markBusy(entryId, false);
       }
     },
-    [mapId, state, notify],
+    [entityType, entityId, state, notify],
   );
 
   const updateGeneral = useCallback(
     async (general: GeneralAccess) => {
-      if (!mapId || !state) return;
+      if (!entityId || !state) return;
       const prev = state;
       setState({ ...state, general });
       try {
-        await shareApi.updateGeneralAccess(mapId, general);
+        await shareApi.updateGeneralAccess(entityType, entityId, general);
       } catch {
         setState(prev);
         notify("Could not update general access");
       }
     },
-    [mapId, state, notify],
+    [entityType, entityId, state, notify],
   );
 
   const updateSettings = useCallback(
     async (patch: Partial<ShareSettings>) => {
-      if (!mapId || !state) return;
+      if (!entityId || !state) return;
       const next = { ...state.settings, ...patch };
       const prev = state;
       setState({ ...state, settings: next });
       try {
-        await shareApi.updateSettings(mapId, next);
+        await shareApi.updateSettings(entityType, entityId, next);
       } catch {
         setState(prev);
         notify("Could not update settings");
       }
     },
-    [mapId, state, notify],
+    [entityType, entityId, state, notify],
   );
 
   return {

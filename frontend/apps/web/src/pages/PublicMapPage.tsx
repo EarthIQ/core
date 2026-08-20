@@ -1,17 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { fetchMapById, MapItem } from "@/lib/maps";
 import { BASEMAP_URLS } from "@/hooks/useMapLibre";
-import { Globe, Layers, ZoomIn, ZoomOut, Compass } from "lucide-react";
+import { Globe, Layers, ZoomIn, ZoomOut, Compass, LogIn } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { ApiError } from "@/lib/api";
+import { AccessRequestCard } from "@/components/map/share/AccessRequestCard";
 
 export default function PublicMapPage() {
   const { mapId } = useParams<{ mapId: string }>();
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const [mapData, setMapData] = useState<MapItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [denied, setDenied] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const [layersList, setLayersList] = useState<any[]>([]);
 
@@ -25,6 +31,7 @@ export default function PublicMapPage() {
         setLoading(false);
       })
       .catch((err) => {
+        if (err instanceof ApiError && err.status === 403) setDenied(true);
         console.error(err);
         setErrorMsg("This map could not be loaded. It may be private or deleted.");
         setLoading(false);
@@ -127,11 +134,42 @@ export default function PublicMapPage() {
   const handleZoomOut = () => mapRef.current?.zoomOut();
   const handleResetNorth = () => mapRef.current?.resetNorthPitch();
 
-  if (loading) {
+  if (loading || (denied && authLoading)) {
     return (
       <div className="w-screen h-screen flex flex-col items-center justify-center bg-[#090d16] text-text-primary">
         <Globe size={40} className="text-primary animate-spin mb-4" />
         <span className="text-sm font-semibold tracking-wider animate-pulse">Loading map dashboard...</span>
+      </div>
+    );
+  }
+
+  /* ── 403 on a private map ────────────────────────────────────────────────
+     Logged in  → Google-Docs style "Request access" card
+     Logged out → login UI first (return here afterwards)                     */
+  if (denied) {
+    if (isAuthenticated) {
+      return (
+        <div className="w-screen h-screen flex items-center justify-center bg-[#090d16] p-6">
+          <AccessRequestCard entityType="map" entityId={mapId ?? ""} />
+        </div>
+      );
+    }
+    const from = mapId ? `/share/map/${mapId}` : "/share";
+    return (
+      <div className="w-screen h-screen flex flex-col items-center justify-center bg-[#090d16] text-text-primary px-6 text-center">
+        <div className="text-5xl mb-4">🔒</div>
+        <h3 className="text-lg font-bold text-text-primary">Sign in to continue</h3>
+        <p className="mt-2 text-text-secondary text-sm max-w-sm leading-relaxed">
+          This map is private. Sign in to view it, or to request access from the
+          owner.
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate("/login", { state: { from: { pathname: from } } })}
+          className="btn btn-primary btn-md mt-6 inline-flex items-center gap-2"
+        >
+          <LogIn size={15} /> Sign in
+        </button>
       </div>
     );
   }

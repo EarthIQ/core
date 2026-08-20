@@ -21,13 +21,14 @@ from app.api.projects.router import router as projects_router
 from app.api.storage.router import router as storage_router
 from app.api.collab.router import router as collab_router
 from app.api.maps.share.router import router as share_util_router
-from app.api.maps.share.router import map_share_router
+from app.api.maps.share.router import entity_share_router
 
 # ── Ensure all ORM models are registered with Base.metadata ──────────────────
 import app.api.auth.models  # noqa: F401 — registers User, Group, Permission
 import app.api.data.models  # noqa: F401 — registers GeoDataset, GeoFeature
 import app.api.projects.models  # noqa: F401
 import app.api.maps.models  # noqa: F401 — registers MapModel, MapGroupAccess, MapUserAccess
+import app.api.maps.share.models  # noqa: F401 — registers AccessRequest
 
 
 
@@ -86,8 +87,11 @@ app.include_router(collab_router, prefix="/api/collab")
 # ── Share utility routes (people search & invite accept) ─────────────────────
 app.include_router(share_util_router, prefix="/api")
 
-# ── Per-map share routes ──────────────────────────────────────────────────────
-app.include_router(map_share_router, prefix="/api/maps/{map_id}/share")
+# ── Per-entity share routes (maps AND projects) ───────────────────────────────
+# NOTE: the prefix placeholder must be named `entity_id` to match the handler
+# signature (FastAPI binds path params by name).
+app.include_router(entity_share_router, prefix="/api/maps/{entity_id}/share")
+app.include_router(entity_share_router, prefix="/api/projects/{entity_id}/share")
 
 # ── Pluggable module routers (from modules.lock.yaml) ─────────────────────────
 load_modules(app)

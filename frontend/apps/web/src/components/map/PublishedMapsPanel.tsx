@@ -8,9 +8,11 @@ import {
   Settings,
   Globe,
   Lock,
+  Share2,
   X,
 } from "lucide-react";
 import type { MapItem } from "@/lib/maps";
+import { ShareDialog } from "./share/ShareDialog";
 
 interface PublishedMapsPanelProps {
   maps: MapItem[];
@@ -48,6 +50,8 @@ export function PublishedMapsPanel({
   });
   const [publishing, setPublishing] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  /** Map whose share dialog is open (per-map sharing). */
+  const [shareMap, setShareMap] = useState<MapItem | null>(null);
 
   const handleCopyLink = (mapId: string) => {
     const link = `${window.location.origin}/share/map/${mapId}`;
@@ -188,6 +192,16 @@ export function PublishedMapsPanel({
                         <ExternalLink size={11} />
                         View
                       </a>
+
+                      <button
+                        type="button"
+                        onClick={() => setShareMap(m)}
+                        className="text-[10px] text-text-secondary hover:text-text-primary font-medium flex items-center gap-1"
+                        title="Manage sharing"
+                      >
+                        <Share2 size={11} />
+                        Share
+                      </button>
                     </div>
 
                     <div className="flex items-center gap-1">
@@ -444,6 +458,18 @@ export function PublishedMapsPanel({
             </form>
           </div>
         </div>
+      )}
+
+      {/* Per-map Share Dialog */}
+      {shareMap && (
+        <ShareDialog
+          open={!!shareMap}
+          onClose={() => setShareMap(null)}
+          entityType="map"
+          entityId={shareMap.id}
+          entityTitle={shareMap.title}
+          canManage={canEdit}
+        />
       )}
     </>
   );

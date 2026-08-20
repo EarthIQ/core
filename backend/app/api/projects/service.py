@@ -36,7 +36,18 @@ def compute_user_permission(project_item: ProjectModel, user: Optional[User]) ->
             elif perm == "read" and highest_perm is None:
                 highest_perm = "read"
 
-    return highest_perm or "admin" # Default fallback for owner/creator if not explicitly limited
+    # Direct per-user access entries (Share Dialog roles)
+    if hasattr(project_item, "user_access") and project_item.user_access:
+        for u_acc in project_item.user_access:
+            if u_acc.user_id == user.id and not u_acc.pending:
+                if u_acc.role == "owner":
+                    return "admin"
+                if u_acc.role == "editor":
+                    highest_perm = "write"
+                elif u_acc.role in ("commenter", "viewer") and highest_perm is None:
+                    highest_perm = "read"
+
+    return highest_perm
 
 
 async def list_accessible_projects(db: AsyncSession, current_user: Optional[User]) -> List[ProjectRead]:

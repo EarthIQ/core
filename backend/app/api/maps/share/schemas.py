@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import List, Literal, Optional
 from pydantic import BaseModel, EmailStr, Field
 
@@ -7,6 +8,7 @@ from pydantic import BaseModel, EmailStr, Field
 Role = Literal["owner", "editor", "commenter", "viewer"]
 LinkRole = Literal["editor", "commenter", "viewer"]
 GeneralAccessType = Literal["restricted", "link"]
+EntityType = Literal["map", "project"]
 
 
 # ── Core share models ─────────────────────────────────────────────────────────
@@ -30,6 +32,18 @@ class GeneralAccessRead(BaseModel):
 
     type: GeneralAccessType
     role: LinkRole
+
+
+class InviteAcceptRead(AccessEntryRead):
+    """Invite-accept result: the activated entry plus the entity it belongs to.
+
+    The frontend uses ``entity_type`` / ``entity_id`` to navigate to the
+    right place (project workspace vs. map view) after accepting.
+    """
+
+    entity_type: EntityType
+    entity_id: str
+    title: str
 
 
 class ShareSettingsRead(BaseModel):
@@ -86,3 +100,34 @@ class UpdateShareSettingsRequest(BaseModel):
     viewers_can_download: Optional[bool] = None
 
     model_config = {"populate_by_name": True}
+
+
+# ── Access requests (Google-Docs style) ───────────────────────────────────────
+
+class RequestAccessBody(BaseModel):
+    """Sent by a logged-in user who does not have access to the entity."""
+
+    message: str = ""
+    requested_role: LinkRole = "viewer"
+
+
+class GrantAccessBody(BaseModel):
+    """Sent by the owner when approving a request (owner role excluded)."""
+
+    role: LinkRole = "viewer"
+
+
+class AccessRequestRead(BaseModel):
+    id: str
+    entity_type: EntityType
+    entity_id: str
+    title: str
+    requester_name: Optional[str] = None
+    requester_email: str
+    message: str = ""
+    requested_role: LinkRole
+    status: Literal["pending", "granted", "denied"]
+    granted_role: Optional[LinkRole] = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

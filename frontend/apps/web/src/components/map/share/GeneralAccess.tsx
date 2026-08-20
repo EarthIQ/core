@@ -7,10 +7,13 @@ export function GeneralAccessSection({
   general,
   canManage,
   onChange,
+  label = "map",
 }: {
   general: GA;
   canManage: boolean;
   onChange: (g: GA) => void;
+  /** Noun for the shared entity ("map" | "project") — used in helper text. */
+  label?: string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -87,7 +90,7 @@ export function GeneralAccessSection({
                       </span>
                       <span className="block text-[0.68rem] text-text-tertiary leading-snug">
                         {t === "restricted"
-                          ? "Only people with access can open this map"
+                          ? `Only people with access can open this ${label}`
                           : "Anyone on the internet with the link can open"}
                       </span>
                     </span>
@@ -106,7 +109,7 @@ export function GeneralAccessSection({
                       ? "comment"
                       : "edit"
                 }`
-              : "Only people with access can open this map"}
+              : `Only people with access can open this ${label}`}
           </div>
         </div>
 

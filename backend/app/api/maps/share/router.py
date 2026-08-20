@@ -1,8 +1,10 @@
-"""FastAPI router for map sharing.
+"""FastAPI router for map & project sharing.
 
-Mounted at:  /api/maps/{map_id}/share   (via main.py include)
-Additional:  /api/people               (user search, mounted on maps router)
-             /api/maps/invite/accept   (token acceptance)
+Mounted at:  /api/maps/{map_id}/share          (via main.py include)
+            /api/projects/{project_id}/share  (via main.py include)
+Additional:  /api/people             (user search, mounted on the app)
+             /api/invite/accept      (token acceptance, any entity)
+             /api/maps/invite/accept (legacy alias)
 """
 from __future__ import annotations
 
@@ -19,24 +21,25 @@ from app.api.maps.share import service as svc
 
 router = APIRouter(tags=["share"])
 
-# ── People search (no map_id needed) ─────────────────────────────────────────
+# ── People search (no entity id needed) ───────────────────────────────────────
 
 @router.get("/people", response_model=List[s.PeopleSearchResult], summary="Search users for share autocomplete")
 async def search_people(
     q: str = Query("", description="Search term (email or name)"),
-    map_id: Optional[str] = Query(None, description="Exclude users already on this map"),
+    entity_id: Optional[str] = Query(None, description="Map or project id — exclude users already on this entity"),
+    map_id: Optional[str] = Query(None, description="Legacy alias for entity_id"),
     db: AsyncSession = Depends(get_db),
     _actor: User = Depends(get_current_user),
 ):
-    return await svc.search_people(db, q, map_id=map_id)
+    return await svc.search_people(db, q, entity_id=entity_id or map_id)
 
 
-# ── Invite accept (token-based, public but requires login) ────────────────────
+# ── Invite accept (token-based, works for maps and projects, requires login) ──
 
 @router.get(
-    "/maps/invite/accept",
-    response_model=s.AccessEntryRead,
-    summary="Accept a map invitation via one-time token",
+    "/invite/accept",
+    response_model=s.InviteAcceptRead,
+    summary="Accept a map or project invitation via one-time token",
 )
 async def accept_invite(
     token: str = Query(..., description="One-time invite token from email link"),
@@ -46,105 +49,180 @@ async def accept_invite(
     return await svc.accept_invite(db, token, actor)
 
 
-# ── Per-map share routes ──────────────────────────────────────────────────────
-
-map_share_router = APIRouter(tags=["share"])
-
-
-@map_share_router.get(
-    "",
-    response_model=s.ShareStateRead,
-    summary="Get full share state for a map",
+# Legacy alias — same handler as above
+@router.get(
+    "/maps/invite/accept",
+    response_model=s.InviteAcceptRead,
+    include_in_schema=False,
+    summary="Accept an invitation via one-time token (legacy)",
 )
-async def get_share_state(
-    map_id: str,
+async def accept_invite_legacy(
+    token: str = Query(..., description="One-time invite token from email link"),
     db: AsyncSession = Depends(get_db),
     actor: User = Depends(get_current_user),
 ):
-    return await svc.get_share_state(db, map_id, actor)
+    return await svc.accept_invite(db, token, actor)
 
 
-@map_share_router.post(
+# ── Access requests (owner approval, token-based) ─────────────────────────────
+
+@router.get(
+    "/access/request",
+    response_model=s.AccessRequestRead,
+    summary="Fetch an access request via the owner approval token",
+)
+async def get_access_request(
+    token: str = Query(..., description="Approval token from the request email"),
+    db: AsyncSession = Depends(get_db),
+    actor: User = Depends(get_current_user),
+):
+    return await svc.get_access_request(db, token, actor)
+
+
+@router.post(
+    "/access/request/grant",
+    response_model=s.AccessRequestRead,
+    summary="Grant the requested access (owner only)",
+)
+async def grant_access(
+    body: s.GrantAccessBody,
+    token: str = Query(..., description="Approval token from the request email"),
+    db: AsyncSession = Depends(get_db),
+    actor: User = Depends(get_current_user),
+):
+    return await svc.grant_access(db, token, body.role, actor)
+
+
+@router.post(
+    "/access/request/deny",
+    response_model=s.AccessRequestRead,
+    summary="Decline an access request (owner only)",
+)
+async def deny_access_request(
+    token: str = Query(..., description="Approval token from the request email"),
+    db: AsyncSession = Depends(get_db),
+    actor: User = Depends(get_current_user),
+):
+    return await svc.deny_access(db, token, actor)
+
+
+# ── Per-entity share routes (mounted for both maps and projects) ─────────────
+
+entity_share_router = APIRouter(tags=["share"])
+
+# Backwards-compatible alias (main.py and external code may import either name)
+map_share_router = entity_share_router
+
+
+@entity_share_router.get(
+    "",
+    response_model=s.ShareStateRead,
+    summary="Get full share state for a map or project",
+)
+async def get_share_state(
+    entity_id: str,
+    db: AsyncSession = Depends(get_db),
+    actor: User = Depends(get_current_user),
+):
+    return await svc.get_share_state(db, entity_id, actor)
+
+
+@entity_share_router.post(
     "/invite",
     response_model=List[s.AccessEntryRead],
     status_code=201,
     summary="Invite users by email",
 )
 async def invite(
-    map_id: str,
+    entity_id: str,
     body: s.InviteRequest,
     db: AsyncSession = Depends(get_db),
     actor: User = Depends(get_current_user),
 ):
-    return await svc.invite(db, map_id, body, actor)
+    return await svc.invite(db, entity_id, body, actor)
 
 
-@map_share_router.patch(
+@entity_share_router.post(
+    "/request",
+    response_model=s.AccessRequestRead,
+    status_code=201,
+    summary="Request access to this map or project (notifies the owner)",
+)
+async def request_access(
+    entity_id: str,
+    body: s.RequestAccessBody,
+    db: AsyncSession = Depends(get_db),
+    actor: User = Depends(get_current_user),
+):
+    return await svc.request_access(db, entity_id, body, actor)
+
+
+@entity_share_router.patch(
     "/{entry_id}",
     status_code=204,
-    summary="Update a user's role on the map",
+    summary="Update a user's role",
 )
 async def update_role(
-    map_id: str,
+    entity_id: str,
     entry_id: str,
     body: s.UpdateRoleRequest,
     db: AsyncSession = Depends(get_db),
     actor: User = Depends(get_current_user),
 ):
-    await svc.update_role(db, map_id, entry_id, body.role, actor)
+    await svc.update_role(db, entity_id, entry_id, body.role, actor)
 
 
-@map_share_router.delete(
+@entity_share_router.delete(
     "/{entry_id}",
     status_code=204,
-    summary="Remove a user's access to the map",
+    summary="Remove a user's access",
 )
 async def remove_access(
-    map_id: str,
+    entity_id: str,
     entry_id: str,
     db: AsyncSession = Depends(get_db),
     actor: User = Depends(get_current_user),
 ):
-    await svc.remove_access(db, map_id, entry_id, actor)
+    await svc.remove_access(db, entity_id, entry_id, actor)
 
 
-@map_share_router.post(
+@entity_share_router.post(
     "/transfer",
     status_code=204,
-    summary="Transfer map ownership to another user",
+    summary="Transfer ownership to another user",
 )
 async def transfer_ownership(
-    map_id: str,
+    entity_id: str,
     body: s.TransferOwnershipRequest,
     db: AsyncSession = Depends(get_db),
     actor: User = Depends(get_current_user),
 ):
-    await svc.transfer_ownership(db, map_id, body.entry_id, actor)
+    await svc.transfer_ownership(db, entity_id, body.entry_id, actor)
 
 
-@map_share_router.put(
+@entity_share_router.put(
     "/general",
     status_code=204,
     summary="Update general/link access mode",
 )
 async def update_general_access(
-    map_id: str,
+    entity_id: str,
     body: s.UpdateGeneralAccessRequest,
     db: AsyncSession = Depends(get_db),
     actor: User = Depends(get_current_user),
 ):
-    await svc.update_general_access(db, map_id, body, actor)
+    await svc.update_general_access(db, entity_id, body, actor)
 
 
-@map_share_router.put(
+@entity_share_router.put(
     "/settings",
     status_code=204,
     summary="Update share settings (editorsCanShare, viewersCanDownload)",
 )
 async def update_share_settings(
-    map_id: str,
+    entity_id: str,
     body: s.UpdateShareSettingsRequest,
     db: AsyncSession = Depends(get_db),
     actor: User = Depends(get_current_user),
 ):
-    await svc.update_share_settings(db, map_id, body, actor)
+    await svc.update_share_settings(db, entity_id, body, actor)

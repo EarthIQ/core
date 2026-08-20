@@ -14,13 +14,16 @@ import { PersonRow } from "./PersonRow";
 import { EmailChipsInput } from "./EmailChipsInput";
 import { GeneralAccessSection } from "./GeneralAccess";
 import { RoleSelect } from "./RoleSelect";
+import type { ShareEntityType } from "./shareApi";
 import type { Role } from "./types";
 
 interface ShareDialogProps {
   open: boolean;
   onClose: () => void;
-  mapId: string | null;
-  mapTitle: string;
+  /** Whether the shared entity is a map or a project (default: "map"). */
+  entityType?: ShareEntityType;
+  entityId: string | null;
+  entityTitle: string;
   shareUrl?: string;
   /** Whether the current user may modify sharing (owner/admin). */
   canManage?: boolean;
@@ -29,13 +32,13 @@ interface ShareDialogProps {
 export function ShareDialog({
   open,
   onClose,
-  mapId,
-
-  mapTitle,
+  entityType = "map",
+  entityId,
+  entityTitle,
   shareUrl,
   canManage = true,
 }: ShareDialogProps) {
-  const share = useShareState(mapId, open);
+  const share = useShareState(entityType, entityId, open);
   const [chips, setChips] = useState<string[]>([]);
   const [inviteRole, setInviteRole] = useState<Role>("editor");
   const [message, setMessage] = useState("");
@@ -108,7 +111,7 @@ export function ShareDialog({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Share map"
+        aria-label={`Share ${entityType}`}
         className="w-full max-w-lg bg-elevated border border-border-primary rounded-2xl shadow-2xl flex flex-col animate-scale-in"
         style={{ maxHeight: "88vh" }}
       >
@@ -125,7 +128,7 @@ export function ShareDialog({
               </button>
             )}
             <h2 className="text-base font-semibold text-text-primary truncate">
-              {view === "settings" ? "Sharing settings" : `Share "${mapTitle}"`}
+              {view === "settings" ? "Sharing settings" : `Share "${entityTitle}" (${entityType})`}
             </h2>
           </div>
 
@@ -219,7 +222,7 @@ export function ShareDialog({
                       chips={chips}
                       onChange={setChips}
                       existingEmails={existingEmails}
-                      mapId={mapId ?? undefined}
+                      entityId={entityId ?? undefined}
                     />
                   </div>
                   {inviteMode && (
@@ -293,6 +296,7 @@ export function ShareDialog({
                   general={share.state!.general}
                   canManage={canManage}
                   onChange={share.updateGeneral}
+                  label={entityType === "map" ? "map" : "project"}
                 />
               </>
             )}

@@ -24,6 +24,8 @@ import ProjectsPage from "@/pages/ProjectsPage";
 import DataPage from "@/pages/DataPage";
 import AdminUsersPage from "@/pages/AdminUsersPage";
 import PublicMapPage from "@/pages/PublicMapPage";
+import InviteAcceptPage from "@/pages/InviteAcceptPage";
+import AccessGrantPage from "@/pages/AccessGrantPage";
 
 // AUTO-GENERATED — never import module names directly here
 import { moduleRegistry, type ModuleBundle } from "./module-registry.generated";
@@ -140,6 +142,8 @@ function ProtectedRoutes() {
       <Route path="projects" element={<ProjectsPage />} />
       <Route path="map" element={<MapPage />} />
       <Route path="data" element={<DataPage />} />
+      <Route path="invite/accept" element={<InviteAcceptPage />} />
+      <Route path="access/grant" element={<AccessGrantPage />} />
 
       {/* Module routes — available once bundles finish resolving */}
       {!resolving &&

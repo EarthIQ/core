@@ -10,8 +10,8 @@ interface EmailChipsInputProps {
   existingEmails: string[];
   autoFocus?: boolean;
   onFocus?: () => void;
-  /** Pass the current mapId so the API can exclude already-added users. */
-  mapId?: string;
+  /** Pass the current entity id so the API can exclude already-added users. */
+  entityId?: string;
 }
 
 export function EmailChipsInput({
@@ -20,7 +20,7 @@ export function EmailChipsInput({
   existingEmails,
   autoFocus,
   onFocus,
-  mapId,
+  entityId,
 }: EmailChipsInputProps) {
   const [draft, setDraft] = useState("");
   const [suggestions, setSuggestions] = useState<AccessEntry[]>([]);
@@ -35,7 +35,7 @@ export function EmailChipsInput({
     }
     let cancelled = false;
     const t = setTimeout(() => {
-      shareApi.searchPeople(draft, mapId).then((res) => {
+      shareApi.searchPeople(draft, entityId).then((res) => {
         if (cancelled) return;
         setSuggestions(
           res.filter(
@@ -50,7 +50,7 @@ export function EmailChipsInput({
       cancelled = true;
       clearTimeout(t);
     };
-  }, [draft, chips, existingEmails, mapId]);
+  }, [draft, chips, existingEmails, entityId]);
 
   function commit(raw: string) {
     const email = raw.trim().replace(/[,;]$/, "");

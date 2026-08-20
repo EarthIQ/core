@@ -247,7 +247,7 @@ export function MapNavbar({
 
           <span className="w-px h-5 bg-border-primary" />
 
-          <Tooltip content="Share map  (⌘⇧S)" placement="bottom">
+          <Tooltip content="Share project  (⌘⇧S)" placement="bottom">
             <Button
               variant="ghost"
               size="sm"
@@ -266,8 +266,9 @@ export function MapNavbar({
       <ShareDialog
         open={shareOpen}
         onClose={() => setShareOpen(false)}
-        mapId={mapId}
-        mapTitle={projectName}
+        entityType="project"
+        entityId={mapId}
+        entityTitle={projectName}
         canManage={canManageSharing}
       />
     </>

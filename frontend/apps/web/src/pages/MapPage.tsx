@@ -30,6 +30,8 @@ import { useMapLibre } from "@/hooks/useMapLibre";
 import { PublishedMapsPanel } from "@/components/map/PublishedMapsPanel";
 import { useCollaboration } from "@/lib/useCollaboration";
 import { CollaboratorCursors } from "@/components/map/CollaboratorCursors";
+import { AccessRequestCard } from "@/components/map/share/AccessRequestCard";
+import { ApiError } from "@/lib/api";
 
 export default function MapPage() {
   const [searchParams] = useSearchParams();
@@ -52,6 +54,8 @@ export default function MapPage() {
   const [redoStack] = useState<any[]>([]);
   const [publishedPanelOpen, setPublishedPanelOpen] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  /** True when the backend refused access to this project (403). */
+  const [projectDenied, setProjectDenied] = useState(false);
 
   const { isAvailable } = useModules();
 
@@ -99,7 +103,13 @@ export default function MapPage() {
           zoom: projData.zoom,
         });
       })
-      .catch((err) => console.error("Failed to load project:", err));
+      .catch((err) => {
+        if (err instanceof ApiError && err.status === 403) {
+          setProjectDenied(true);
+        } else {
+          console.error("Failed to load project:", err);
+        }
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
@@ -325,6 +335,15 @@ export default function MapPage() {
   const folderOptions = tree.nodes
     .filter((n) => n.kind === "folder")
     .map((f) => ({ id: f.id, name: f.name }));
+
+  /* Google-Docs style: no access → request it (owner is notified by email) */
+  if (projectDenied && !currentProject) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-bg-primary p-6">
+        <AccessRequestCard entityType="project" entityId={projectId ?? ""} />
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-bg-primary">
