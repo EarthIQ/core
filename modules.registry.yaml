@@ -10,3 +10,7 @@ modules:
   - name: resources-module
     version: 1.0.0
     repo: git@github.com:EarthIQ/resources.git
+  - name: urban-planning-module
+    version: 0.1.0
+    repo: git@github.com:EarthIQ/urban-planning.git
+    # developed locally in modules/urban-planning-module (no remote needed)
