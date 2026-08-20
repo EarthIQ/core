@@ -71,6 +71,10 @@ services:
     - STORAGE_SECRET_KEY=${RUSTFS_SECRET_KEY:-earthiq}
     - STORAGE_BUCKET=${STORAGE_BUCKET:-earthiq}
     - STORAGE_REGION=us-east-1
+    - AI_PROVIDER
+    - AI_API_KEY
+    - AI_BASE_URL
+    - AI_MODEL
   frontend:
     build:
       context: .

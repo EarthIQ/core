@@ -17,12 +17,14 @@ def generate_compose(lock: dict) -> None:
         if not infra_cfg:
             continue
 
-        frag_path = ROOT / "modules" / mod["name"] / infra_cfg["compose_file"]
-        if frag_path.exists():
-            frag = yaml.safe_load(frag_path.read_text()) or {}
-            for svc_name, svc_def in frag.get("services", {}).items():
-                base["services"][f"{mod['name']}_{svc_name}"] = svc_def
-            base["volumes"].update(frag.get("volumes", {}))
+        compose_file = infra_cfg.get("compose_file")
+        if compose_file:
+            frag_path = ROOT / "modules" / mod["name"] / compose_file
+            if frag_path.exists():
+                frag = yaml.safe_load(frag_path.read_text()) or {}
+                for svc_name, svc_def in frag.get("services", {}).items():
+                    base["services"][f"{mod['name']}_{svc_name}"] = svc_def
+                base["volumes"].update(frag.get("volumes", {}))
 
         extra_env.extend(infra_cfg.get("env", []))
 
