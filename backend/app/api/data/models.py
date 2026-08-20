@@ -42,6 +42,13 @@ class GeoDataset(Base):
     attributes: Mapped[list[dict[str, Any]]] = mapped_column(
         JSONB, nullable=False, default=list
     )  # [{"field": "name", "type": "String", "sample": "..."}]
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    # Free-form, format-specific metadata (dimensions, bands, columns, preview,
+    # "ingested" flag, etc.). Kept as JSONB so new data types need no new columns.
+    meta: Mapped[dict[str, Any]] = mapped_column(
+        JSONB, nullable=False, default=dict
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

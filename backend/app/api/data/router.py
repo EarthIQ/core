@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -10,8 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_db
 from app.api.data.schemas import (
+    DATA_FORMATS,
+    DATA_TYPES,
+    DEFAULT_TYPE_FOR_FORMAT,
+    DatasetPreview,
     GeoDatasetListResponse,
     GeoDatasetOut,
+    GeoDatasetUpdate,
     LayerInfo,
     RasterLayerMeta,
     VectorFeatureCollection,
@@ -19,6 +23,57 @@ from app.api.data.schemas import (
 from app.api.data import service as data_service
 
 router = APIRouter(tags=["data"])
+
+# ── Upload constraints ────────────────────────────────────────────────────────
+MAX_UPLOAD_BYTES = 500 * 1024 * 1024  # 500 MB hard cap
+
+# Permitted (format -> accepted extensions). Used for client-side validation;
+# the authoritative check happens in the service dispatcher.
+FORMAT_EXTENSIONS: dict[str, set[str]] = {
+    "GeoJSON": {"geojson", "json"},
+    "Shapefile": {"zip", "shp", "shp.zip"},
+    "KML": {"kml", "kmz"},
+    "GeoRSS": {"xml", "geojson", "json"},
+    "GeoTIFF": {"tif", "tiff"},
+    "COG": {"tif", "tiff", "cog.tif", "cog"},
+    "GeoPackage": {"gpkg"},
+    "GeoParquet": {"parquet"},
+    "CSV": {"csv", "tsv", "txt"},
+}
+
+
+def _file_ext(filename: str) -> str:
+    name = (filename or "").lower()
+    # strip a trailing .zip from e.g. "layer.shp.zip"
+    if name.endswith(".zip"):
+        return name.rsplit(".", 2)[-2] if name.count(".") >= 2 else "zip"
+    return name.rsplit(".", 1)[-1] if "." in name else ""
+
+
+def _validate_format(filename: str, fmt: str) -> None:
+    """Raise a 422 if the declared format does not plausibly match the file."""
+    if fmt not in DATA_FORMATS:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Unsupported format '{fmt}'. "
+                f"Supported formats: {', '.join(DATA_FORMATS)}."
+            ),
+        )
+    ext = _file_ext(filename)
+    if ext in {"shp", "zip"}:
+        # Shapefile archives may be labelled .shp.zip — accept either.
+        return
+    allowed = FORMAT_EXTENSIONS.get(fmt, set())
+    if allowed and ext and ext not in allowed:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"File extension '.{ext}' does not match the declared format "
+                f"'{fmt}'. Expected one of: {', '.join('.' + a for a in sorted(allowed))}."
+            ),
+        )
+
 
 # ── Legacy layer catalogue (in-memory stub) ───────────────────────────────────
 
@@ -70,12 +125,28 @@ def get_raster_layer(layer_id: str):
     )
 
 
+# ── Metadata + vocabulary ─────────────────────────────────────────────────────
+
+@router.get(
+    "/datasets/meta",
+    summary="Supported data types and formats",
+)
+def dataset_vocabulary():
+    """Return the supported format/type vocabulary for client UIs."""
+    return {
+        "formats": DATA_FORMATS,
+        "types": DATA_TYPES,
+        "default_type_for_format": DEFAULT_TYPE_FOR_FORMAT,
+    }
+
+
 # ── GeoDataset endpoints ──────────────────────────────────────────────────────
 
 
 @router.get("/datasets", response_model=GeoDatasetListResponse, summary="List spatial datasets")
 async def list_datasets(
     type: Optional[str] = None,
+    format: Optional[str] = None,
     search: Optional[str] = None,
     limit: int = 200,
     offset: int = 0,
@@ -85,10 +156,16 @@ async def list_datasets(
     Return all uploaded spatial datasets.
 
     - **type**: filter by `vector` | `raster` | `tabular` | `remote-sensing`
-    - **search**: partial name search
+    - **format**: filter by `GeoJSON` | `Shapefile` | `GeoTIFF` | `COG` | `GeoPackage` | `CSV`
+    - **search**: partial match on name, description, or source
     """
     items = await data_service.list_datasets(
-        db, type_filter=type, search=search, limit=limit, offset=offset
+        db,
+        type_filter=type,
+        format_filter=format,
+        search=search,
+        limit=limit,
+        offset=offset,
     )
     return GeoDatasetListResponse(
         items=[GeoDatasetOut.model_validate(ds) for ds in items],
@@ -100,61 +177,153 @@ async def list_datasets(
     "/datasets/upload",
     response_model=GeoDatasetOut,
     status_code=201,
-    summary="Upload a GeoJSON dataset",
+    summary="Upload a spatial dataset (GeoJSON / Shapefile / CSV / GeoTIFF / COG / GeoPackage)",
 )
 async def upload_dataset(
-    file: UploadFile = File(..., description="GeoJSON file (.geojson or .json)"),
+    file: UploadFile = File(..., description="Dataset file"),
     format: str = Form("GeoJSON"),
     type: str = Form("vector"),
     crs: str = Form("EPSG:4326 (WGS 84)"),
     tags: str = Form("", description="Comma-separated tags"),
+    description: str = Form("", description="Optional human description"),
+    source: str = Form("", description="Optional source / provenance"),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Upload a GeoJSON file, ingest all features into PostGIS, and register the
-    dataset in the catalog.
+    Upload a spatial file, ingest (or register) it, and register the dataset
+    in the catalog.
+
+    Behaviour by **format**:
+
+    * `GeoJSON` / `Shapefile` — features are parsed into PostGIS and tiled via MVT.
+    * `CSV` — column schema is captured; if a lat/lon pair is detected, rows
+      are also ingested as point features.
+    * `GeoTIFF` / `COG` / `GeoPackage` — registered as a downloadable asset.
 
     Returns the newly created dataset record.
     """
-    # Validate content type loosely
-    allowed_types = {
-        "application/geo+json",
-        "application/json",
-        "text/plain",
-        "application/octet-stream",
-    }
-    if file.content_type and file.content_type not in allowed_types:
-        # Only strict-enforce for clearly wrong MIME types
-        if not file.content_type.startswith("text/"):
-            raise HTTPException(
-                status_code=415,
-                detail=f"Unsupported content type '{file.content_type}'. Upload a GeoJSON file.",
-            )
+    fmt = (format or "").strip()
+    filename = file.filename or "dataset"
+
+    if not fmt:
+        raise HTTPException(status_code=422, detail="A 'format' must be provided.")
+
+    _validate_format(filename, fmt)
 
     file_bytes = await file.read()
     if len(file_bytes) == 0:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
 
-    if len(file_bytes) > 500 * 1024 * 1024:  # 500 MB hard cap
+    if len(file_bytes) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="File exceeds 500 MB limit.")
 
-    tag_list = [t.strip() for t in tags.split(",") if t.strip()] or ["uploaded"]
-    filename = file.filename or "dataset.geojson"
+    tag_list = [t.strip() for t in tags.split(",") if t.strip()]
+    # Sensible default type when the client didn't specify one.
+    resolved_type = (type or "").strip() or DEFAULT_TYPE_FOR_FORMAT.get(fmt, "vector")
 
     try:
-        dataset = await data_service.ingest_geojson(
+        dataset = await data_service.ingest_dataset(
             file_bytes=file_bytes,
             filename=filename,
-            format=format,
-            type=type,
-            crs=crs,
+            format=fmt,
+            type=resolved_type,
+            crs=crs or "EPSG:4326 (WGS 84)",
             tags=tag_list,
+            description=(description or None),
+            source=(source or None),
             db=db,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
 
     return GeoDatasetOut.model_validate(dataset)
+
+
+@router.get("/datasets/{dataset_id}", response_model=GeoDatasetOut, summary="Get a dataset")
+async def get_dataset(
+    dataset_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Return a single dataset record by ID."""
+    ds = await data_service.get_dataset(db, dataset_id)
+    if not ds:
+        raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")
+    return GeoDatasetOut.model_validate(ds)
+
+
+@router.patch(
+    "/datasets/{dataset_id}",
+    response_model=GeoDatasetOut,
+    summary="Update dataset metadata",
+)
+async def update_dataset(
+    dataset_id: str,
+    payload: GeoDatasetUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Update editable metadata (name, description, source, tags, crs, meta)."""
+    updates = payload.model_dump(exclude_unset=True)
+    # `meta` is merged rather than replaced so clients can patch a single key.
+    if payload.meta is not None:
+        existing = (await data_service.get_dataset(db, dataset_id)) or None
+        if existing and existing.meta:
+            merged = dict(existing.meta)
+            merged.update(payload.meta)
+            updates["meta"] = merged
+        else:
+            updates["meta"] = payload.meta
+
+    try:
+        ds = await data_service.update_dataset(db, dataset_id, updates)
+    except Exception as exc:  # pragma: no cover - defensive
+        raise HTTPException(status_code=500, detail=f"Update failed: {exc}")
+
+    if not ds:
+        raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")
+
+    return GeoDatasetOut.model_validate(ds)
+
+
+@router.get(
+    "/datasets/{dataset_id}/preview",
+    response_model=DatasetPreview,
+    summary="Preview a dataset's rows / schema",
+)
+async def preview_dataset(
+    dataset_id: str,
+    max_rows: int = 20,
+    db: AsyncSession = Depends(get_db),
+):
+    """Return a bounded preview (schema + up to ``max_rows`` sample rows)."""
+    max_rows = max(1, min(max_rows, 100))
+    preview = await data_service.get_preview(db, dataset_id, max_rows=max_rows)
+    if preview is None:
+        raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")
+    return preview
+
+
+@router.get(
+    "/datasets/{dataset_id}/download",
+    summary="Download the original uploaded file",
+    responses={200: {"content": {"application/octet-stream": {}}}},
+)
+async def download_dataset(
+    dataset_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Stream the original uploaded file back to the client."""
+    dl = await data_service.get_download(db, dataset_id)
+    if dl is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Dataset '{dataset_id}' not found or has no stored file.",
+        )
+    data, filename, content_type = dl
+    return Response(
+        content=data,
+        media_type=content_type.split(";")[0],
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.delete("/datasets/{dataset_id}", status_code=204, summary="Delete a dataset")
@@ -191,14 +360,10 @@ async def get_mvt_tile(
     Uses PostGIS `ST_AsMVT` + `ST_TileEnvelope` for efficient server-side
     tile generation directly from the `geo_features` table.
     """
-    # Validate dataset exists
     dataset = await data_service.get_dataset(db, dataset_id)
     if not dataset:
         raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")
 
-    # --- MVT tile query using PostGIS ---
-    # ST_TileEnvelope(z, x, y) gives the web-mercator bbox for the tile.
-    # We transform geometries to EPSG:3857 for MVT.
     sql = text("""
         WITH
         bounds AS (

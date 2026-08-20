@@ -1,11 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  deleteDataset,
-  formatBytes,
+  DatasetFormat,
+  DatasetPreview,
+  DatasetType,
   GeoDatasetOut,
+  deleteDataset,
+  downloadDataset,
+  formatBytes,
   getVectorTileUrl,
   listDatasets,
+  previewDataset,
+  updateDataset,
   uploadDataset,
 } from "../lib/datasets";
 
@@ -30,35 +36,119 @@ interface Toast {
   message: string;
 }
 
+// ── Format / Type vocabulary ──────────────────────────────────────────────────
+const FORMATS: { value: DatasetFormat; label: string; extensions: string }[] = [
+  { value: "GeoJSON", label: "GeoJSON", extensions: ".geojson, .json" },
+  {
+    value: "Shapefile",
+    label: "Shapefile (zipped .shp)",
+    extensions: ".zip (containing .shp)",
+  },
+  { value: "KML", label: "KML / Google Earth", extensions: ".kml, .kmz" },
+  { value: "GeoRSS", label: "GeoRSS / RSS Feed", extensions: ".xml" },
+  { value: "GeoTIFF", label: "GeoTIFF", extensions: ".tif, .tiff" },
+  { value: "COG", label: "Cloud Optimized GeoTIFF", extensions: ".tif, .tiff" },
+  { value: "GeoPackage", label: "GeoPackage", extensions: ".gpkg" },
+  { value: "GeoParquet", label: "GeoParquet", extensions: ".parquet" },
+  { value: "CSV", label: "CSV / Tabular", extensions: ".csv, .tsv" },
+];
+
+const TYPES: { value: DatasetType; label: string }[] = [
+  { value: "vector", label: "Vector Layer" },
+  { value: "raster", label: "Raster Surface" },
+  { value: "tabular", label: "Tabular Data" },
+  { value: "remote-sensing", label: "Remote Sensing / Satellite" },
+  { value: "points", label: "Point Collection" },
+];
+
+const INGESTED_FORMATS = new Set<string>([
+  "GeoJSON",
+  "Shapefile",
+  "KML",
+  "GeoRSS",
+]);
+// CSV can also be ingested if a coordinate pair is detected — flag comes from meta.
+const STORED_FORMATS = new Set<string>([
+  "GeoTIFF",
+  "COG",
+  "GeoPackage",
+  "GeoParquet",
+]);
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function featureCountLabel(ds: DatasetItem): string {
-  if (ds.feature_count === null || ds.feature_count === undefined)
-    return ds.type === "raster" ? "Raster Grid" : "—";
-  return ds.feature_count.toLocaleString() + " features";
+  if (ds.type === "tabular") {
+    if (ds.feature_count === null || ds.feature_count === undefined)
+      return "Tabular";
+    return `${ds.feature_count.toLocaleString()} rows`;
+  }
+  if (ds.type === "raster" || ds.type === "remote-sensing") {
+    return "Raster Asset";
+  }
+  if (ds.feature_count === null || ds.feature_count === undefined) return "—";
+  return `${ds.feature_count.toLocaleString()} features`;
+}
+
+function isVectorized(ds: DatasetItem): boolean {
+  if (INGESTED_FORMATS.has(ds.format)) return true;
+  if (ds.format === "CSV") return Boolean(ds.meta?.ingested);
+  return false;
+}
+
+function isStoredAsset(ds: DatasetItem): boolean {
+  return STORED_FORMATS.has(ds.format);
 }
 
 function formatDate(iso: string): string {
-  return iso ? iso.slice(0, 10) : "—";
+  if (!iso) return "—";
+  return iso.slice(0, 10);
 }
 
-function detectFormat(fileName: string): GeoDatasetOut["format"] | null {
+function detectFormat(fileName: string): DatasetFormat | null {
   const ext = fileName.split(".").pop()?.toLowerCase();
   if (ext === "geojson" || ext === "json") return "GeoJSON";
   if (ext === "tif" || ext === "tiff") return "GeoTIFF";
   if (ext === "zip") return "Shapefile";
-  if (ext === "csv") return "CSV";
+  if (ext === "gpkg") return "GeoPackage";
+  if (ext === "kml" || ext === "kmz") return "KML";
+  if (ext === "xml") return "GeoRSS";
+  if (ext === "parquet") return "GeoParquet";
+  if (ext === "csv" || ext === "tsv") return "CSV";
   return null;
+}
+
+function formatAccept(format: DatasetFormat): string {
+  const map: Record<DatasetFormat, string> = {
+    GeoJSON: ".geojson,.json",
+    Shapefile: ".zip,.shp",
+    KML: ".kml,.kmz",
+    GeoRSS: ".xml",
+    GeoTIFF: ".tif,.tiff",
+    COG: ".tif,.tiff",
+    GeoPackage: ".gpkg",
+    GeoParquet: ".parquet",
+    CSV: ".csv,.tsv,.txt",
+  };
+  return map[format] ?? ".*";
 }
 
 function formatIcon(format: string): string {
   switch (format) {
     case "GeoJSON":
       return "🧬";
+    case "Shapefile":
+      return "🗂️";
+    case "KML":
+      return "📍";
+    case "GeoRSS":
+      return "📡";
     case "GeoTIFF":
     case "COG":
       return "🛰️";
-    case "Shapefile":
-      return "🗂️";
+    case "GeoPackage":
+      return "📦";
+    case "GeoParquet":
+      return "🧊";
     case "CSV":
       return "📑";
     default:
@@ -76,9 +166,16 @@ function typeIcon(type: string): string {
       return "🌍";
     case "tabular":
       return "📊";
+    case "points":
+      return "📍";
     default:
       return "📦";
   }
+}
+
+function typeLabel(type: string): string {
+  const t = TYPES.find((x) => x.value === type);
+  return t?.label ?? type;
 }
 
 let toastSeq = 0;
@@ -94,6 +191,7 @@ export default function DataPage() {
   // ── Filtering ───────────────────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [formatFilter, setFormatFilter] = useState<string>("all");
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
 
   // ── Sorting / view / pagination ─────────────────────────────────────────────
@@ -108,9 +206,10 @@ export default function DataPage() {
 
   // ── Modal state ─────────────────────────────────────────────────────────────
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [previewDataset, setPreviewDataset] = useState<DatasetItem | null>(
-    null,
-  );
+  const [inspectTarget, setInspectTarget] = useState<DatasetItem | null>(null);
+  const [inspectData, setInspectData] = useState<DatasetPreview | null>(null);
+  const [inspectLoading, setInspectLoading] = useState(false);
+  const [editDataset, setEditDataset] = useState<DatasetItem | null>(null);
   const [tileUrlDataset, setTileUrlDataset] = useState<DatasetItem | null>(
     null,
   );
@@ -121,13 +220,23 @@ export default function DataPage() {
 
   // ── Upload form state ───────────────────────────────────────────────────────
   const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
-  const [format, setFormat] = useState<GeoDatasetOut["format"]>("GeoJSON");
-  const [type, setType] = useState<GeoDatasetOut["type"]>("vector");
+  const [format, setFormat] = useState<DatasetFormat>("GeoJSON");
+  const [type, setType] = useState<DatasetType>("vector");
   const [crs, setCrs] = useState("EPSG:4326 (WGS 84)");
   const [tagsInput, setTagsInput] = useState("");
+  const [description, setDescription] = useState("");
+  const [source, setSource] = useState("");
   const [batchUploading, setBatchUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Edit form state ─────────────────────────────────────────────────────────
+  const [editName, setEditName] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [editSource, setEditSource] = useState("");
+  const [editCrs, setEditCrs] = useState("");
+  const [editTags, setEditTags] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
 
   // ── Tile URL copy state ──────────────────────────────────────────────────────
   const [tileCopied, setTileCopied] = useState(false);
@@ -154,6 +263,7 @@ export default function DataPage() {
     try {
       const items = await listDatasets({
         type: typeFilter,
+        format: formatFilter,
         search: searchQuery,
       });
       setDatasets(items);
@@ -162,7 +272,7 @@ export default function DataPage() {
     } finally {
       setLoading(false);
     }
-  }, [typeFilter, searchQuery]);
+  }, [typeFilter, formatFilter, searchQuery]);
 
   useEffect(() => {
     const timer = setTimeout(fetchDatasets, 300); // debounce search
@@ -173,11 +283,15 @@ export default function DataPage() {
   useEffect(() => {
     setPage(1);
     setSelectedIds(new Set());
-  }, [searchQuery, typeFilter, selectedTags, pageSize]);
+  }, [searchQuery, typeFilter, formatFilter, selectedTags, pageSize]);
 
   // Escape key closes modals; lock scroll while any modal open
   const anyModalOpen =
-    isAddModalOpen || !!previewDataset || !!tileUrlDataset || !!confirmDelete;
+    isAddModalOpen ||
+    !!inspectTarget ||
+    !!tileUrlDataset ||
+    !!confirmDelete ||
+    !!editDataset;
 
   useEffect(() => {
     if (!anyModalOpen) return;
@@ -185,9 +299,11 @@ export default function DataPage() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setIsAddModalOpen(false);
-        setPreviewDataset(null);
+        setInspectTarget(null);
+        setInspectData(null);
         setTileUrlDataset(null);
         setConfirmDelete(null);
+        setEditDataset(null);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -249,11 +365,15 @@ export default function DataPage() {
   );
 
   const activeFilterCount =
-    (searchQuery ? 1 : 0) + (typeFilter !== "all" ? 1 : 0) + selectedTags.size;
+    (searchQuery ? 1 : 0) +
+    (typeFilter !== "all" ? 1 : 0) +
+    (formatFilter !== "all" ? 1 : 0) +
+    selectedTags.size;
 
   function clearFilters() {
     setSearchQuery("");
     setTypeFilter("all");
+    setFormatFilter("all");
     setSelectedTags(new Set());
   }
 
@@ -341,6 +461,81 @@ export default function DataPage() {
     }
   }
 
+  // ── Preview ─────────────────────────────────────────────────────────────────
+  async function openPreview(ds: DatasetItem) {
+    setInspectTarget(ds);
+    setInspectData(null);
+    setInspectLoading(true);
+    try {
+      const data = await previewDataset(ds.id, 20);
+      setInspectData(data);
+    } catch (err: any) {
+      addToast("error", err?.message ?? "Could not load preview.");
+    } finally {
+      setInspectLoading(false);
+    }
+  }
+
+  // ── Download ────────────────────────────────────────────────────────────────
+  async function handleDownload(ds: DatasetItem) {
+    try {
+      const ext =
+        ds.storage_key?.split(".").pop() ??
+        (ds.format === "GeoJSON"
+          ? "geojson"
+          : ds.format === "Shapefile"
+            ? "zip"
+            : ds.format === "KML"
+              ? "kml"
+              : ds.format === "GeoParquet"
+                ? "parquet"
+                : ds.format === "CSV"
+                  ? "csv"
+                  : "dat");
+      await downloadDataset(ds.id, `${ds.name.replace(/\s+/g, "_")}.${ext}`);
+      addToast("success", "Download started.");
+    } catch (err: any) {
+      addToast("error", err?.message ?? "Download failed.");
+    }
+  }
+
+  // ── Edit ────────────────────────────────────────────────────────────────────
+  function openEdit(ds: DatasetItem) {
+    setEditDataset(ds);
+    setEditName(ds.name);
+    setEditDesc(ds.description ?? "");
+    setEditSource(ds.source ?? "");
+    setEditCrs(ds.crs);
+    setEditTags(ds.tags?.join(", ") ?? "");
+  }
+
+  async function handleEditSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editDataset) return;
+    setEditSaving(true);
+    try {
+      const updated = await updateDataset(editDataset.id, {
+        name: editName.trim() || undefined,
+        description: editDesc.trim() || null,
+        source: editSource.trim() || null,
+        crs: editCrs,
+        tags: editTags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+      });
+      setDatasets((prev) =>
+        prev.map((d) => (d.id === updated.id ? { ...d, ...updated } : d)),
+      );
+      setEditDataset(null);
+      addToast("success", "Dataset updated.");
+    } catch (err: any) {
+      addToast("error", err?.message ?? "Update failed.");
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
   // ── File selection (multi) ──────────────────────────────────────────────────
   function handleFilesSelected(list: FileList | File[] | null) {
     if (!list) return;
@@ -360,7 +555,22 @@ export default function DataPage() {
     // Auto-detect format only when this is the first/only file selection
     if (arr.length === 1 && fileEntries.length === 0) {
       const detected = detectFormat(arr[0].name);
-      if (detected) setFormat(detected);
+      if (detected) {
+        setFormat(detected);
+        // Suggest a reasonable type for the detected format
+        const suggestedType: Record<DatasetFormat, DatasetType> = {
+          GeoJSON: "vector",
+          Shapefile: "vector",
+          KML: "points",
+          GeoRSS: "points",
+          GeoPackage: "vector",
+          GeoParquet: "vector",
+          GeoTIFF: "raster",
+          COG: "remote-sensing",
+          CSV: "tabular",
+        };
+        setType(suggestedType[detected] ?? "vector");
+      }
     }
   }
 
@@ -410,6 +620,8 @@ export default function DataPage() {
             type,
             crs,
             tags: tagsInput,
+            description: description || undefined,
+            source: source || undefined,
           },
           (pct) => {
             setFileEntries((prev) =>
@@ -470,6 +682,8 @@ export default function DataPage() {
     setType("vector");
     setCrs("EPSG:4326 (WGS 84)");
     setTagsInput("");
+    setDescription("");
+    setSource("");
     setBatchUploading(false);
   }
 
@@ -497,21 +711,84 @@ export default function DataPage() {
     });
   }
 
+  // ── Per-dataset actions helper ─────────────────────────────────────────────
+  function DatasetActions({
+    d,
+    compact,
+  }: {
+    d: DatasetItem;
+    compact?: boolean;
+  }) {
+    const base = compact ? "flex-1" : "";
+    return (
+      <div
+        className={`flex items-center ${
+          compact
+            ? "flex-wrap gap-1.5 pt-1 border-t border-border-secondary mt-1"
+            : "justify-end gap-1.5"
+        }`}
+      >
+        <button
+          onClick={() => openPreview(d)}
+          title="Inspect Schema / Preview"
+          className={`${compact ? base : ""} btn btn-secondary btn-xs`}
+        >
+          Inspect
+        </button>
+
+        <button
+          onClick={() => openEdit(d)}
+          title="Edit metadata"
+          className={`${compact ? base : ""} btn btn-xs bg-info/10 text-info border border-info/30 hover:bg-info/20`}
+        >
+          ✏️ Edit
+        </button>
+
+        <button
+          onClick={() => handleDownload(d)}
+          title="Download original file"
+          className={`${compact ? base : ""} btn btn-xs bg-success/10 text-success border border-success/30 hover:bg-success/20`}
+        >
+          ⬇️
+        </button>
+
+        {isVectorized(d) && (
+          <button
+            onClick={() => setTileUrlDataset(d)}
+            title="Get MVT Tile URL"
+            className={`${compact ? base : ""} btn btn-xs bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20`}
+          >
+            🗺
+          </button>
+        )}
+
+        <button
+          onClick={() => requestDelete(d.id, d.name)}
+          title="Delete dataset"
+          className={`${compact ? base : ""} btn btn-ghost btn-icon btn-xs text-error hover:bg-error/10`}
+        >
+          🗑️
+        </button>
+      </div>
+    );
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="max-w-7xl mx-auto flex flex-col gap-6">
+    <div className="max-w-[100rem] mx-auto flex flex-col gap-5">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
+        <div className="min-w-0">
+          <div className="text-xs font-semibold uppercase tracking-widest text-primary mb-1.5">
             Spatial Catalog
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-text-primary flex items-center gap-3">
-            <span className="text-primary">📊</span> Data Hub &amp; Assets
+          <h1 className="text-2xl sm:text-3xl font-bold text-text-primary flex items-center gap-2.5">
+            <span className="text-primary">📊</span> Data Hub
           </h1>
-          <p className="mt-2 text-sm sm:text-base text-text-secondary max-w-2xl">
-            Upload, manage, inspect schemas, and perform operations on vector
-            shapefiles, raster imagery, and spatial datasets.
+          <p className="mt-1.5 text-sm text-text-secondary max-w-2xl">
+            Upload, manage, and inspect every common geospatial format —
+            GeoJSON, Shapefile, KML, GeoRSS, GeoTIFF/COG, GeoPackage,
+            GeoParquet, and CSV.
           </p>
         </div>
 
@@ -531,25 +808,25 @@ export default function DataPage() {
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
-          Add Data / Upload
+          Add Data
         </button>
       </div>
 
       {/* ── Summary Stat Cards ─────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
           {
             icon: "📦",
             value: loading ? "—" : datasets.length,
-            label: "Total Datasets",
+            label: "Datasets",
             color: "bg-primary/10 text-primary",
           },
           {
             icon: "🗺️",
             value: loading
               ? "—"
-              : datasets.filter((d) => d.type === "vector").length,
-            label: "Vector Layers",
+              : datasets.filter((d) => isVectorized(d)).length,
+            label: "Tiled Layers",
             color: "bg-accent/10 text-accent",
           },
           {
@@ -557,9 +834,13 @@ export default function DataPage() {
             value: loading
               ? "—"
               : datasets.filter(
-                  (d) => d.type === "raster" || d.type === "remote-sensing",
+                  (d) =>
+                    d.format === "GeoTIFF" ||
+                    d.format === "COG" ||
+                    d.type === "raster" ||
+                    d.type === "remote-sensing",
                 ).length,
-            label: "Satellite / Rasters",
+            label: "Rasters",
             color: "bg-warning/10 text-warning",
           },
           {
@@ -567,565 +848,559 @@ export default function DataPage() {
             value: loading
               ? "—"
               : datasets.filter((d) => d.type === "tabular").length,
-            label: "Tabular CSVs",
+            label: "Tables",
             color: "bg-success/10 text-success",
+          },
+          {
+            icon: "📁",
+            value: loading
+              ? "—"
+              : datasets.filter((d) => isStoredAsset(d)).length,
+            label: "Stored Assets",
+            color: "bg-info/10 text-info",
           },
           {
             icon: "💾",
             value: loading ? "—" : formatBytes(totalStorageBytes),
-            label: "Total Storage",
-            color: "bg-info/10 text-info",
+            label: "Storage",
+            color: "bg-primary/10 text-primary",
           },
         ].map((s) => (
-          <div key={s.label} className="card p-4 flex items-center gap-4">
+          <div key={s.label} className="card p-3 flex items-center gap-2.5">
             <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${s.color}`}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0 ${s.color}`}
             >
               {s.icon}
             </div>
             <div className="min-w-0">
-              <div className="text-2xl font-bold text-text-primary tabular-nums leading-none truncate">
+              <div className="text-lg font-bold text-text-primary tabular-nums leading-none truncate">
                 {s.value}
               </div>
-              <div className="text-xs text-text-tertiary mt-1">{s.label}</div>
+              <div className="text-[0.68rem] text-text-tertiary mt-0.5">
+                {s.label}
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ── Search & Filter Bar ────────────────────────────────────────────── */}
-      <div className="card px-5 py-3.5 flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
+      {/* ── Workspace: sidebar filters + content ───────────────────────────── */}
+      <div className="flex flex-col lg:flex-row gap-4 items-start">
+        {/* ── Filters sidebar ────────────────────────────────────────────── */}
+        <aside className="w-full lg:w-56 shrink-0 flex flex-col gap-4 lg:sticky lg:top-4">
           {/* Search */}
-          <div className="flex items-center gap-3 flex-1 min-w-[260px]">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-text-tertiary shrink-0"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search by name or tag (e.g. boundaries, sentinel, hydrology)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent border-none outline-none text-text-primary w-full text-sm placeholder:text-text-tertiary"
-            />
-            {loading && (
-              <span className="w-3.5 h-3.5 rounded-full border-2 border-primary border-t-transparent animate-spin shrink-0" />
+          <div className="card p-3 flex flex-col gap-3">
+            <div className="relative">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-text-tertiary absolute left-3 top-1/2 -translate-y-1/2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search datasets…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input input-sm pl-9"
+              />
+            </div>
+
+            <div className="form-field">
+              <label className="form-label">Type</label>
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="input input-sm"
+              >
+                <option value="all">All Types</option>
+                {TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-field">
+              <label className="form-label">Format</label>
+              <select
+                value={formatFilter}
+                onChange={(e) => setFormatFilter(e.target.value)}
+                className="input input-sm"
+              >
+                <option value="all">All Formats</option>
+                {FORMATS.map((f) => (
+                  <option key={f.value} value={f.value}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {activeFilterCount > 0 && (
+              <button
+                onClick={clearFilters}
+                className="btn btn-ghost btn-xs text-error justify-self-start"
+              >
+                ✕ Clear all filters
+              </button>
             )}
           </div>
 
-          {/* Filters */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm text-text-tertiary">Type:</span>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="input input-sm text-sm"
-            >
-              <option value="all">All Data Types</option>
-              <option value="vector">Vector Shapefiles / GeoJSON</option>
-              <option value="remote-sensing">Remote Sensing / Satellite</option>
-              <option value="raster">Raster Layers</option>
-              <option value="tabular">Tabular CSV</option>
-            </select>
+          {/* Tags */}
+          {allTags.length > 0 && (
+            <div className="card p-3">
+              <div className="text-xs font-semibold text-text-tertiary uppercase tracking-wide mb-2">
+                Tags
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {allTags.map((tag) => {
+                  const active = selectedTags.has(tag);
+                  return (
+                    <button
+                      key={tag}
+                      onClick={() => toggleTag(tag)}
+                      className={`text-[0.7rem] px-2 py-1 rounded-full border transition-colors ${
+                        active
+                          ? "bg-primary text-text-on-primary border-primary"
+                          : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
+                      }`}
+                    >
+                      #{tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-            <select
-              value={sortField}
-              onChange={(e) => setSortField(e.target.value as SortField)}
-              className="input input-sm text-sm"
-              title="Sort by"
-            >
-              <option value="updated">Sort: Recently Updated</option>
-              <option value="name">Sort: Name</option>
-              <option value="format">Sort: Format</option>
-              <option value="size">Sort: File Size</option>
-            </select>
+          {/* Sort + view controls */}
+          <div className="card p-3 flex flex-col gap-3">
+            <div className="form-field">
+              <label className="form-label">Sort by</label>
+              <div className="flex gap-1.5">
+                <select
+                  value={sortField}
+                  onChange={(e) => setSortField(e.target.value as SortField)}
+                  className="input input-sm flex-1"
+                >
+                  <option value="updated">Recently Updated</option>
+                  <option value="name">Name</option>
+                  <option value="format">Format</option>
+                  <option value="size">File Size</option>
+                </select>
+                <button
+                  onClick={() =>
+                    setSortDir((d) => (d === "asc" ? "desc" : "asc"))
+                  }
+                  className="btn btn-secondary btn-sm btn-icon"
+                  title={sortDir === "asc" ? "Ascending" : "Descending"}
+                >
+                  {sortDir === "asc" ? "↑" : "↓"}
+                </button>
+              </div>
+            </div>
 
-            <button
-              onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-              className="btn btn-secondary btn-sm btn-icon"
-              title={sortDir === "asc" ? "Ascending" : "Descending"}
-            >
-              {sortDir === "asc" ? "↑" : "↓"}
-            </button>
-
-            {/* View toggle */}
-            <div className="flex items-center rounded-lg border border-border-primary overflow-hidden">
-              <button
-                onClick={() => setViewMode("table")}
-                className={`px-2.5 py-1.5 text-sm ${
-                  viewMode === "table"
-                    ? "bg-primary/10 text-primary"
-                    : "text-text-tertiary hover:bg-surface-hover"
-                }`}
-                title="Table view"
-              >
-                ☰
-              </button>
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`px-2.5 py-1.5 text-sm ${
-                  viewMode === "grid"
-                    ? "bg-primary/10 text-primary"
-                    : "text-text-tertiary hover:bg-surface-hover"
-                }`}
-                title="Grid view"
-              >
-                ▦
-              </button>
+            <div className="form-field">
+              <label className="form-label">View</label>
+              <div className="flex items-center rounded-lg border border-border-primary overflow-hidden">
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`flex-1 px-2 py-1.5 text-sm ${
+                    viewMode === "table"
+                      ? "bg-primary/10 text-primary"
+                      : "text-text-tertiary hover:bg-surface-hover"
+                  }`}
+                  title="Table view"
+                >
+                  ☰ Table
+                </button>
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`flex-1 px-2 py-1.5 text-sm ${
+                    viewMode === "grid"
+                      ? "bg-primary/10 text-primary"
+                      : "text-text-tertiary hover:bg-surface-hover"
+                  }`}
+                  title="Grid view"
+                >
+                  ▦ Grid
+                </button>
+              </div>
             </div>
 
             <button
               onClick={fetchDatasets}
               title="Refresh"
-              className="btn btn-secondary btn-sm btn-icon"
-              aria-label="Refresh datasets"
+              className="btn btn-secondary btn-sm w-full"
             >
-              ↻
+              ↻ Refresh
             </button>
           </div>
-        </div>
+        </aside>
 
-        {/* Tag chips */}
-        {allTags.length > 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-border-secondary">
-            <span className="text-xs text-text-tertiary mr-1">Tags:</span>
-            {allTags.map((tag) => {
-              const active = selectedTags.has(tag);
-              return (
-                <button
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`text-[0.7rem] px-2 py-1 rounded-full border transition-colors ${
-                    active
-                      ? "bg-primary text-text-on-primary border-primary"
-                      : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
-                  }`}
-                >
-                  #{tag}
-                </button>
-              );
-            })}
-            {activeFilterCount > 0 && (
+        {/* ── Content column ─────────────────────────────────────────────── */}
+        <div className="flex-1 min-w-0 flex flex-col gap-4 w-full">
+          {/* Error Banner */}
+          {fetchError && (
+            <div className="alert alert-error">
+              <span className="alert-icon">⚠️</span>
+              <span className="alert-content text-sm">{fetchError}</span>
               <button
-                onClick={clearFilters}
-                className="text-xs text-text-tertiary underline ml-2 hover:text-error"
+                onClick={fetchDatasets}
+                className="ml-auto text-error underline text-sm bg-transparent border-none cursor-pointer"
               >
-                Clear all filters
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ── Error Banner ───────────────────────────────────────────────────── */}
-      {fetchError && (
-        <div className="alert alert-error">
-          <span className="alert-icon">⚠️</span>
-          <span className="alert-content text-sm">{fetchError}</span>
-          <button
-            onClick={fetchDatasets}
-            className="ml-auto text-error underline text-sm bg-transparent border-none cursor-pointer"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      {/* ── Bulk Action Bar ──────────────────────────────────────────────────── */}
-      {selectedIds.size > 0 && (
-        <div className="card px-5 py-3 flex items-center justify-between gap-3 bg-primary/5 border-primary/20 animate-fade-in">
-          <div className="text-sm text-text-primary font-medium">
-            {selectedIds.size} dataset{selectedIds.size === 1 ? "" : "s"}{" "}
-            selected
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate("/projects")}
-              className="btn btn-xs bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
-            >
-              + Add to Project
-            </button>
-            <button
-              onClick={requestBulkDelete}
-              className="btn btn-xs bg-error/10 text-error border border-error/20 hover:bg-error/20"
-            >
-              🗑️ Delete Selected
-            </button>
-            <button
-              onClick={() => setSelectedIds(new Set())}
-              className="btn btn-ghost btn-xs text-text-tertiary"
-            >
-              Clear
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Datasets: Table or Grid ────────────────────────────────────────── */}
-      {viewMode === "table" ? (
-        <div className="table-wrapper">
-          <table className="table">
-            <thead>
-              <tr>
-                <th className="w-8">
-                  <input
-                    type="checkbox"
-                    checked={allOnPageSelected}
-                    onChange={(e) => toggleSelectAllOnPage(e.target.checked)}
-                    aria-label="Select all on page"
-                  />
-                </th>
-                <th
-                  className="cursor-pointer select-none"
-                  onClick={() => toggleSort("name")}
-                >
-                  Dataset Name{sortIndicator("name")}
-                </th>
-                <th
-                  className="cursor-pointer select-none"
-                  onClick={() => toggleSort("format")}
-                >
-                  Format{sortIndicator("format")}
-                </th>
-                <th>CRS</th>
-                <th
-                  className="cursor-pointer select-none"
-                  onClick={() => toggleSort("size")}
-                >
-                  Features / Size{sortIndicator("size")}
-                </th>
-                <th
-                  className="cursor-pointer select-none"
-                  onClick={() => toggleSort("updated")}
-                >
-                  Updated{sortIndicator("updated")}
-                </th>
-                <th className="text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <tr key={i}>
-                    {Array.from({ length: 7 }).map((_, j) => (
-                      <td key={j}>
-                        <div
-                          className="skeleton h-3.5 rounded"
-                          style={{
-                            width: j === 1 ? "60%" : j === 6 ? "80%" : "50%",
-                          }}
-                        />
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : pageItems.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-14">
-                    <div className="flex flex-col items-center gap-3 text-center">
-                      <div className="text-4xl">🗺️</div>
-                      <div className="text-text-secondary text-sm max-w-sm">
-                        {fetchError
-                          ? "Could not load datasets."
-                          : activeFilterCount > 0
-                            ? "No datasets match your current filters."
-                            : "No datasets found. Upload your first GeoJSON to get started."}
-                      </div>
-                      {activeFilterCount > 0 ? (
-                        <button
-                          onClick={clearFilters}
-                          className="btn btn-secondary btn-sm"
-                        >
-                          Clear Filters
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => setIsAddModalOpen(true)}
-                          className="btn btn-primary btn-sm"
-                        >
-                          Upload Dataset
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                pageItems.map((d) => (
-                  <tr
-                    key={d.id}
-                    className={`${d._optimistic ? "opacity-60" : ""} ${
-                      selectedIds.has(d.id) ? "bg-primary/5" : ""
-                    }`}
-                  >
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(d.id)}
-                        onChange={() => toggleSelectRow(d.id)}
-                        aria-label={`Select ${d.name}`}
-                      />
-                    </td>
-
-                    {/* Name + Tags */}
-                    <td>
-                      <div className="flex flex-col gap-1">
-                        <span className="font-semibold text-text-primary text-sm flex items-center gap-1.5">
-                          <span>{typeIcon(d.type)}</span>
-                          {d.name}
-                        </span>
-                        <div className="flex flex-wrap gap-1">
-                          {d.tags.map((t) => (
-                            <span
-                              key={t}
-                              className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20"
-                            >
-                              #{t}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Format badge */}
-                    <td>
-                      <span className="badge badge-primary text-xs font-semibold">
-                        {formatIcon(d.format)} {d.format}
-                      </span>
-                    </td>
-
-                    {/* CRS */}
-                    <td className="text-sm text-text-secondary font-mono">
-                      {d.crs}
-                    </td>
-
-                    {/* Features / Size */}
-                    <td>
-                      <div className="text-sm text-text-primary">
-                        {featureCountLabel(d)}
-                      </div>
-                      <div className="text-xs text-text-tertiary">
-                        {formatBytes(d.file_size_bytes)}
-                      </div>
-                    </td>
-
-                    {/* Updated */}
-                    <td className="text-sm text-text-tertiary">
-                      {formatDate(d.updated_at)}
-                    </td>
-
-                    {/* Actions */}
-                    <td>
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          onClick={() => setPreviewDataset(d)}
-                          title="Inspect Schema / Attributes"
-                          className="btn btn-secondary btn-xs"
-                        >
-                          Inspect
-                        </button>
-
-                        {d.type === "vector" && (
-                          <button
-                            onClick={() => setTileUrlDataset(d)}
-                            title="Get MVT Tile URL"
-                            className="btn btn-xs bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20"
-                          >
-                            🗺 Tiles
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => navigate("/projects")}
-                          title="Add to Map Project"
-                          className="btn btn-xs bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
-                        >
-                          + Project
-                        </button>
-
-                        <button
-                          onClick={() => requestDelete(d.id, d.name)}
-                          title="Delete dataset"
-                          className="btn btn-ghost btn-icon btn-xs text-error hover:bg-error/10"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        // ── Grid view ──────────────────────────────────────────────────────────
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {loading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="card p-4 flex flex-col gap-3">
-                <div className="skeleton h-4 rounded w-2/3" />
-                <div className="skeleton h-3 rounded w-1/2" />
-                <div className="skeleton h-3 rounded w-1/3" />
-              </div>
-            ))
-          ) : pageItems.length === 0 ? (
-            <div className="col-span-full flex flex-col items-center gap-3 text-center py-14">
-              <div className="text-4xl">🗺️</div>
-              <div className="text-text-secondary text-sm max-w-sm">
-                {activeFilterCount > 0
-                  ? "No datasets match your current filters."
-                  : "No datasets found. Upload your first GeoJSON to get started."}
-              </div>
-              <button
-                onClick={() =>
-                  activeFilterCount > 0
-                    ? clearFilters()
-                    : setIsAddModalOpen(true)
-                }
-                className="btn btn-primary btn-sm"
-              >
-                {activeFilterCount > 0 ? "Clear Filters" : "Upload Dataset"}
+                Retry
               </button>
             </div>
-          ) : (
-            pageItems.map((d) => (
-              <div
-                key={d.id}
-                className={`card p-4 flex flex-col gap-3 hover-lift transition-shadow ${
-                  selectedIds.has(d.id) ? "ring-2 ring-primary/40" : ""
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(d.id)}
-                      onChange={() => toggleSelectRow(d.id)}
-                      aria-label={`Select ${d.name}`}
-                    />
-                    <span className="text-xl shrink-0">{typeIcon(d.type)}</span>
-                    <span className="font-semibold text-text-primary text-sm truncate">
-                      {d.name}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => requestDelete(d.id, d.name)}
-                    className="btn btn-ghost btn-icon btn-xs text-error hover:bg-error/10 shrink-0"
-                    title="Delete dataset"
-                  >
-                    🗑️
-                  </button>
-                </div>
+          )}
 
-                <div className="flex flex-wrap gap-1">
-                  {d.tags.map((t) => (
-                    <span
-                      key={t}
-                      className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20"
-                    >
-                      #{t}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs text-text-secondary">
-                  <div>
-                    <span className="text-text-tertiary">Format: </span>
-                    {formatIcon(d.format)} {d.format}
-                  </div>
-                  <div>
-                    <span className="text-text-tertiary">CRS: </span>
-                    <span className="font-mono">{d.crs}</span>
-                  </div>
-                  <div>
-                    <span className="text-text-tertiary">Size: </span>
-                    {formatBytes(d.file_size_bytes)}
-                  </div>
-                  <div>
-                    <span className="text-text-tertiary">Updated: </span>
-                    {formatDate(d.updated_at)}
-                  </div>
-                </div>
-
-                <div className="text-xs text-text-primary font-medium">
-                  {featureCountLabel(d)}
-                </div>
-
-                <div className="flex items-center gap-1.5 pt-1 border-t border-border-secondary mt-1">
-                  <button
-                    onClick={() => setPreviewDataset(d)}
-                    className="btn btn-secondary btn-xs flex-1"
-                  >
-                    Inspect
-                  </button>
-                  {d.type === "vector" && (
-                    <button
-                      onClick={() => setTileUrlDataset(d)}
-                      className="btn btn-xs bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20 flex-1"
-                    >
-                      🗺 Tiles
-                    </button>
-                  )}
-                  <button
-                    onClick={() => navigate("/projects")}
-                    className="btn btn-xs bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 flex-1"
-                  >
-                    + Project
-                  </button>
-                </div>
+          {/* Bulk Action Bar */}
+          {selectedIds.size > 0 && (
+            <div className="card px-4 py-2.5 flex items-center justify-between gap-3 bg-primary/5 border-primary/20 animate-fade-in">
+              <div className="text-sm text-text-primary font-medium">
+                {selectedIds.size} selected
               </div>
-            ))
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate("/projects")}
+                  className="btn btn-xs bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
+                >
+                  + Add to Project
+                </button>
+                <button
+                  onClick={requestBulkDelete}
+                  className="btn btn-xs bg-error/10 text-error border border-error/20 hover:bg-error/20"
+                >
+                  🗑️ Delete
+                </button>
+                <button
+                  onClick={() => setSelectedIds(new Set())}
+                  className="btn btn-ghost btn-xs text-text-tertiary"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Datasets: Table or Grid */}
+          {viewMode === "table" ? (
+            <div className="table-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th className="w-8">
+                      <input
+                        type="checkbox"
+                        checked={allOnPageSelected}
+                        onChange={(e) =>
+                          toggleSelectAllOnPage(e.target.checked)
+                        }
+                        aria-label="Select all on page"
+                      />
+                    </th>
+                    <th
+                      className="cursor-pointer select-none"
+                      onClick={() => toggleSort("name")}
+                    >
+                      Dataset{sortIndicator("name")}
+                    </th>
+                    <th
+                      className="cursor-pointer select-none"
+                      onClick={() => toggleSort("format")}
+                    >
+                      Format{sortIndicator("format")}
+                    </th>
+                    <th
+                      className="cursor-pointer select-none"
+                      onClick={() => toggleSort("size")}
+                    >
+                      Size{sortIndicator("size")}
+                    </th>
+                    <th
+                      className="cursor-pointer select-none"
+                      onClick={() => toggleSort("updated")}
+                    >
+                      Updated{sortIndicator("updated")}
+                    </th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <tr key={i}>
+                        {Array.from({ length: 6 }).map((_, j) => (
+                          <td key={j}>
+                            <div
+                              className="skeleton h-3.5 rounded"
+                              style={{
+                                width:
+                                  j === 1 ? "60%" : j === 5 ? "80%" : "50%",
+                              }}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  ) : pageItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-14">
+                        <div className="flex flex-col items-center gap-3 text-center">
+                          <div className="text-4xl">🗺️</div>
+                          <div className="text-text-secondary text-sm max-w-sm">
+                            {fetchError
+                              ? "Could not load datasets."
+                              : activeFilterCount > 0
+                                ? "No datasets match your current filters."
+                                : "No datasets yet. Upload your first file — GeoJSON, Shapefile, KML, GeoTIFF, GeoPackage, GeoParquet, or CSV."}
+                          </div>
+                          {activeFilterCount > 0 ? (
+                            <button
+                              onClick={clearFilters}
+                              className="btn btn-secondary btn-sm"
+                            >
+                              Clear Filters
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => setIsAddModalOpen(true)}
+                              className="btn btn-primary btn-sm"
+                            >
+                              Upload Dataset
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    pageItems.map((d) => (
+                      <tr
+                        key={d.id}
+                        className={`${d._optimistic ? "opacity-60" : ""} ${
+                          selectedIds.has(d.id) ? "bg-primary/5" : ""
+                        }`}
+                      >
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(d.id)}
+                            onChange={() => toggleSelectRow(d.id)}
+                            aria-label={`Select ${d.name}`}
+                          />
+                        </td>
+
+                        {/* Name + Tags + Description */}
+                        <td>
+                          <div className="flex flex-col gap-1">
+                            <span className="font-semibold text-text-primary text-sm flex items-center gap-1.5">
+                              <span>{typeIcon(d.type)}</span>
+                              {d.name}
+                              {isStoredAsset(d) && (
+                                <span className="text-[0.6rem] px-1.5 py-0.5 rounded-full bg-info/10 text-info border border-info/20">
+                                  Stored
+                                </span>
+                              )}
+                            </span>
+                            {d.description && (
+                              <span className="text-xs text-text-tertiary line-clamp-1">
+                                {d.description}
+                              </span>
+                            )}
+                            <div className="flex flex-wrap gap-1">
+                              {d.tags.map((t) => (
+                                <span
+                                  key={t}
+                                  className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20"
+                                >
+                                  #{t}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Format + Type badge */}
+                        <td>
+                          <div className="flex flex-col gap-1">
+                            <span className="badge badge-primary text-xs font-semibold">
+                              {formatIcon(d.format)} {d.format}
+                            </span>
+                            <span className="text-[0.7rem] text-text-tertiary">
+                              {typeLabel(d.type)}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Size + feature count */}
+                        <td>
+                          <div className="text-sm text-text-primary">
+                            {featureCountLabel(d)}
+                          </div>
+                          <div className="text-xs text-text-tertiary">
+                            {formatBytes(d.file_size_bytes)}
+                          </div>
+                        </td>
+
+                        {/* Updated */}
+                        <td className="text-sm text-text-tertiary">
+                          {formatDate(d.updated_at)}
+                        </td>
+
+                        {/* Actions */}
+                        <td>
+                          <DatasetActions d={d} />
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            // ── Grid view ──────────────────────────────────────────────────────────
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {loading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="card p-4 flex flex-col gap-3">
+                    <div className="skeleton h-4 rounded w-2/3" />
+                    <div className="skeleton h-3 rounded w-1/2" />
+                    <div className="skeleton h-3 rounded w-1/3" />
+                  </div>
+                ))
+              ) : pageItems.length === 0 ? (
+                <div className="col-span-full flex flex-col items-center gap-3 text-center py-14">
+                  <div className="text-4xl">🗺️</div>
+                  <div className="text-text-secondary text-sm max-w-sm">
+                    {activeFilterCount > 0
+                      ? "No datasets match your current filters."
+                      : "No datasets found. Upload your first file to get started."}
+                  </div>
+                  <button
+                    onClick={() =>
+                      activeFilterCount > 0
+                        ? clearFilters()
+                        : setIsAddModalOpen(true)
+                    }
+                    className="btn btn-primary btn-sm"
+                  >
+                    {activeFilterCount > 0 ? "Clear Filters" : "Upload Dataset"}
+                  </button>
+                </div>
+              ) : (
+                pageItems.map((d) => (
+                  <div
+                    key={d.id}
+                    className={`card p-4 flex flex-col gap-3 hover-lift transition-shadow ${
+                      selectedIds.has(d.id) ? "ring-2 ring-primary/40" : ""
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(d.id)}
+                          onChange={() => toggleSelectRow(d.id)}
+                          aria-label={`Select ${d.name}`}
+                        />
+                        <span className="text-xl shrink-0">
+                          {typeIcon(d.type)}
+                        </span>
+                        <span className="font-semibold text-text-primary text-sm truncate">
+                          {d.name}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1">
+                      {d.tags.map((t) => (
+                        <span
+                          key={t}
+                          className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20"
+                        >
+                          #{t}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs text-text-secondary">
+                      <div>
+                        <span className="text-text-tertiary">Format: </span>
+                        {formatIcon(d.format)} {d.format}
+                      </div>
+                      <div>
+                        <span className="text-text-tertiary">Type: </span>
+                        {typeLabel(d.type)}
+                      </div>
+                      <div>
+                        <span className="text-text-tertiary">CRS: </span>
+                        <span className="font-mono">{d.crs}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-tertiary">Size: </span>
+                        {formatBytes(d.file_size_bytes)}
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-text-primary font-medium">
+                      {featureCountLabel(d)}
+                    </div>
+
+                    <DatasetActions d={d} compact />
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* ── Pagination ─────────────────────────────────────────────────── */}
+          {!loading && processedDatasets.length > 0 && (
+            <div className="flex items-center justify-between flex-wrap gap-3 px-1">
+              <div className="text-xs text-text-tertiary">
+                Showing {(clampedPage - 1) * pageSize + 1}–
+                {Math.min(clampedPage * pageSize, processedDatasets.length)} of{" "}
+                {processedDatasets.length}
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="input input-sm text-xs"
+                >
+                  <option value={10}>10 / page</option>
+                  <option value={25}>25 / page</option>
+                  <option value={50}>50 / page</option>
+                </select>
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={clampedPage <= 1}
+                  className="btn btn-secondary btn-xs disabled:opacity-40"
+                >
+                  ← Prev
+                </button>
+                <span className="text-xs text-text-secondary tabular-nums">
+                  Page {clampedPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={clampedPage >= totalPages}
+                  className="btn btn-secondary btn-xs disabled:opacity-40"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
           )}
         </div>
-      )}
-
-      {/* ── Pagination ─────────────────────────────────────────────────────── */}
-      {!loading && processedDatasets.length > 0 && (
-        <div className="flex items-center justify-between flex-wrap gap-3 px-1">
-          <div className="text-xs text-text-tertiary">
-            Showing {(clampedPage - 1) * pageSize + 1}–
-            {Math.min(clampedPage * pageSize, processedDatasets.length)} of{" "}
-            {processedDatasets.length}
-          </div>
-          <div className="flex items-center gap-2">
-            <select
-              value={pageSize}
-              onChange={(e) => setPageSize(Number(e.target.value))}
-              className="input input-sm text-xs"
-            >
-              <option value={10}>10 / page</option>
-              <option value={25}>25 / page</option>
-              <option value={50}>50 / page</option>
-            </select>
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={clampedPage <= 1}
-              className="btn btn-secondary btn-xs disabled:opacity-40"
-            >
-              ← Prev
-            </button>
-            <span className="text-xs text-text-secondary tabular-nums">
-              Page {clampedPage} / {totalPages}
-            </span>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={clampedPage >= totalPages}
-              className="btn btn-secondary btn-xs disabled:opacity-40"
-            >
-              Next →
-            </button>
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* ── Upload Modal ───────────────────────────────────────────────────── */}
       {isAddModalOpen && (
@@ -1146,9 +1421,15 @@ export default function DataPage() {
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border-primary shrink-0">
-              <h2 className="text-xl font-bold text-text-primary">
-                Upload &amp; Add Spatial Dataset
-              </h2>
+              <div>
+                <h2 className="text-lg font-bold text-text-primary">
+                  Upload Spatial Dataset
+                </h2>
+                <p className="text-xs text-text-tertiary mt-0.5">
+                  GeoJSON · Shapefile · KML · GeoRSS · GeoTIFF · GeoPackage ·
+                  GeoParquet · CSV
+                </p>
+              </div>
               <button
                 onClick={() => {
                   if (!batchUploading) {
@@ -1186,7 +1467,7 @@ export default function DataPage() {
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept=".geojson,.json,.tif,.tiff,.zip,.csv"
+                  accept=".geojson,.json,.zip,.shp,.kml,.kmz,.xml,.tif,.tiff,.gpkg,.parquet,.csv,.tsv,.txt"
                   className="hidden"
                   onChange={(e) => handleFilesSelected(e.target.files)}
                 />
@@ -1206,10 +1487,10 @@ export default function DataPage() {
                   <>
                     <div className="text-4xl mb-2">📁</div>
                     <div className="font-semibold text-sm text-text-primary">
-                      Click or drag GeoJSON, Shapefile, GeoTIFF, or CSV here
+                      Click or drag your file here
                     </div>
                     <div className="text-xs text-text-tertiary mt-1">
-                      Multiple files supported — max 500 MB per file
+                      Any supported geospatial format · max 500 MB
                     </div>
                   </>
                 )}
@@ -1275,7 +1556,7 @@ export default function DataPage() {
               {batchUploading && (
                 <div className="flex flex-col gap-1.5">
                   <div className="flex justify-between text-xs text-text-tertiary">
-                    <span>Uploading &amp; ingesting features…</span>
+                    <span>Uploading & processing…</span>
                     <span className="tabular-nums">{overallProgress}%</span>
                   </div>
                   <div className="progress">
@@ -1290,19 +1571,17 @@ export default function DataPage() {
               {/* Format + Category */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="form-field">
-                  <label className="form-label">
-                    Format (applies to batch)
-                  </label>
+                  <label className="form-label">Format</label>
                   <select
                     value={format}
-                    onChange={(e) => setFormat(e.target.value as any)}
+                    onChange={(e) => setFormat(e.target.value as DatasetFormat)}
                     className="input select"
                   >
-                    <option value="GeoJSON">GeoJSON</option>
-                    <option value="GeoTIFF">GeoTIFF</option>
-                    <option value="Shapefile">Shapefile (.zip)</option>
-                    <option value="CSV">CSV / Tabular</option>
-                    <option value="COG">Cloud Optimized GeoTIFF</option>
+                    {FORMATS.map((f) => (
+                      <option key={f.value} value={f.value}>
+                        {f.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -1310,15 +1589,14 @@ export default function DataPage() {
                   <label className="form-label">Category</label>
                   <select
                     value={type}
-                    onChange={(e) => setType(e.target.value as any)}
+                    onChange={(e) => setType(e.target.value as DatasetType)}
                     className="input select"
                   >
-                    <option value="vector">Vector Layer</option>
-                    <option value="remote-sensing">
-                      Remote Sensing / Satellite
-                    </option>
-                    <option value="raster">Raster Surface</option>
-                    <option value="tabular">Tabular Data</option>
+                    {TYPES.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -1344,6 +1622,36 @@ export default function DataPage() {
                   placeholder="e.g. hydrology, elevation, 2026"
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
+                  className="input"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="form-field">
+                <label className="form-label">
+                  Description{" "}
+                  <span className="text-text-tertiary text-xs">(optional)</span>
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="input resize-none"
+                  rows={2}
+                  placeholder="What is this dataset? Where does it come from?"
+                />
+              </div>
+
+              {/* Source */}
+              <div className="form-field">
+                <label className="form-label">
+                  Source / Provenance{" "}
+                  <span className="text-text-tertiary text-xs">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Copernicus, USGS, internal GIS team"
+                  value={source}
+                  onChange={(e) => setSource(e.target.value)}
                   className="input"
                 />
               </div>
@@ -1383,14 +1691,17 @@ export default function DataPage() {
         </div>
       )}
 
-      {/* ── Schema Preview Modal ───────────────────────────────────────────── */}
-      {previewDataset && (
+      {/* ── Preview Modal ───────────────────────────────────────────────────── */}
+      {inspectTarget && (
         <div
           className="fixed inset-0 z-[999] flex items-center justify-center p-4 overlay animate-fade-in"
-          onClick={() => setPreviewDataset(null)}
+          onClick={() => {
+            setInspectTarget(null);
+            setInspectData(null);
+          }}
         >
           <div
-            className="w-full max-w-xl bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden max-h-[85vh] flex flex-col"
+            className="w-full max-w-2xl bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden max-h-[88vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -1399,12 +1710,15 @@ export default function DataPage() {
             <div className="flex items-start justify-between px-6 py-4 border-b border-border-primary shrink-0">
               <div>
                 <h2 className="text-lg font-bold text-text-primary">
-                  Dataset Attributes &amp; Schema
+                  Dataset Preview & Schema
                 </h2>
-                <div className="text-xs text-primary mt-0.5 flex items-center gap-2">
-                  {previewDataset.name}
+                <div className="text-xs text-primary mt-0.5 flex items-center gap-2 flex-wrap">
+                  {inspectTarget.name}
+                  <span className="text-text-tertiary">
+                    · {inspectTarget.format} · {typeLabel(inspectTarget.type)}
+                  </span>
                   <button
-                    onClick={() => handleCopyId(previewDataset.id)}
+                    onClick={() => handleCopyId(inspectTarget.id)}
                     className="text-text-tertiary hover:text-primary underline text-[0.65rem]"
                   >
                     {idCopied ? "ID copied ✓" : "copy ID"}
@@ -1412,7 +1726,10 @@ export default function DataPage() {
                 </div>
               </div>
               <button
-                onClick={() => setPreviewDataset(null)}
+                onClick={() => {
+                  setInspectTarget(null);
+                  setInspectData(null);
+                }}
                 className="btn btn-ghost btn-icon btn-sm text-text-tertiary hover:text-text-primary"
                 aria-label="Close"
               >
@@ -1425,39 +1742,90 @@ export default function DataPage() {
               <span>
                 CRS:{" "}
                 <code className="text-primary font-mono">
-                  {previewDataset.crs}
+                  {inspectTarget.crs}
                 </code>
               </span>
               <span>
-                Features: <strong>{featureCountLabel(previewDataset)}</strong>
+                Contents: <strong>{featureCountLabel(inspectTarget)}</strong>
               </span>
               <span>
                 Size:{" "}
-                <strong>{formatBytes(previewDataset.file_size_bytes)}</strong>
+                <strong>{formatBytes(inspectTarget.file_size_bytes)}</strong>
               </span>
               <span>
-                Updated:{" "}
-                <strong>{formatDate(previewDataset.updated_at)}</strong>
+                Updated: <strong>{formatDate(inspectTarget.updated_at)}</strong>
+              </span>
+              <span>
+                Ingested:{" "}
+                <strong>
+                  {isVectorized(inspectTarget)
+                    ? "Yes (queryable)"
+                    : "No (stored asset)"}
+                </strong>
               </span>
             </div>
 
-            {/* Table body */}
+            {inspectTarget.description && (
+              <div className="px-6 py-3 border-b border-border-secondary text-sm text-text-secondary shrink-0">
+                {inspectTarget.description}
+              </div>
+            )}
+
+            {/* Body */}
             <div className="flex-1 overflow-y-auto scrollbar-thin">
-              {previewDataset.attributes.length === 0 ? (
-                <div className="flex items-center justify-center py-12 text-text-tertiary text-sm">
-                  No attribute schema available for this dataset.
+              {inspectLoading ? (
+                <div className="flex flex-col items-center gap-3 py-12 text-text-tertiary">
+                  <span className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                  <div className="text-sm">Loading preview…</div>
                 </div>
-              ) : (
+              ) : inspectData && inspectData.rows.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="table text-sm">
+                    <thead>
+                      <tr>
+                        {inspectData.columns.map((c) => (
+                          <th key={c.field}>{c.field}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {inspectData.rows.map((r, i) => (
+                        <tr key={i}>
+                          {inspectData.columns.map((c) => (
+                            <td
+                              key={c.field}
+                              className="max-w-[16rem] truncate"
+                              title={String(r.values[c.field] ?? "")}
+                            >
+                              {r.values[c.field] === undefined ||
+                              r.values[c.field] === null
+                                ? "—"
+                                : String(r.values[c.field])}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {inspectData.row_count != null &&
+                    inspectData.row_count > inspectData.rows.length && (
+                      <div className="px-6 py-2 text-xs text-text-tertiary">
+                        Showing first {inspectData.rows.length} of{" "}
+                        {inspectData.row_count.toLocaleString()} rows.
+                      </div>
+                    )}
+                </div>
+              ) : inspectData && inspectData.columns.length > 0 ? (
                 <table className="table text-sm">
                   <thead>
                     <tr>
-                      <th>Attribute Field</th>
-                      <th>Data Type</th>
-                      <th>Sample Value</th>
+                      <th>Field</th>
+                      <th>Type</th>
+                      <th>Sample</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {previewDataset.attributes.map((attr) => (
+                    {inspectData.columns.map((attr) => (
                       <tr key={attr.field}>
                         <td className="font-semibold text-text-primary">
                           {attr.field}
@@ -1472,16 +1840,26 @@ export default function DataPage() {
                     ))}
                   </tbody>
                 </table>
+              ) : (
+                <div className="flex flex-col items-center gap-3 py-12 text-text-tertiary text-sm text-center px-6">
+                  <div className="text-3xl">🗃️</div>
+                  <div>
+                    No row preview is available for this dataset.
+                    {isStoredAsset(inspectTarget) &&
+                      " It is registered as a downloadable asset — use Download to retrieve the original file."}
+                  </div>
+                </div>
               )}
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-2 px-6 py-4 border-t border-border-primary shrink-0">
-              {previewDataset.type === "vector" && (
+            <div className="flex justify-end gap-2 px-6 py-4 border-t border-border-primary shrink-0 flex-wrap">
+              {isVectorized(inspectTarget) && (
                 <button
                   onClick={() => {
-                    setTileUrlDataset(previewDataset);
-                    setPreviewDataset(null);
+                    setTileUrlDataset(inspectTarget);
+                    setInspectTarget(null);
+                    setInspectData(null);
                   }}
                   className="btn btn-secondary btn-md"
                 >
@@ -1489,12 +1867,138 @@ export default function DataPage() {
                 </button>
               )}
               <button
-                onClick={() => setPreviewDataset(null)}
+                onClick={() => handleDownload(inspectTarget)}
+                className="btn btn-secondary btn-md"
+              >
+                ⬇️ Download
+              </button>
+              <button
+                onClick={() => {
+                  openEdit(inspectTarget);
+                  setInspectTarget(null);
+                  setInspectData(null);
+                }}
                 className="btn btn-primary btn-md"
               >
-                Close Preview
+                ✏️ Edit
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Metadata Modal ─────────────────────────────────────────────── */}
+      {editDataset && (
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center p-4 overlay animate-fade-in"
+          onClick={() => !editSaving && setEditDataset(null)}
+        >
+          <div
+            className="w-full max-w-md bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-start justify-between px-6 py-4 border-b border-border-primary shrink-0">
+              <div>
+                <h2 className="text-lg font-bold text-text-primary">
+                  Edit Dataset Metadata
+                </h2>
+                <div className="text-xs text-text-tertiary mt-0.5">
+                  {editDataset.name}
+                </div>
+              </div>
+              <button
+                onClick={() => !editSaving && setEditDataset(null)}
+                className="btn btn-ghost btn-icon btn-sm text-text-tertiary hover:text-text-primary"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form
+              onSubmit={handleEditSave}
+              className="p-6 flex flex-col gap-4 overflow-y-auto scrollbar-thin"
+            >
+              <div className="form-field">
+                <label className="form-label">Name</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="input"
+                />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Description</label>
+                <textarea
+                  value={editDesc}
+                  onChange={(e) => setEditDesc(e.target.value)}
+                  className="input resize-none"
+                  rows={3}
+                  placeholder="What is this dataset?"
+                />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Source / Provenance</label>
+                <input
+                  type="text"
+                  value={editSource}
+                  onChange={(e) => setEditSource(e.target.value)}
+                  className="input"
+                  placeholder="e.g. Copernicus, USGS"
+                />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">CRS</label>
+                <input
+                  type="text"
+                  value={editCrs}
+                  onChange={(e) => setEditCrs(e.target.value)}
+                  className="input"
+                />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  value={editTags}
+                  onChange={(e) => setEditTags(e.target.value)}
+                  className="input"
+                  placeholder="e.g. hydrology, elevation, 2026"
+                />
+              </div>
+
+              <div className="flex gap-3 justify-end mt-2">
+                <button
+                  type="button"
+                  disabled={editSaving}
+                  onClick={() => setEditDataset(null)}
+                  className="btn btn-secondary btn-md disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSaving}
+                  className="btn btn-primary btn-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {editSaving ? (
+                    <>
+                      <span className="w-4 h-4 rounded-full border-2 border-text-on-primary border-t-transparent animate-spin" />
+                      Saving…
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -1511,7 +2015,6 @@ export default function DataPage() {
             role="dialog"
             aria-modal="true"
           >
-            {/* Header */}
             <div className="flex items-start justify-between px-6 py-4 border-b border-border-primary">
               <div>
                 <h2 className="text-lg font-bold text-text-primary">
@@ -1530,21 +2033,18 @@ export default function DataPage() {
               </button>
             </div>
 
-            {/* Body */}
             <div className="p-6 flex flex-col gap-4">
               <p className="text-sm text-text-secondary leading-relaxed">
                 This dataset is served as Mapbox Vector Tiles (MVT) via PostGIS{" "}
-                <code className="text-primary font-mono text-xs">ST_AsMVT</code>
+                <code className="text-primary font-mono text-xs">ST_AsMVT</code>{" "}
                 . Use this URL pattern in MapLibre GL, Mapbox GL, or any
                 MVT-compatible client.
               </p>
 
-              {/* Tile URL */}
               <div className="p-3.5 rounded-lg bg-bg-tertiary border border-border-primary font-mono text-sm text-primary break-all leading-relaxed">
                 {getVectorTileUrl(tileUrlDataset.id)}
               </div>
 
-              {/* MapLibre example */}
               <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
                 <div className="text-xs font-semibold text-accent mb-2">
                   MapLibre GL example:
@@ -1554,7 +2054,6 @@ export default function DataPage() {
                 </pre>
               </div>
 
-              {/* Actions */}
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setTileUrlDataset(null)}
