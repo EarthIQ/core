@@ -109,6 +109,8 @@ async def publish_map_from_project(
         center_lng=body.center_lng,
         center_lat=body.center_lat,
         zoom=body.zoom,
+        bearing=body.bearing,
+        pitch=body.pitch,
         basemap=body.basemap,
         layers_config=[l.model_dump() for l in body.layers_config],
         is_public=body.is_public,

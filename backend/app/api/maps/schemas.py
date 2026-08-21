@@ -29,6 +29,8 @@ class MapCreate(BaseModel):
     center_lng: float = Field(default=0.0, ge=-180.0, le=180.0)
     center_lat: float = Field(default=20.0, ge=-90.0, le=90.0)
     zoom: float = Field(default=2.5, ge=0.0, le=24.0)
+    bearing: float = Field(default=0.0, ge=-180.0, le=180.0)
+    pitch: float = Field(default=0.0, ge=0.0, le=85.0)
     basemap: str = Field(default="dataviz-dark", examples=["dataviz-dark", "dataviz-light", "satellite"])
     layers_config: List[MapLayerItem] = Field(default_factory=list)
     is_public: bool = False
@@ -43,6 +45,8 @@ class MapUpdate(BaseModel):
     center_lng: Optional[float] = Field(None, ge=-180.0, le=180.0)
     center_lat: Optional[float] = Field(None, ge=-90.0, le=90.0)
     zoom: Optional[float] = Field(None, ge=0.0, le=24.0)
+    bearing: Optional[float] = Field(None, ge=-180.0, le=180.0)
+    pitch: Optional[float] = Field(None, ge=0.0, le=85.0)
     basemap: Optional[str] = None
     layers_config: Optional[List[MapLayerItem]] = None
     is_public: Optional[bool] = None
@@ -69,6 +73,8 @@ class MapRead(BaseModel):
     center_lng: float
     center_lat: float
     zoom: float
+    bearing: float = 0.0
+    pitch: float = 0.0
     basemap: str
     layers_config: List[MapLayerItem]
     is_public: bool

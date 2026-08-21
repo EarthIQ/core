@@ -24,6 +24,8 @@ export interface MapItem {
   center_lng: number;
   center_lat: number;
   zoom: number;
+  bearing?: number;
+  pitch?: number;
   basemap: string;
   layers_config: MapLayerItem[];
   is_public: boolean;
@@ -35,6 +37,7 @@ export interface MapItem {
   };
   group_access: GroupAccess[];
   user_permission: PermissionLevel;
+  widgets_config: Record<string, boolean>;
   created_at: string;
   updated_at: string;
 }
@@ -48,6 +51,7 @@ export interface MapCreateInput {
   basemap?: string;
   layers_config?: MapLayerItem[];
   is_public?: boolean;
+  widgets_config?: Record<string, boolean>;
   group_access?: GroupAccess[];
 }
 
@@ -60,6 +64,7 @@ export interface MapUpdateInput {
   basemap?: string;
   layers_config?: MapLayerItem[];
   is_public?: boolean;
+  widgets_config?: Record<string, boolean>;
 }
 
 export interface GroupItem {

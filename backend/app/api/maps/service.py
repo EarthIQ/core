@@ -81,11 +81,15 @@ async def list_accessible_maps(db: AsyncSession, current_user: Optional[User]) -
                 "center_lng": map_item.center_lng,
                 "center_lat": map_item.center_lat,
                 "zoom": map_item.zoom,
+                "bearing": getattr(map_item, "bearing", 0.0),
+                "pitch": getattr(map_item, "pitch", 0.0),
                 "basemap": map_item.basemap,
                 "layers_config": map_item.layers_config or [],
                 "is_public": map_item.is_public,
                 "owner_id": map_item.owner_id,
                 "owner": map_item.owner,
+                "widgets_config": map_item.widgets_config or {},
+                "project_id": map_item.project_id,
                 "group_access": [
                     GroupAccessSchema(
                         group_id=ga.group_id,
@@ -136,11 +140,15 @@ async def get_accessible_map(
         center_lng=map_item.center_lng,
         center_lat=map_item.center_lat,
         zoom=map_item.zoom,
+        bearing=getattr(map_item, "bearing", 0.0),
+        pitch=getattr(map_item, "pitch", 0.0),
         basemap=map_item.basemap,
         layers_config=map_item.layers_config or [],
         is_public=map_item.is_public,
         owner_id=map_item.owner_id,
         owner=map_item.owner,
+        widgets_config=map_item.widgets_config or {},
+        project_id=map_item.project_id,
         group_access=[
             GroupAccessSchema(
                 group_id=ga.group_id,
@@ -163,10 +171,14 @@ async def create_map(db: AsyncSession, owner: User, body: MapCreate) -> MapRead:
         center_lng=body.center_lng,
         center_lat=body.center_lat,
         zoom=body.zoom,
+        bearing=body.bearing,
+        pitch=body.pitch,
         basemap=body.basemap,
         layers_config=[l.model_dump() for l in body.layers_config],
         is_public=body.is_public,
         owner_id=owner.id,
+        project_id=body.project_id,
+        widgets_config=body.widgets_config,
     )
     db.add(map_item)
     await db.flush()
@@ -214,10 +226,16 @@ async def update_map(db: AsyncSession, map_id: str, current_user: User, body: Ma
         map_item.zoom = body.zoom
     if body.basemap is not None:
         map_item.basemap = body.basemap
+    if body.bearing is not None:
+        map_item.bearing = body.bearing
+    if body.pitch is not None:
+        map_item.pitch = body.pitch
     if body.layers_config is not None:
         map_item.layers_config = [l.model_dump() for l in body.layers_config]
     if body.is_public is not None:
         map_item.is_public = body.is_public
+    if body.widgets_config is not None:
+        map_item.widgets_config = body.widgets_config
 
     await db.flush()
     await db.refresh(map_item)

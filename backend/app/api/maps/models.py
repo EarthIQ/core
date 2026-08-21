@@ -29,6 +29,8 @@ class MapModel(Base):
     center_lng: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     center_lat: Mapped[float] = mapped_column(Float, default=20.0, nullable=False)
     zoom: Mapped[float] = mapped_column(Float, default=2.5, nullable=False)
+    bearing: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    pitch: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     basemap: Mapped[str] = mapped_column(String(100), default="dataviz-dark", nullable=False)
     
     # Layer configurations (vector/raster layer JSON)

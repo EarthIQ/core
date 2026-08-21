@@ -14,15 +14,27 @@ import {
 import type { MapItem } from "@/lib/maps";
 import { ShareDialog } from "./share/ShareDialog";
 
+import { MapBuilder, MapBuilderConfig } from "./MapBuilder";
+import type { MapLayerItem } from "@/lib/maps";
+import type { Annotation } from "@/lib/mapEditor/types";
+
 interface PublishedMapsPanelProps {
   maps: MapItem[];
   projectId: string;
   isOpen: boolean;
   onClose: () => void;
-  onPublish: (title: string, desc: string, isPublic: boolean, widgets: any) => Promise<void>;
+  onPublish: (config: MapBuilderConfig) => Promise<void>;
   onDelete: (mapId: string) => Promise<void>;
-  onUpdate: (mapId: string, isPublic: boolean, widgets: any) => Promise<void>;
+  onUpdate: (mapId: string, config: MapBuilderConfig) => Promise<void>;
   canEdit: boolean;
+  /* Data needed by the MapBuilder to initialize */
+  currentBasemap: string;
+  currentCenter: [number, number];
+  currentZoom: number;
+  currentBearing: number;
+  currentPitch: number;
+  currentLayers: MapLayerItem[];
+  currentAnnotations: Annotation[];
 }
 
 export function PublishedMapsPanel({
@@ -34,21 +46,18 @@ export function PublishedMapsPanel({
   onDelete,
   onUpdate,
   canEdit,
+  currentBasemap,
+  currentCenter,
+  currentZoom,
+  currentBearing,
+  currentPitch,
+  currentLayers,
+  currentAnnotations,
 }: PublishedMapsPanelProps) {
-  const [publishModalOpen, setPublishModalOpen] = useState(false);
-  const [configMap, setConfigMap] = useState<MapItem | null>(null);
-  
-  // Publish Form State
-  const [pubTitle, setPubTitle] = useState("");
-  const [pubDesc, setPubDesc] = useState("");
-  const [pubPublic, setPubPublic] = useState(true);
-  const [pubWidgets, setPubWidgets] = useState({
-    titleCard: true,
-    legend: true,
-    layerList: true,
-    zoomControls: true,
-  });
-  const [publishing, setPublishing] = useState(false);
+  const [builderOpen, setBuilderOpen] = useState(false);
+  const [builderEditingMap, setBuilderEditingMap] = useState<MapItem | null>(
+    null,
+  );
   const [copiedId, setCopiedId] = useState<string | null>(null);
   /** Map whose share dialog is open (per-map sharing). */
   const [shareMap, setShareMap] = useState<MapItem | null>(null);
@@ -61,31 +70,9 @@ export function PublishedMapsPanel({
     });
   };
 
-  const handlePublishSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!pubTitle.trim()) return;
-    setPublishing(true);
-    try {
-      await onPublish(pubTitle.trim(), pubDesc.trim(), pubPublic, pubWidgets);
-      setPublishModalOpen(false);
-      setPubTitle("");
-      setPubDesc("");
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setPublishing(false);
-    }
-  };
-
-  const handleUpdateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!configMap) return;
-    try {
-      await onUpdate(configMap.id, configMap.is_public, configMap.widgets_config);
-      setConfigMap(null);
-    } catch (err) {
-      console.error(err);
-    }
+  const handleBuilderClose = () => {
+    setBuilderOpen(false);
+    setBuilderEditingMap(null);
   };
 
   return (
@@ -131,7 +118,10 @@ export function PublishedMapsPanel({
           <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2.5 scrollbar-thin">
             {canEdit && (
               <button
-                onClick={() => setPublishModalOpen(true)}
+                onClick={() => {
+                  setBuilderEditingMap(null);
+                  setBuilderOpen(true);
+                }}
                 className="w-full py-1.5 border border-dashed border-border-primary hover:border-primary/50 rounded-lg text-xs font-semibold text-text-secondary hover:text-primary flex items-center justify-center gap-1.5 bg-surface/30 hover:bg-primary/5 transition-all duration-200"
               >
                 <Plus size={14} />
@@ -151,7 +141,10 @@ export function PublishedMapsPanel({
                 >
                   <div className="flex items-start justify-between gap-1">
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-bold text-text-primary truncate" title={m.title}>
+                      <div
+                        className="text-xs font-bold text-text-primary truncate"
+                        title={m.title}
+                      >
                         {m.title}
                       </div>
                       <div className="text-[10px] text-text-tertiary line-clamp-1">
@@ -161,9 +154,17 @@ export function PublishedMapsPanel({
 
                     <span className="shrink-0">
                       {m.is_public ? (
-                        <Globe size={11} className="text-success" title="Public" />
+                        <Globe
+                          size={11}
+                          className="text-success"
+                          aria-label="Public"
+                        />
                       ) : (
-                        <Lock size={11} className="text-accent" title="Private" />
+                        <Lock
+                          size={11}
+                          className="text-accent"
+                          aria-label="Private"
+                        />
                       )}
                     </span>
                   </div>
@@ -208,9 +209,12 @@ export function PublishedMapsPanel({
                       {canEdit && (
                         <>
                           <button
-                            onClick={() => setConfigMap(m)}
+                            onClick={() => {
+                              setBuilderEditingMap(m);
+                              setBuilderOpen(true);
+                            }}
                             className="p-1 rounded hover:bg-surface-hover text-text-tertiary hover:text-text-primary transition-colors"
-                            title="Widgets & Settings"
+                            title="Edit Map Builder"
                           >
                             <Settings size={11} />
                           </button>
@@ -232,233 +236,22 @@ export function PublishedMapsPanel({
         )}
       </div>
 
-      {/* Publish Modal */}
-      {publishModalOpen && (
-        <div
-          className="fixed inset-0 z-[1000] flex items-center justify-center p-4 overlay animate-fade-in"
-          onClick={() => setPublishModalOpen(false)}
-        >
-          <div
-            className="w-full max-w-md bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-border-primary">
-              <h3 className="text-base font-bold text-text-primary">
-                Publish Map Viewport
-              </h3>
-              <button
-                onClick={() => setPublishModalOpen(false)}
-                className="text-text-tertiary hover:text-text-primary"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <form onSubmit={handlePublishSubmit} className="p-5 flex flex-col gap-4">
-              <div className="form-field">
-                <label className="form-label text-xs">Map Title</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Wetland Extent Layer"
-                  value={pubTitle}
-                  onChange={(e) => setPubTitle(e.target.value)}
-                  className="input input-sm"
-                />
-              </div>
-
-              <div className="form-field">
-                <label className="form-label text-xs">Description</label>
-                <textarea
-                  rows={2}
-                  placeholder="Details shown in viewer..."
-                  value={pubDesc}
-                  onChange={(e) => setPubDesc(e.target.value)}
-                  className="input textarea input-sm"
-                />
-              </div>
-
-              {/* Public toggle */}
-              <div className="flex items-center justify-between py-1">
-                <div>
-                  <div className="text-xs font-semibold text-text-primary">
-                    Public Shareable Link
-                  </div>
-                  <div className="text-[10px] text-text-tertiary">
-                    Anyone with the link can view this map
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={pubPublic}
-                  onChange={(e) => setPubPublic(e.target.checked)}
-                  className="w-4 h-4 accent-primary cursor-pointer"
-                />
-              </div>
-
-              {/* Widgets configuration */}
-              <div className="border-t border-border-secondary pt-3 flex flex-col gap-2">
-                <div className="text-xs font-bold text-text-primary mb-1">
-                  Viewer Interactive Widgets
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <label className="flex items-center gap-2 cursor-pointer p-2 bg-surface/30 rounded border border-border-secondary/40 hover:border-border-primary text-xs text-text-primary">
-                    <input
-                      type="checkbox"
-                      checked={pubWidgets.titleCard}
-                      onChange={(e) =>
-                        setPubWidgets({ ...pubWidgets, titleCard: e.target.checked })
-                      }
-                      className="accent-primary"
-                    />
-                    Title Card
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer p-2 bg-surface/30 rounded border border-border-secondary/40 hover:border-border-primary text-xs text-text-primary">
-                    <input
-                      type="checkbox"
-                      checked={pubWidgets.legend}
-                      onChange={(e) =>
-                        setPubWidgets({ ...pubWidgets, legend: e.target.checked })
-                      }
-                      className="accent-primary"
-                    />
-                    Layer Legend
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer p-2 bg-surface/30 rounded border border-border-secondary/40 hover:border-border-primary text-xs text-text-primary">
-                    <input
-                      type="checkbox"
-                      checked={pubWidgets.layerList}
-                      onChange={(e) =>
-                        setPubWidgets({ ...pubWidgets, layerList: e.target.checked })
-                      }
-                      className="accent-primary"
-                    />
-                    Layer Toggle
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer p-2 bg-surface/30 rounded border border-border-secondary/40 hover:border-border-primary text-xs text-text-primary">
-                    <input
-                      type="checkbox"
-                      checked={pubWidgets.zoomControls}
-                      onChange={(e) =>
-                        setPubWidgets({ ...pubWidgets, zoomControls: e.target.checked })
-                      }
-                      className="accent-primary"
-                    />
-                    Zoom Controls
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex gap-2 justify-end mt-2">
-                <button
-                  type="button"
-                  onClick={() => setPublishModalOpen(false)}
-                  className="btn btn-secondary btn-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={publishing}
-                  className="btn btn-primary btn-sm"
-                >
-                  {publishing ? "Publishing..." : "Publish Map"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Settings Modal */}
-      {configMap && (
-        <div
-          className="fixed inset-0 z-[1000] flex items-center justify-center p-4 overlay animate-fade-in"
-          onClick={() => setConfigMap(null)}
-        >
-          <div
-            className="w-full max-w-md bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-border-primary">
-              <h3 className="text-base font-bold text-text-primary">
-                Widgets & Sharing Configuration
-              </h3>
-              <button
-                onClick={() => setConfigMap(null)}
-                className="text-text-tertiary hover:text-text-primary"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdateSubmit} className="p-5 flex flex-col gap-4">
-              <div className="flex items-center justify-between py-1">
-                <div>
-                  <div className="text-xs font-semibold text-text-primary">
-                    Public Shareable Link
-                  </div>
-                  <div className="text-[10px] text-text-tertiary">
-                    Anyone with the link can view this map
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={configMap.is_public}
-                  onChange={(e) =>
-                    setConfigMap({ ...configMap, is_public: e.target.checked })
-                  }
-                  className="w-4 h-4 accent-primary cursor-pointer"
-                />
-              </div>
-
-              <div className="border-t border-border-secondary pt-3 flex flex-col gap-2">
-                <div className="text-xs font-bold text-text-primary mb-1">
-                  Active Widgets
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {["titleCard", "legend", "layerList", "zoomControls"].map((key) => (
-                    <label
-                      key={key}
-                      className="flex items-center gap-2 cursor-pointer p-2 bg-surface/30 rounded border border-border-secondary/40 hover:border-border-primary text-xs text-text-primary capitalize"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={!!(configMap.widgets_config as any)?.[key]}
-                        onChange={(e) => {
-                          const conf = { ...(configMap.widgets_config || {}) };
-                          conf[key] = e.target.checked;
-                          setConfigMap({ ...configMap, widgets_config: conf });
-                        }}
-                        className="accent-primary"
-                      />
-                      {key.replace(/([A-Z])/g, " $1")}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-2 justify-end mt-2">
-                <button
-                  type="button"
-                  onClick={() => setConfigMap(null)}
-                  className="btn btn-secondary btn-sm"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary btn-sm">
-                  Save Configuration
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Map Builder (full-page) */}
+      <MapBuilder
+        isOpen={builderOpen}
+        onClose={handleBuilderClose}
+        projectId={projectId}
+        currentBasemap={currentBasemap}
+        currentCenter={currentCenter}
+        currentZoom={currentZoom}
+        currentBearing={currentBearing}
+        currentPitch={currentPitch}
+        currentLayers={currentLayers}
+        currentAnnotations={currentAnnotations}
+        editingMap={builderEditingMap}
+        onPublish={onPublish}
+        onUpdate={onUpdate}
+      />
 
       {/* Per-map Share Dialog */}
       {shareMap && (

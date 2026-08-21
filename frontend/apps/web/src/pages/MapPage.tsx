@@ -28,6 +28,7 @@ import {
 import type { TreeNode } from "@/components/map/layer-panel/types";
 import { useMapLibre } from "@/hooks/useMapLibre";
 import { PublishedMapsPanel } from "@/components/map/PublishedMapsPanel";
+import type { MapBuilderConfig } from "@/components/map/MapBuilder";
 import { useCollaboration } from "@/lib/useCollaboration";
 import { CollaboratorCursors } from "@/components/map/CollaboratorCursors";
 import { AccessRequestCard } from "@/components/map/share/AccessRequestCard";
@@ -367,30 +368,18 @@ export default function MapPage() {
   }, []);
 
   // Published maps handlers
-  async function handlePublishMap(
-    title: string,
-    desc: string,
-    isPublic: boolean,
-    widgets: any,
-  ) {
-    if (!projectId || !currentProject) return;
-    const map = mapRef.current;
-    const center = map?.getCenter?.() || {
-      lng: currentProject.center_lng,
-      lat: currentProject.center_lat,
-    };
-    const zoom = map?.getZoom ? map.getZoom() : currentProject.zoom;
-
+  async function handlePublishMap(config: MapBuilderConfig) {
+    if (!projectId) return;
     const newMap = await publishMapFromProject(projectId, {
-      title,
-      description: desc,
-      center_lng: center.lng,
-      center_lat: center.lat,
-      zoom: Number(zoom.toFixed(2)),
-      basemap,
-      layers_config: toMapLayerItems(tree.nodes),
-      is_public: isPublic,
-      widgets_config: widgets,
+      title: config.title,
+      description: config.description,
+      center_lng: config.center_lng,
+      center_lat: config.center_lat,
+      zoom: config.zoom,
+      basemap: config.basemap,
+      layers_config: config.layers_config,
+      is_public: config.is_public,
+      widgets_config: config.widgets_config,
     });
     setPublishedMaps([newMap, ...publishedMaps]);
     setStatusMsg("Map published successfully!");
@@ -406,15 +395,21 @@ export default function MapPage() {
 
   async function handleUpdatePublishedMap(
     mapId: string,
-    isPublic: boolean,
-    widgets: any,
+    config: MapBuilderConfig,
   ) {
     const updated = await updateMap(mapId, {
-      is_public: isPublic,
-      widgets_config: widgets,
+      title: config.title,
+      description: config.description,
+      center_lng: config.center_lng,
+      center_lat: config.center_lat,
+      zoom: config.zoom,
+      basemap: config.basemap,
+      layers_config: config.layers_config,
+      is_public: config.is_public,
+      widgets_config: config.widgets_config,
     });
     setPublishedMaps(publishedMaps.map((m) => (m.id === mapId ? updated : m)));
-    setStatusMsg("Published map configuration updated.");
+    setStatusMsg("Published map updated.");
     setTimeout(() => setStatusMsg(null), 3000);
   }
 
@@ -532,6 +527,16 @@ export default function MapPage() {
           onDelete={handleDeletePublishedMap}
           onUpdate={handleUpdatePublishedMap}
           canEdit={!!canEdit}
+          currentBasemap={basemap}
+          currentCenter={[
+            currentProject?.center_lng ?? 0,
+            currentProject?.center_lat ?? 20,
+          ]}
+          currentZoom={currentProject?.zoom ?? 2.5}
+          currentBearing={bearing}
+          currentPitch={0}
+          currentLayers={toMapLayerItems(tree.nodes)}
+          currentAnnotations={storeAnnotations}
         />
       )}
 

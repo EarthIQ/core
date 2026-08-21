@@ -33,7 +33,9 @@ export default function PublicMapPage() {
       .catch((err) => {
         if (err instanceof ApiError && err.status === 403) setDenied(true);
         console.error(err);
-        setErrorMsg("This map could not be loaded. It may be private or deleted.");
+        setErrorMsg(
+          "This map could not be loaded. It may be private or deleted.",
+        );
         setLoading(false);
       });
   }, [mapId]);
@@ -43,65 +45,93 @@ export default function PublicMapPage() {
     if (loading || errorMsg || !mapData || !mapContainerRef.current) return;
 
     let cancelled = false;
-    import("maplibre-gl").then(({ Map }) => {
-      if (cancelled || !mapContainerRef.current) return;
+    import("maplibre-gl").then(
+      ({ Map, NavigationControl, ScaleControl, GeolocateControl }) => {
+        if (cancelled || !mapContainerRef.current) return;
 
-      const map = new Map({
-        container: mapContainerRef.current,
-        style: BASEMAP_URLS[mapData.basemap] || BASEMAP_URLS["dataviz-dark"],
-        center: [mapData.center_lng, mapData.center_lat],
-        zoom: mapData.zoom,
-        attributionControl: false,
-      });
+        const widgets = mapData.widgets_config || {};
 
-      map.on("load", () => {
-        setMapReady(true);
-        // Add layers if any are configured
-        (mapData.layers_config || []).forEach((layer: any) => {
-          if (!layer.url) return;
-          try {
-            if (layer.type === "raster") {
-              map.addSource(layer.id, {
-                type: "raster",
-                tiles: [layer.url],
-                tileSize: 256,
-              });
-              map.addLayer({
-                id: layer.id,
-                type: "raster",
-                source: layer.id,
-                layout: {
-                  visibility: layer.visible ? "visible" : "none",
-                },
-              });
-            } else {
-              // Assume vector
-              map.addSource(layer.id, {
-                type: "vector",
-                tiles: [layer.url],
-              });
-              map.addLayer({
-                id: layer.id,
-                type: "fill",
-                source: layer.id,
-                "source-layer": "default",
-                paint: {
-                  "fill-color": layer.style?.color || "#3b82f6",
-                  "fill-opacity": layer.style?.opacity ?? 0.6,
-                },
-                layout: {
-                  visibility: layer.visible ? "visible" : "none",
-                },
-              });
+        const map = new Map({
+          container: mapContainerRef.current,
+          style: BASEMAP_URLS[mapData.basemap] || BASEMAP_URLS["dataviz-dark"],
+          center: [mapData.center_lng, mapData.center_lat],
+          zoom: mapData.zoom,
+          bearing: (mapData as any).bearing || 0,
+          pitch: (mapData as any).pitch || 0,
+          attributionControl: false,
+        });
+
+        map.on("load", () => {
+          setMapReady(true);
+          // Add layers if any are configured
+          (mapData.layers_config || []).forEach((layer: any) => {
+            if (!layer.url) return;
+            try {
+              if (layer.type === "raster") {
+                map.addSource(layer.id, {
+                  type: "raster",
+                  tiles: [layer.url],
+                  tileSize: 256,
+                });
+                map.addLayer({
+                  id: layer.id,
+                  type: "raster",
+                  source: layer.id,
+                  layout: {
+                    visibility: layer.visible ? "visible" : "none",
+                  },
+                });
+              } else {
+                // Assume vector
+                map.addSource(layer.id, {
+                  type: "vector",
+                  tiles: [layer.url],
+                });
+                map.addLayer({
+                  id: layer.id,
+                  type: "fill",
+                  source: layer.id,
+                  "source-layer": "default",
+                  paint: {
+                    "fill-color": (layer.style?.color as string) || "#3b82f6",
+                    "fill-opacity": (layer.style?.opacity as number) ?? 0.6,
+                  },
+                  layout: {
+                    visibility: layer.visible ? "visible" : "none",
+                  },
+                });
+              }
+            } catch (e) {
+              console.error("Error adding map layer:", e);
             }
-          } catch (e) {
-            console.error("Error adding map layer:", e);
+          });
+
+          // Add controls based on widget config
+          if (widgets.compass || widgets.zoomControls) {
+            map.addControl(
+              new NavigationControl({
+                showCompass: !!widgets.compass,
+                showZoom: !!widgets.zoomControls,
+              }),
+              "bottom-right",
+            );
+          }
+          if (widgets.scaleBar) {
+            map.addControl(new ScaleControl({ unit: "metric" }), "bottom-left");
+          }
+          if (widgets.geolocate) {
+            map.addControl(
+              new GeolocateControl({
+                positionOptions: { enableHighAccuracy: true },
+              }),
+              "bottom-right",
+            );
           }
         });
-      });
 
-      mapRef.current = map;
-    });
+        mapRef.current = map;
+      },
+    );
 
     return () => {
       cancelled = true;
@@ -121,12 +151,16 @@ export default function PublicMapPage() {
           const nextVal = !l.visible;
           const map = mapRef.current;
           if (map && mapReady && map.getLayer(layerId)) {
-            map.setLayoutProperty(layerId, "visibility", nextVal ? "visible" : "none");
+            map.setLayoutProperty(
+              layerId,
+              "visibility",
+              nextVal ? "visible" : "none",
+            );
           }
           return { ...l, visible: nextVal };
         }
         return l;
-      })
+      }),
     );
   };
 
@@ -138,7 +172,9 @@ export default function PublicMapPage() {
     return (
       <div className="w-screen h-screen flex flex-col items-center justify-center bg-[#090d16] text-text-primary">
         <Globe size={40} className="text-primary animate-spin mb-4" />
-        <span className="text-sm font-semibold tracking-wider animate-pulse">Loading map dashboard...</span>
+        <span className="text-sm font-semibold tracking-wider animate-pulse">
+          Loading map dashboard...
+        </span>
       </div>
     );
   }
@@ -158,14 +194,18 @@ export default function PublicMapPage() {
     return (
       <div className="w-screen h-screen flex flex-col items-center justify-center bg-[#090d16] text-text-primary px-6 text-center">
         <div className="text-5xl mb-4">🔒</div>
-        <h3 className="text-lg font-bold text-text-primary">Sign in to continue</h3>
+        <h3 className="text-lg font-bold text-text-primary">
+          Sign in to continue
+        </h3>
         <p className="mt-2 text-text-secondary text-sm max-w-sm leading-relaxed">
           This map is private. Sign in to view it, or to request access from the
           owner.
         </p>
         <button
           type="button"
-          onClick={() => navigate("/login", { state: { from: { pathname: from } } })}
+          onClick={() =>
+            navigate("/login", { state: { from: { pathname: from } } })
+          }
           className="btn btn-primary btn-md mt-6 inline-flex items-center gap-2"
         >
           <LogIn size={15} /> Sign in
@@ -180,7 +220,8 @@ export default function PublicMapPage() {
         <div className="text-5xl mb-4">🔒</div>
         <h3 className="text-lg font-bold text-text-primary">Access Denied</h3>
         <p className="mt-2 text-text-secondary text-sm max-w-sm">
-          {errorMsg || "This published map has been restricted or removed by the administrator."}
+          {errorMsg ||
+            "This published map has been restricted or removed by the administrator."}
         </p>
         <a href="/projects" className="btn btn-primary btn-md mt-6">
           Back to Dashboard
@@ -194,7 +235,10 @@ export default function PublicMapPage() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-bg-primary select-none">
       {/* Map Container */}
-      <div ref={mapContainerRef} className="w-full h-full absolute inset-0 z-0" />
+      <div
+        ref={mapContainerRef}
+        className="w-full h-full absolute inset-0 z-0"
+      />
 
       {/* Title Card Widget */}
       {widgets.titleCard && (
@@ -280,10 +324,27 @@ export default function PublicMapPage() {
         </div>
       )}
 
-      {/* Footer Branding */}
-      <div className="absolute bottom-3 left-4 z-10 text-[9px] text-text-quaternary select-none">
-        Powered by <span className="font-bold text-primary">EarthIQ Core</span>
-      </div>
+      {/* Scale Bar Widget */}
+      {widgets.scaleBar && (
+        <div className="absolute bottom-6 left-6 z-10 flex items-center gap-1.5">
+          <div className="w-24 h-0.5 bg-text-secondary/50 rounded relative">
+            <div className="absolute left-0 top-[-2px] w-0.5 h-2 bg-text-secondary/50" />
+            <div className="absolute right-0 top-[-2px] w-0.5 h-2 bg-text-secondary/50" />
+          </div>
+          <span className="text-[10px] text-text-tertiary font-medium">
+            ~10 km
+          </span>
+        </div>
+      )}
+
+      {/* Footer Branding / Attribution */}
+      {(widgets.attribution || true) && (
+        <div className="absolute bottom-3 left-4 z-10 text-[9px] text-text-quaternary select-none">
+          {widgets.attribution && <span>© OpenStreetMap © CARTO | </span>}
+          Powered by{" "}
+          <span className="font-bold text-primary">EarthIQ Core</span>
+        </div>
+      )}
     </div>
   );
 }
