@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Monorepo: the @packages/ui components live outside this app and use
+ * arbitrary-value utilities (e.g. bg-[var(--primary)]). Tailwind v4 only
+ * auto-detects content inside the app that processes this CSS, so we must
+ * explicitly tell it to scan the UI package source or those utilities
+ * (and therefore the Button's primary color) will never be generated.
+ */
+@source "../../../../packages/ui/src";
+
 :root {
   /* =========================================
      Brand Colors

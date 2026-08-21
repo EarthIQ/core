@@ -100,6 +100,9 @@ async def list_accessible_projects(db: AsyncSession, current_user: Optional[User
                 "zoom": project_item.zoom,
                 "basemap": project_item.basemap,
                 "layers_config": project_item.layers_config or [],
+                "annotations": project_item.annotations or [],
+                "bookmarks": project_item.bookmarks or [],
+                "comments": project_item.comments or [],
                 "owner_id": project_item.owner_id,
                 "owner": project_item.owner,
                 "group_access": [
@@ -184,6 +187,9 @@ async def get_accessible_project(
         zoom=project_item.zoom,
         basemap=project_item.basemap,
         layers_config=project_item.layers_config or [],
+        annotations=project_item.annotations or [],
+        bookmarks=project_item.bookmarks or [],
+        comments=project_item.comments or [],
         owner_id=project_item.owner_id,
         owner=ProjectOwnerRead.model_validate(project_item.owner) if project_item.owner else None,
         group_access=[
@@ -211,6 +217,9 @@ async def create_project(db: AsyncSession, owner: User, body: ProjectCreate) -> 
         zoom=body.zoom,
         basemap=body.basemap,
         layers_config=[l.model_dump() for l in body.layers_config],
+        annotations=body.annotations or [],
+        bookmarks=body.bookmarks or [],
+        comments=body.comments or [],
         owner_id=owner.id,
     )
     db.add(project_item)
@@ -250,6 +259,12 @@ async def update_project(db: AsyncSession, project_id: str, current_user: User, 
         project_item.basemap = body.basemap
     if body.layers_config is not None:
         project_item.layers_config = [l.model_dump() for l in body.layers_config]
+    if body.annotations is not None:
+        project_item.annotations = body.annotations
+    if body.bookmarks is not None:
+        project_item.bookmarks = body.bookmarks
+    if body.comments is not None:
+        project_item.comments = body.comments
 
     await db.flush()
     await db.refresh(project_item)

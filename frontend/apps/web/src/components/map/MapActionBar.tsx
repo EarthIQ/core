@@ -224,6 +224,8 @@ function ToolGroupButton({
 /*  Main MapActionBar                                                        */
 /* ──────────────────────────────────────────────────────────────────────── */
 interface MapActionBarProps {
+  /** Controlled active tool. When provided, the bar reflects this value. */
+  activeTool?: ActiveTool | null;
   onToolChange?: (tool: ActiveTool) => void;
   bookmarkActive?: boolean;
   onToggleBookmark?: () => void;
@@ -233,9 +235,11 @@ interface MapActionBarProps {
   canRedo?: boolean;
   onUndo?: () => void;
   onRedo?: () => void;
+  onClearAnnotations?: () => void;
 }
 
 export function MapActionBar({
+  activeTool: controlledTool,
   onToolChange,
   bookmarkActive = false,
   onToggleBookmark,
@@ -245,19 +249,18 @@ export function MapActionBar({
   canRedo = false,
   onUndo,
   onRedo,
+  onClearAnnotations,
 }: MapActionBarProps) {
-  const [selectedVariant, setSelectedVariant] = useState<
-    Record<string, string>
-  >(() => Object.fromEntries(TOOL_GROUPS.map((g) => [g.id, g.variants[0].id])));
-  const [activeTool, setActiveTool] = useState<ActiveTool>({
+  // Fallback internal tool for uncontrolled usage.
+  const [internalTool] = useState<ActiveTool>({
     groupId: NAVIGATE_GROUP.id,
     variantId: NAVIGATE_GROUP.variants[0].id,
   });
+  const activeTool = controlledTool ?? internalTool;
+
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
   function selectVariant(groupId: string, variantId: string) {
-    setSelectedVariant((prev) => ({ ...prev, [groupId]: variantId }));
-    setActiveTool({ groupId, variantId });
     setOpenDropdownId(null);
     onToolChange?.({ groupId, variantId });
   }
@@ -267,19 +270,25 @@ export function MapActionBar({
       className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 px-2 py-1.5 bg-elevated/95 backdrop-blur-xl border border-border-primary rounded-full shadow-xl"
       id="map-action-bar"
     >
-      {TOOL_GROUPS.map((group) => (
-        <ToolGroupButton
-          key={group.id}
-          group={group}
-          selectedVariantId={selectedVariant[group.id]}
-          isActiveTool={activeTool.groupId === group.id}
-          isDropdownOpen={openDropdownId === group.id}
-          onOpenDropdown={() =>
-            setOpenDropdownId((prev) => (prev === group.id ? null : group.id))
-          }
-          onSelectVariant={(variantId) => selectVariant(group.id, variantId)}
-        />
-      ))}
+      {TOOL_GROUPS.map((group) => {
+        const isActive = activeTool.groupId === group.id;
+        const selectedVariantId = isActive
+          ? activeTool.variantId
+          : group.variants[0].id;
+        return (
+          <ToolGroupButton
+            key={group.id}
+            group={group}
+            selectedVariantId={selectedVariantId}
+            isActiveTool={isActive}
+            isDropdownOpen={openDropdownId === group.id}
+            onOpenDropdown={() =>
+              setOpenDropdownId((prev) => (prev === group.id ? null : group.id))
+            }
+            onSelectVariant={(variantId) => selectVariant(group.id, variantId)}
+          />
+        );
+      })}
 
       <div className="w-px h-6 bg-border-primary mx-1 shrink-0" />
 

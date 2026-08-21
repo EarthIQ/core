@@ -14,6 +14,9 @@ class ProjectCreate(BaseModel):
     zoom: float = Field(default=2.5, ge=0.0, le=24.0)
     basemap: str = Field(default="dataviz-dark")
     layers_config: List[MapLayerItem] = Field(default_factory=list)
+    annotations: List[Any] = Field(default_factory=list)
+    bookmarks: List[Any] = Field(default_factory=list)
+    comments: List[Any] = Field(default_factory=list)
     group_access: List[GroupAccessSchema] = Field(default_factory=list)
 
 class ProjectUpdate(BaseModel):
@@ -24,6 +27,9 @@ class ProjectUpdate(BaseModel):
     zoom: Optional[float] = Field(None, ge=0.0, le=24.0)
     basemap: Optional[str] = None
     layers_config: Optional[List[MapLayerItem]] = None
+    annotations: Optional[List[Any]] = None
+    bookmarks: Optional[List[Any]] = None
+    comments: Optional[List[Any]] = None
 
 class ProjectOwnerRead(BaseModel):
     id: str
@@ -41,6 +47,9 @@ class ProjectRead(BaseModel):
     zoom: float
     basemap: str
     layers_config: List[MapLayerItem]
+    annotations: List[Any] = []
+    bookmarks: List[Any] = []
+    comments: List[Any] = []
     owner_id: str
     owner: Optional[ProjectOwnerRead] = None
     group_access: List[GroupAccessSchema] = []

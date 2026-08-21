@@ -32,6 +32,16 @@ import { useCollaboration } from "@/lib/useCollaboration";
 import { CollaboratorCursors } from "@/components/map/CollaboratorCursors";
 import { AccessRequestCard } from "@/components/map/share/AccessRequestCard";
 import { ApiError } from "@/lib/api";
+import {
+  useMapEditor,
+  selectCanUndo,
+  selectCanRedo,
+} from "@/lib/mapEditor/store";
+import { useMapTools } from "@/hooks/useMapTools";
+import { AnnotationOverlays } from "@/components/map/AnnotationOverlays";
+import { AnnotationInspector } from "@/components/map/AnnotationInspector";
+import { BookmarkPanel } from "@/components/map/BookmarkPanel";
+import { CommentsPanel } from "@/components/map/CommentsPanel";
 
 export default function MapPage() {
   const [searchParams] = useSearchParams();
@@ -43,15 +53,10 @@ export default function MapPage() {
     null,
   );
   const [publishedMaps, setPublishedMaps] = useState<MapItem[]>([]);
-  const [activeAction, setActiveAction] = useState<string | null>(null);
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [importPortalOpen, setImportPortalOpen] = useState(false);
   const [importDestFolder, setImportDestFolder] = useState<string | null>(null);
   const [styledLayer, setStyledLayer] = useState<TreeNode | null>(null);
-  const [bookmarkActive, setBookmarkActive] = useState(false);
-  const [commentsActive, setCommentsActive] = useState(false);
-  const [undoStack] = useState<any[]>([]);
-  const [redoStack] = useState<any[]>([]);
   const [publishedPanelOpen, setPublishedPanelOpen] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   /** True when the backend refused access to this project (403). */
@@ -81,6 +86,81 @@ export default function MapPage() {
     mapRef,
   );
 
+  // ── Map drawing / annotation engine ──────────────────────────────────────────
+  useMapTools(mapRef, mapReady);
+
+  // Map editor state (tools, annotations, bookmarks, comments, history)
+  const activeTool = useMapEditor((s) => s.activeTool);
+  const setActiveTool = useMapEditor((s) => s.setActiveTool);
+  const bookmarkActive = useMapEditor((s) => s.bookmarkOpen);
+  const setBookmarkOpen = useMapEditor((s) => s.setBookmarkOpen);
+  const commentsActive = useMapEditor((s) => s.commentsOpen);
+  const setCommentsOpen = useMapEditor((s) => s.setCommentsOpen);
+  const canUndo = useMapEditor(selectCanUndo);
+  const canRedo = useMapEditor(selectCanRedo);
+  const undo = useMapEditor((s) => s.undo);
+  const redo = useMapEditor((s) => s.redo);
+  const clearAnnotations = useMapEditor((s) => s.clearAnnotations);
+  const hydrate = useMapEditor((s) => s.hydrate);
+  const storeAnnotations = useMapEditor((s) => s.annotations);
+  const storeBookmarks = useMapEditor((s) => s.bookmarks);
+  const storeComments = useMapEditor((s) => s.comments);
+
+  // Keyboard shortcuts: tool selection + undo/redo
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const t = e.target as HTMLElement;
+      if (
+        t &&
+        (t.tagName === "INPUT" ||
+          t.tagName === "TEXTAREA" ||
+          t.isContentEditable)
+      )
+        return;
+      // undo / redo
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        redo();
+        return;
+      }
+      const shiftMap: Record<string, { groupId: string; variantId: string }> = {
+        l: { groupId: "annotate", variantId: "link" },
+        v: { groupId: "annotate", variantId: "video" },
+      };
+      const plainMap: Record<string, { groupId: string; variantId: string }> = {
+        v: { groupId: "navigate", variantId: "select" },
+        s: { groupId: "draw", variantId: "shape" },
+        l: { groupId: "draw", variantId: "line" },
+        c: { groupId: "draw", variantId: "circle" },
+        r: { groupId: "draw", variantId: "rectangle" },
+        m: { groupId: "annotate", variantId: "marker" },
+        h: { groupId: "annotate", variantId: "highlighter" },
+        t: { groupId: "annotate", variantId: "text" },
+        n: { groupId: "annotate", variantId: "note" },
+        i: { groupId: "annotate", variantId: "image" },
+      };
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = e.key.toLowerCase();
+      if (e.shiftKey && shiftMap[k]) {
+        e.preventDefault();
+        setActiveTool(shiftMap[k]);
+        return;
+      }
+      if (plainMap[k]) {
+        e.preventDefault();
+        setActiveTool(plainMap[k]);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [undo, redo, setActiveTool]);
+
   useEffect(() => {
     if (mapRef.current) setTimeout(() => mapRef.current?.resize(), 300);
   }, [aiChatOpen, mapRef]);
@@ -98,6 +178,12 @@ export default function MapPage() {
             ? fromMapLayerItems(projData.layers_config as any)
             : [],
         );
+        // Hydrate annotation/bookmark/comment state from the backend
+        hydrate({
+          annotations: projData.annotations ?? [],
+          bookmarks: projData.bookmarks ?? [],
+          comments: projData.comments ?? [],
+        });
         flyOrQueue({
           center: [projData.center_lng, projData.center_lat],
           zoom: projData.zoom,
@@ -258,6 +344,9 @@ export default function MapPage() {
         zoom: Number(zoom.toFixed(2)),
         basemap,
         layers_config: toMapLayerItems(tree.nodes),
+        annotations: storeAnnotations,
+        bookmarks: storeBookmarks,
+        comments: storeComments,
       });
       setCurrentProject(updated);
     } catch (err) {
@@ -385,6 +474,14 @@ export default function MapPage() {
         </div>
       )}
 
+      {/* Point annotations overlay (mirrors the map canvas box exactly) */}
+      <div
+        className="absolute z-10 pointer-events-none"
+        style={{ top: 0, right: 0, bottom: 0, left: aiChatOpen ? 360 : 0 }}
+      >
+        <AnnotationOverlays mapRef={mapRef} mapReady={mapReady} />
+      </div>
+
       <LayerDndProvider>
         <LayerPanel
           nodes={tree.nodes}
@@ -455,18 +552,33 @@ export default function MapPage() {
       )}
 
       <MapActionBar
-        onToolChange={(tool) =>
-          setActiveAction(`${tool.groupId}:${tool.variantId}`)
-        }
+        activeTool={activeTool}
+        onToolChange={(tool) => setActiveTool(tool)}
         bookmarkActive={bookmarkActive}
-        onToggleBookmark={() => setBookmarkActive((v) => !v)}
+        onToggleBookmark={() => {
+          setCommentsOpen(false);
+          setBookmarkOpen(!bookmarkActive);
+        }}
         commentsActive={commentsActive}
-        onToggleComments={() => setCommentsActive((v) => !v)}
-        canUndo={undoStack.length > 0}
-        canRedo={redoStack.length > 0}
-        onUndo={() => {}}
-        onRedo={() => {}}
+        onToggleComments={() => {
+          setBookmarkOpen(false);
+          setCommentsOpen(!commentsActive);
+        }}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={undo}
+        onRedo={redo}
+        onClearAnnotations={clearAnnotations}
       />
+
+      {/* Annotation inspector (only visible when something is selected) */}
+      <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30">
+        <AnnotationInspector mapRef={mapRef} mapReady={mapReady} />
+      </div>
+
+      {/* Bookmark + Comments panels (self-positioning) */}
+      <BookmarkPanel mapRef={mapRef} mapReady={mapReady} />
+      <CommentsPanel mapRef={mapRef} mapReady={mapReady} />
 
       <MapBottomBar
         zoomLevel={zoomLevel}

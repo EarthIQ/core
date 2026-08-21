@@ -1,5 +1,12 @@
 import { api } from "./api";
-import type { MapItem, MapLayerItem, GroupAccess, PermissionLevel, MapCreateInput } from "./maps";
+import type {
+  MapItem,
+  MapLayerItem,
+  GroupAccess,
+  PermissionLevel,
+  MapCreateInput,
+} from "./maps";
+import type { Annotation, Bookmark, CommentItem } from "@/lib/mapEditor/types";
 
 export interface ProjectItem {
   id: string;
@@ -10,6 +17,9 @@ export interface ProjectItem {
   zoom: number;
   basemap: string;
   layers_config: MapLayerItem[];
+  annotations: Annotation[];
+  bookmarks: Bookmark[];
+  comments: CommentItem[];
   owner_id: string;
   owner?: {
     id: string;
@@ -31,6 +41,9 @@ export interface ProjectCreateInput {
   zoom?: number;
   basemap?: string;
   layers_config?: MapLayerItem[];
+  annotations?: Annotation[];
+  bookmarks?: Bookmark[];
+  comments?: CommentItem[];
   group_access?: GroupAccess[];
 }
 
@@ -42,17 +55,24 @@ export interface ProjectUpdateInput {
   zoom?: number;
   basemap?: string;
   layers_config?: MapLayerItem[];
+  annotations?: Annotation[];
+  bookmarks?: Bookmark[];
+  comments?: CommentItem[];
 }
 
 export async function fetchProjects(): Promise<ProjectItem[]> {
   return api.get<ProjectItem[]>("/api/projects");
 }
 
-export async function fetchProjectById(projectId: string): Promise<ProjectItem> {
+export async function fetchProjectById(
+  projectId: string,
+): Promise<ProjectItem> {
   return api.get<ProjectItem>(`/api/projects/${projectId}`);
 }
 
-export async function createProject(input: ProjectCreateInput): Promise<ProjectItem> {
+export async function createProject(
+  input: ProjectCreateInput,
+): Promise<ProjectItem> {
   return api.post<ProjectItem>("/api/projects", input);
 }
 

@@ -30,6 +30,11 @@ class ProjectModel(Base):
     # Layer configurations
     layers_config: Mapped[Any] = mapped_column(JSON, default=list, nullable=False)
 
+    # Map editor state (annotations, bookmarks, comments)
+    annotations: Mapped[Any] = mapped_column(JSON, default=list, nullable=False)
+    bookmarks: Mapped[Any] = mapped_column(JSON, default=list, nullable=False)
+    comments: Mapped[Any] = mapped_column(JSON, default=list, nullable=False)
+
     # Ownership
     owner_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
