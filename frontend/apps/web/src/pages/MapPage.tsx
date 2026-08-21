@@ -425,6 +425,16 @@ export default function MapPage() {
     .filter((n) => n.kind === "folder")
     .map((f) => ({ id: f.id, name: f.name }));
 
+  // Layers in a shape the AI context (and the `toggle_layer` tool) understands.
+  const aiLayers = tree.nodes
+    .filter((n) => n.kind === "layer")
+    .map((n) => ({
+      id: n.id,
+      name: n.name,
+      type: (n as any).layerType,
+      visible: (n as any).visible,
+    }));
+
   /* Google-Docs style: no access → request it (owner is notified by email) */
   if (projectDenied && !currentProject) {
     return (
@@ -594,7 +604,20 @@ export default function MapPage() {
       />
 
       <div className="absolute top-14 left-0 bottom-0 z-20">
-        <AIChatPanel isOpen={aiChatOpen} onClose={() => setAiChatOpen(false)} />
+        <AIChatPanel
+          isOpen={aiChatOpen}
+          onClose={() => setAiChatOpen(false)}
+          mapRef={mapRef}
+          mapReady={mapReady}
+          basemap={basemap}
+          setBasemap={setBasemap}
+          layers={aiLayers}
+          setLayerVisible={(id, visible) => {
+            const node = tree.getNode(id);
+            if (node?.kind === "layer") tree.patchLayer(id, { visible });
+            else tree.toggleVisibility(id);
+          }}
+        />
       </div>
     </div>
   );
