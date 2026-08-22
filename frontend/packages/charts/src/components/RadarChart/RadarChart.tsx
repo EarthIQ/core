@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   RadarChart as RechartsRadarChart,
   Radar,
@@ -8,14 +8,14 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
-import { ChartContainer } from '../ChartContainer';
-import { getColor } from '../../utils/colors';
-import type { RadarChartProps } from '../../types';
+} from "recharts";
+import { ChartContainer } from "../ChartContainer";
+import { getColor } from "../../utils/colors";
+import type { RadarChartProps } from "../../types";
 
 export const RadarChart: React.FC<RadarChartProps> = ({
   data,
-  width = '100%',
+  width = "100%",
   height = 400,
   className,
   colors,
@@ -30,13 +30,15 @@ export const RadarChart: React.FC<RadarChartProps> = ({
   empty = false,
   error = false,
   onDataPointClick,
-  exportFilename = 'radar-chart',
+  exportFilename = "radar-chart",
   radars,
-  angleAxisKey = 'name',
+  angleAxisKey = "name",
   showPolarGrid = true,
 }) => {
-  const showLegend = typeof legend === 'boolean' ? legend : legend?.show !== false;
-  const showTooltip = typeof tooltip === 'boolean' ? tooltip : tooltip?.show !== false;
+  const showLegend =
+    typeof legend === "boolean" ? legend : legend?.show !== false;
+  const showTooltip =
+    typeof tooltip === "boolean" ? tooltip : tooltip?.show !== false;
 
   return (
     <ChartContainer
@@ -51,42 +53,47 @@ export const RadarChart: React.FC<RadarChartProps> = ({
       className={className}
     >
       <div style={{ width, height }}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+        >
           <RechartsRadarChart
             data={data}
             cx="50%"
             cy="50%"
             outerRadius="80%"
             onClick={(e) => {
-              if (onDataPointClick && e?.activePayload?.[0]) {
-                onDataPointClick(e.activePayload[0].payload, e.activeTooltipIndex || 0);
-              }
+              if (!onDataPointClick) return;
+              const index = e.activeTooltipIndex;
+              if (typeof index !== "number") return;
+              const payload = data[index];
+              if (payload) onDataPointClick(payload, index);
             }}
           >
             {showPolarGrid && (
               <PolarGrid className="stroke-gray-200 dark:stroke-gray-700" />
             )}
-            
+
             <PolarAngleAxis
               dataKey={angleAxisKey}
-              tick={{ fill: 'currentColor', fontSize: 12 }}
+              tick={{ fill: "currentColor", fontSize: 12 }}
               className="text-gray-600 dark:text-gray-400"
             />
-            
+
             <PolarRadiusAxis
               angle={30}
-              domain={[0, 'auto']}
-              tick={{ fill: 'currentColor', fontSize: 10 }}
+              domain={[0, "auto"]}
+              tick={{ fill: "currentColor", fontSize: 10 }}
               className="text-gray-600 dark:text-gray-400"
             />
 
             {showTooltip && (
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(var(--popover, 0 0% 100%))',
-                  border: '1px solid hsl(var(--border, 220 13% 91%))',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  backgroundColor: "hsl(var(--popover, 0 0% 100%))",
+                  border: "1px solid hsl(var(--border, 220 13% 91%))",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
               />
             )}

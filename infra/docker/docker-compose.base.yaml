@@ -1,16 +1,20 @@
 services:
   db:
-    image: postgis/postgis:16-3.4
+    build:
+      context: .
+      dockerfile: infra/docker/postgres.Dockerfile
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: earthiq
-      POSTGRES_USER: earthiq
-      POSTGRES_PASSWORD: earthiq
+    env_file:
+      - ../../.env
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     ports: ["5432:5432"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U earthiq -d earthiq"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-earthiq} -d ${POSTGRES_DB:-earthiq}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -28,15 +32,14 @@ services:
       - "9001:9001"
     volumes:
       - rustfs_data:/data
-    environment:
-      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-earthiq}
-      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-earthiq}
-      RUSTFS_VOLUMES: /data
-      RUSTFS_ADDRESS: :9000
-      RUSTFS_CONSOLE_ADDRESS: :9001
-      RUSTFS_CONSOLE_ENABLE: "true"
+    env_file:
+      - ../../.env
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/minio/health/live || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://localhost:9000/minio/health/live || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -45,8 +48,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: infra/docker/backend.Dockerfile
-      target: development
+      dockerfile: infra/docker/backend.dev.Dockerfile
     ports: ["8000:8000"]
     depends_on:
       db:
@@ -54,35 +56,34 @@ services:
       rustfs:
         condition: service_healthy
     volumes:
-      - ./backend:/app/backend
-      - ./modules:/app/modules
+      - ../../backend:/app/backend
+      - ../../modules:/app/modules
+      # module_loader.py resolves ROOT=/app and reads /app/modules.lock.yaml,
+      # so the lock file must be mounted next to the code mounts.
+      - ../../modules.lock.yaml:/app/modules.lock.yaml
+    env_file:
+      - ../../.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # Inside the compose network, services are reached by name, not localhost.
+    # These override the localhost values in .env (real env vars win over dotenv).
     environment:
-      - PYTHONUNBUFFERED=1
-      - DATABASE_URL=postgresql+asyncpg://earthiq:earthiq@db:5432/earthiq
-      - JWT_SECRET=${JWT_SECRET:-change-me-in-dev}
-      - CORS_ORIGINS=["http://localhost:3000"]
-      - DEBUG=false
-      - STORAGE_ENDPOINT=http://rustfs:9000
-      - STORAGE_ACCESS_KEY=${RUSTFS_ACCESS_KEY:-earthiq}
-      - STORAGE_SECRET_KEY=${RUSTFS_SECRET_KEY:-earthiq}
-      - STORAGE_BUCKET=${STORAGE_BUCKET:-earthiq}
-      - STORAGE_REGION=us-east-1
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-earthiq}:${POSTGRES_PASSWORD:-earthiq}@db:5432/${POSTGRES_DB:-earthiq}
+      STORAGE_ENDPOINT: http://rustfs:9000
 
   frontend:
     build:
       context: .
-      dockerfile: infra/docker/frontend.Dockerfile
-      target: development
+      dockerfile: infra/docker/frontend.dev.Dockerfile
     ports: ["3000:3000"]
     depends_on: [backend]
     volumes:
-      - ./frontend:/app/frontend
+      - ../../frontend:/app/frontend
       - /app/frontend/node_modules
       - /app/frontend/apps/web/node_modules
-      - ./modules:/app/modules
-    environment:
-      - VITE_API_URL=http://localhost:8000
-
+      - ../../modules:/app/modules
+    env_file:
+      - ../../.env
 
 volumes:
   postgres_data:

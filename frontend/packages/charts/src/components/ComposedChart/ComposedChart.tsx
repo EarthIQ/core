@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   ComposedChart as RechartsComposedChart,
   Line,
@@ -10,21 +10,21 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
-import { ChartContainer } from '../ChartContainer';
-import { getColor, generateGradientId } from '../../utils/colors';
-import type { ComposedChartProps } from '../../types';
+} from "recharts";
+import { ChartContainer } from "../ChartContainer";
+import { getColor, generateGradientId } from "../../utils/colors";
+import type { ComposedChartProps } from "../../types";
 
 export const ComposedChart: React.FC<ComposedChartProps> = ({
   data,
-  width = '100%',
+  width = "100%",
   height = 400,
   className,
   colors,
   title,
   description,
   showGrid = true,
-  gridType = 'horizontal',
+  gridType = "horizontal",
   animate = true,
   animationDuration = 300,
   legend = true,
@@ -34,14 +34,16 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
   empty = false,
   error = false,
   onDataPointClick,
-  exportFilename = 'composed-chart',
+  exportFilename = "composed-chart",
   elements,
   xAxis,
   yAxis,
   secondaryYAxis,
 }) => {
-  const showLegend = typeof legend === 'boolean' ? legend : legend?.show !== false;
-  const showTooltip = typeof tooltip === 'boolean' ? tooltip : tooltip?.show !== false;
+  const showLegend =
+    typeof legend === "boolean" ? legend : legend?.show !== false;
+  const showTooltip =
+    typeof tooltip === "boolean" ? tooltip : tooltip?.show !== false;
   const chartId = React.useId();
 
   return (
@@ -57,19 +59,29 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
       className={className}
     >
       <div style={{ width, height }}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+        >
           <RechartsComposedChart
             data={data}
-            margin={{ top: 5, right: secondaryYAxis ? 50 : 30, left: 20, bottom: 5 }}
+            margin={{
+              top: 5,
+              right: secondaryYAxis ? 50 : 30,
+              left: 20,
+              bottom: 5,
+            }}
             onClick={(e) => {
-              if (onDataPointClick && e?.activePayload?.[0]) {
-                onDataPointClick(e.activePayload[0].payload, e.activeTooltipIndex || 0);
-              }
+              if (!onDataPointClick) return;
+              const index = e.activeTooltipIndex;
+              if (typeof index !== "number") return;
+              const payload = data[index];
+              if (payload) onDataPointClick(payload, index);
             }}
           >
             <defs>
               {elements
-                .filter((el) => el.type === 'area')
+                .filter((el) => el.type === "area")
                 .map((el, index) => {
                   const gradientId = generateGradientId(chartId, index);
                   const color = el.config.color || getColor(index, colors);
@@ -82,8 +94,16 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="5%" stopColor={color} stopOpacity={0.3} />
-                      <stop offset="95%" stopColor={color} stopOpacity={0} />
+                      <stop
+                        offset="5%"
+                        stopColor={color}
+                        stopOpacity={0.3}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={color}
+                        stopOpacity={0}
+                      />
                     </linearGradient>
                   );
                 })}
@@ -93,8 +113,8 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
               <CartesianGrid
                 strokeDasharray="3 3"
                 className="stroke-gray-200 dark:stroke-gray-700"
-                horizontal={gridType !== 'vertical'}
-                vertical={gridType !== 'horizontal'}
+                horizontal={gridType !== "vertical"}
+                vertical={gridType !== "horizontal"}
               />
             )}
 
@@ -105,7 +125,7 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
                 axisLine={false}
                 tickMargin={8}
                 tickFormatter={xAxis?.tickFormatter}
-                tick={{ fill: 'currentColor', fontSize: 12 }}
+                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
               />
             )}
@@ -117,7 +137,7 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
                 axisLine={false}
                 tickMargin={8}
                 tickFormatter={yAxis?.tickFormatter}
-                tick={{ fill: 'currentColor', fontSize: 12 }}
+                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
                 domain={yAxis?.domain}
               />
@@ -131,7 +151,7 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
                 axisLine={false}
                 tickMargin={8}
                 tickFormatter={secondaryYAxis.tickFormatter}
-                tick={{ fill: 'currentColor', fontSize: 12 }}
+                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
                 domain={secondaryYAxis.domain}
               />
@@ -140,10 +160,10 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
             {showTooltip && (
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(var(--popover, 0 0% 100%))',
-                  border: '1px solid hsl(var(--border, 220 13% 91%))',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  backgroundColor: "hsl(var(--popover, 0 0% 100%))",
+                  border: "1px solid hsl(var(--border, 220 13% 91%))",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
                 labelStyle={{ fontWeight: 600, marginBottom: 4 }}
               />
@@ -163,7 +183,7 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
               const color = element.config.color || getColor(index, colors);
 
               switch (element.type) {
-                case 'bar':
+                case "bar":
                   return (
                     <Bar
                       key={element.config.dataKey}
@@ -176,11 +196,11 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
                       animationDuration={animationDuration}
                     />
                   );
-                case 'line':
+                case "line":
                   return (
                     <Line
                       key={element.config.dataKey}
-                      yAxisId={secondaryYAxis ? 'right' : 'left'}
+                      yAxisId={secondaryYAxis ? "right" : "left"}
                       type="monotone"
                       dataKey={element.config.dataKey}
                       name={element.config.name || element.config.dataKey}
@@ -191,7 +211,7 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
                       animationDuration={animationDuration}
                     />
                   );
-                case 'area':
+                case "area":
                   const gradientId = generateGradientId(chartId, index);
                   return (
                     <Area

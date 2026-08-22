@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   PieChart as RechartsPieChart,
   Pie,
@@ -69,7 +69,6 @@ export const PieChart: React.FC<PieChartProps> = ({
   labelType = "percent",
   labelFormatter,
 }) => {
-  const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
   const showLegend =
     typeof legend === "boolean" ? legend : legend?.show !== false;
   const showTooltip =
@@ -123,10 +122,7 @@ export const PieChart: React.FC<PieChartProps> = ({
               animationDuration={animationDuration}
               label={showLabels ? renderLabel : undefined}
               labelLine={showLabels}
-              activeIndex={activeIndex}
               activeShape={renderActiveShape}
-              onMouseEnter={(_, index) => setActiveIndex(index)}
-              onMouseLeave={() => setActiveIndex(undefined)}
               onClick={(entry, index) => {
                 if (onDataPointClick) {
                   onDataPointClick(entry, index);
@@ -151,7 +147,7 @@ export const PieChart: React.FC<PieChartProps> = ({
                   borderRadius: "8px",
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-                formatter={(value: number, name: string) => [
+                formatter={(value: any, name: any) => [
                   value.toLocaleString(),
                   name,
                 ]}

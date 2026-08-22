@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   PieChart as RechartsPieChart,
   Pie,
@@ -62,7 +62,6 @@ export const DonutChart: React.FC<DonutChartProps> = ({
   centerValue,
   centerDescription,
 }) => {
-  const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
   const showLegend =
     typeof legend === "boolean" ? legend : legend?.show !== false;
   const showTooltip =
@@ -110,10 +109,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
               animationDuration={animationDuration}
               label={showLabels}
               labelLine={showLabels}
-              activeIndex={activeIndex}
               activeShape={renderActiveShape}
-              onMouseEnter={(_, index) => setActiveIndex(index)}
-              onMouseLeave={() => setActiveIndex(undefined)}
               onClick={(entry, index) => {
                 if (onDataPointClick) {
                   onDataPointClick(entry, index);
@@ -138,7 +134,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
                   borderRadius: "8px",
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-                formatter={(value: number, name: string) => [
+                formatter={(value: any, name: any) => [
                   value.toLocaleString(),
                   name,
                 ]}

@@ -69,7 +69,7 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
     });
   }, [data, lines]);
 
-  const customTooltipFormatter = (value: any, name: string) => {
+  const customTooltipFormatter = (value: any, name: any) => {
     if (
       name === "Uncertainty Band" &&
       Array.isArray(value) &&
@@ -110,12 +110,11 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
               bottom: xAxis?.label ? 30 : 10,
             }}
             onClick={(e) => {
-              if (onDataPointClick && e?.activePayload?.[0]) {
-                onDataPointClick(
-                  e.activePayload[0].payload,
-                  e.activeTooltipIndex || 0
-                );
-              }
+              if (!onDataPointClick) return;
+              const index = e.activeTooltipIndex;
+              if (typeof index !== "number") return;
+              const payload = data[index];
+              if (payload) onDataPointClick(payload, index);
             }}
           >
             <defs>

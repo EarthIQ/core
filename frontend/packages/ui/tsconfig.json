@@ -6,7 +6,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "ignoreDeprecations": "6.0"
   },
   "include": ["src/**/*", "../map/src/components/interactions/MapFileDropZone.tsx"],
   "exclude": ["node_modules", "dist"]

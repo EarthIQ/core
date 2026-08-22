@@ -59,8 +59,8 @@
     "prepublishOnly": "pnpm run build"
   },
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0",
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0",
     "zustand": ">=4.0.0"
   },
   "peerDependenciesMeta": {
@@ -69,15 +69,15 @@
     }
   },
   "dependencies": {
-    "lucide-react": "^0.460.0"
+    "lucide-react": "^1.33.0"
   },
   "devDependencies": {
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tsup": "^8.3.5",
-    "typescript": "^5.6.3",
-    "zustand": "^5.0.1"
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "zustand": "^5.0.15"
   }
 }

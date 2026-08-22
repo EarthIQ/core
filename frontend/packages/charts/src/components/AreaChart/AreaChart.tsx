@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   AreaChart as RechartsAreaChart,
   Area,
@@ -8,21 +8,21 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
-import { ChartContainer } from '../ChartContainer';
-import { getColor, generateGradientId } from '../../utils/colors';
-import type { AreaChartProps } from '../../types';
+} from "recharts";
+import { ChartContainer } from "../ChartContainer";
+import { getColor, generateGradientId } from "../../utils/colors";
+import type { AreaChartProps } from "../../types";
 
 export const AreaChart: React.FC<AreaChartProps> = ({
   data,
-  width = '100%',
+  width = "100%",
   height = 400,
   className,
   colors,
   title,
   description,
   showGrid = true,
-  gridType = 'horizontal',
+  gridType = "horizontal",
   animate = true,
   animationDuration = 300,
   legend = true,
@@ -32,7 +32,7 @@ export const AreaChart: React.FC<AreaChartProps> = ({
   empty = false,
   error = false,
   onDataPointClick,
-  exportFilename = 'area-chart',
+  exportFilename = "area-chart",
   areas,
   xAxis,
   yAxis,
@@ -40,8 +40,10 @@ export const AreaChart: React.FC<AreaChartProps> = ({
   stacked = false,
   connectNulls = false,
 }) => {
-  const showLegend = typeof legend === 'boolean' ? legend : legend?.show !== false;
-  const showTooltip = typeof tooltip === 'boolean' ? tooltip : tooltip?.show !== false;
+  const showLegend =
+    typeof legend === "boolean" ? legend : legend?.show !== false;
+  const showTooltip =
+    typeof tooltip === "boolean" ? tooltip : tooltip?.show !== false;
   const chartId = React.useId();
 
   return (
@@ -57,7 +59,10 @@ export const AreaChart: React.FC<AreaChartProps> = ({
       className={className}
     >
       <div style={{ width, height }}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+        >
           <RechartsAreaChart
             data={data}
             margin={{
@@ -67,9 +72,11 @@ export const AreaChart: React.FC<AreaChartProps> = ({
               bottom: xAxis?.label ? 30 : 10,
             }}
             onClick={(e) => {
-              if (onDataPointClick && e?.activePayload?.[0]) {
-                onDataPointClick(e.activePayload[0].payload, e.activeTooltipIndex || 0);
-              }
+              if (!onDataPointClick) return;
+              const index = e.activeTooltipIndex;
+              if (typeof index !== "number") return;
+              const payload = data[index];
+              if (payload) onDataPointClick(payload, index);
             }}
           >
             <defs>
@@ -77,9 +84,24 @@ export const AreaChart: React.FC<AreaChartProps> = ({
                 const gradientId = generateGradientId(chartId, index);
                 const color = area.color || getColor(index, colors);
                 return (
-                  <linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={color} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={color} stopOpacity={0} />
+                  <linearGradient
+                    key={gradientId}
+                    id={gradientId}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor={color}
+                      stopOpacity={0.3}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={color}
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                 );
               })}
@@ -89,8 +111,8 @@ export const AreaChart: React.FC<AreaChartProps> = ({
               <CartesianGrid
                 strokeDasharray="3 3"
                 className="stroke-gray-200 dark:stroke-gray-700"
-                horizontal={gridType !== 'vertical'}
-                vertical={gridType !== 'horizontal'}
+                horizontal={gridType !== "vertical"}
+                vertical={gridType !== "horizontal"}
               />
             )}
 
@@ -101,16 +123,16 @@ export const AreaChart: React.FC<AreaChartProps> = ({
                 axisLine={false}
                 tickMargin={8}
                 tickFormatter={xAxis?.tickFormatter}
-                tick={{ fill: 'currentColor', fontSize: 12 }}
+                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
                 label={
                   xAxis?.label
                     ? {
                         value: xAxis.label,
-                        position: 'insideBottom',
+                        position: "insideBottom",
                         offset: -5,
                         fontSize: 12,
-                        fill: 'currentColor',
+                        fill: "currentColor",
                       }
                     : undefined
                 }
@@ -123,7 +145,7 @@ export const AreaChart: React.FC<AreaChartProps> = ({
                 axisLine={false}
                 tickMargin={8}
                 tickFormatter={yAxis?.tickFormatter}
-                tick={{ fill: 'currentColor', fontSize: 12 }}
+                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
                 domain={yAxis?.domain}
                 label={
@@ -131,10 +153,10 @@ export const AreaChart: React.FC<AreaChartProps> = ({
                     ? {
                         value: yAxis.label,
                         angle: -90,
-                        position: 'insideLeft',
+                        position: "insideLeft",
                         offset: 10,
                         fontSize: 12,
-                        fill: 'currentColor',
+                        fill: "currentColor",
                       }
                     : undefined
                 }
@@ -144,10 +166,10 @@ export const AreaChart: React.FC<AreaChartProps> = ({
             {showTooltip && (
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(var(--popover, 0 0% 100%))',
-                  border: '1px solid hsl(var(--border, 220 13% 91%))',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  backgroundColor: "hsl(var(--popover, 0 0% 100%))",
+                  border: "1px solid hsl(var(--border, 220 13% 91%))",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
                 labelStyle={{ fontWeight: 600, marginBottom: 4 }}
               />
@@ -169,14 +191,14 @@ export const AreaChart: React.FC<AreaChartProps> = ({
               return (
                 <Area
                   key={area.dataKey}
-                  type={curved ? 'monotone' : 'linear'}
+                  type={curved ? "monotone" : "linear"}
                   dataKey={area.dataKey}
                   name={area.name || area.dataKey}
                   stroke={color}
                   strokeWidth={area.strokeWidth || 2}
                   fill={`url(#${gradientId})`}
                   fillOpacity={area.fillOpacity || 1}
-                  stackId={stacked ? 'stack' : undefined}
+                  stackId={stacked ? "stack" : undefined}
                   isAnimationActive={animate}
                   animationDuration={animationDuration}
                   connectNulls={connectNulls}

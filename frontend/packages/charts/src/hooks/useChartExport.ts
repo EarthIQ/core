@@ -1,9 +1,18 @@
-import { useCallback, useRef, useState } from 'react';
-import { exportChartAsImage, exportDataAsCSV, exportDataAsJSON, copyDataToClipboard } from '../utils/exportUtils';
-import type { ChartDataPoint, ExportOptions, DataExportOptions } from '../types';
+import { useCallback, useRef, useState } from "react";
+import {
+  exportChartAsImage,
+  exportDataAsCSV,
+  exportDataAsJSON,
+  copyDataToClipboard,
+} from "../utils/exportUtils";
+import type {
+  ChartDataPoint,
+  ExportOptions,
+  DataExportOptions,
+} from "../types";
 
 interface UseChartExportReturn {
-  chartRef: React.RefObject<HTMLDivElement>;
+  chartRef: React.RefObject<HTMLDivElement | null>;
   isExporting: boolean;
   exportAsImage: (options?: ExportOptions) => Promise<void>;
   exportAsCSV: (options?: DataExportOptions) => void;
@@ -11,7 +20,9 @@ interface UseChartExportReturn {
   copyToClipboard: () => Promise<void>;
 }
 
-export const useChartExport = (data: ChartDataPoint[]): UseChartExportReturn => {
+export const useChartExport = (
+  data: ChartDataPoint[]
+): UseChartExportReturn => {
   const chartRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -26,13 +37,19 @@ export const useChartExport = (data: ChartDataPoint[]): UseChartExportReturn => 
     }
   }, []);
 
-  const exportAsCSV = useCallback((options?: DataExportOptions) => {
-    exportDataAsCSV(data, options);
-  }, [data]);
+  const exportAsCSV = useCallback(
+    (options?: DataExportOptions) => {
+      exportDataAsCSV(data, options);
+    },
+    [data]
+  );
 
-  const exportAsJSON = useCallback((options?: DataExportOptions) => {
-    exportDataAsJSON(data, options);
-  }, [data]);
+  const exportAsJSON = useCallback(
+    (options?: DataExportOptions) => {
+      exportDataAsJSON(data, options);
+    },
+    [data]
+  );
 
   const copyToClipboard = useCallback(async () => {
     await copyDataToClipboard(data);

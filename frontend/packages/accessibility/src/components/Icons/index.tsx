@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface IconProps {
   className?: string;
@@ -359,7 +359,7 @@ export const Icons = {
 export type IconName = keyof typeof Icons;
 
 // Type for the icon component
-export type IconComponent = (props?: IconProps) => JSX.Element;
+export type IconComponent = (props?: IconProps) => React.ReactElement;
 
 // Export IconProps for external use
 export type { IconProps };

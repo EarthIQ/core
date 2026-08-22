@@ -1,12 +1,12 @@
-import React, { useRef, useMemo } from 'react';
-import { useAccessibility } from '../hooks/useAccessibility';
-import { TriggerButton } from './TriggerButton';
-import { Panel } from './Panel';
-import { Accordion, AccordionItem } from './Accordion';
-import { ProfilesSection } from './Profiles';
-import { SettingsSection } from './Settings';
-import { defaultSettings } from '../constants/defaults';
-import { Icons } from './Icons';
+import React, { useRef, useMemo } from "react";
+import { useAccessibility } from "../hooks/useAccessibility";
+import { TriggerButton } from "./TriggerButton";
+import { Panel } from "./Panel";
+import { Accordion, AccordionItem } from "./Accordion";
+import { ProfilesSection } from "./Profiles";
+import { SettingsSection } from "./Settings";
+import { defaultSettings } from "../constants/defaults";
+import { Icons } from "./Icons";
 
 export interface AccessibilityWidgetProps {
   /**
@@ -16,18 +16,29 @@ export interface AccessibilityWidgetProps {
   /**
    * Custom trigger component.
    */
-  customTrigger?: React.ReactNode | ((props: { isOpen: boolean; toggle: () => void; hasActiveSettings: boolean; ref: React.RefObject<HTMLButtonElement> }) => React.ReactNode);
+  customTrigger?:
+    | React.ReactNode
+    | ((props: {
+        isOpen: boolean;
+        toggle: () => void;
+        hasActiveSettings: boolean;
+        ref: React.RefObject<HTMLButtonElement | null>;
+      }) => React.ReactNode);
   /**
    * Anchor position of the panel. Defaults to 'left'.
    */
-  position?: 'left' | 'right';
+  position?: "left" | "right";
 }
 
 /**
  * Main accessibility widget component
  * Renders a floating button and expandable panel with all options
  */
-export const AccessibilityWidget: React.FC<AccessibilityWidgetProps> = ({ hideTrigger, customTrigger, position = 'left' }) => {
+export const AccessibilityWidget: React.FC<AccessibilityWidgetProps> = ({
+  hideTrigger,
+  customTrigger,
+  position = "left",
+}) => {
   const {
     settings,
     updateSetting,
@@ -44,52 +55,58 @@ export const AccessibilityWidget: React.FC<AccessibilityWidgetProps> = ({ hideTr
   // Check if any settings are active
   const hasActiveSettings = useMemo(() => {
     return Object.entries(settings).some(([key, value]) => {
-      if (key === 'activeProfile') return false;
+      if (key === "activeProfile") return false;
       const defaultValue = defaultSettings[key as keyof typeof defaultSettings];
-      if (typeof value === 'number') return value !== 0;
-      if (typeof value === 'boolean') return value !== false;
+      if (typeof value === "number") return value !== 0;
+      if (typeof value === "boolean") return value !== false;
       return value !== defaultValue;
     });
   }, [settings]);
 
   return (
     <>
-      {!hideTrigger && (
-        customTrigger ? (
-          typeof customTrigger === 'function'
-            ? customTrigger({ isOpen, toggle: () => setIsOpen(!isOpen), hasActiveSettings, ref: buttonRef })
-            : customTrigger
+      {!hideTrigger &&
+        (customTrigger ? (
+          typeof customTrigger === "function" ? (
+            customTrigger({
+              isOpen,
+              toggle: () => setIsOpen(!isOpen),
+              hasActiveSettings,
+              ref: buttonRef,
+            })
+          ) : (
+            customTrigger
+          )
         ) : (
           <TriggerButton
             ref={buttonRef}
             isOpen={isOpen}
             hasActiveSettings={hasActiveSettings}
-            label={t('title')}
+            label={t("title")}
             onClick={() => setIsOpen(!isOpen)}
           />
-        )
-      )}
+        ))}
 
       <Panel
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onReset={resetSettings}
-        title={t('title')}
-        subtitle={t('subtitle')}
-        resetLabel={t('reset')}
-        closeLabel={t('close')}
-        footerText={t('settingsSaved')}
+        title={t("title")}
+        subtitle={t("subtitle")}
+        resetLabel={t("reset")}
+        closeLabel={t("close")}
+        footerText={t("settingsSaved")}
         buttonRef={buttonRef}
         position={position}
       >
-        <Accordion defaultOpen={['settings']} allowMultiple={false}>
+        <Accordion defaultOpen={["settings"]} allowMultiple={false}>
           {/* Profiles Section */}
           <AccordionItem
             id="profiles"
             title={
               <div className="flex w-full items-center gap-2">
                 <Icons.accessibility className="h-5 w-5" />
-                <span>{t('profiles')}</span>
+                <span>{t("profiles")}</span>
                 {settings.activeProfile && (
                   <span className="ml-auto text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
                     Active
@@ -111,7 +128,7 @@ export const AccessibilityWidget: React.FC<AccessibilityWidgetProps> = ({ hideTr
             title={
               <div className="flex w-full items-center gap-2">
                 <Icons.fontSize className="h-5 w-5" />
-                <span>{t('settings')}</span>
+                <span>{t("settings")}</span>
               </div>
             }
           >

@@ -86,12 +86,11 @@ export const BarChart: React.FC<BarChartProps> = ({
             barGap={barGap}
             barCategoryGap={barCategoryGap}
             onClick={(e) => {
-              if (onDataPointClick && e?.activePayload?.[0]) {
-                onDataPointClick(
-                  e.activePayload[0].payload,
-                  e.activeTooltipIndex || 0
-                );
-              }
+              if (!onDataPointClick) return;
+              const index = e.activeTooltipIndex;
+              if (typeof index !== "number") return;
+              const payload = data[index];
+              if (payload) onDataPointClick(payload, index);
             }}
           >
             {showGrid && (

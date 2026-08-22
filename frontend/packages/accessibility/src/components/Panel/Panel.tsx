@@ -1,7 +1,7 @@
-import React, { useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { PanelHeader } from './PanelHeader';
-import { PanelFooter } from './PanelFooter';
+import React, { useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { PanelHeader } from "./PanelHeader";
+import { PanelFooter } from "./PanelFooter";
 
 interface PanelProps {
   isOpen: boolean;
@@ -13,8 +13,8 @@ interface PanelProps {
   closeLabel: string;
   footerText: string;
   children: React.ReactNode;
-  buttonRef: React.RefObject<HTMLButtonElement>;
-  position?: 'left' | 'right';
+  buttonRef: React.RefObject<HTMLButtonElement | null>;
+  position?: "left" | "right";
 }
 
 /**
@@ -31,7 +31,7 @@ export const Panel: React.FC<PanelProps> = ({
   footerText,
   children,
   buttonRef,
-  position = 'left',
+  position = "left",
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -40,14 +40,14 @@ export const Panel: React.FC<PanelProps> = ({
     if (!isOpen) return;
 
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
         buttonRef.current?.focus();
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose, buttonRef]);
 
   // Focus trap
@@ -55,13 +55,15 @@ export const Panel: React.FC<PanelProps> = ({
     if (!isOpen || !panelRef.current) return;
 
     const panel = panelRef.current;
-    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    const focusableElements = panel.querySelectorAll<HTMLElement>(focusableSelector);
+    const focusableSelector =
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const focusableElements =
+      panel.querySelectorAll<HTMLElement>(focusableSelector);
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
 
     const handleTabKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
+      if (e.key !== "Tab") return;
 
       if (e.shiftKey) {
         if (document.activeElement === firstElement) {
@@ -76,10 +78,10 @@ export const Panel: React.FC<PanelProps> = ({
       }
     };
 
-    panel.addEventListener('keydown', handleTabKey);
+    panel.addEventListener("keydown", handleTabKey);
     firstElement?.focus();
 
-    return () => panel.removeEventListener('keydown', handleTabKey);
+    return () => panel.removeEventListener("keydown", handleTabKey);
   }, [isOpen]);
 
   // Click outside to close
@@ -101,8 +103,8 @@ export const Panel: React.FC<PanelProps> = ({
       onClose();
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose, buttonRef]);
 
   if (!isOpen) return null;
@@ -114,7 +116,7 @@ export const Panel: React.FC<PanelProps> = ({
         className="animate-fade-in fixed inset-0 bg-black/20 backdrop-blur-sm"
         aria-hidden="true"
         onClick={onClose}
-        style={{zIndex: 99998}}
+        style={{ zIndex: 99998 }}
       />
 
       {/* Panel */}
@@ -126,7 +128,7 @@ export const Panel: React.FC<PanelProps> = ({
         className={`
           animate-scale-in
           fixed bottom-4
-          ${position === 'right' ? 'right-4' : 'left-4'}
+          ${position === "right" ? "right-4" : "left-4"}
           flex flex-col
           max-h-[calc(100vh-2rem)] w-[calc(100vw-2rem)] sm:w-[420px]
           overflow-hidden rounded-3xl
@@ -134,7 +136,12 @@ export const Panel: React.FC<PanelProps> = ({
           bg-[var(--bg-secondary)]
           shadow-2xl
         `}
-        style={{ transformOrigin: position === 'right' ? 'bottom right' : 'bottom left', zIndex: 99999, maxHeight: '90vh' }}
+        style={{
+          transformOrigin:
+            position === "right" ? "bottom right" : "bottom left",
+          zIndex: 99999,
+          maxHeight: "90vh",
+        }}
       >
         <PanelHeader
           title={title}
@@ -152,6 +159,6 @@ export const Panel: React.FC<PanelProps> = ({
         <PanelFooter text={footerText} />
       </div>
     </>,
-    document.body
+    document.body,
   );
 };
