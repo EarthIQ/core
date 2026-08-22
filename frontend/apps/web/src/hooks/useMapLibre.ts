@@ -36,7 +36,26 @@ export function useMapLibre(
       if (cancelled || !containerRef.current) return;
       const map = new Map({
         container: containerRef.current,
-        style: BASEMAP_URLS[basemap] || BASEMAP_URLS["dataviz-dark"],
+        // style: BASEMAP_URLS[basemap] || BASEMAP_URLS["dataviz-dark"],
+        style: {
+          version: 8,
+          sources: {
+            satellite: {
+              type: "raster",
+              tiles: [
+                "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg",
+              ],
+              tileSize: 256,
+            },
+          },
+          layers: [
+            {
+              id: "satellite",
+              type: "raster",
+              source: "satellite",
+            },
+          ],
+        },
         center: [0, 20],
         zoom: 2.5,
         attributionControl: false,

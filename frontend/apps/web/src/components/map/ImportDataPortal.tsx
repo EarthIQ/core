@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Search, Database, X } from "lucide-react";
 import { listDatasets, GeoDatasetOut, getVectorTileUrl } from "@/lib/datasets";
 import { nextLayerColor, type NewLayerInput } from "./layer-panel/useLayerTree";
+import { resources, type Resource } from "@modules/resources";
 
 interface ImportDataPortalProps {
   onClose: () => void;
@@ -29,7 +30,16 @@ export function ImportDataPortal({
   const [tab, setTab] = useState<"catalog" | "resource">("catalog");
   const [destFolder, setDestFolder] = useState<string>(initialFolderId ?? "");
 
+  // Resource-module state
+  const [resLayers, setResLayers] = useState<Resource[]>([]);
+  const [resLoading, setResLoading] = useState(false);
+  const [resError, setResError] = useState<string | null>(null);
+  const [resLoaded, setResLoaded] = useState(false);
+  // Selected resource ids (namespaced with `res-` to avoid clashing with dataset ids)
+  const [resSelected, setResSelected] = useState<Set<string>>(new Set());
+
   const hasResourceModule =
+    isAvailableModule("resources-module") ||
     isAvailableModule("resource-module") ||
     isAvailableModule("hydrology-module");
 
@@ -45,6 +55,23 @@ export function ImportDataPortal({
         setLoading(false);
       });
   }, []);
+
+  // Lazy-load resource-module layers the first time the tab is opened.
+  useEffect(() => {
+    if (tab !== "resource" || resLoaded || !hasResourceModule) return;
+    setResLoading(true);
+    resources
+      .list({ only_addable: true })
+      .then((items) => {
+        setResLayers(items ?? []);
+        setResLoaded(true);
+        setResLoading(false);
+      })
+      .catch((e) => {
+        setResError(e?.message ?? "Failed to load resource layers");
+        setResLoading(false);
+      });
+  }, [tab, resLoaded, hasResourceModule]);
 
   const filtered = datasets.filter((d) => {
     const matchesSearch =
@@ -74,23 +101,89 @@ export function ImportDataPortal({
     });
   }
 
+  /* ── Resource-module helpers ─────────────────────────────── */
+  const resKey = (r: Resource) => `res-${r.id}`;
+
+  const filteredRes = resLayers.filter((r) => {
+    const q = search.trim().toLowerCase();
+    if (q) {
+      const hay = `${r.name} ${r.short_description} ${r.provider} ${r.tags.join(
+        " ",
+      )}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (typeFilter === "raster" && r.data_type !== "raster") return false;
+    if (typeFilter === "vector" && r.data_type !== "vector") return false;
+    return true;
+  });
+
+  const allResSelected =
+    filteredRes.length > 0 &&
+    filteredRes.every((r) => resSelected.has(resKey(r)));
+
+  function toggleRes(r: Resource) {
+    const key = resKey(r);
+    setResSelected((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  }
+
+  function toggleResAll() {
+    setResSelected((prev) => {
+      if (filteredRes.every((r) => prev.has(resKey(r)))) {
+        const next = new Set(prev);
+        filteredRes.forEach((r) => next.delete(resKey(r)));
+        return next;
+      }
+      const next = new Set(prev);
+      filteredRes.forEach((r) => next.add(resKey(r)));
+      return next;
+    });
+  }
+
+  const totalSelected = selected.size + resSelected.size;
+
   function handleImport() {
-    const toLayers: NewLayerInput[] = datasets
+    const toLayers: NewLayerInput[] = [];
+
+    // Catalog datasets
+    datasets
       .filter((d) => selected.has(d.id))
-      .map((d) => ({
-        id: d.id,
-        name: d.name,
-        layerType:
-          d.type === "raster" || d.type === "remote-sensing"
-            ? "raster"
-            : "vector",
-        visible: true,
-        tileUrl: d.type === "vector" ? getVectorTileUrl(d.id) : undefined,
-        color: nextLayerColor(),
-        opacity: 0.8,
-        lineWidth: 2,
-        source: "catalog",
-      }));
+      .forEach((d) =>
+        toLayers.push({
+          id: d.id,
+          name: d.name,
+          layerType:
+            d.type === "raster" || d.type === "remote-sensing"
+              ? "raster"
+              : "vector",
+          visible: true,
+          tileUrl: d.type === "vector" ? getVectorTileUrl(d.id) : undefined,
+          color: nextLayerColor(),
+          opacity: 0.8,
+          lineWidth: 2,
+          source: "catalog",
+        }),
+      );
+
+    // Resource-module layers (live tile-service raster layers)
+    resLayers
+      .filter((r) => resSelected.has(resKey(r)) && r.service?.tile_url)
+      .forEach((r) =>
+        toLayers.push({
+          id: resKey(r),
+          name: r.name,
+          layerType: "raster",
+          visible: true,
+          tileUrl: r.service!.tile_url,
+          color: nextLayerColor(),
+          opacity: r.suggested_opacity ?? 0.8,
+          source: "resource",
+        }),
+      );
+
     onImport(toLayers, destFolder || null);
     onClose();
   }
@@ -180,7 +273,17 @@ export function ImportDataPortal({
               </button>
             ))}
             <div className="flex-1" />
-            {filtered.length > 0 && (
+            {tab === "resource" ? (
+              filteredRes.length > 0 && (
+                <button
+                  type="button"
+                  onClick={toggleResAll}
+                  className="text-[0.68rem] text-primary underline"
+                >
+                  {allResSelected ? "Deselect all" : "Select all"}
+                </button>
+              )
+            ) : filtered.length > 0 ? (
               <button
                 type="button"
                 onClick={toggleSelectAll}
@@ -188,7 +291,7 @@ export function ImportDataPortal({
               >
                 {allFilteredSelected ? "Deselect all" : "Select all"}
               </button>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -205,10 +308,101 @@ export function ImportDataPortal({
           ) : error ? (
             <div className="py-6 text-center text-xs text-red-400">{error}</div>
           ) : tab === "resource" ? (
-            <div className="py-8 text-center text-xs text-text-tertiary">
-              <span className="text-2xl block mb-2">🧩</span>
-              Resource module datasets appear here when the module is active.
-            </div>
+            resLoading ? (
+              <div className="flex flex-col gap-2 py-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-14 rounded-lg bg-surface-hover animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : resError ? (
+              <div className="py-6 text-center text-xs text-red-400">
+                {resError}
+              </div>
+            ) : filteredRes.length === 0 ? (
+              <div className="py-8 text-center text-xs text-text-tertiary">
+                <span className="text-2xl block mb-2">🧩</span>
+                No addable layers in the Resource Module right now.
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5 py-2">
+                {filteredRes.map((r) => {
+                  const isSelected = resSelected.has(resKey(r));
+                  return (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => toggleRes(r)}
+                      className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl border text-left transition-all ${
+                        isSelected
+                          ? "bg-primary/10 border-primary/40 text-text-primary"
+                          : "bg-transparent border-border-secondary hover:bg-surface-hover text-text-secondary"
+                      }`}
+                    >
+                      <div
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${
+                          isSelected
+                            ? "bg-primary border-primary text-bg-primary"
+                            : "border-border-primary"
+                        }`}
+                      >
+                        {isSelected && (
+                          <svg
+                            width="10"
+                            height="10"
+                            viewBox="0 0 10 10"
+                            fill="none"
+                          >
+                            <path
+                              d="M2 5l2.5 2.5L8 3"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                      <span className="text-base shrink-0">🗺️</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold text-text-primary truncate">
+                          {r.name}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          <span className="text-[0.65rem] text-text-quaternary">
+                            {r.service?.protocol?.toUpperCase() ?? r.format}
+                          </span>
+                          <span className="text-border-primary">·</span>
+                          <span className="text-[0.65rem] text-text-quaternary">
+                            {r.provider}
+                          </span>
+                          {r.tags.slice(0, 2).map((t) => (
+                            <span
+                              key={t}
+                              className="text-[0.6rem] px-1.5 py-0.5 rounded-full"
+                              style={{
+                                background: "rgba(34,211,160,0.1)",
+                                color: "var(--eq-accent)",
+                              }}
+                            >
+                              #{t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <span
+                        className="text-[0.6rem] text-text-quaternary shrink-0"
+                        title={r.short_description}
+                      >
+                        Live layer
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )
           ) : filtered.length === 0 ? (
             <div className="py-8 text-center text-xs text-text-tertiary">
               <span className="text-2xl block mb-2">📭</span>
@@ -304,7 +498,7 @@ export function ImportDataPortal({
         <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-border-secondary shrink-0">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <span className="text-xs text-text-tertiary shrink-0">
-              {selected.size} selected
+              {totalSelected} selected
             </span>
             {folders.length > 0 && (
               <select
@@ -331,15 +525,15 @@ export function ImportDataPortal({
             </button>
             <button
               type="button"
-              disabled={selected.size === 0}
+              disabled={totalSelected === 0}
               onClick={handleImport}
               className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                selected.size === 0
+                totalSelected === 0
                   ? "bg-surface-hover text-text-quaternary cursor-not-allowed"
                   : "bg-primary text-bg-primary hover:opacity-90"
               }`}
             >
-              Add to Map ({selected.size})
+              Add to Map ({totalSelected})
             </button>
           </div>
         </div>
