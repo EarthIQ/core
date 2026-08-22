@@ -1,341 +1,467 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useModules, ModuleInfo } from "@/lib/modules";
-import { usePermissions } from "@/lib/usePermissions";
-import { Badge, Button } from "@packages/ui";
 import {
-  fetchMaps,
-  createMap,
-  deleteMap,
-  shareMap,
-  MapItem,
-  MapCreateInput,
-} from "@/lib/maps";
+  Folder,
+  Database,
+  Map as MapIcon,
+  User as UserIcon,
+  ChevronRight,
+  Layers,
+  ChevronLeft,
+  Plus,
+  Upload,
+} from "lucide-react";
+import { Button } from "@packages/ui";
+import { useAuth } from "@/lib/auth";
+import { useModules, ModuleInfo } from "@/lib/modules";
+import {
+  fetchProjects,
+  createProject,
+  ProjectItem,
+  ProjectCreateInput,
+} from "@/lib/projects";
+import { fetchMaps, MapItem } from "@/lib/maps";
+import { listDatasets } from "@/lib/datasets";
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-function CpuIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="4" width="16" height="16" rx="2" />
-      <rect x="9" y="9" width="6" height="6" />
-      <line x1="9" y1="1" x2="9" y2="4" />
-      <line x1="15" y1="1" x2="15" y2="4" />
-      <line x1="9" y1="20" x2="9" y2="23" />
-      <line x1="15" y1="20" x2="15" y2="23" />
-      <line x1="20" y1="9" x2="23" y2="9" />
-      <line x1="20" y1="15" x2="23" y2="15" />
-      <line x1="1" y1="9" x2="4" y2="9" />
-      <line x1="1" y1="15" x2="4" y2="15" />
-    </svg>
-  );
+function greetingForHour(hour: number): string {
+  if (hour < 12) return "Good morning!";
+  if (hour < 18) return "Good afternoon!";
+  return "Good evening!";
 }
 
-function LayersIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 2 7 12 12 22 7 12 2" />
-      <polyline points="2 17 12 22 22 17" />
-      <polyline points="2 12 12 17 22 12" />
-    </svg>
-  );
+function relativeTime(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "";
+  const diff = Date.now() - then;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} minute${mins === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `about ${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `about ${days} day${days === 1 ? "" : "s"} ago`;
+  const months = Math.floor(days / 30);
+  return `about ${months} month${months === 1 ? "" : "s"} ago`;
 }
 
-function TerminalIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="4 17 10 11 4 5" />
-      <line x1="12" y1="19" x2="20" y2="19" />
-    </svg>
-  );
+function displayName(fullName?: string, email?: string): string {
+  if (fullName && fullName.trim()) return fullName.trim();
+  if (!email) return "there";
+  const local = email.split("@")[0];
+  return local.charAt(0).toUpperCase() + local.slice(1);
 }
 
-function MapPinIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  );
+// ── Hero Slideshow ────────────────────────────────────────────────────────────
+
+interface Slide {
+  id: string;
+  title: string;
+  subtitle: string;
+  ctaLabel: string;
+  ctaAction: string;
+  icon: React.ReactNode;
 }
 
-// ── CapChips Component ───────────────────────────────────────────────────────
+const HERO_SLIDES: Slide[] = [
+  {
+    id: "create-project",
+    title: "Create a Project",
+    subtitle: "Start a new project to organize your data, maps, and layers.",
+    ctaLabel: "Create Project",
+    ctaAction: "project",
+    icon: <Plus size={28} />,
+  },
+  {
+    id: "add-data",
+    title: "Add Your Data",
+    subtitle: "Upload datasets and geospatial files to build your workspace.",
+    ctaLabel: "Upload Data",
+    ctaAction: "data",
+    icon: <Upload size={28} />,
+  },
+  {
+    id: "create-map",
+    title: "Build a Map",
+    subtitle: "Compose interactive maps with layers, styles, and annotations.",
+    ctaLabel: "Create Map",
+    ctaAction: "maps",
+    icon: <MapIcon size={28} />,
+  },
+  {
+    id: "profile",
+    title: "Manage Your Profile",
+    subtitle: "Update your account details and workspace settings.",
+    ctaLabel: "View Profile",
+    ctaAction: "profile",
+    icon: <UserIcon size={28} />,
+  },
+];
 
-function CapChips({ caps }: { caps: ModuleInfo["capabilities"] }) {
-  const chips: string[] = [];
-  if (caps.has_backend) chips.push("backend API");
-  if (caps.has_frontend) chips.push("frontend UI");
-  if (caps.has_infra) chips.push("infra / compose");
-  caps.extras?.forEach((e) => chips.push(e));
-  return (
-    <div className="flex flex-wrap gap-1.5 mt-3">
-      {chips.map((c) => (
-        <span
-          key={c}
-          className="px-2 py-0.5 text-xs font-medium rounded-md bg-primary/10 text-primary border border-primary/20"
-        >
-          {c}
-        </span>
-      ))}
-    </div>
-  );
-}
+function HeroSlideshow({
+  userName,
+  onCreateProject,
+}: {
+  userName: string;
+  onCreateProject: () => void;
+}) {
+  const [greeting] = useState(() => greetingForHour(new Date().getHours()));
+  const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const total = HERO_SLIDES.length;
 
-// ── Module Hub Card ────────────────────────────────────────────────────────────
+  // Auto-advance every 5 seconds
+  useEffect(() => {
+    if (paused) return;
+    const timer = setInterval(() => {
+      setCurrent((c) => (c + 1) % total);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [paused, total]);
 
-function ModuleHubCard({ mod }: { mod: ModuleInfo }) {
-  const navigate = useNavigate();
-  // Standardized dynamic route path based on module name
-  const routeName = mod.name.replace("-module", "");
+  const goPrev = () => setCurrent((c) => (c - 1 + total) % total);
+  const goNext = () => setCurrent((c) => (c + 1) % total);
+
+  const slide = HERO_SLIDES[current];
+
+  const handleCta = () => {
+    if (slide.ctaAction === "project") {
+      onCreateProject();
+    } else if (slide.ctaAction === "data") {
+      window.location.assign("/data");
+    } else if (slide.ctaAction === "maps") {
+      window.location.assign("/maps");
+    } else if (slide.ctaAction === "profile") {
+      window.location.assign("/dashboard");
+    }
+  };
 
   return (
     <div
-      className="card p-5 flex flex-col justify-between transition-all duration-200 hover:border-primary/40 hover:shadow-lg group"
-      id={`module-card-${mod.name}`}
+      className="relative rounded-2xl overflow-hidden mb-6 min-h-[220px] flex items-center group"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
     >
-      <div>
-        <div className="flex items-start justify-between gap-3">
+      {/* Landscape background */}
+      <svg
+        className="absolute inset-0 w-full h-full"
+        viewBox="0 0 1200 260"
+        preserveAspectRatio="xMidYMid slice"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="hero-sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#aee3f5" />
+            <stop offset="55%" stopColor="#cdeef7" />
+            <stop offset="100%" stopColor="#e8f7e9" />
+          </linearGradient>
+          <linearGradient id="hero-mountain" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#8d9aa8" />
+            <stop offset="45%" stopColor="#b3bec9" />
+            <stop offset="100%" stopColor="#5f7050" />
+          </linearGradient>
+          <linearGradient id="hero-grass" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#7fb069" />
+            <stop offset="100%" stopColor="#4e8c46" />
+          </linearGradient>
+        </defs>
+        <rect width="1200" height="260" fill="url(#hero-sky)" />
+        <circle cx="980" cy="70" r="42" fill="#fff6d8" opacity="0.85" />
+        <path
+          d="M0 190 Q150 150 300 185 T600 180 T900 190 T1200 175 V260 H0 Z"
+          fill="#9db98a"
+          opacity="0.7"
+        />
+        <path
+          d="M420 210 L580 40 L700 130 L760 90 L880 210 Z"
+          fill="url(#hero-mountain)"
+        />
+        <path
+          d="M580 40 L548 78 L566 74 L582 92 L600 72 L616 80 L612 62 Z"
+          fill="#f4f8fb"
+        />
+        <path
+          d="M596 100 q-6 40 -10 110 h14 q-2 -70 -4 -110 Z"
+          fill="#dff2fa"
+          opacity="0.9"
+        />
+        <path
+          d="M0 215 Q200 195 420 212 T820 208 T1200 214 V260 H0 Z"
+          fill="url(#hero-grass)"
+        />
+      </svg>
+
+      {/* Content overlay */}
+      <div className="relative z-10 w-full flex items-center justify-between px-8 py-10 gap-6">
+        {/* Left: greeting (static) */}
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white drop-shadow-md leading-tight">
+            {greeting}
+            <br />
+            {userName}
+          </h1>
+          <p className="mt-2 text-sm sm:text-base text-white/95 drop-shadow-sm">
+            Here's what's happening within the workspace.
+          </p>
+        </div>
+
+        {/* Right: slideshow content */}
+        <div className="hidden md:flex flex-col items-end text-right gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-              <LayersIcon />
+            <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-white shrink-0">
+              {slide.icon}
             </div>
             <div>
-              <div className="font-bold text-base text-text-primary capitalize">
-                {mod.name.replace("-", " ")}
+              <div className="text-base font-bold text-white drop-shadow-sm">
+                {slide.title}
               </div>
-              <div className="text-xs text-text-tertiary">v{mod.version}</div>
+              <p className="text-xs text-white/90 drop-shadow-sm max-w-[220px]">
+                {slide.subtitle}
+              </p>
             </div>
           </div>
-          <Badge
-            variant={mod.enabled ? "success" : "default"}
-            size="sm"
-            dot={mod.enabled}
-            dotColor={mod.enabled ? "success" : "primary"}
+          <button
+            onClick={handleCta}
+            className="px-4 py-2 rounded-lg bg-white/90 text-gray-800 font-bold text-xs hover:bg-white transition-colors cursor-pointer shadow-md"
           >
-            {mod.enabled ? "Active" : "Disabled"}
-          </Badge>
+            {slide.ctaLabel}
+          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={goPrev}
+              className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/35 transition-colors cursor-pointer"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft size={15} />
+            </button>
+            <div className="flex items-center gap-1">
+              {HERO_SLIDES.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrent(i)}
+                  className={`rounded-full transition-all cursor-pointer ${
+                    i === current
+                      ? "w-5 h-1 bg-white"
+                      : "w-2 h-1 bg-white/50 hover:bg-white/75"
+                  }`}
+                  aria-label={`Go to slide ${i + 1}`}
+                />
+              ))}
+            </div>
+            <button
+              onClick={goNext}
+              className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/35 transition-colors cursor-pointer"
+              aria-label="Next slide"
+            >
+              <ChevronRight size={15} />
+            </button>
+          </div>
         </div>
-
-        {mod.description && (
-          <p className="text-sm text-text-secondary leading-relaxed mt-3">
-            {mod.description}
-          </p>
-        )}
-
-        <CapChips caps={mod.capabilities} />
       </div>
 
-      <div className="mt-5 pt-3 border-t border-border-subtle flex items-center justify-between">
-        <span className="text-xs font-mono text-text-tertiary">
-          /{routeName}
-        </span>
-        {mod.capabilities.has_frontend && mod.enabled ? (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => navigate(`/${routeName}`)}
-          >
-            Open Module ↗
-          </Button>
-        ) : (
-          <span className="text-xs text-text-tertiary italic">Backend Service</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── System Stats Header ───────────────────────────────────────────────────────
-
-function ModularOverviewStats({
-  modules,
-  mapsCount,
-}: {
-  modules: ModuleInfo[];
-  mapsCount: number;
-}) {
-  const activeCount = modules.filter((m) => m.enabled).length;
-  const feCount = modules.filter((m) => m.capabilities.has_frontend).length;
-
-  const stats = [
-    { label: "Installed Modules", value: modules.length, sub: "Dynamic Micro-frontends" },
-    { label: "Active Services", value: activeCount, sub: `${modules.length - activeCount} inactive` },
-    { label: "UI Plug-ins", value: feCount, sub: "Hot-wired routes" },
-    { label: "Configured Maps", value: mapsCount, sub: "Spatial workspaces" },
-  ];
-
-  return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      {stats.map((s) => (
-        <div
-          key={s.label}
-          className="p-4 bg-surface border border-border-primary rounded-xl relative overflow-hidden group hover:border-primary/30 transition-colors"
+      {/* Mobile: slideshow below greeting */}
+      <div className="md:hidden absolute bottom-3 left-6 right-6 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {HERO_SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              className={`rounded-full transition-all cursor-pointer ${
+                i === current ? "w-5 h-1 bg-white" : "w-2 h-1 bg-white/50"
+              }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+        <button
+          onClick={handleCta}
+          className="px-3 py-1.5 rounded-md bg-white/90 text-gray-800 font-bold text-xs cursor-pointer shadow"
         >
-          <div className="text-3xl font-extrabold text-text-primary tabular-nums tracking-tight">
-            {s.value}
-          </div>
-          <div className="text-sm font-semibold text-text-secondary mt-1">
-            {s.label}
-          </div>
-          <div className="text-xs text-text-tertiary mt-0.5">{s.sub}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ── CLI Helper Banner ──────────────────────────────────────────────────────────
-
-function CliManagementBanner() {
-  return (
-    <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 via-surface to-surface border border-primary/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
-      <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-0.5">
-          <TerminalIcon />
-        </div>
-        <div>
-          <div className="font-semibold text-sm text-text-primary">
-            Modular Monolith CLI Manager
-          </div>
-          <div className="text-xs text-text-secondary mt-0.5">
-            Add or remove modules effortlessly without interrupting active services.
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-2 text-xs font-mono bg-background/80 px-3 py-2 rounded-lg border border-border-primary">
-        <span className="text-primary font-bold">uv run --project setup setup</span>
-        <span className="text-text-tertiary">[add|remove|list|sync]</span>
+          {slide.ctaLabel}
+        </button>
       </div>
     </div>
   );
 }
 
-// ── Map Card ───────────────────────────────────────────────────────────────────
+// ── Stat Card ─────────────────────────────────────────────────────────────────
 
-function MapCard({
-  mapItem,
-  onDelete,
-  onTogglePublic,
+function StatCard({
+  icon,
+  label,
+  value,
 }: {
-  mapItem: MapItem;
-  onDelete: (id: string) => void;
-  onTogglePublic: (mapItem: MapItem) => void;
+  icon: React.ReactNode;
+  label: string;
+  value: number | string;
+}) {
+  return (
+    <div className="bg-surface border border-border-primary rounded-xl px-5 py-4 flex items-start justify-between gap-3 hover:border-primary/30 transition-colors">
+      <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 shadow-sm">
+        {icon}
+      </div>
+      <div className="flex flex-col items-end text-right">
+        <span className="text-sm font-medium text-text-secondary">{label}</span>
+        <span className="text-2xl font-extrabold text-text-primary tabular-nums mt-1">
+          {value}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── Create Project Illustration ───────────────────────────────────────────────
+
+function CreateProjectIllustration() {
+  return (
+    <div className="relative w-[240px] h-[170px] shrink-0 hidden lg:block select-none pointer-events-none">
+      {/* Back card */}
+      <div className="absolute right-0 top-2 w-[150px] h-[140px] bg-elevated border border-border-primary rounded-xl shadow-lg rotate-3 p-3 opacity-90">
+        <div className="flex gap-1.5 mb-2">
+          <span className="w-2 h-2 rounded-full bg-error/70" />
+          <span className="w-2 h-2 rounded-full bg-warning/70" />
+          <span className="w-2 h-2 rounded-full bg-success/70" />
+        </div>
+        <div className="h-2 rounded bg-surface-hover mb-1.5 w-4/5" />
+        <div className="h-2 rounded bg-surface-hover mb-1.5 w-3/5" />
+        <div className="h-2 rounded bg-surface-hover mb-3 w-2/3" />
+        <div className="grid grid-cols-2 gap-2">
+          <div className="h-10 rounded-lg bg-accent/20" />
+          <div className="h-10 rounded-lg bg-primary/15" />
+        </div>
+      </div>
+
+      {/* Front card */}
+      <div className="absolute left-0 top-6 w-[160px] h-[130px] bg-elevated border border-border-primary rounded-xl shadow-xl -rotate-2 p-3">
+        <div className="h-2 rounded bg-surface-hover mb-1.5 w-5/6" />
+        <div className="h-2 rounded bg-surface-hover mb-1.5 w-2/3" />
+        <div className="h-2 rounded bg-surface-hover mb-3 w-3/4" />
+        <div className="space-y-1.5">
+          <div className="h-2 rounded bg-error/60 w-4/5" />
+          <div className="h-2 rounded bg-warning/60 w-3/5" />
+          <div className="h-2 rounded bg-success/60 w-2/3" />
+          <div className="h-2 rounded bg-accent/50 w-1/2" />
+        </div>
+      </div>
+
+      {/* Floating chips */}
+      <div className="absolute left-6 bottom-1 flex items-center gap-1.5 bg-elevated border border-border-primary rounded-full px-2 py-1 shadow-md">
+        <span className="w-2.5 h-2.5 rounded-full bg-primary" />
+        <span className="w-2.5 h-2.5 rounded-full bg-success" />
+        <span className="w-2.5 h-2.5 rounded-full bg-warning" />
+      </div>
+    </div>
+  );
+}
+
+// ── Recent Projects Panel ─────────────────────────────────────────────────────
+
+function RecentProjectsPanel({
+  projects,
+  loading,
+}: {
+  projects: ProjectItem[];
+  loading: boolean;
 }) {
   const navigate = useNavigate();
+  const recent = projects.slice(0, 5);
 
   return (
-    <div className="card p-5 flex flex-col justify-between gap-4 transition-all duration-200 hover:border-primary/40 hover:shadow-lg">
-      <div>
-        <div className="flex justify-between items-start gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
-              <MapPinIcon />
-            </div>
-            <div className="font-bold text-base text-text-primary line-clamp-1">
-              {mapItem.title}
-            </div>
-          </div>
-          <span
-            className={`text-[0.65rem] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
-              mapItem.is_public
-                ? "bg-success/10 text-success border-success/30"
-                : "bg-accent/10 text-accent border-accent/30"
-            }`}
-          >
-            {mapItem.is_public ? "Public" : "Private"}
-          </span>
-        </div>
-        <p className="text-sm text-text-secondary mt-2 min-h-[2.4rem] line-clamp-2">
-          {mapItem.description || "No description provided."}
-        </p>
-      </div>
-
-      <div className="flex gap-2 flex-wrap text-[0.7rem] text-text-tertiary">
-        {[
-          `Basemap: ${mapItem.basemap}`,
-          `Zoom: ${mapItem.zoom}`,
-          `Role: ${mapItem.user_permission}`,
-        ].map((label) => (
-          <span key={label} className="px-2 py-0.5 rounded-md bg-surface-hover font-mono">
-            {label}
-          </span>
-        ))}
-      </div>
-
-      <div className="flex gap-2 pt-2 border-t border-border-subtle">
-        <Button
-          variant="primary"
-          size="sm"
-          fullWidth
-          onClick={() => navigate(`/map?mapId=${mapItem.id}`)}
-        >
-          Open Workspace ↗
-        </Button>
-
-        {mapItem.user_permission === "admin" && (
-          <>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => onTogglePublic(mapItem)}
-              title="Toggle Public Access"
-            >
-              {mapItem.is_public ? "Private" : "Public"}
-            </Button>
-            <Button
-              variant="error"
-              size="sm"
-              onClick={() => onDelete(mapItem.id)}
-              title="Delete Map"
-            >
-              Delete
-            </Button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── Shimmer Skeleton ───────────────────────────────────────────────────────────
-
-function ShimmerRows() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="h-44 rounded-xl skeleton" />
-      ))}
-    </div>
-  );
-}
-
-// ── Empty State ────────────────────────────────────────────────────────────────
-
-function EmptyState({
-  message,
-  action,
-}: {
-  message: string;
-  action?: { label: string; onClick: () => void };
-}) {
-  return (
-    <div className="py-12 px-8 text-center text-text-tertiary border-[1.5px] border-dashed border-border-primary rounded-xl">
-      <p className="text-sm">{message}</p>
-      {action && (
+    <div className="bg-surface border border-border-primary rounded-2xl p-5 flex flex-col">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-text-primary">Recent Projects</h2>
         <button
-          onClick={action.onClick}
-          className="mt-4 btn btn-primary btn-sm"
+          onClick={() => navigate("/projects")}
+          className="flex items-center gap-0.5 text-sm font-semibold text-primary hover:text-primary/80 bg-transparent border-none cursor-pointer p-0"
         >
-          {action.label}
+          View all Projects <ChevronRight size={16} />
         </button>
+      </div>
+
+      {loading && (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-14 rounded-xl skeleton" />
+          ))}
+        </div>
+      )}
+
+      {!loading && recent.length === 0 && (
+        <p className="text-sm text-text-tertiary py-6 text-center">
+          No projects yet. Create your first one to get started.
+        </p>
+      )}
+
+      {!loading && recent.length > 0 && (
+        <ul className="flex flex-col divide-y divide-border-subtle">
+          {recent.map((p) => (
+            <li key={p.id}>
+              <button
+                onClick={() => navigate("/projects")}
+                className="w-full flex items-center gap-3 py-3 px-1 bg-transparent border-none cursor-pointer text-left hover:bg-surface-hover rounded-lg transition-colors"
+              >
+                <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-primary/25 to-accent/20 flex items-center justify-center shrink-0 overflow-hidden">
+                  <MapIcon size={18} className="text-primary" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold text-text-primary truncate">
+                    {p.title}
+                  </div>
+                  <div className="text-xs text-text-tertiary mt-0.5">
+                    {relativeTime(p.created_at)}
+                  </div>
+                </div>
+                <ChevronRight
+                  size={16}
+                  className="text-text-tertiary shrink-0"
+                />
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
 }
 
-// ── Create Map Modal ───────────────────────────────────────────────────────────
+// ── Discover More Module Card ─────────────────────────────────────────────────
 
-function CreateMapModal({
+function DiscoverCard({ mod }: { mod: ModuleInfo }) {
+  const navigate = useNavigate();
+  const routeName = mod.name.replace("-module", "");
+  const clickable = mod.enabled && mod.capabilities.has_frontend;
+
+  return (
+    <button
+      onClick={() => clickable && navigate(`/${routeName}`)}
+      disabled={!clickable}
+      className={`card p-5 flex items-start gap-4 text-left transition-all duration-200 ${
+        clickable
+          ? "hover:border-primary/40 hover:shadow-lg cursor-pointer"
+          : "opacity-70 cursor-default"
+      }`}
+    >
+      <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+        <Layers size={20} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="font-bold text-sm text-text-primary capitalize">
+          {mod.name.replace("-", " ").replace(" module", "")}
+        </div>
+        <p className="text-xs text-text-secondary mt-1 line-clamp-2 leading-relaxed">
+          {mod.description ||
+            "Explore what this module can do for your project."}
+        </p>
+      </div>
+      <ChevronRight size={16} className="text-text-tertiary shrink-0 mt-1" />
+    </button>
+  );
+}
+
+// ── Create Project Modal ──────────────────────────────────────────────────────
+
+function CreateProjectModal({
   isOpen,
   onClose,
   onCreated,
@@ -346,8 +472,6 @@ function CreateMapModal({
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [basemap, setBasemap] = useState("dataviz-dark");
-  const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -359,16 +483,17 @@ function CreateMapModal({
     setLoading(true);
     setError(null);
     try {
-      const input: MapCreateInput = {
-        title,
-        description,
-        basemap,
-        is_public: isPublic,
+      const input: ProjectCreateInput = {
+        title: title.trim(),
+        description: description.trim(),
         center_lng: 0.0,
         center_lat: 20.0,
         zoom: 2.5,
+        basemap: "dataviz-light",
       };
-      await createMap(input);
+      await createProject(input);
+      setTitle("");
+      setDescription("");
       onCreated();
       onClose();
     } catch (err) {
@@ -382,8 +507,11 @@ function CreateMapModal({
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 overlay animate-fade-in">
       <div className="w-full max-w-[480px] bg-elevated border border-border-primary rounded-2xl p-6 flex flex-col gap-4 animate-scale-in shadow-2xl">
         <h2 className="text-xl font-bold text-text-primary">
-          Create Spatial Workspace
+          Create a Project
         </h2>
+        <p className="text-sm text-text-secondary -mt-2">
+          Start a new project to organize your data.
+        </p>
 
         {error && (
           <div className="p-3 rounded-md bg-error-subtle text-error text-sm border border-error/20">
@@ -393,11 +521,11 @@ function CreateMapModal({
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="form-field">
-            <label className="form-label">Map Title</label>
+            <label className="form-label">Project Title</label>
             <input
               type="text"
               required
-              placeholder="e.g. Hydrology Monitoring Map"
+              placeholder="e.g. Watershed Assessment 2026"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="input"
@@ -408,42 +536,11 @@ function CreateMapModal({
             <label className="form-label">Description</label>
             <textarea
               rows={3}
-              placeholder="Summary of layers & default view"
+              placeholder="What is this project about?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="input textarea"
             />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="form-field">
-              <label className="form-label">Basemap Style</label>
-              <select
-                value={basemap}
-                onChange={(e) => setBasemap(e.target.value)}
-                className="input select"
-              >
-                <option value="dataviz-dark">DataViz Dark</option>
-                <option value="dataviz-light">DataViz Light</option>
-                <option value="satellite">Satellite</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2 mt-5">
-              <input
-                type="checkbox"
-                id="is_public_cb"
-                checked={isPublic}
-                onChange={(e) => setIsPublic(e.target.checked)}
-                className="cursor-pointer accent-primary w-4 h-4"
-              />
-              <label
-                htmlFor="is_public_cb"
-                className="text-sm text-text-primary cursor-pointer select-none"
-              >
-                Make Public
-              </label>
-            </div>
           </div>
 
           <div className="flex gap-3 justify-end mt-2">
@@ -459,7 +556,7 @@ function CreateMapModal({
               disabled={loading}
               className="btn btn-primary btn-md"
             >
-              {loading ? "Creating..." : "Create Map"}
+              {loading ? "Creating..." : "Create Project"}
             </button>
           </div>
         </form>
@@ -468,216 +565,148 @@ function CreateMapModal({
   );
 }
 
-// ── Tab Button ─────────────────────────────────────────────────────────────────
-
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2.5 rounded-lg border-none cursor-pointer text-sm transition-all duration-150 flex items-center gap-2 ${
-        active
-          ? "font-bold bg-primary/15 text-primary shadow-sm"
-          : "font-medium bg-transparent text-text-tertiary hover:text-text-secondary hover:bg-surface-hover"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-// ── Main Dashboard Page Component ───────────────────────────────────────────────
+// ── Main Landing Page ─────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const { canAdd } = usePermissions();
-  const {
-    modules,
-    isLoading: modulesLoading,
-    error: modulesError,
-  } = useModules();
-  const [activeTab, setActiveTab] = useState<"modules" | "maps">("modules");
+  const { user } = useAuth();
+  const { modules } = useModules();
 
-  const [maps, setMaps] = useState<MapItem[]>([]);
-  const [mapsLoading, setMapsLoading] = useState(true);
-  const [mapsError, setMapsError] = useState<string | null>(null);
+  const [projects, setProjects] = useState<ProjectItem[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [mapsCount, setMapsCount] = useState(0);
+  const [datasetsCount, setDatasetsCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const loadMaps = async () => {
-    setMapsLoading(true);
+  const loadProjects = async () => {
+    setProjectsLoading(true);
     try {
-      const data = await fetchMaps();
-      setMaps(data);
-      setMapsError(null);
-    } catch (err) {
-      setMapsError(String(err));
+      const data = await fetchProjects();
+      // Most recently created first
+      data.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+      setProjects(data);
+    } catch {
+      setProjects([]);
     } finally {
-      setMapsLoading(false);
+      setProjectsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadMaps();
+    loadProjects();
+    fetchMaps()
+      .then((maps: MapItem[]) => setMapsCount(maps.length))
+      .catch(() => setMapsCount(0));
+    listDatasets()
+      .then((items) => setDatasetsCount(items.length))
+      .catch(() => setDatasetsCount(0));
   }, []);
 
-  const handleDeleteMap = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this map?")) return;
-    try {
-      await deleteMap(id);
-      loadMaps();
-    } catch (err) {
-      alert("Failed to delete map: " + String(err));
-    }
-  };
+  const userName = useMemo(
+    () => displayName(user?.full_name, user?.email),
+    [user],
+  );
 
-  const handleTogglePublic = async (mapItem: MapItem) => {
-    try {
-      await shareMap(mapItem.id, { is_public: !mapItem.is_public });
-      loadMaps();
-    } catch (err) {
-      alert("Failed to update access: " + String(err));
-    }
-  };
+  const discoverModules = modules.filter((m) => m.enabled);
 
   return (
     <div className="max-w-7xl mx-auto pb-12">
-      {/* Hero Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary mb-2">
-          <CpuIcon /> Pluggable Monolith Platform
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gradient tracking-tight">
-          System Overview & Modules
-        </h1>
-        <p className="mt-2 text-text-secondary text-sm sm:text-base max-w-3xl leading-relaxed">
-          EarthIQ core dynamically composes backend services, API routes, database schemas, and micro-frontend UI bundles seamlessly based on installed modules.
-        </p>
+      {/* Hero Slideshow */}
+      <HeroSlideshow
+        userName={userName}
+        onCreateProject={() => setIsModalOpen(true)}
+      />
 
-        {/* Tab Navigation */}
-        <div className="flex gap-2 mt-6 p-1 bg-surface border border-border-primary rounded-xl w-fit">
-          <TabButton
-            active={activeTab === "modules"}
-            onClick={() => setActiveTab("modules")}
-          >
-            <LayersIcon /> Installed Modules ({modules.length})
-          </TabButton>
-          <TabButton
-            active={activeTab === "maps"}
-            onClick={() => setActiveTab("maps")}
-          >
-            <MapPinIcon /> Spatial Workspaces ({maps.length})
-          </TabButton>
-        </div>
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard
+          icon={<Folder size={22} />}
+          label="Project Created"
+          value={projects.length}
+        />
+        <StatCard
+          icon={<Database size={22} />}
+          label="Data Uploaded"
+          value={datasetsCount}
+        />
+        <StatCard
+          icon={<MapIcon size={22} />}
+          label="Map Created"
+          value={mapsCount}
+        />
+        <StatCard icon={<UserIcon size={22} />} label="User" value={1} />
       </div>
 
-      {/* Global System Stats */}
-      <ModularOverviewStats modules={modules} mapsCount={maps.length} />
-
-      {/* CLI Quick Reference */}
-      <CliManagementBanner />
-
-      {/* ── MODULES HUB TAB ── */}
-      {activeTab === "modules" && (
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <div>
-              <h2 className="text-xl font-bold text-text-primary">
-                Module Ecosystem
-              </h2>
-              <p className="text-sm text-text-secondary mt-0.5">
-                Installed plugins registered in <code className="text-primary font-mono text-xs">modules.lock.yaml</code>
-              </p>
-            </div>
-          </div>
-
-          {modulesLoading && <ShimmerRows />}
-
-          {modulesError && (
-            <div className="p-4 rounded-lg bg-error-subtle text-error text-sm border border-error/20">
-              Could not load module status: {modulesError}
-            </div>
-          )}
-
-          {!modulesLoading && !modulesError && modules.length === 0 && (
-            <EmptyState message="No modules are currently installed." />
-          )}
-
-          {!modulesLoading && !modulesError && modules.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              {modules.map((m) => (
-                <ModuleHubCard key={m.name} mod={m} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── SPATIAL MAPS TAB ── */}
-      {activeTab === "maps" && (
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <div>
-              <h2 className="text-xl font-bold text-text-primary">
-                Configurable Maps
-              </h2>
-              <p className="text-sm text-text-secondary mt-0.5">
-                Geospatial map views accessible to your role and permissions
-              </p>
-            </div>
-            {canAdd("maps") && (
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="btn btn-primary btn-md shrink-0"
+      {/* Create a Project + Recent Projects */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-10">
+        {/* Create a Project card */}
+        <div className="xl:col-span-2 rounded-2xl bg-gradient-to-r from-primary/10 via-surface to-surface border border-border-primary p-7 flex items-center justify-between gap-6 overflow-hidden">
+          <div className="max-w-md">
+            <h2 className="text-2xl font-extrabold text-text-primary">
+              Create a Project
+            </h2>
+            <p className="mt-2 text-sm text-text-secondary leading-relaxed">
+              To get started you can start by creating a new one or browse
+              existing projects
+            </p>
+            <div className="flex gap-3 mt-5">
+              <Button
+                variant="secondary"
+                onClick={() => window.location.assign("/projects")}
               >
-                + Create New Map
-              </button>
-            )}
+                Browse Project
+              </Button>
+              <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+                Create Project
+              </Button>
+            </div>
           </div>
-
-          {mapsLoading && <ShimmerRows />}
-
-          {mapsError && (
-            <div className="p-4 rounded-lg bg-error-subtle text-error text-sm border border-error/20">
-              Could not load maps: {mapsError}
-            </div>
-          )}
-
-          {!mapsLoading && !mapsError && maps.length === 0 && (
-            <EmptyState
-              message="No configurable maps created yet."
-              action={{
-                label: "Create your first map",
-                onClick: () => setIsModalOpen(true),
-              }}
-            />
-          )}
-
-          {!mapsLoading && !mapsError && maps.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              {maps.map((m) => (
-                <MapCard
-                  key={m.id}
-                  mapItem={m}
-                  onDelete={handleDeleteMap}
-                  onTogglePublic={handleTogglePublic}
-                />
-              ))}
-            </div>
-          )}
-
-          <CreateMapModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onCreated={loadMaps}
-          />
+          <CreateProjectIllustration />
         </div>
-      )}
+
+        {/* Recent Projects */}
+        <RecentProjectsPanel projects={projects} loading={projectsLoading} />
+      </div>
+
+      {/* Discover more */}
+      <section>
+        <div className="flex items-end justify-between gap-4 mb-1">
+          <div>
+            <h2 className="text-2xl font-extrabold text-text-primary">
+              Discover more
+            </h2>
+            <p className="text-sm text-text-secondary mt-1">
+              Choose an action to get started with your project
+            </p>
+          </div>
+          <button
+            onClick={() => window.location.assign("/dashboard")}
+            className="flex items-center gap-0.5 text-sm font-semibold text-primary hover:text-primary/80 bg-transparent border-none cursor-pointer p-0 shrink-0"
+          >
+            View all Modules <ChevronRight size={16} />
+          </button>
+        </div>
+
+        {discoverModules.length === 0 ? (
+          <div className="py-10 px-8 text-center text-text-tertiary border-[1.5px] border-dashed border-border-primary rounded-xl mt-4">
+            <p className="text-sm">No modules are currently installed.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
+            {discoverModules.map((m) => (
+              <DiscoverCard key={m.name} mod={m} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <CreateProjectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCreated={loadProjects}
+      />
     </div>
   );
 }
