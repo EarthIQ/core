@@ -26,6 +26,8 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  /** Re-fetch the current user (e.g. after editing the profile). */
+  refreshUser: () => Promise<void>;
 }
 
 // ── Context ────────────────────────────────────────────────────────────────────
@@ -36,6 +38,7 @@ const AuthContext = createContext<AuthContextValue>({
   isAuthenticated: false,
   login: async () => {},
   logout: () => {},
+  refreshUser: async () => {},
 });
 
 const TOKEN_KEY = "eq_token";
@@ -77,9 +80,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) return;
+    try {
+      const me = await api.get<AuthUser>("/api/auth/me");
+      setUser(me);
+    } catch {
+      /* keep current user */
+    }
+  }, []);
+
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isLoading, isAuthenticated: !!user, login, logout }),
-    [user, isLoading, login, logout],
+    () => ({ user, isLoading, isAuthenticated: !!user, login, logout, refreshUser }),
+    [user, isLoading, login, logout, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

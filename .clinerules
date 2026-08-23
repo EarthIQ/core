@@ -1,0 +1,442 @@
+# EarthIQ Core — Cline Rules
+
+This repository is **EarthIQ Core**, a "pluggable monolith" geo-platform. A core
+FastAPI backend + React/Vite frontend are the always-present shell, and a set of
+swappable **modules** (AI, hydrology, resources, urban-planning, notifications)
+are mounted into it at build/wire time. This file is the source of truth for how
+to work in this repo. Follow it.
+
+---
+
+## 1. Non-negotiable rules (read first)
+
+1. **Donot use setup-cli venv for environment. Use Docker / Docker Compose to run and test. Do NOT create or use a
+   `venv` for this project.** The backend and frontend are consumed as
+   long-running Compose services (`backend`, `frontend`) plus their support
+   services (`db`, `redis`, `rustfs`). All code changes are verified by
+   restarting / re-running the Compose services, not by local interpreter
+   shells. (Local `pytest` for module backend tests _is_ allowed — see §6 —
+   because it runs hermetically against in-memory SQLite with no real DB and no
+   `venv`; it must not spin up a venv.)
+2. **Modules are accessed through the services, never standalone.** To exercise
+   a module, run it inside the `backend` and/or `frontend` Compose services.
+   Do not add a separate "run this module in isolation" workflow that bypasses
+   the service wiring.
+3. **Frontend: reuse `@packages/ui` components BEFORE creating new ones.** The
+   design-system package (`frontend/packages/ui`) already ships Button, Input,
+   Select, Modal, Drawer, Dropdown, Toast, Card, Tabs, Sidebar, Badge, Checkbox,
+   Switch, Slider, Pagination, Skeleton, Spinner, Alert, EmptyState, Command
+   Palette, Tooltip, and more (see §5.3). Only create a new component when
+   `@packages/ui` genuinely lacks the capability, and then prefer adding it to
+   `@packages/ui` over inlining it in `apps/web` so it stays reusable.
+4. **Styling lives in `frontend/apps/web/src/styles/globals.css`.** Do not scatter
+   ad-hoc CSS files. Use the design tokens (CSS variables) and utility classes
+   defined there (see §5.4). Tailwind v4 is available as a fallback but the
+   token system is the primary mechanism.
+5. **Do NOT hand-edit generated files.** These are produced by `setup sync` /
+   the setup CLI and will be overwritten:
+   - `frontend/apps/web/src/module-registry.generated.ts`
+   - `frontend/apps/web/src/modules.generated.ts` (tombstone)
+   - `frontend/apps/web/modules.paths.json`
+   - `frontend/apps/web/tsconfig.paths.json`
+   - `docker-compose.yaml` (root)
+   - `backend/alembic.ini`
+   - `frontend/apps/web/package.json` `@modules/*` dependency entries
+     Change the _source_ (`modules.registry.yaml`, each module's `module.yaml`,
+     `modules.lock.yaml`) and re-run the setup CLI.
+
+---
+
+## 2. Project structure (overview / guide)
+
+```
+core/                                  # repository root (CWD)
+├── .clinerules                        # THIS FILE — AI/agent working rules
+├── README.md
+├── LICENSE.txt
+├── modules.registry.yaml              # CATALOG of available modules (name, version, repo)
+├── modules.lock.yaml                  # GENERATED/selected modules actually installed
+├── .env                               # shared env for all services (gitignored; source of APP_ENV)
+│
+├── backend/                           # CORE backend (always present)
+│   ├── pyproject.toml                 # FastAPI + SQLAlchemy + Alembic + deps (uv-managed)
+│   ├── uv.lock
+│   ├── alembic.ini.tpl                # committed Alembic template (generated alembic.ini is gitignored)
+│   ├── alembic/                       # core migrations (versions/*.py)
+│   ├── app/
+│   │   ├── main.py                    # FastAPI app: lifespan, CORS, core routers, load_modules()
+│   │   ├── module_loader.py           # mounts module routers from modules.lock.yaml at startup
+│   │   ├── core/                      # config.py (Settings), db.py (Base/engine/get_db), security.py, storage.py
+│   │   └── api/                       # core domain routers: auth, data, maps, projects, viz,
+│   │        │                          storage, collab, modules, maps/share
+│   │        └── <domain>/            # each = {router.py, models.py, schemas.py, service.py}
+│   └── tests/                         # core pytest suite (in-memory SQLite, ASGITransport)
+│
+├── frontend/                          # pnpm monorepo (root package.json, pnpm-workspace.yaml)
+│   ├── apps/
+│   │   └── web/                       # THE shell app (Vite + React 19)
+│   │       ├── package.json           # depends on @packages/ui, charts, cookie-consent (+ generated @modules/*)
+│   │       ├── vite.config.ts
+│   │       ├── tsconfig.json          # extends generated tsconfig.paths.json
+│   │       ├── modules.paths.json     # GENERATED: @modules/* → ../modules/<name>/frontend/src/index.ts
+│   │       ├── tsconfig.paths.json    # GENERATED: TS paths for @modules/*
+│   │       └── src/
+│   │           ├── App.tsx            # shell: dynamic module routing (never names a module directly)
+│   │           ├── main.tsx
+│   │           ├── module-registry.generated.ts  # GENERATED lazy registry
+│   │           ├── pages/             # core pages: Dashboard, Map, Data, Projects, Admin, Public, ...
+│   │           ├── components/        # app-level (data/, map/, ProtectedRoute, AppShell, ...)
+│   │           ├── hooks/             # useMapLibre, etc.
+│   │           ├── lib/               # auth, theme, modules (useModules)
+│   │           └── styles/globals.css # DESIGN TOKENS + utility classes (SINGLE STYLE SOURCE)
+│   └── packages/                      # shared workspace packages (design system + libs)
+│       ├── ui/                        # @packages/ui  — DESIGN SYSTEM (components, hooks, contexts, utils)
+│       ├── charts/                    # @packages/charts
+│       ├── cookie-consent/            # @packages/cookie-consent
+│       ├── map/                       # @packages/map (MapLibre helpers)
+│       ├── language/ onboarding/ accessibility/
+│       └── eslint-config/ prettier-config/ typescript-config/  (tooling)
+│
+├── modules/                           # pluggable feature modules (gitignored clones / local dev)
+│   └── <name>-module/                 # e.g. notification-module, ai-module, resources-module
+│       ├── module.yaml                # MODULE MANIFEST (backend + frontend + infra + capabilities)
+│       ├── backend/
+│       │   ├── pyproject.toml         # module runtime deps (installed by backend Dockerfile)
+│       │   ├── module_<pkg>/          # package: router, service, schemas, models, db, ...
+│       │   ├── alembic/               # OPTIONAL module migrations (merged into core alembic.ini)
+│       │   └── tests/                 # hermetic pytest suite (in-memory SQLite)
+│       ├── frontend/
+│       │   ├── package.json           # @modules/<name> workspace package
+│       │   └── src/index.ts           # MUST export: Page, routePath, navItem (+ optional clients)
+│       └── infra/
+│           └── compose.module.yaml    # OPTIONAL extra services/volumes (merged into root compose)
+│
+├── infra/
+│   ├── docker/
+│   │   ├── docker-compose.base.yaml   # db, redis, rustfs, backend, frontend (the source compose)
+│   │   ├── backend.dev.Dockerfile     # uv + system site-packages + module deps + hot reload
+│   │   ├── backend.prod.Dockerfile
+│   │   ├── frontend.dev.Dockerfile    # pnpm install + build, runs `pnpm --filter web dev`
+│   │   ├── frontend.prod.Dockerfile
+│   │   ├── nginx.conf                 # prod reverse proxy
+│   │   └── postgres.Dockerfile
+│   └── scripts/start.sh               # prod uvicorn launcher
+│
+├── setup/                             # the "pluggable-monolith" CLI (`setup` command)
+│   └── src/setup_cli/
+│       ├── cli.py                     # init / add / remove / update / list / sync
+│       ├── registry.py                # ROOT, load_registry/lock, load_module_meta
+│       ├── installer.py               # clone/clone_module/install_selected/remove_module
+│       ├── workspace.py               # writes backend alembic.ini + frontend paths/tsconfig
+│       ├── codegen.py                 # generates module-registry.generated.ts
+│       └── compose.py                 # generates root docker-compose.yaml (dev/prod)
+│
+└── docs/                              # test_plan.md, etc.
+```
+
+### How the pieces fit together
+
+- `setup` CLI reads `modules.registry.yaml` → installs (clones) the selected
+  modules into `modules/`, records them in `modules.lock.yaml`, then re-wires:
+  backend Alembic migrations, frontend path aliases, the lazy module registry,
+  and the root `docker-compose.yaml`. Run `setup sync` after editing any
+  module's `module.yaml` to re-generate all of that.
+- At backend startup, `app.module_loader.load_modules(app)` iterates
+  `modules.lock.yaml → selected`, reads each `module.yaml`, injects the module
+  `backend/` dir onto `sys.path`, imports its ORM models (so `Base.metadata`
+  is populated), then imports and mounts its router under
+  `"/api" + backend.prefix`.
+- The frontend shell (`App.tsx`) fetches `/api/modules`, intersects enabled
+  modules with the generated `moduleRegistry`, lazy-imports each bundle, and
+  mounts `<Route path={routePath} element={<Page/>}>` plus the nav item. The
+  shell never hard-codes a module name.
+
+---
+
+## 3. Docker & Compose workflow (REQUIRED)
+
+The canonical stack is defined in `infra/docker/docker-compose.base.yaml` and
+materialized as root `docker-compose.yaml` by `setup sync` (`compose.py`).
+`APP_ENV` in `.env` selects dev vs prod wiring:
+
+- **dev** (default): uses `*.dev.Dockerfile`s, bind-mounts `backend/`,
+  `frontend/`, `modules/`, and `modules.lock.yaml` into the containers, so edits
+  hot-reload. Ports: frontend `:3000`, backend `:8000`.
+- **prod**: uses `*.prod.Dockerfile`s, strips dev bind mounts (code baked into
+  the image), frontend served by nginx on `:80`.
+
+### Services & ports
+
+| Service    | Purpose                             | Host port  | Internal access (from `backend`) |
+| ---------- | ----------------------------------- | ---------- | -------------------------------- |
+| `db`       | PostgreSQL (PostGIS)                | 5432       | `db:5432`                        |
+| `redis`    | Redis 7                             | 6379       | `redis:6379`                     |
+| `rustfs`   | S3-compatible object store (RustFS) | 9000/9001  | `rustfs:9000`                    |
+| `backend`  | FastAPI (uvicorn)                   | 8000       | `backend:8000`                   |
+| `frontend` | Vite dev server / nginx (prod)      | 3000 (dev) | `frontend:3000`                  |
+
+Inside the Compose network services reach each other **by name**, not
+`localhost`. The base compose overrides `DATABASE_URL` and `STORAGE_ENDPOINT`
+with the service names; real env vars win over the `.env` file.
+
+### Everyday commands (run from the repo root)
+
+```bash
+# Generate / regenerate the root docker-compose.yaml (after any module or
+# module.yaml change) — dev mode:
+APP_ENV=dev python -m setup_cli.cli sync          # or: setup sync (if installed)
+
+# Full bring-up (build + start detached):
+docker compose -f docker-compose.yaml up --build -d
+
+# Watch logs:
+docker compose -f docker-compose.yaml logs -f backend
+docker compose -f docker-compose.yaml logs -f frontend
+
+# Rebuild a single service after code edits (dev bind-mounts usually just reload):
+docker compose -f docker-compose.yaml restart backend
+docker compose -f docker-compose.yaml up --build -d backend frontend
+
+# Tear down (keep volumes by default; drop data with -v):
+docker compose -f docker-compose.yaml down
+```
+
+`setup init` does the whole install + `up --build -d` in one shot and prints the
+URL (http://localhost:3000).
+
+### Access the APIs (for testing)
+
+- Backend health: `curl http://localhost:8000/api/health`
+- OpenAPI docs: `http://localhost:8000/api/docs`
+- Auth flow: `POST /api/auth/register` → `POST /api/auth/token` → `GET /api/auth/me`
+  (Bearer `access_token` on subsequent calls; password min policy enforced).
+- Core modules API: `GET /api/modules` (list + enabled flag) — the frontend
+  shell uses this to decide which module routes to mount.
+- Example module API: `GET/POST /api/notifications` (notification-module),
+  `GET /api/resources` (resources-module), etc. — mounted under the module's
+  `backend.prefix`.
+- Frontend: `http://localhost:3000` (dev) / `http://localhost:80` (prod).
+
+### Adding a new module to the stack
+
+1. Ensure the module is listed in `modules.registry.yaml` (name, version, repo
+   or a `file://` local path for local development) and cloned into
+   `modules/<name>-module/` (via `setup add <name>` or manually).
+2. Fill in `modules/<name>-module/module.yaml` (see §4 contract).
+3. Run `setup sync` → regenerates `docker-compose.yaml`, frontend paths,
+   module registry, and (if the module has `alembic/versions/`) core
+   `alembic.ini`.
+4. `docker compose -f docker-compose.yaml up --build -d` and hit the module's
+   `/api/<prefix>` endpoint to verify.
+
+---
+
+## 4. Module contract
+
+### `module.yaml` (per module) — the manifest the loader + CLI read
+
+```yaml
+name: notification-module
+version: "0.1.0"
+description: "..."
+backend:
+  package: module_notifications # importable python package name
+  router_attr: "router:router" # "<module>:<attr>" → module router
+  models_attr: "models" # optional; imported at startup for Base.metadata
+  prefix: /notifications # mounted at /api/notifications
+frontend:
+  package_name: "@modules/notifications"
+  entry: "src/index.ts"
+infra:
+  compose_file: infra/compose.module.yaml # optional extra services/volumes
+  env: []
+capabilities:
+  - in-app-notifications
+  - real-time
+depends_on: []
+```
+
+### Module backend conventions
+
+- Package layout: `backend/module_<pkg>/` with `router.py`, `service.py`,
+  `schemas.py`, `models.py`, and a thin `db.py` that **re-exports core
+  `Base` / `AsyncSessionLocal` / `get_db` from `app.core.db`** (do not build
+  your own engine). The module builds on the core runtime (FastAPI /
+  SQLAlchemy / Pydantic) — it is mounted into the _same_ process, so
+  `app.*` is always importable at runtime.
+- `router.py`: create `router = APIRouter()`; declare endpoints with
+  `response_model=` and `tags=[<module>]`. Reuse the core auth dependency
+  (`from app.api.auth.router import get_current_user`) as the single source of
+  truth for the current user; use `_require_admin` pattern for superuser-only
+  routes. Keep business logic in `service.py` (router → service → db).
+- `schemas.py`: Pydantic request/response models; use `*.model_dump(mode="json")`
+  when serializing across the wire.
+- `models.py`: SQLAlchemy 2.0 ORM models on the shared `Base`. If you add
+  tables, provide an Alembic migration under the module's `alembic/versions/`
+  (they are auto-merged into core `alembic.ini` by `setup sync`), and keep the
+  module test harness able to `Base.metadata.create_all`.
+- Optional cross-cutting capability: expose a programmatic helper
+  (e.g. `module_notifications.router.emit(...)`) other modules can call.
+
+### Module frontend conventions
+
+- `frontend/src/index.ts` MUST export exactly:
+  - `Page` (a default-exported React component) — the module's root page
+  - `routePath: string` — e.g. `"/resources"` (no trailing slash)
+  - `navItem: { label: string; to: string; icon?: string }`
+  - (optionally) an API client, types, and sub-components the shell may import.
+- The module `frontend/package.json` name must match `frontend.package_name`
+  in `module.yaml` (e.g. `@modules/notifications`).
+- Build module UI **on top of `@packages/ui`** (see §5.3) and the core
+  `globals.css` tokens (see §5.4).
+
+---
+
+## 5. Frontend conventions
+
+### 5.1 Stack
+
+- pnpm workspace monorepo (`frontend/package.json`, `packageManager:
+pnpm@9.15.0`). Apps: `apps/web`. Packages: `packages/*`. Modules' frontends
+  join the workspace via the `../modules/*/frontend` glob in
+  `pnpm-workspace.yaml`.
+- `apps/web`: Vite 8 + React 19 + TypeScript 6, `react-router-dom` v7,
+  `@tanstack/react-query`, `zustand`, `maplibre-gl`, `lucide-react`.
+- Common commands (run in `frontend/`, or inside the `frontend` Compose
+  service):
+  ```bash
+  pnpm --filter web dev      # dev server (this is what the frontend service runs)
+  pnpm --filter web build    # production build
+  pnpm --filter web lint     # eslint
+  pnpm lint                  # across all packages
+  ```
+  The frontend Compose service runs `pnpm --filter web dev`; after editing
+  frontend code, either rely on Vite HMR or `docker compose -f docker-compose.yaml
+restart frontend`.
+
+### 5.2 Aliases
+
+- `@/*` → `apps/web/src/*`.
+- `@modules/<name>` → `../modules/<name>-module/frontend/src/index.ts` (generated
+  into `modules.paths.json` + `tsconfig.paths.json`). Never import a module by
+  a raw relative path; use the `@modules/*` alias or the shell's lazy registry.
+
+### 5.3 Prefer `@packages/ui` components (RULE)
+
+Import from the package root: `import { Button, Input, Modal, ... } from
+"@packages/ui";` (re-exports components, contexts, hooks, `cn`, types).
+CATEGORIES AVAILABLE (create a new component only if one of these is missing):
+
+- **primitives:** Button, ButtonGroup, IconButton, Input, Textarea, Select,
+  Checkbox, Radio, Slider, Switch, Text, Badge
+- **form:** Form, FormField, DatePicker, TimePicker, FileUpload, Rating
+- **layout:** Card, Container, Divider, Grid, Stack
+- **navigation:** Navbar, Sidebar, Breadcrumb, Tabs, Stepper, Pagination
+- **overlay:** Modal, Drawer, Dropdown, Popover, Tooltip, ConfirmDialog,
+  CommandPalette
+- **data-display:** Accordion, Avatar, CodeBlock, Kbd, Stat, Table, Timeline
+- **feedback:** Alert, Banner, EmptyState, ErrorBoundary (+ `withErrorBoundary`,
+  `useErrorBoundary`), Progress, Skeleton, Spinner
+- **interaction:** DragAndDrop suite (`DndProvider`, `Draggable`, `Droppable`,
+  `SortableList`, `FileDropZone`, `useDragAndDrop`, ...)
+- **common:** OptimizedImage, ThemeToogle
+- **contexts:** `ThemeProvider` / `useTheme`, `ToastProvider` / `useToast`
+- **hooks:** `useClickOutside`, `useKeyboard`/`useEscapeKey`, `useDisclosure`,
+  `useCopyToClipboard`, `useMediaQuery`/`useIsMobile/Tablet/Desktop`,
+  `useOnScreen`, `useDebounce`/`useDebouncedCallback`, `useLocalStorage`,
+  `usePrevious`, `useLockBodyScroll`, `usePerformance`
+- **utils:** `cn` (class merge), `security`, `variants`, `webVitals`
+
+When you need something not listed, add it to `frontend/packages/ui` (new
+`components/<category>/<Name>/<Name>.tsx` + re-export from the category
+`components/index.ts` and the package `src/index.ts`) rather than forking it in
+`apps/web` or a module.
+
+### 5.4 Styling — `src/styles/globals.css` (RULE)
+
+The **single source of design tokens** is
+`frontend/apps/web/src/styles/globals.css`. It defines:
+
+- **CSS custom properties** (use these, not raw hex/oklch):
+  - brand: `--primary`, `--primary-dark/-light/-hover`, `--secondary`,
+    `--accent`, and `*-dark/-light` variants
+  - surfaces: `--bg-primary/-secondary/-tertiary/-elevated`, `--surface`,
+    `--surface-hover/-active`
+  - text: `--text-primary/-secondary/-tertiary/-inverse/-on-primary`
+  - borders: `--border-primary/-secondary/-hover/-focus`
+  - status: `--success/-warning/-error/-info` (each with `-bg/-text/-border`)
+  - interactive: `--input-bg/-border/-focus-border/-placeholder`,
+    `--toggle-*`, `--button-disabled-*`
+  - elevation: `--shadow-xs…2xl`, `--shadow-inner`, `--shadow-primary`
+  - misc: `--overlay(-light)`, `--backdrop`, `--divider`, `--ring(-offset)`,
+    `--radius-sm…full`, `--transition-fast/normal/slow/slower`,
+    `--z-dropdown/sticky/fixed/modal/popover/tooltip/toast`, scrollbar vars
+- **Ready utility classes** (reuse, don't redefine): `.card`, `.card-elevated`,
+  `.btn` (+ `.btn-primary/-secondary/-ghost`), `.input`, `.badge`
+  (+ `.badge-primary/-success/-warning/-error/-info`), `.toggle`, `.skeleton`,
+  `.overlay`, `.overlay-light`, `.divider`, `.text-gradient(-accent/-secondary)`,
+  `.bg-base/.bg-surface/.bg-elevated`, `.text-base/.text-muted/.text-subtle`,
+  `.border-base/.border-subtle`, `.shadow-base/.shadow-elevated`,
+  `.bg-success-subtle/...`, safe-area `.pb-safe/.pt-safe/.px-safe`, and the
+  `.animate-*` animation helpers (`animate-fade-in`, `animate-scale-in`,
+  `animate-slide-up`, `animate-spin`, `animate-pulse`, `animate-shake`, ...).
+- **Dark mode** is a `.dark` class on the root (driven by the UI
+  `ThemeProvider`); every token has a dark override under `:root.dark`. Don't
+  write separate dark CSS — just use the tokens.
+- Tailwind v4 is imported (`@import "tailwindcss"`) and `@source
+"../../../../packages"` is set so package code is scanned; use utilities for
+  layout/spacing, but prefer the token variables and the classes above for
+  colors, radii, shadows, and interactive states.
+
+### 5.5 Shell rules
+
+- `App.tsx` is the shell. Do NOT add module-specific routes/imports to it;
+  module routing flows through `module-registry.generated.ts` + `/api/modules`.
+- Put core pages in `src/pages/`, core shared components in
+  `src/components/`, data hooks in `src/hooks/`, and API/auth/theme/module
+  helpers in `src/lib/`.
+
+---
+
+## 6. Testing
+
+- **Backend (core + every module) uses hermetic pytest** — no venv, no real DB,
+  no network:
+  - In-memory SQLite via `sqlite+aiosqlite` + `StaticPool` (shared single
+    in-memory DB), `PRAGMA foreign_keys=ON`.
+  - FastAPI app driven through `httpx.AsyncClient` + `ASGITransport` (skips
+    ASGI lifespan).
+  - `app.dependency_overrides[get_db]` swaps the session.
+  - `pytest` + `pytest-asyncio` with `asyncio_mode = "auto"`.
+  - A `conftest.py` builds a small test app (auth + the module router), creates
+    tables from `Base.metadata.create_all`, rolls back per test, and offers
+    `admin` / `user_a` / `user_b` fixtures (register → token → user_id).
+- Run module tests (from the module's `backend/` dir; uses a venv-free
+  hermetic harness, not a project venv):
+  ```bash
+  cd modules/<name>-module/backend && python -m pytest -ra
+  ```
+  Core tests:
+  ```bash
+  cd backend && python -m pytest -ra
+  ```
+- Integration tests that need a real PostGIS DB are marked `@pytest.mark.
+integration` and are run against the `db` Compose service — they are the only
+  tests that touch real infra.
+- For UI changes, verify through the running `frontend` Compose service
+  (http://localhost:3000) — typically with the browser tool — rather than a
+  separate local dev server.
+
+---
+
+## 7. Definition of Done (per task)
+
+- [ ] Code change respects the module boundaries and conventions above.
+- [ ] No `venv` was created; work was verified via the Compose services
+      (or hermetic `pytest` for backend logic).
+- [ ] `setup sync` was run if any `module.yaml` / registry / lock changed;
+      generated files were not hand-edited.
+- [ ] New/reused UI uses `@packages/ui` + `globals.css` tokens; no stray CSS
+      files.
+- [ ] `docker compose -f docker-compose.yaml up --build -d` succeeds and the
+      affected endpoint/page works (health check / browser verification).

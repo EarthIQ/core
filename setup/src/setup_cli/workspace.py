@@ -22,7 +22,7 @@ def update_backend_workspace(lock: dict) -> None:
 
     backend/pyproject.toml is intentionally left untouched.
     """
-    core_versions = "alembic/versions"  # relative to backend/
+    core_versions = "alembic/versions"  # relative to backend/ (alembic's cwd)
     module_version_paths: list[str] = []
 
     for mod in lock.get("selected", []):
@@ -30,17 +30,24 @@ def update_backend_workspace(lock: dict) -> None:
         backend_cfg = meta.get("backend")
         if not backend_cfg:
             continue
-        # Absolute path to module's alembic/versions/
+        # Relative to backend/ (alembic's working dir) so the same generated
+        # ini works both in the container (/app/modules/...) and on the host
+        # (core/modules/...).
         versions_dir = ROOT / mod["path"] / "backend" / "alembic" / "versions"
         if versions_dir.is_dir():
-            module_version_paths.append(str(versions_dir))
+            module_version_paths.append(
+                "../" + "/".join(versions_dir.relative_to(ROOT).parts)
+            )
 
-    all_locations = "\n\t".join([core_versions] + module_version_paths)
+    # Space-separated, backend/-relative paths (alembic's cwd). This works both
+    # in the container (/app/backend -> /app/modules/...) and on the host
+    # (core/backend -> core/modules/...). Requires `path_separator = space` in
+    # the ini (set in alembic.ini.tpl) — otherwise Alembic treats the whole
+    # string as a single entry.
+    all_locations = " ".join([core_versions] + module_version_paths)
 
-    # alembic accepts space-separated paths in version_locations.
     # Always regenerate from the clean template so there are no stale duplicates.
     import re
-    all_locations = " ".join([core_versions] + module_version_paths)
     ini_text = ALEMBIC_INI_TPL.read_text()
     if re.search(r"^version_locations\s*=", ini_text, re.MULTILINE):
         ini_text = re.sub(

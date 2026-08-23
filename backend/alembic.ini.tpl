@@ -11,6 +11,10 @@
 [alembic]
 script_location = alembic
 prepend_sys_path = .
+# `version_locations` (added by `setup sync`) holds several space-separated
+# paths; this tells Alembic how to split them (its default is "no split",
+# which would treat the whole string as one path).
+path_separator = space
 sqlalchemy.url =
 
 [loggers]

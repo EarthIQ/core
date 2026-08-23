@@ -2,14 +2,16 @@ import { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
+import { useNotifications } from "@/lib/notifications";
 import { useModules } from "@/lib/modules";
 import { usePermissions } from "@/lib/usePermissions";
+import { initials, timeAgo } from "@/lib/format";
 import {
   moduleRegistry,
   type ModuleBundle,
 } from "../module-registry.generated";
 import { Button } from "@packages/ui";
-import { Settings, Sun, Moon, Search } from "lucide-react";
+import { Search, Bell, BellOff, CheckCheck } from "lucide-react";
 
 interface NavItem {
   label: string;
@@ -21,6 +23,7 @@ const CORE_NAV: NavItem[] = [
   { label: "Dashboard", to: "/dashboard", icon: "📊" },
   { label: "Projects", to: "/projects", icon: "📁" },
   { label: "Data", to: "/data", icon: "🌐" },
+  { label: "Settings", to: "/settings", icon: "⚙️" },
 ];
 
 /**
@@ -110,12 +113,14 @@ function UserMenuPopover({
   activeTheme,
   toggleTheme,
   onSettings,
+  onNotifications,
   onLogout,
 }: {
-  user: { email?: string } | null;
+  user: { email?: string; full_name?: string; is_superuser?: boolean } | null;
   activeTheme: string;
   toggleTheme: () => void;
   onSettings: () => void;
+  onNotifications: () => void;
   onLogout: () => void;
 }) {
   return (
@@ -123,29 +128,32 @@ function UserMenuPopover({
       {/* User Info Header */}
       <div className="px-3 py-2.5 border-b border-border-primary">
         <div className="text-sm font-bold text-text-primary truncate">
-          {user?.email || "Signed In User"}
+          {user?.full_name || user?.email || "Signed In User"}
         </div>
         <div className="text-xs text-text-tertiary mt-0.5">
-          EarthIQ Core Platform
+          {user?.email}
+          {user?.is_superuser ? " · Admin" : ""}
         </div>
       </div>
 
       {/* Menu Items */}
       <div className="py-1.5">
+        <button className="dropdown-item w-full" onClick={onSettings}>
+          <span className="text-base">👤</span>
+          Profile & Settings
+        </button>
+
+        <button className="dropdown-item w-full" onClick={onNotifications}>
+          <span className="text-base">🔔</span>
+          Notifications
+        </button>
+
         <button className="dropdown-item w-full" onClick={toggleTheme}>
           <span className="text-base">
             {activeTheme === "dark" ? "☀️" : "🌙"}
           </span>
           {activeTheme === "dark" ? "Light" : "Dark"}
         </button>
-
-        <Button
-          className="dropdown-item w-full"
-          onClick={onSettings}
-          leftIcon={<Settings size={16} />}
-        >
-          Settings
-        </Button>
 
         <div className="dropdown-divider" />
 
@@ -161,88 +169,124 @@ function UserMenuPopover({
   );
 }
 
-// ── Settings Modal ─────────────────────────────────────────────────────────────
+// ── Notification Bell (topbar) ─────────────────────────────────────────────────
+//
+// Replaces the old static "Settings" modal. Shows the live unread badge and
+// a quick dropdown (recent items, mark-all-read, open the full center).
 
-function SettingsModal({
-  isOpen,
-  onClose,
-  userEmail,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  userEmail: string;
-}) {
-  if (!isOpen) return null;
+function NotificationBell() {
+  const { unread, items, connected, markAllRead, markRead } = useNotifications();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onDoc(ev: MouseEvent) {
+      if (ref.current && !ref.current.contains(ev.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  const recent = items.slice(0, 5);
 
   return (
-    <div
-      className="fixed inset-0 z-[999] flex items-center justify-center p-4 overlay animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-lg bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
+    <div className="relative" ref={ref}>
+      <button
+        className="btn btn-ghost btn-icon btn-sm text-text-secondary hover:text-text-primary relative"
+        title={connected ? "Notifications" : "Notifications (offline)"}
+        onClick={() => setOpen((o) => !o)}
+        aria-label={`Notifications (${unread} unread)`}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-primary">
-          <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
-            <span>⚙️</span> EarthIQ Settings
-          </h2>
-          <button
-            onClick={onClose}
-            className="btn btn-ghost btn-icon btn-sm text-text-tertiary hover:text-text-primary"
-            aria-label="Close settings"
-          >
-            ✕
-          </button>
-        </div>
+        {unread > 0 ? <Bell size={18} /> : <BellOff size={18} />}
+        {unread > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 min-w-[0.95rem] h-[0.95rem] px-1 rounded-full bg-error text-white text-[0.6rem] font-bold flex items-center justify-center">
+            {unread > 99 ? "99+" : unread}
+          </span>
+        )}
+      </button>
 
-        {/* Form */}
-        <div className="p-6 flex flex-col gap-4">
-          <div className="form-field">
-            <label className="form-label">Map Display Units</label>
-            <select className="input select" defaultValue="metric">
-              <option value="metric">Metric (Meters, Kilometers)</option>
-              <option value="imperial">Imperial (Feet, Miles)</option>
-            </select>
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-[min(92vw,21rem)] bg-elevated border border-border-primary rounded-xl shadow-dropdown animate-fade-in-up z-50 overflow-hidden">
+          <div className="px-4 py-3 border-b border-border-secondary flex items-center justify-between">
+            <span className="text-sm font-semibold text-text-primary">
+              Notifications
+              <span
+                className={`ml-2 text-[0.6rem] px-1.5 py-0.5 rounded-full border ${
+                  connected
+                    ? "bg-success-subtle text-success border-success/20"
+                    : "bg-error-subtle text-error border-error/20"
+                }`}
+              >
+                {connected ? "live" : "offline"}
+              </span>
+            </span>
+            {unread > 0 && (
+              <button
+                className="text-xs text-primary cursor-pointer no-underline"
+                onClick={markAllRead}
+              >
+                <CheckCheck size={13} className="inline mr-1" />
+                Mark all read
+              </button>
+            )}
           </div>
 
-          <div className="form-field">
-            <label className="form-label">Default Vector Basemap</label>
-            <select className="input select" defaultValue="dataviz-dark">
-              <option value="dataviz-dark">Dark Matter (CARTO)</option>
-              <option value="dataviz-light">Positron Light (CARTO)</option>
-              <option value="satellite">Voyager Satellite</option>
-            </select>
+          <div className="max-h-80 overflow-y-auto">
+            {recent.length === 0 ? (
+              <div className="px-4 py-8 text-center text-xs text-text-tertiary">
+                No notifications yet — you're all caught up.
+              </div>
+            ) : (
+              recent.map((n) => (
+                <button
+                  key={n.id}
+                  className="w-full text-left px-4 py-3 border-b border-border-secondary last:border-0 hover:bg-surface-hover transition-colors cursor-pointer"
+                  onClick={() => {
+                    if (!n.read) markRead(n.id);
+                    setOpen(false);
+                    if (n.link && n.link.startsWith("/")) navigate(n.link);
+                    else navigate("/notifications");
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    {!n.read && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                    )}
+                    <span
+                      className={`text-xs truncate ${
+                        n.read ? "text-text-secondary" : "font-semibold text-text-primary"
+                      }`}
+                    >
+                      {n.title}
+                    </span>
+                  </div>
+                  {n.body && (
+                    <div className="text-[0.65rem] text-text-tertiary truncate mt-0.5">
+                      {n.body}
+                    </div>
+                  )}
+                  <div className="text-[0.6rem] text-text-tertiary mt-0.5">
+                    {timeAgo(n.created_at)}
+                  </div>
+                </button>
+              ))
+            )}
           </div>
 
-          <div className="form-field">
-            <label className="form-label">Default Coordinate System</label>
-            <input
-              type="text"
-              className="input bg-surface-hover cursor-not-allowed"
-              defaultValue="EPSG:4326 - WGS 84"
-              readOnly
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">Account Email</label>
-            <input
-              type="text"
-              className="input bg-surface-hover cursor-not-allowed"
-              value={userEmail}
-              readOnly
-            />
-          </div>
-
-          <div className="flex justify-end mt-2">
-            <button onClick={onClose} className="btn btn-primary btn-md">
-              Save Settings
+          <div className="px-4 py-2.5 border-t border-border-secondary">
+            <button
+              className="w-full text-center text-xs font-medium text-primary cursor-pointer no-underline hover:underline"
+              onClick={() => {
+                setOpen(false);
+                navigate("/notifications");
+              }}
+            >
+              View all notifications →
             </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -257,7 +301,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -271,7 +314,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // Filter nav items based on user's view permission
   const allNav = rawNav.filter((item) => {
     const compName = item.to.replace("/", "");
-    return compName === "dashboard" || canView(compName);
+    // Core pages are always visible; everything else needs a view permission.
+    return (
+      compName === "dashboard" || compName === "settings" || canView(compName)
+    );
   });
 
   const isMapView = location.pathname.startsWith("/map");
@@ -290,7 +336,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : "U";
+  const userInitial = user
+    ? initials(user.full_name || user.email)
+    : "U";
 
   // Sidebar width classes
   const sidebarWidth = isMapView
@@ -386,7 +434,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               toggleTheme={toggleTheme}
               onSettings={() => {
                 setIsUserMenuOpen(false);
-                setIsSettingsOpen(true);
+                navigate("/settings");
+              }}
+              onNotifications={() => {
+                setIsUserMenuOpen(false);
+                navigate("/notifications");
               }}
               onLogout={() => {
                 setIsUserMenuOpen(false);
@@ -413,10 +465,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
                 <span className="text-xs font-semibold text-text-primary truncate">
-                  {user?.email || "Account"}
+                  {user?.full_name || user?.email || "Account"}
                 </span>
                 <span className="text-[0.65rem] text-text-tertiary">
-                  Administrator
+                  {user?.is_superuser ? "Administrator" : "Member"}
                 </span>
               </div>
             )}
@@ -455,6 +507,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             {/* Right */}
             <div className="flex items-center gap-3">
+              <NotificationBell />
               <button
                 onClick={toggleTheme}
                 title={`Switch to ${activeTheme === "dark" ? "Light" : "Dark"} theme`}
@@ -475,13 +528,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
-
-      {/* ── Settings Modal ── */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        userEmail={user?.email || ""}
-      />
     </div>
   );
 }

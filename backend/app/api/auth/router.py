@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -72,6 +73,8 @@ async def login(body: UserLogin, db: AsyncSession = Depends(get_db)):
             detail="Invalid credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    user.last_login_at = datetime.now(timezone.utc)
+    await db.flush()
     token = create_access_token(subject=user.id)
     return Token(access_token=token)
 

@@ -1,0 +1,1 @@
+# Core notifications API package

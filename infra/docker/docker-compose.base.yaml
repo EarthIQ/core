@@ -45,6 +45,29 @@ services:
       retries: 10
       start_period: 5s
 
+  # One-shot migration runner: Alembic is the single source of truth for the
+  # schema. Runs `alembic upgrade heads` (all heads — core + module branches)
+  # once the database is healthy; the backend only starts after this service
+  # succeeds. When new migrations land, re-run explicitly:
+  #   docker compose run --rm migrate
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/docker/backend.dev.Dockerfile
+    command: alembic upgrade heads
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../../backend:/app/backend
+      - ../../modules:/app/modules
+      - ../../modules.lock.yaml:/app/modules.lock.yaml
+    env_file:
+      - ../../.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-earthiq}:${POSTGRES_PASSWORD:-earthiq}@db:5432/${POSTGRES_DB:-earthiq}
+
   backend:
     build:
       context: .
@@ -55,6 +78,9 @@ services:
         condition: service_healthy
       rustfs:
         condition: service_healthy
+      # The app must only start once the schema is fully migrated.
+      migrate:
+        condition: service_completed_successfully
     volumes:
       - ../../backend:/app/backend
       - ../../modules:/app/modules

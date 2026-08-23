@@ -411,7 +411,7 @@ async def ensure_default_component_permissions(db: AsyncSession) -> None:
     """
     Automatically seeds view, add, edit, delete permissions for core components and installed modules.
     """
-    core_components = ["projects", "maps", "users", "groups", "permissions", "data", "admin"]
+    core_components = ["projects", "maps", "users", "groups", "permissions", "data", "admin", "notifications"]
     actions = ["view", "add", "edit", "delete"]
 
     # Discover components from installed modules.lock.yaml if present

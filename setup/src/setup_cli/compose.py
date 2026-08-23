@@ -17,6 +17,11 @@ DOCKERFILES = {
         "infra/docker/frontend.dev.Dockerfile",
         "infra/docker/frontend.prod.Dockerfile",
     ),
+    # One-shot migration runner reuses the backend image.
+    "migrate": (
+        "infra/docker/backend.dev.Dockerfile",
+        "infra/docker/backend.prod.Dockerfile",
+    ),
 }
 
 # Dev-only volumes to strip in prod mode
@@ -31,6 +36,11 @@ DEV_VOLUMES = {
         "./backend:/app/backend",
         "./modules:/app/modules",
         # The lock file is baked into the prod image via COPY; only mounted in dev.
+        "./modules.lock.yaml:/app/modules.lock.yaml",
+    ],
+    "migrate": [
+        "./backend:/app/backend",
+        "./modules:/app/modules",
         "./modules.lock.yaml:/app/modules.lock.yaml",
     ],
 }

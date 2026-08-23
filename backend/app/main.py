@@ -4,10 +4,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import text
 
 from app.core.config import get_settings
-from app.core.db import Base, engine
+from app.core.db import engine
 from app.core import storage as object_storage
 from app.module_loader import load_modules
 
@@ -20,6 +19,8 @@ from app.api.maps.router import router as maps_router
 from app.api.projects.router import router as projects_router
 from app.api.storage.router import router as storage_router
 from app.api.collab.router import router as collab_router
+from app.api.notifications.router import router as notifications_router
+from app.api.profile.router import router as profile_router
 from app.api.maps.share.router import router as share_util_router
 from app.api.maps.share.router import entity_share_router
 
@@ -29,14 +30,12 @@ import app.api.data.models  # noqa: F401 — registers GeoDataset, GeoFeature
 import app.api.projects.models  # noqa: F401
 import app.api.maps.models  # noqa: F401 — registers MapModel, MapGroupAccess, MapUserAccess
 import app.api.maps.share.models  # noqa: F401 — registers AccessRequest
-
+import app.api.notifications.models  # noqa: F401 — registers notification tables
+import app.api.profile.models  # noqa: F401 — registers organizations, memberships, prefs
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create all tables on startup (use Alembic for production migrations)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
     # Ensure default permissions for core components & installed modules
     from app.core.db import AsyncSessionLocal
     from app.api.auth.service import ensure_default_component_permissions
@@ -83,6 +82,8 @@ app.include_router(maps_router, prefix="/api/maps")
 app.include_router(projects_router, prefix="/api/projects")
 app.include_router(storage_router, prefix="/api/storage")
 app.include_router(collab_router, prefix="/api/collab")
+app.include_router(notifications_router, prefix="/api/notifications")
+app.include_router(profile_router, prefix="/api/profile")
 
 # ── Share utility routes (people search & invite accept) ─────────────────────
 app.include_router(share_util_router, prefix="/api")

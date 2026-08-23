@@ -13,6 +13,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
+import { PreferencesProvider } from "@/lib/preferences";
+import { NotificationsProvider } from "@/lib/notifications";
 import { useModules } from "@/lib/modules";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppShell } from "@/components/AppShell";
@@ -26,6 +28,8 @@ import AdminUsersPage from "@/pages/AdminUsersPage";
 import PublicMapPage from "@/pages/PublicMapPage";
 import InviteAcceptPage from "@/pages/InviteAcceptPage";
 import AccessGrantPage from "@/pages/AccessGrantPage";
+import SettingsPage from "@/pages/SettingsPage";
+import NotificationsPage from "@/pages/NotificationsPage";
 
 // AUTO-GENERATED — never import module names directly here
 import { moduleRegistry, type ModuleBundle } from "./module-registry.generated";
@@ -142,6 +146,8 @@ function ProtectedRoutes() {
       <Route path="projects" element={<ProjectsPage />} />
       <Route path="map" element={<MapPage />} />
       <Route path="data" element={<DataPage />} />
+      <Route path="settings" element={<SettingsPage />} />
+      <Route path="notifications" element={<NotificationsPage />} />
       <Route path="invite/accept" element={<InviteAcceptPage />} />
       <Route path="access/grant" element={<AccessGrantPage />} />
 
@@ -182,27 +188,31 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/share/map/:mapId" element={<PublicMapPage />} />
+        <PreferencesProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Public */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/share/map/:mapId" element={<PublicMapPage />} />
 
-            {/* Protected shell */}
-            <Route
-              path="/*"
-              element={
-                <ProtectedRoute>
-                  <AppShell>
-                    <Suspense fallback={<PageFallback />}>
-                      <ProtectedRoutes />
-                    </Suspense>
-                  </AppShell>
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
+              {/* Protected shell */}
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute>
+                    <NotificationsProvider>
+                      <AppShell>
+                        <Suspense fallback={<PageFallback />}>
+                          <ProtectedRoutes />
+                        </Suspense>
+                      </AppShell>
+                    </NotificationsProvider>
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </PreferencesProvider>
       </AuthProvider>
     </ThemeProvider>
   );

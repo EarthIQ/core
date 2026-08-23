@@ -13,7 +13,6 @@ Design decisions
 """
 from __future__ import annotations
 
-import asyncio
 from typing import AsyncGenerator
 
 import pytest
@@ -26,17 +25,53 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.pool import StaticPool
 
 from app.core.db import Base, get_db
 from app.api.auth.router import router as auth_router
+from app.api.notifications.router import router as notifications_router
+from app.api.profile.router import router as profile_router
+import app.api.auth.models  # noqa: F401 — registers users, groups, permissions
+import app.api.notifications.models  # noqa: F401 — registers notification tables
+import app.api.profile.models  # noqa: F401 — registers organizations, memberships, prefs
+
+
+# Tables the hermetic test app actually uses. We deliberately do **not** create
+# the full ``Base.metadata``: other core models (e.g. ``app.api.data.models``)
+# use Postgres-only types (JSONB, GeoAlchemy ``Geometry``) that SQLite cannot
+# compile, and importing them anywhere in the process would pollute
+# ``Base.metadata`` and break ``create_all`` in SQLite.
+_TEST_TABLE_NAMES = [
+    # auth
+    "permissions",
+    "groups",
+    "user_groups",
+    "group_permissions",
+    "users",
+    # notifications
+    "notification_messages",
+    "notification_recipients",
+    "notification_preferences",
+    # profile / organizations / preferences
+    "organizations",
+    "user_organizations",
+    "user_preferences",
+]
+
+
+def _test_tables():
+    """The Table objects this harness creates (order resolved by create_all)."""
+    return [Base.metadata.tables[name] for name in _TEST_TABLE_NAMES]
 
 
 # ── Build a hermetic test app ─────────────────────────────────────────────────
 
 def _make_test_app() -> FastAPI:
-    """Create a minimal FastAPI app with only the auth router."""
+    """Create a minimal FastAPI app with the auth + notifications routers."""
     test_app = FastAPI()
     test_app.include_router(auth_router, prefix="/api/auth")
+    test_app.include_router(notifications_router, prefix="/api/notifications")
+    test_app.include_router(profile_router, prefix="/api/profile")
 
     # Simple health endpoint for smoke tests
     @test_app.get("/api/health")
@@ -47,15 +82,22 @@ def _make_test_app() -> FastAPI:
 
 
 # ── DB fixtures (in-memory SQLite, shared connection) ────────────────────────
+#
+# IMPORTANT: the engine is **function-scoped** (one fresh in-memory DB per test).
+# pytest-asyncio (>=0.23) gives each async test its own event loop; a single
+# session-scoped engine would keep one aiosqlite connection (StaticPool) bound
+# to the *first* loop, and every later test would fail with cross-loop errors
+# (surfacing as 500s → KeyError: 'access_token' in the login helpers). Creating
+# a small engine per test is cheap (<10 ms) and gives perfect isolation.
 
-@pytest.fixture(scope="session")
-def test_engine():
-    """Create an async in-memory SQLite engine (shared across tests)."""
+@pytest.fixture
+async def test_engine():
+    """Create an async in-memory SQLite engine (fresh per test, loop-safe)."""
     engine = create_async_engine(
         "sqlite+aiosqlite://",
         echo=False,
+        poolclass=StaticPool,  # single shared in-memory connection
         connect_args={"check_same_thread": False},
-        pool_pre_ping=True,
     )
 
     # Ensure FK enforcement in SQLite
@@ -66,15 +108,14 @@ def test_engine():
         cursor.close()
 
     yield engine
-    # Dispose of the engine after the session ends
-    asyncio.new_event_loop().run_until_complete(engine.dispose())
+    await engine.dispose()
 
 
 @pytest.fixture
 async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
-    """Yield a fresh DB session per test (tables created once per session)."""
+    """Yield a fresh DB session per test (tables created once per engine)."""
     async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(Base.metadata.create_all, tables=_test_tables())
 
     session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
     async with session_factory() as session:
@@ -83,7 +124,8 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
         # Clean all rows between tests
         async with test_engine.begin() as conn:
             for table in reversed(Base.metadata.sorted_tables):
-                await conn.execute(table.delete())
+                if table.name in _TEST_TABLE_NAMES:
+                    await conn.execute(table.delete())
 
 
 # ── HTTP client fixture ──────────────────────────────────────────────────────
@@ -135,6 +177,27 @@ async def _register_and_login(
     return {"Authorization": f"Bearer {token}"}
 
 
+async def _register_login_with_id(
+    client: AsyncClient,
+    email: str,
+    password: str = "S3curePass!2024",
+    full_name: str = "Test User",
+    is_superuser: bool = False,
+) -> tuple[dict, str, str]:
+    """Register + login, returning ``(headers, user_id, token)``."""
+    await client.post("/api/auth/register", json={
+        "email": email,
+        "password": password,
+        "full_name": full_name,
+        "is_superuser": is_superuser,
+    })
+    resp = await client.post("/api/auth/token", json={"email": email, "password": password})
+    token = resp.json()["access_token"]
+    me = await client.get("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
+    user_id = me.json()["id"]
+    return {"Authorization": f"Bearer {token}"}, user_id, token
+
+
 @pytest.fixture
 async def admin_headers(client: AsyncClient) -> dict:
     """Pre-registered superuser with auth headers."""
@@ -147,3 +210,27 @@ async def user_headers(client: AsyncClient) -> dict:
     return await _register_and_login(
         client, email="user@test.com", full_name="Regular User", is_superuser=False,
     )
+
+
+@pytest.fixture
+async def admin(client: AsyncClient):
+    headers, user_id, token = await _register_login_with_id(
+        client, email="admin@eqcorp.com", full_name="Admin", is_superuser=True
+    )
+    return {"headers": headers, "id": user_id, "token": token}
+
+
+@pytest.fixture
+async def user_a(client: AsyncClient):
+    headers, user_id, token = await _register_login_with_id(
+        client, email="alice@eqcorp.com", full_name="Alice"
+    )
+    return {"headers": headers, "id": user_id, "token": token}
+
+
+@pytest.fixture
+async def user_b(client: AsyncClient):
+    headers, user_id, token = await _register_login_with_id(
+        client, email="bob@eqcorp.com", full_name="Bob"
+    )
+    return {"headers": headers, "id": user_id, "token": token}

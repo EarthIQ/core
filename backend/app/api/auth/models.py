@@ -2,7 +2,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import String, Boolean, DateTime, ForeignKey, Table, Column
+from sqlalchemy import String, Boolean, DateTime, ForeignKey, Table, Column, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base
@@ -84,9 +84,34 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
+    # ── Profile (self-service) ──────────────────────────────────────────────
+    bio: Mapped[str | None] = mapped_column(Text, nullable=True)
+    avatar_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    job_title: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    website: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    preferred_timezone: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # The user's "primary" organization (their default workspace identity).
+    primary_organization_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("organizations.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    last_login_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     groups: Mapped[list[Group]] = relationship(
         "Group", secondary="user_groups", back_populates="users", lazy="selectin"
+    )
+    # Organization memberships (owned by the profile domain).
+    organizations: Mapped[list["UserOrganization"]] = relationship(  # type: ignore[name-defined]
+        "UserOrganization",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:  # pragma: no cover

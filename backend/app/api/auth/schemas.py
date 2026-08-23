@@ -41,6 +41,16 @@ class UserRead(BaseModel):
     is_active: bool
     is_superuser: bool
     created_at: datetime
+    # ── Profile (self-service) ──────────────────────────────────────────────
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+    job_title: Optional[str] = None
+    location: Optional[str] = None
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    preferred_timezone: Optional[str] = None
+    primary_organization_id: Optional[str] = None
+    last_login_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 

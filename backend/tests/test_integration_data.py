@@ -38,26 +38,21 @@ pytestmark = pytest.mark.integration
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
-@pytest.fixture(scope="module")
-def engine():
-    """Use the real PostGIS engine from settings."""
-    settings = get_settings()
-    eng = create_async_engine(
-        settings.database_url,
-        echo=False,
-        pool_pre_ping=True,
-    )
-    yield eng
+@pytest_asyncio.fixture
+async def engine():
+    """A real PostGIS engine, scoped per test.
 
-    async def _dispose():
-        await eng.dispose()
-    import asyncio
+    Function-scoped (not module/session): pytest-asyncio gives each async test
+    its own event loop, and a shared asyncpg connection would be bound to the
+    *first* test's loop, so a later test reusing it raises
+    ``attached to a different loop``. A fresh engine per test avoids that.
+    """
+    settings = get_settings()
+    eng = create_async_engine(settings.database_url, echo=False)
     try:
-        asyncio.get_event_loop().run_until_complete(_dispose())
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        loop.run_until_complete(_dispose())
-        loop.close()
+        yield eng
+    finally:
+        await eng.dispose()
 
 
 @pytest_asyncio.fixture

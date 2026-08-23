@@ -1005,3 +1005,17 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Form primitives (shared by Settings, Login, AppShell, …) ─────────────── */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
