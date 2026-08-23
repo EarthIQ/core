@@ -87,6 +87,9 @@ importers:
       '@packages/cookie-consent':
         specifier: workspace:*
         version: link:../../packages/cookie-consent
+      '@packages/map':
+        specifier: workspace:*
+        version: link:../../packages/map
       '@packages/ui':
         specifier: workspace:*
         version: link:../../packages/ui

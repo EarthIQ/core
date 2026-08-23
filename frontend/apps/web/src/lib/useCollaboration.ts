@@ -9,7 +9,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MutableRefObject } from "react";
-import type maplibregl from "maplibre-gl";
+import type * as maplibregl from "maplibre-gl";
 
 const TOKEN_KEY = "eq_token";
 const THROTTLE_MS = 100; // max 10 cursor updates/sec
@@ -30,7 +30,8 @@ interface UseCollaborationResult {
 
 export function useCollaboration(
   projectId: string | null,
-  mapRef: MutableRefObject<maplibregl.Map | null>
+  mapRef: MutableRefObject<maplibregl.Map | null>,
+  mapReady: boolean
 ): UseCollaborationResult {
   const [collaborators, setCollaborators] = useState<CollaboratorState[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -166,9 +167,14 @@ export function useCollaboration(
   }, [projectId]);
 
   // ── Map event listeners: send cursor + viewport on move ─────────────────────
+  // Depends on `mapReady`: `mapRef.current` is only populated once the map has
+  // finished loading. Without it, the WebSocket can open *before* the map is
+  // ready — the guard below would early-return on a null ref and, because every
+  // other dep is referentially stable, the effect would never re-run, so the
+  // local cursor would never be broadcast (and thus never appear for peers).
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !isConnected) return;
+    if (!map || !isConnected || !mapReady) return;
 
     const onMouseMove = (e: { lngLat: { lng: number; lat: number } }) => {
       sendPresence({ lng: e.lngLat.lng, lat: e.lngLat.lat });
@@ -191,7 +197,7 @@ export function useCollaboration(
       map.off("mouseout", onMouseLeave);
       map.off("moveend", onMoveEnd);
     };
-  }, [mapRef, isConnected, sendPresence]);
+  }, [mapRef, isConnected, sendPresence, mapReady]);
 
   return { collaborators, isConnected, sendPresence };
 }

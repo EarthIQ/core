@@ -1,6 +1,17 @@
 import { useState } from "react";
 import { Button, Tooltip } from "@packages/ui";
+import { TerrainControl } from "@packages/map";
 import { Compass } from "lucide-react";
+
+/**
+ * Terrain source for the 3D terrain toggle (MapTern terrarium tiles).
+ * Must stay in sync with the `source` prop passed to TerrainControl in
+ * MapPage (which also re-applies terrain after a basemap switch).
+ */
+export const TERRAIN_SOURCE_URL =
+  "https://tiles.mapterhorn.com/{z}/{x}/{y}.webp";
+export const TERRAIN_SOURCE_ID = "terrain-source";
+export const TERRAIN_EXAGGERATION = 1.5;
 
 const BASEMAP_OPTIONS = [
   { id: "dataviz-dark", name: "Dark Matter", icon: "🌑" },
@@ -19,6 +30,8 @@ interface MapBottomBarProps {
   bearing?: number;
   onResetNorth?: () => void;
   onToggleAI: () => void;
+  /** Notified when the 3D terrain toggle changes (on = terrain active). */
+  onTerrainChange?: (enabled: boolean) => void;
 }
 
 export function MapBottomBar({
@@ -32,6 +45,7 @@ export function MapBottomBar({
   bearing = 0,
   onResetNorth,
   onToggleAI,
+  onTerrainChange,
 }: MapBottomBarProps) {
   const [basemapOpen, setBasemapOpen] = useState(false);
   const activeOption = BASEMAP_OPTIONS.find((b) => b.id === activeBasemap);
@@ -146,6 +160,11 @@ export function MapBottomBar({
           </div>
         )}
       </div>
+      <TerrainControl
+        source={TERRAIN_SOURCE_URL}
+        exaggeration={TERRAIN_EXAGGERATION}
+        onChange={onTerrainChange}
+      />
 
       <div className="flex-1" />
 

@@ -5,7 +5,7 @@
 import React, { useEffect, useId, useCallback, useRef } from "react";
 import { useMap } from "../../hooks/useMap";
 import * as pmtiles from "pmtiles";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import type { MapMouseEvent, MapGeoJSONFeature } from "maplibre-gl";
 import type { Feature } from "geojson";
 

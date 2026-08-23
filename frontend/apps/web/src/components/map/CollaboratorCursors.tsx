@@ -9,7 +9,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import type { MutableRefObject } from "react";
-import type maplibregl from "maplibre-gl";
+import type * as maplibregl from "maplibre-gl";
 import type { CollaboratorState } from "@/lib/useCollaboration";
 
 // Deterministic color from email string

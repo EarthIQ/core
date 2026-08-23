@@ -1,6 +1,6 @@
 // components/controls/SideBySideCompare.tsx
 import React, { useRef, useEffect, useCallback } from "react";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 
 interface SideBySideCompareProps {
   leftStyle: string;

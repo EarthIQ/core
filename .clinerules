@@ -285,6 +285,18 @@ depends_on: []
   - `routePath: string` — e.g. `"/resources"` (no trailing slash)
   - `navItem: { label: string; to: string; icon?: string }`
   - (optionally) an API client, types, and sub-components the shell may import.
+  - (optionally) `tools: ModuleTool[] | Promise<ModuleTool[]>` — **Map Toolbox
+    contract**: tools the module exposes in the core Map → Toolbox panel. The
+    shell auto-discovers this export (no core changes, no module names in core).
+    Each entry must have non-empty `id`/`label`/`category` strings, optional
+    `description`/`icon`, optional `inputs` (list of
+    `{ key, type: text|textarea|number|integer|select|boolean, required?,
+    default?, options? }`), and a `run(inputs, ctx)` function where `ctx` gives
+    the authenticated `api` client + live map state. Invalid entries are skipped
+    at runtime (console warning). Contract + validator:
+    `frontend/apps/web/src/lib/tools.ts`; working examples: urban-planning
+    (catalog-driven `tools` from `GET /api/urban/tools`), hydrology and ai
+    (static arrays).
 - The module `frontend/package.json` name must match `frontend.package_name`
   in `module.yaml` (e.g. `@modules/notifications`).
 - Build module UI **on top of `@packages/ui`** (see §5.3) and the core

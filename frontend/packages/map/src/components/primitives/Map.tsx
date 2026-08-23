@@ -10,15 +10,15 @@ import React, {
   useContext,
   type DragEvent,
 } from "react";
-import maplibregl, {
-  Map as MapLibreMap,
-  type StyleSpecification,
-} from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
+import { setWorkerUrl } from "maplibre-gl";
+import type { Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
 import { Deck } from "@deck.gl/core";
 import { MapContext, type MapContextValue } from "../../context/MapContext";
 import { cn } from "@packages/ui";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 
-import "maplibre-gl/dist/maplibre-gl.css";
+setWorkerUrl(workerUrl);
 
 /* =============================================================================
    Type Definitions

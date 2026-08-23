@@ -11,7 +11,7 @@ import {
 import { useModules } from "@/lib/modules";
 import AIChatPanel from "@/components/map/AIChatPanel";
 import { MapNavbar } from "@/components/map/MapNavbar";
-import { MapBottomBar } from "@/components/map/MapBottomBar";
+import { MapBottomBar, TERRAIN_SOURCE_ID, TERRAIN_SOURCE_URL, TERRAIN_EXAGGERATION } from "@/components/map/MapBottomBar";
 import { MapActionBar } from "@/components/map/MapActionBar";
 import { StylePanel } from "@/components/map/StylePanel";
 import { ImportDataPortal } from "@/components/map/ImportDataPortal";
@@ -26,7 +26,7 @@ import {
   fromMapLayerItems,
 } from "@/components/map/layer-panel/serialize";
 import type { TreeNode } from "@/components/map/layer-panel/types";
-import { useMapLibre } from "@/hooks/useMapLibre";
+import { useMapLibre, BASEMAP_STYLES } from "@/hooks/useMapLibre";
 import { PublishedMapsPanel } from "@/components/map/PublishedMapsPanel";
 import type { MapBuilderConfig } from "@/components/map/MapBuilder";
 import { useCollaboration } from "@/lib/useCollaboration";
@@ -43,18 +43,26 @@ import { AnnotationOverlays } from "@/components/map/AnnotationOverlays";
 import { AnnotationInspector } from "@/components/map/AnnotationInspector";
 import { BookmarkPanel } from "@/components/map/BookmarkPanel";
 import { CommentsPanel } from "@/components/map/CommentsPanel";
+import {
+  ToolboxPanel,
+  TOOLBOX_PANEL_WIDTH,
+} from "@/components/map/ToolboxPanel";
+import { Map as MapCanvas, MapProvider, ScaleControl } from "@packages/map";
+import { Spinner } from "@packages/ui";
 
 export default function MapPage() {
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get("projectId");
   const navigate = useNavigate();
 
-  const mapContainerRef = useRef<HTMLDivElement>(null);
+  /** Live maplibre instance, set by the <Map> primitive's onLoad. */
+  const [mapInstance, setMapInstance] = useState<any>(null);
   const [currentProject, setCurrentProject] = useState<ProjectItem | null>(
     null,
   );
   const [publishedMaps, setPublishedMaps] = useState<MapItem[]>([]);
   const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [toolboxOpen, setToolboxOpen] = useState(false);
   const [importPortalOpen, setImportPortalOpen] = useState(false);
   const [importDestFolder, setImportDestFolder] = useState<string | null>(null);
   const [styledLayer, setStyledLayer] = useState<TreeNode | null>(null);
@@ -77,14 +85,55 @@ export default function MapPage() {
     zoomIn,
     zoomOut,
     resetNorth,
-  } = useMapLibre(mapContainerRef, "dataviz-dark");
+  } = useMapLibre(mapInstance, "dataviz-dark");
 
   const tree = useLayerTree([]);
+
+  /** True while 3D terrain (bottom-bar toggle) is active. */
+  const [terrainOn, setTerrainOn] = useState(false);
+
+  /**
+   * Basemap switch wrapper. MapLibre v6 clears terrain whenever a new style
+   * is loaded (styles carry no terrain), so re-apply it after the new
+   * style finishes loading when terrain is on. The source id/URL must match
+   * the `TerrainControl` props in MapBottomBar.
+   */
+  const handleBasemapChange = useCallback(
+    (id: string) => {
+      setBasemap(id);
+      if (!terrainOn) return;
+      const map = mapRef.current;
+      if (!map) return;
+      const reapply = () => {
+        try {
+          if (!map.getSource(TERRAIN_SOURCE_ID)) {
+            map.addSource(TERRAIN_SOURCE_ID, {
+              type: "raster-dem",
+              tiles: [TERRAIN_SOURCE_URL],
+              encoding: "terrarium",
+              tileSize: 512,
+              maxzoom: 14,
+            });
+          }
+          map.setTerrain({
+            source: TERRAIN_SOURCE_ID,
+            exaggeration: TERRAIN_EXAGGERATION,
+          });
+        } catch (e) {
+          console.warn("Failed to re-apply terrain after basemap switch", e);
+        }
+      };
+      if (map.isStyleLoaded?.()) reapply();
+      else map.once("style.load", reapply);
+    },
+    [setBasemap, terrainOn, mapRef],
+  );
 
   // ── Real-time collaboration ──────────────────────────────────────────────────
   const { collaborators, isConnected: isCollabConnected } = useCollaboration(
     projectId,
     mapRef,
+    mapReady,
   );
 
   // ── Map drawing / annotation engine ──────────────────────────────────────────
@@ -164,7 +213,7 @@ export default function MapPage() {
 
   useEffect(() => {
     if (mapRef.current) setTimeout(() => mapRef.current?.resize(), 300);
-  }, [aiChatOpen, mapRef]);
+  }, [aiChatOpen, toolboxOpen, mapRef]);
 
   /* Load selected project workspace */
   useEffect(() => {
@@ -440,8 +489,12 @@ export default function MapPage() {
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-bg-primary">
-      <MapNavbar
+    <MapProvider>
+      <div className="relative w-full h-full overflow-hidden bg-bg-primary">
+        {/* Scale bar (right side) — @packages/map control */}
+        <ScaleControl position="top-right" maxWidth={120} unit="metric" />
+
+        <MapNavbar
         projectName={currentProject?.title || "EarthIQ Project"}
         mapId={projectId}
         availableMaps={[]}
@@ -459,17 +512,51 @@ export default function MapPage() {
         isCollabConnected={isCollabConnected}
       />
 
-      <div
-        className="absolute z-0 h-full"
-        ref={mapContainerRef}
-        id="map-canvas"
-        style={{ top: 0, right: 0, bottom: 0, left: aiChatOpen ? 360 : 0 }}
+      {/* Map canvas — @packages/map <Map> primitive (provides MapContext to
+          package controls and pushes the instance into the outer provider) */}
+      <MapCanvas
+        style={BASEMAP_STYLES["dataviz-dark"]}
+        initialViewState={{
+          longitude: 0,
+          latitude: 20,
+          zoom: 2.5,
+          pitch: 0,
+          bearing: 0,
+        }}
+        attributionControl={false}
+        onLoad={setMapInstance}
+        loadingIcon={
+          <div className="flex items-center gap-3 text-text-tertiary">
+            <Spinner size="lg" />
+            <span className="text-xs">Loading map…</span>
+          </div>
+        }
+        containerStyle={{
+          position: "absolute",
+          top: 0,
+          right: toolboxOpen ? TOOLBOX_PANEL_WIDTH : 0,
+          bottom: 0,
+          left: aiChatOpen ? 360 : 0,
+          zIndex: 0,
+        }}
       />
 
-      {/* Collaborator cursor overlay — sits just above the map canvas */}
-      {mapReady && (
-        <CollaboratorCursors collaborators={collaborators} mapRef={mapRef} />
-      )}
+      {/* Collaborator cursor overlay — cursors are placed with map.project()
+          (canvas-relative), so this box must mirror the map canvas box exactly,
+          same as the AnnotationOverlays wrapper below. */}
+      <div
+        className="absolute z-10 pointer-events-none"
+        style={{
+          top: 0,
+          right: toolboxOpen ? TOOLBOX_PANEL_WIDTH : 0,
+          bottom: 0,
+          left: aiChatOpen ? 360 : 0,
+        }}
+      >
+        {mapReady && (
+          <CollaboratorCursors collaborators={collaborators} mapRef={mapRef} />
+        )}
+      </div>
 
       {!mapReady && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-bg-primary/60 backdrop-blur-sm pointer-events-none">
@@ -482,7 +569,12 @@ export default function MapPage() {
       {/* Point annotations overlay (mirrors the map canvas box exactly) */}
       <div
         className="absolute z-10 pointer-events-none"
-        style={{ top: 0, right: 0, bottom: 0, left: aiChatOpen ? 360 : 0 }}
+        style={{
+          top: 0,
+          right: toolboxOpen ? TOOLBOX_PANEL_WIDTH : 0,
+          bottom: 0,
+          left: aiChatOpen ? 360 : 0,
+        }}
       >
         <AnnotationOverlays mapRef={mapRef} mapReady={mapReady} />
       </div>
@@ -584,6 +676,8 @@ export default function MapPage() {
         onUndo={undo}
         onRedo={redo}
         onClearAnnotations={clearAnnotations}
+        toolboxActive={toolboxOpen}
+        onToggleToolbox={() => setToolboxOpen((v) => !v)}
       />
 
       {/* Annotation inspector (only visible when something is selected) */}
@@ -594,6 +688,16 @@ export default function MapPage() {
       {/* Bookmark + Comments panels (self-positioning) */}
       <BookmarkPanel mapRef={mapRef} mapReady={mapReady} />
       <CommentsPanel mapRef={mapRef} mapReady={mapReady} />
+
+      {/* Toolbox — tools exposed by enabled modules (auto-discovered) */}
+      <ToolboxPanel
+        isOpen={toolboxOpen}
+        onClose={() => setToolboxOpen(false)}
+        mapRef={mapRef}
+        mapReady={mapReady}
+        basemap={basemap}
+        layers={aiLayers}
+      />
 
       <MapBottomBar
         zoomLevel={zoomLevel}
@@ -608,7 +712,7 @@ export default function MapPage() {
         onToggleAI={() => setAiChatOpen((v) => !v)}
       />
 
-      <div className="absolute top-14 left-0 bottom-0 z-20">
+      <div className="absolute top-14 left-0 bottom-10 z-20">
         <AIChatPanel
           isOpen={aiChatOpen}
           onClose={() => setAiChatOpen(false)}
@@ -624,6 +728,7 @@ export default function MapPage() {
           }}
         />
       </div>
-    </div>
+      </div>
+    </MapProvider>
   );
 }

@@ -18,6 +18,7 @@ import {
   Undo2,
   Redo2,
   ChevronDown,
+  Toolbox,
 } from "lucide-react";
 import { Tooltip } from "@packages/ui";
 
@@ -231,6 +232,8 @@ interface MapActionBarProps {
   onToggleBookmark?: () => void;
   commentsActive?: boolean;
   onToggleComments?: () => void;
+  toolboxActive?: boolean;
+  onToggleToolbox?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
   onUndo?: () => void;
@@ -245,6 +248,8 @@ export function MapActionBar({
   onToggleBookmark,
   commentsActive = false,
   onToggleComments,
+  toolboxActive = false,
+  onToggleToolbox,
   canUndo = false,
   canRedo = false,
   onUndo,
@@ -290,8 +295,6 @@ export function MapActionBar({
         );
       })}
 
-      <div className="w-px h-6 bg-border-primary mx-1 shrink-0" />
-
       {/* Standalone toggle buttons */}
       <Tooltip content="Bookmark" placement="top">
         <button
@@ -323,7 +326,21 @@ export function MapActionBar({
         </button>
       </Tooltip>
 
-      <div className="w-px h-6 bg-border-primary mx-1 shrink-0" />
+      {/* Toolbox — opens the right-side panel of module tools */}
+      <Tooltip content="Toolbox" placement="top">
+        <button
+          type="button"
+          onClick={onToggleToolbox}
+          aria-pressed={toolboxActive}
+          className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
+            toolboxActive
+              ? "bg-surface-hover text-primary"
+              : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+          }`}
+        >
+          <Toolbox size={17} />
+        </button>
+      </Tooltip>
 
       {/* Undo / Redo */}
       <Tooltip content="Undo" placement="top">

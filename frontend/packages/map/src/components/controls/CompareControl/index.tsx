@@ -8,7 +8,8 @@ import {
   useMemo,
 } from "react";
 import { createPortal } from "react-dom";
-import maplibregl, { type StyleSpecification } from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
+import type { StyleSpecification } from "maplibre-gl";
 import { cn } from "@packages/ui";
 import { ControlButton, ControlButtonFlyout } from "../MapControlButton";
 import { useMap } from "../../../hooks/useMap";

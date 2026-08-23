@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { createPortal } from 'react-dom';
 import { useMap } from '../../hooks/useMap';
 

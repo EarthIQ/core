@@ -215,12 +215,6 @@ export function MapNavbar({
 
           <span className="w-px h-5 bg-border-primary" />
 
-          {/* Self avatar */}
-          <Tooltip content={user?.email || "User Profile"} placement="bottom">
-            <div className="w-8 h-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0 border border-primary/20 cursor-pointer">
-              {userInitial}
-            </div>
-          </Tooltip>
           {/* Published Maps button */}
           {onTogglePublishedMaps && (
             <Tooltip content="Published maps" placement="bottom">
@@ -259,6 +253,13 @@ export function MapNavbar({
                 Share
               </span>
             </Button>
+          </Tooltip>
+
+          {/* Self avatar — right end of the bar */}
+          <Tooltip content={user?.email || "User Profile"} placement="bottom">
+            <div className="w-8 h-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0 border border-primary/20 cursor-pointer">
+              {userInitial}
+            </div>
           </Tooltip>
         </div>
       </header>
