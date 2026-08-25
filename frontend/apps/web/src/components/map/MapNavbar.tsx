@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   Search,
   Share2,
   ChevronDown,
   Check,
+  Blocks,
   Map,
 } from "lucide-react";
 import { Button, Tooltip } from "@packages/ui";
@@ -13,15 +15,17 @@ import type { MapItem } from "@/lib/maps";
 import type { CollaboratorState } from "@/lib/useCollaboration";
 import { ShareDialog } from "./share/ShareDialog";
 import { Avatar } from "./share/Avatar";
+import { BuilderPicker } from "@/components/builder/BuilderPicker";
 
 interface MapNavbarProps {
   projectName: string;
   mapId: string | null;
+  /** Project id used to scope builder navigation (`?projectId=`). */
+  projectId?: string | null;
   availableMaps: MapItem[];
   activeMapId: string | null;
   canManageSharing?: boolean;
   publishedMapsOpen?: boolean;
-  publishedMapsCount?: number;
   onTogglePublishedMaps?: () => void;
   onSelectMap: (id: string) => void;
   onBack: () => void;
@@ -33,11 +37,11 @@ interface MapNavbarProps {
 export function MapNavbar({
   projectName,
   mapId,
+  projectId,
   availableMaps,
   activeMapId,
   canManageSharing = true,
   publishedMapsOpen = false,
-  publishedMapsCount = 0,
   onTogglePublishedMaps,
   onSelectMap,
   onBack,
@@ -45,6 +49,11 @@ export function MapNavbar({
   isCollabConnected = false,
 }: MapNavbarProps) {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  // Source of truth for scoping builder navigation — always carry the project
+  // id currently in the URL so opening any builder keeps this project's context.
+  const pickerProjectId =
+    searchParams.get("projectId") ?? projectId ?? mapId ?? "";
   const [searchVal, setSearchVal] = useState("");
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -215,7 +224,29 @@ export function MapNavbar({
 
           <span className="w-px h-5 bg-border-primary" />
 
-          {/* Published Maps button */}
+          {/* General builder picker — open any project builder (Map, Story Map,
+              Presentation, Report, Forms) for this project. */}
+          <Tooltip content="Builders — open Map, Story Map, Presentations…" placement="bottom">
+            <BuilderPicker
+              projectId={pickerProjectId}
+              hostId="map"
+              trigger={
+                <button
+                  type="button"
+                  className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+                  aria-label="Project builders"
+                >
+                  <Blocks size={15} />
+                  <span className="hidden sm:inline">Builder</span>
+                </button>
+              }
+            />
+          </Tooltip>
+
+          <span className="w-px h-5 bg-border-primary" />
+
+          {/* Published Maps toggle — restored to how it worked before: opens
+              the published maps panel for this project. */}
           {onTogglePublishedMaps && (
             <Tooltip content="Published maps" placement="bottom">
               <button
@@ -230,11 +261,6 @@ export function MapNavbar({
               >
                 <Map size={15} />
                 <span className="hidden sm:inline">Maps</span>
-                {publishedMapsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-primary text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                    {publishedMapsCount}
-                  </span>
-                )}
               </button>
             </Tooltip>
           )}

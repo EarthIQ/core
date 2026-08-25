@@ -73,6 +73,16 @@ export default function MapPage() {
 
   const { isAvailable } = useModules();
 
+  // If the Map builder was opened from the builder picker (?panel=published),
+  // open the published maps panel on arrival — the "Maps" behaviour from
+  // before. Re-runs whenever the URL query changes so clicking Map again
+  // while already on /map also brings the published maps up.
+  useEffect(() => {
+    if (searchParams.get("panel") === "published") {
+      setPublishedPanelOpen(true);
+    }
+  }, [searchParams]);
+
   const {
     mapRef,
     mapReady,
@@ -497,11 +507,11 @@ export default function MapPage() {
         <MapNavbar
         projectName={currentProject?.title || "EarthIQ Project"}
         mapId={projectId}
+        projectId={projectId}
         availableMaps={[]}
         activeMapId={projectId}
         canManageSharing={currentProject?.user_permission === "admin"}
         publishedMapsOpen={publishedPanelOpen}
-        publishedMapsCount={publishedMaps.length}
         onTogglePublishedMaps={() => setPublishedPanelOpen((v) => !v)}
         onSelectMap={() => {}}
         onBack={async () => {

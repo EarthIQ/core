@@ -21,7 +21,6 @@ import { AppShell } from "@/components/AppShell";
 
 import LoginPage from "@/pages/LoginPage";
 import DashboardPage from "@/pages/DashboardPage";
-import MapPage from "@/pages/MapPage";
 import ProjectsPage from "@/pages/ProjectsPage";
 import DataPage from "@/pages/DataPage";
 import AdminUsersPage from "@/pages/AdminUsersPage";
@@ -30,6 +29,7 @@ import InviteAcceptPage from "@/pages/InviteAcceptPage";
 import AccessGrantPage from "@/pages/AccessGrantPage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotificationsPage from "@/pages/NotificationsPage";
+import { BUILDERS } from "@/lib/builders";
 
 // AUTO-GENERATED — never import module names directly here
 import { moduleRegistry, type ModuleBundle } from "./module-registry.generated";
@@ -144,7 +144,12 @@ function ProtectedRoutes() {
       <Route path="dashboard" element={<DashboardPage />} />
       <Route path="admin" element={<AdminUsersPage />} />
       <Route path="projects" element={<ProjectsPage />} />
-      <Route path="map" element={<MapPage />} />
+      {/* Project builders — routes are declared data-driven from the
+          builder registry (`lib/builders.tsx`), so new builders are wired
+          automatically. Each builder page reads `?projectId=` itself. */}
+      {BUILDERS.map((b) => (
+        <Route key={b.id} path={`${b.path}/*`} element={<b.page />} />
+      ))}
       <Route path="data" element={<DataPage />} />
       <Route path="settings" element={<SettingsPage />} />
       <Route path="notifications" element={<NotificationsPage />} />

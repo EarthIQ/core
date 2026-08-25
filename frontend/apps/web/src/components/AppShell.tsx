@@ -320,7 +320,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   });
 
-  const isMapView = location.pathname.startsWith("/map");
+  // Full-bleed "builder views" — the map builder (`/map`) and every `/builder/*`
+  // page hide the shell sidebar + topbar. Each renders its own chrome, similar
+  // to the standalone published-map experience.
+  const isStandaloneView =
+    location.pathname.startsWith("/map") ||
+    location.pathname.startsWith("/builder/");
 
   // Close user menu on outside click
   useEffect(() => {
@@ -341,13 +346,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     : "U";
 
   // Sidebar width classes
-  const sidebarWidth = isMapView
+  const sidebarWidth = isStandaloneView
     ? "w-0 -translate-x-full"
     : isCollapsed
       ? "w-16"
       : "w-64";
 
-  const mainOffset = isMapView ? "ml-0" : isCollapsed ? "ml-16" : "ml-64";
+  const mainOffset = isStandaloneView
+    ? "ml-0"
+    : isCollapsed
+      ? "ml-16"
+      : "ml-64";
 
   return (
     <div className="flex h-screen overflow-hidden bg-base">
@@ -481,7 +490,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${mainOffset}`}
       >
         {/* Topbar */}
-        {!isMapView && (
+        {!isStandaloneView && (
           <header className="navbar shrink-0 flex items-center justify-between px-4 h-14">
             {/* Left */}
             <div className="flex items-center"></div>
@@ -522,7 +531,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Content */}
         <main
           className={`flex-1 overflow-y-auto ${
-            isMapView ? "p-0" : "p-6 lg:p-8"
+            isStandaloneView ? "p-0" : "p-6 lg:p-8"
           }`}
         >
           {children}
