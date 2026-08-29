@@ -10,8 +10,17 @@ import {
   moduleRegistry,
   type ModuleBundle,
 } from "../module-registry.generated";
-import { Button } from "@packages/ui";
-import { Search, Bell, BellOff, CheckCheck } from "lucide-react";
+import {
+  Search,
+  Bell,
+  BellOff,
+  CheckCheck,
+  Settings,
+  Sun,
+  Moon,
+  LogOut,
+  X,
+} from "lucide-react";
 
 interface NavItem {
   label: string;
@@ -23,7 +32,6 @@ const CORE_NAV: NavItem[] = [
   { label: "Dashboard", to: "/dashboard", icon: "📊" },
   { label: "Projects", to: "/projects", icon: "📁" },
   { label: "Data", to: "/data", icon: "🌐" },
-  { label: "Settings", to: "/settings", icon: "⚙️" },
 ];
 
 /**
@@ -88,24 +96,6 @@ function ChevronIcon({ collapsed }: { collapsed: boolean }) {
   );
 }
 
-function LogoutIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      className="shrink-0"
-    >
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <polyline points="16 17 21 12 16 7" />
-      <line x1="21" y1="12" x2="9" y2="12" />
-    </svg>
-  );
-}
-
 // ── User Menu Popover ──────────────────────────────────────────────────────────
 
 function UserMenuPopover({
@@ -115,6 +105,8 @@ function UserMenuPopover({
   onSettings,
   onNotifications,
   onLogout,
+  collapsed,
+  anchorRect,
 }: {
   user: { email?: string; full_name?: string; is_superuser?: boolean } | null;
   activeTheme: string;
@@ -122,48 +114,108 @@ function UserMenuPopover({
   onSettings: () => void;
   onNotifications: () => void;
   onLogout: () => void;
+  /** Sidebar collapsed → the menu pops out to the right of the avatar. */
+  collapsed: boolean;
+  /** Bounding rect of the avatar button (used to anchor the popped-out menu). */
+  anchorRect: DOMRect | null;
 }) {
+  const displayName = user?.full_name || user?.email || "Signed In User";
+  const itemClass =
+    "group flex w-full items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium " +
+    "text-text-secondary hover:bg-surface-hover hover:text-text-primary " +
+    "transition-colors duration-100 cursor-pointer";
+
+  // Collapsed sidebar: anchor a fixed-size menu just outside the sidebar,
+  // bottom-aligned with the avatar button (sidebar has overflow-hidden,
+  // so we must escape it via fixed positioning).
+  const MENU_WIDTH = 288;
+  const collapsedStyle: React.CSSProperties | undefined =
+    collapsed && anchorRect
+      ? {
+          left: Math.min(
+            anchorRect.right + 8,
+            Math.max(8, window.innerWidth - MENU_WIDTH - 8),
+          ),
+          bottom: Math.max(8, window.innerHeight - anchorRect.top + 8),
+          width: MENU_WIDTH,
+        }
+      : undefined;
+
   return (
-    <div className="absolute bottom-full left-0 right-0 mb-2 bg-elevated border border-border-primary rounded-lg shadow-dropdown animate-fade-in-up z-50 overflow-hidden">
+    <div
+      className={
+        (collapsed
+          ? "fixed "
+          : "absolute bottom-full left-0 right-0 w-full min-w-[15rem] ") +
+        "mb-2 bg-elevated border border-border-primary rounded-xl shadow-xl animate-fade-in-up z-50 overflow-hidden"
+      }
+      style={collapsedStyle}
+    >
       {/* User Info Header */}
-      <div className="px-3 py-2.5 border-b border-border-primary">
-        <div className="text-sm font-bold text-text-primary truncate">
-          {user?.full_name || user?.email || "Signed In User"}
+      <div className="flex items-center gap-3 px-3.5 py-3 border-b border-border-secondary bg-surface-hover/50">
+        <div className="w-9 h-9 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0 border border-primary/10">
+          {initials(displayName)}
         </div>
-        <div className="text-xs text-text-tertiary mt-0.5">
-          {user?.email}
-          {user?.is_superuser ? " · Admin" : ""}
+        <div className="min-w-0 flex-1">
+          <div className="text-xs font-semibold text-text-primary truncate">
+            {displayName}
+          </div>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="text-[0.65rem] text-text-tertiary truncate">
+              {user?.email}
+            </span>
+            {user?.is_superuser && (
+              <span className="shrink-0 text-[0.55rem] font-bold uppercase tracking-wide px-1.5 py-px rounded-full bg-primary/10 text-primary border border-primary/15">
+                Admin
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Menu Items */}
       <div className="py-1.5">
-        <button className="dropdown-item w-full" onClick={onSettings}>
-          <span className="text-base">👤</span>
-          Profile & Settings
+        <button className={itemClass} onClick={onSettings}>
+          <Settings size={15} className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" />
+          <span className="flex-1 text-left">Profile &amp; Settings</span>
+          <span className="text-[0.65rem] text-text-tertiary group-hover:text-primary transition-colors">→</span>
         </button>
 
-        <button className="dropdown-item w-full" onClick={onNotifications}>
-          <span className="text-base">🔔</span>
-          Notifications
+        <button className={itemClass} onClick={onNotifications}>
+          <Bell size={15} className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" />
+          <span className="flex-1 text-left">Notifications</span>
+          <span className="text-[0.65rem] text-text-tertiary group-hover:text-primary transition-colors">→</span>
         </button>
 
-        <button className="dropdown-item w-full" onClick={toggleTheme}>
-          <span className="text-base">
-            {activeTheme === "dark" ? "☀️" : "🌙"}
+        <button className={itemClass} onClick={toggleTheme}>
+          {activeTheme === "dark" ? (
+            <Sun size={15} className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" />
+          ) : (
+            <Moon size={15} className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" />
+          )}
+          <span className="flex-1 text-left">
+            {activeTheme === "dark" ? "Light mode" : "Dark mode"}
           </span>
-          {activeTheme === "dark" ? "Light" : "Dark"}
+          <span className="w-8 h-4.5 rounded-full border border-border-primary relative shrink-0">
+            <span
+              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary shadow-sm transition-all duration-200"
+              style={{
+                left: activeTheme === "dark" ? "calc(100% - 0.95rem)" : "0.2rem",
+              }}
+            />
+          </span>
         </button>
+      </div>
 
-        <div className="dropdown-divider" />
-
-        <Button
-          className="dropdown-item dropdown-item-danger w-full"
+      {/* Footer — Sign Out */}
+      <div className="border-t border-border-secondary py-1.5">
+        <button
+          className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-error hover:bg-error-subtle transition-colors duration-100 cursor-pointer"
           onClick={onLogout}
-          leftIcon={<LogoutIcon />}
         >
-          Sign Out / Logout
-        </Button>
+          <LogOut size={15} className="shrink-0" />
+          Sign out
+        </button>
       </div>
     </div>
   );
@@ -301,9 +353,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchValue, setSearchValue] = useState("");
 
   const popoverRef = useRef<HTMLDivElement>(null);
+  const userBtnRef = useRef<HTMLButtonElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const { canView } = usePermissions();
   const moduleNav = useModuleNavItems();
   const adminNav = user?.is_superuser
@@ -315,9 +369,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const allNav = rawNav.filter((item) => {
     const compName = item.to.replace("/", "");
     // Core pages are always visible; everything else needs a view permission.
-    return (
-      compName === "dashboard" || compName === "settings" || canView(compName)
-    );
+    return compName === "dashboard" || canView(compName);
   });
 
   // Full-bleed "builder views" — the map builder (`/map`) and every `/builder/*`
@@ -339,6 +391,41 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // If the menu is open in collapsed (fixed-position) mode and the window is
+  // resized, close it so the anchored position never goes stale.
+  useEffect(() => {
+    if (!isUserMenuOpen) return;
+    const close = () => setIsUserMenuOpen(false);
+    window.addEventListener("resize", close);
+    return () => window.removeEventListener("resize", close);
+  }, [isUserMenuOpen]);
+
+  // Search shortcuts: "/" focuses the search box (when not already typing in
+  // a field), Escape clears it and blurs — matches the visible "/" kbd hint.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const el = e.target as HTMLElement | null;
+      const isTyping =
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement ||
+        el instanceof HTMLSelectElement ||
+        Boolean(el?.isContentEditable);
+      if (e.key === "/" && !isTyping) {
+        e.preventDefault();
+        searchRef.current?.focus();
+      } else if (
+        e.key === "Escape" &&
+        document.activeElement === searchRef.current
+      ) {
+        e.stopPropagation();
+        setSearchValue("");
+        searchRef.current?.blur();
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, []);
 
   const userInitial = user
@@ -441,6 +528,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               user={user}
               activeTheme={activeTheme}
               toggleTheme={toggleTheme}
+              collapsed={isCollapsed}
+              anchorRect={
+                isCollapsed
+                  ? userBtnRef.current?.getBoundingClientRect() ?? null
+                  : null
+              }
               onSettings={() => {
                 setIsUserMenuOpen(false);
                 navigate("/settings");
@@ -460,6 +553,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* User Button */}
           <button
             id="user-menu-btn"
+            ref={userBtnRef}
             className={`flex items-center transition-colors duration-150 cursor-pointer border-none text-left rounded-xl ${
               isUserMenuOpen
                 ? "bg-surface-active"
@@ -496,34 +590,45 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="flex items-center"></div>
 
             {/* Center — Search */}
-            <div className="flex-1 max-w-xl mx-auto px-4 py-1 border border-border-secondary rounded-lg bg-surface-hover">
-              <div className="relative flex items-center">
-                <div className="absolute left-3 pointer-events-none">
-                  <Search size={16} />
-                </div>
-                <input
-                  type="text"
-                  className="input input-sm pl-9 pr-10 w-full"
-                  placeholder="Search projects, layers, datasets, tools..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+            <div className="flex-1 min-w-0 flex justify-center px-2">
+              <div className="relative w-full max-w-md group">
+                <Search
+                  size={15}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-tertiary)] group-focus-within:text-primary transition-colors duration-150"
                 />
-                <kbd className="absolute right-3 pointer-events-none text-[0.65rem] font-mono text-text-quaternary bg-surface-hover border border-border-primary rounded px-1.5 py-0.5">
-                  /
-                </kbd>
+                <input
+                  ref={searchRef}
+                  type="text"
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  placeholder="Search projects, layers, datasets…"
+                  aria-label="Search"
+                  className="w-full h-9 rounded-[var(--radius-md)] border border-[var(--input-border)] bg-[var(--input-bg)] pl-9 pr-16 text-xs text-[var(--text-primary)] transition-all duration-150 focus:outline-none focus:border-[var(--input-focus-border)] focus:shadow-[0_0_0_3px_oklch(from_var(--primary)_l_c_h/0.15)]"
+                />
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                  {searchValue && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchValue("");
+                        searchRef.current?.focus();
+                      }}
+                      aria-label="Clear search"
+                      className="p-0.5 rounded-md text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+                    >
+                      <X size={13} />
+                    </button>
+                  )}
+                  <kbd className="hidden sm:flex items-center justify-center h-5 min-w-5 px-1.5 rounded-md border border-[var(--border-primary)] bg-[var(--surface-hover)] text-[0.6rem] font-semibold text-[var(--text-tertiary)] select-none pointer-events-none">
+                    /
+                  </kbd>
+                </div>
               </div>
             </div>
 
             {/* Right */}
             <div className="flex items-center gap-3">
               <NotificationBell />
-              <button
-                onClick={toggleTheme}
-                title={`Switch to ${activeTheme === "dark" ? "Light" : "Dark"} theme`}
-                className="cursor-pointer text-sm font-medium text-text-secondary hover:text-text-primary transition-colors duration-150  "
-              >
-                {activeTheme === "dark" ? "☀️ Light" : "🌙 Dark"}
-              </button>
             </div>
           </header>
         )}

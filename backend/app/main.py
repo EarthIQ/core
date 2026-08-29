@@ -21,6 +21,7 @@ from app.api.storage.router import router as storage_router
 from app.api.collab.router import router as collab_router
 from app.api.notifications.router import router as notifications_router
 from app.api.profile.router import router as profile_router
+from app.api.geocode.router import router as geocode_router
 from app.api.maps.share.router import router as share_util_router
 from app.api.maps.share.router import entity_share_router
 
@@ -84,6 +85,7 @@ app.include_router(storage_router, prefix="/api/storage")
 app.include_router(collab_router, prefix="/api/collab")
 app.include_router(notifications_router, prefix="/api/notifications")
 app.include_router(profile_router, prefix="/api/profile")
+app.include_router(geocode_router, prefix="/api/geocode")
 
 # ── Share utility routes (people search & invite accept) ─────────────────────
 app.include_router(share_util_router, prefix="/api")

@@ -511,8 +511,8 @@ export default function MapPage() {
         availableMaps={[]}
         activeMapId={projectId}
         canManageSharing={currentProject?.user_permission === "admin"}
-        publishedMapsOpen={publishedPanelOpen}
-        onTogglePublishedMaps={() => setPublishedPanelOpen((v) => !v)}
+        mapRef={mapRef}
+        mapReady={mapReady}
         onSelectMap={() => {}}
         onBack={async () => {
           await handleSaveConfig();

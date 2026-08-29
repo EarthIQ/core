@@ -1,0 +1,1 @@
+"""Geocode API domain — OSM Nominatim proxy for place search."""

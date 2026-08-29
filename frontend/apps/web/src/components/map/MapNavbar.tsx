@@ -1,14 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import {
-  ArrowLeft,
-  Search,
-  Share2,
-  ChevronDown,
-  Check,
-  Blocks,
-  Map,
-} from "lucide-react";
+import { ArrowLeft, Share2, ChevronDown, Check, Blocks } from "lucide-react";
 import { Button, Tooltip } from "@packages/ui";
 import { useAuth } from "@/lib/auth";
 import type { MapItem } from "@/lib/maps";
@@ -16,6 +8,7 @@ import type { CollaboratorState } from "@/lib/useCollaboration";
 import { ShareDialog } from "./share/ShareDialog";
 import { Avatar } from "./share/Avatar";
 import { BuilderPicker } from "@/components/builder/BuilderPicker";
+import { PlaceSearch } from "./PlaceSearch";
 
 interface MapNavbarProps {
   projectName: string;
@@ -25,13 +18,15 @@ interface MapNavbarProps {
   availableMaps: MapItem[];
   activeMapId: string | null;
   canManageSharing?: boolean;
-  publishedMapsOpen?: boolean;
-  onTogglePublishedMaps?: () => void;
   onSelectMap: (id: string) => void;
   onBack: () => void;
   /** Active collaborators (excluding self) */
   collaborators?: CollaboratorState[];
   isCollabConnected?: boolean;
+  /** Live maplibre instance ref — powers the location search (fly-to). */
+  mapRef?: React.MutableRefObject<any>;
+  /** True once the map instance is ready. */
+  mapReady?: boolean;
 }
 
 export function MapNavbar({
@@ -41,12 +36,12 @@ export function MapNavbar({
   availableMaps,
   activeMapId,
   canManageSharing = true,
-  publishedMapsOpen = false,
-  onTogglePublishedMaps,
   onSelectMap,
   onBack,
   collaborators = [],
   isCollabConnected = false,
+  mapRef,
+  mapReady = false,
 }: MapNavbarProps) {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -54,7 +49,6 @@ export function MapNavbar({
   // id currently in the URL so opening any builder keeps this project's context.
   const pickerProjectId =
     searchParams.get("projectId") ?? projectId ?? mapId ?? "";
-  const [searchVal, setSearchVal] = useState("");
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
@@ -158,18 +152,13 @@ export function MapNavbar({
           </div>
         </div>
 
-        {/* Center search (unchanged) */}
+        {/* Center: location search (Nominatim — flies the map + drops a marker) */}
         <div className="flex-1 max-w-md mx-4">
-          <div className="relative flex items-center bg-surface-hover/50 border border-border-secondary rounded-lg px-3 py-1 hover:border-border-primary transition-colors">
-            <Search size={16} className="text-text-tertiary mr-2 shrink-0" />
-            <input
-              type="text"
-              placeholder="Search locations..."
-              className="input input-sm border-none bg-transparent w-full p-0 text-xs focus:ring-0 focus:outline-none placeholder:text-text-quaternary"
-              value={searchVal}
-              onChange={(e) => setSearchVal(e.target.value)}
-            />
-          </div>
+          {mapRef ? (
+            <PlaceSearch mapRef={mapRef} mapReady={mapReady} />
+          ) : (
+            <div className="h-8" />
+          )}
         </div>
 
         {/* Right: collaborators + share */}
@@ -226,58 +215,35 @@ export function MapNavbar({
 
           {/* General builder picker — open any project builder (Map, Story Map,
               Presentation, Report, Forms) for this project. */}
-          <Tooltip content="Builders — open Map, Story Map, Presentations…" placement="bottom">
+          <Tooltip
+            content="Builders — open Map, Story Map, Presentations…"
+            placement="bottom"
+          >
             <BuilderPicker
               projectId={pickerProjectId}
               hostId="map"
               trigger={
                 <button
                   type="button"
-                  className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+                  className="relative flex items-center justify-center p-1.5 rounded-lg transition-all duration-150 text-text-secondary hover:text-text-primary hover:bg-surface-hover"
                   aria-label="Project builders"
                 >
-                  <Blocks size={15} />
-                  <span className="hidden sm:inline">Builder</span>
+                  <Blocks size={16} />
                 </button>
               }
             />
           </Tooltip>
 
-          <span className="w-px h-5 bg-border-primary" />
-
-          {/* Published Maps toggle — restored to how it worked before: opens
-              the published maps panel for this project. */}
-          {onTogglePublishedMaps && (
-            <Tooltip content="Published maps" placement="bottom">
-              <button
-                type="button"
-                onClick={onTogglePublishedMaps}
-                className={`relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
-                  publishedMapsOpen
-                    ? "bg-primary/15 text-primary border border-primary/30"
-                    : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
-                }`}
-                aria-label="Toggle published maps"
-              >
-                <Map size={15} />
-                <span className="hidden sm:inline">Maps</span>
-              </button>
-            </Tooltip>
-          )}
-
-          <span className="w-px h-5 bg-border-primary" />
-
           <Tooltip content="Share project  (⌘⇧S)" placement="bottom">
             <Button
               variant="ghost"
               size="sm"
+              iconOnly
               onClick={() => setShareOpen(true)}
-              leftIcon={<Share2 size={16} />}
-              className="text-text-secondary hover:text-text-primary gap-1.5"
+              aria-label="Share project"
+              className="text-text-secondary hover:text-text-primary"
             >
-              <span className="text-xs font-semibold hidden sm:inline">
-                Share
-              </span>
+              <Share2 size={16} />
             </Button>
           </Tooltip>
 

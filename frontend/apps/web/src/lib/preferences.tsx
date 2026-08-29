@@ -192,17 +192,28 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   const suppressThemeSync = useRef(true); // don't PUT right after initial apply
   const putTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const applyAll = useCallback(
-    (next: UIPreferences) => {
-      setPrefs(next);
-      writeLocal(next);
-      if (next.theme_mode !== theme) setTheme(next.theme_mode);
-      applyAccentColor(next.accent_color);
-      applyFontScale(next.font_scale, next.compact_mode);
-      document.documentElement.classList.toggle("compact", next.compact_mode);
-    },
-    [setTheme, theme],
-  );
+  // Keep the latest theme value / setter in refs so `applyAll` below stays
+  // REFERENTIALLY STABLE. Previously its identity changed with `theme`, which
+  // re-triggered the server-prefs load effect on every theme change; that
+  // re-fetched the (debounced, still stale) server value and re-applied it,
+  // snapping a fresh toggle back ("auto on/off", only the 2nd click stuck).
+  const themeRef = useRef(theme);
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
+  const setThemeRef = useRef(setTheme);
+  useEffect(() => {
+    setThemeRef.current = setTheme;
+  }, [setTheme]);
+
+  const applyAll = useCallback((next: UIPreferences) => {
+    setPrefs(next);
+    writeLocal(next);
+    if (next.theme_mode !== themeRef.current) setThemeRef.current(next.theme_mode);
+    applyAccentColor(next.accent_color);
+    applyFontScale(next.font_scale, next.compact_mode);
+    document.documentElement.classList.toggle("compact", next.compact_mode);
+  }, []);
 
   // Load server prefs when authenticated (and whenever the user / tick changes).
   useEffect(() => {
