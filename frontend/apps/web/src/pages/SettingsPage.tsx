@@ -35,9 +35,9 @@ export default function SettingsPage() {
 
   function selectTab(id: TabId) {
     setTab(id);
-    const url = new URL(window.location.href);
-    url.searchParams.set("tab", id);
-    navigate(url.toString(), { replace: true });
+    const search = new URLSearchParams(location.search);
+    search.set("tab", id);
+    navigate({ pathname: location.pathname, search: search.toString() }, { replace: true });
   }
 
   return (
