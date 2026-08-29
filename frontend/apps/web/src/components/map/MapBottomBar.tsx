@@ -14,9 +14,9 @@ export const TERRAIN_SOURCE_ID = "terrain-source";
 export const TERRAIN_EXAGGERATION = 1.5;
 
 const BASEMAP_OPTIONS = [
-  { id: "dataviz-dark", name: "Dark Matter", icon: "🌑" },
-  { id: "dataviz-light", name: "Light", icon: "☀️" },
-  { id: "satellite", name: "Voyager", icon: "🛰️" },
+  { id: "osm", name: "OpenStreetMap", icon: "🗺️" },
+  { id: "esri-satellite", name: "ESRI Satellite", icon: "🛰️" },
+  { id: "opentopomap", name: "OpenTopoMap", icon: "⛰️" },
 ];
 
 interface MapBottomBarProps {

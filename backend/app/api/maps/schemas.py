@@ -31,7 +31,7 @@ class MapCreate(BaseModel):
     zoom: float = Field(default=2.5, ge=0.0, le=24.0)
     bearing: float = Field(default=0.0, ge=-180.0, le=180.0)
     pitch: float = Field(default=0.0, ge=0.0, le=85.0)
-    basemap: str = Field(default="dataviz-dark", examples=["dataviz-dark", "dataviz-light", "satellite"])
+    basemap: str = Field(default="opentopomap", examples=["osm", "esri-satellite", "opentopomap"])
     layers_config: List[MapLayerItem] = Field(default_factory=list)
     is_public: bool = False
     project_id: Optional[str] = None

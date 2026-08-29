@@ -19,7 +19,7 @@ export default function ProjectsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
-  const [newBasemap, setNewBasemap] = useState("dataviz-dark");
+  const [newBasemap, setNewBasemap] = useState("opentopomap");
   const [newPublic, setNewPublic] = useState(true);
   const [creating, setCreating] = useState(false);
 
@@ -276,9 +276,9 @@ export default function ProjectsPage() {
                   onChange={(e) => setNewBasemap(e.target.value)}
                   className="input select"
                 >
-                  <option value="dataviz-dark">Dark Matter (Vector)</option>
-                  <option value="dataviz-light">Positron (Light)</option>
-                  <option value="satellite">Satellite Imagery</option>
+                  <option value="osm">OpenStreetMap</option>
+                  <option value="esri-satellite">ESRI Satellite</option>
+                  <option value="opentopomap">OpenTopoMap</option>
                 </select>
               </div>
 

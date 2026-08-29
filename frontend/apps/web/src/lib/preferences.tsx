@@ -44,7 +44,7 @@ export interface UIPreferences {
 export const PREFERENCE_DEFAULTS: UIPreferences = {
   theme_mode: "dark",
   map_units: "metric",
-  default_basemap: "dataviz-dark",
+  default_basemap: "opentopomap",
   accent_color: null,
   compact_mode: false,
   font_scale: "normal",
@@ -230,7 +230,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
               ? server.theme_mode
               : "dark",
           map_units: server.map_units === "imperial" ? "imperial" : "metric",
-          default_basemap: server.default_basemap || "dataviz-dark",
+          default_basemap: server.default_basemap || "opentopomap",
           accent_color: server.accent_color || null,
           compact_mode: Boolean(server.compact_mode),
           font_scale:

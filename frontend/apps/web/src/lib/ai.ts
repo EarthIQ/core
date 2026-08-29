@@ -153,7 +153,7 @@ export interface MapHandle {
   zoomIn?: (opts?: { duration?: number }) => void;
   zoomOut?: (opts?: { duration?: number }) => void;
   resetNorthPitch?: (opts?: { duration?: number }) => void;
-  setStyle?: (style: string) => void;
+  setStyle?: (style: string | Record<string, unknown>) => void;
   getZoom?: () => number;
   on?: (event: string, cb: () => void) => void;
   once?: (event: string, cb: () => void) => void;
@@ -165,8 +165,8 @@ export interface ToolDispatchContext {
   setBasemap: (id: string) => void;
   /** Toggle a layer's visibility in the layer tree. */
   setLayerVisible: (id: string, visible: boolean) => void;
-  /** The base URL for a basemap id (used by ``set_basemap`` → map.setStyle). */
-  basemapUrls: Record<string, string>;
+  /** The inline MapLibre style for a basemap id (``set_basemap`` → map.setStyle). */
+  basemapStyles: Record<string, unknown>;
 }
 
 function isFiniteNumber(n: unknown): n is number {
@@ -321,9 +321,9 @@ export async function dispatchToolCall(
     }
 
     case "set_basemap": {
-      const basemap = String(a.basemap ?? "dataviz-dark");
-      const url = ctx.basemapUrls[basemap] ?? ctx.basemapUrls["dataviz-dark"];
-      if (url) map.setStyle?.(url);
+      const basemap = String(a.basemap ?? "opentopomap");
+      const style = ctx.basemapStyles[basemap] ?? ctx.basemapStyles["opentopomap"];
+      if (style) map.setStyle?.(style);
       ctx.setBasemap(basemap);
       return `Switched basemap to ${basemap}.`;
     }

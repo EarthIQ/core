@@ -16,7 +16,7 @@ import {
   Lock,
   Save,
 } from "lucide-react";
-import { BASEMAP_URLS } from "@/hooks/useMapLibre";
+import { BASEMAP_STYLES } from "@/hooks/useMapLibre";
 import type { MapLayerItem } from "@/lib/maps";
 import type { Annotation } from "@/lib/mapEditor/types";
 
@@ -113,9 +113,9 @@ const WIDGETS = [
 ] as const;
 
 const BASEMAP_OPTIONS = [
-  { id: "dataviz-dark", label: "Dark Matter", color: "#1a1a2e" },
-  { id: "dataviz-light", label: "Positron", color: "#f5f5f5" },
-  { id: "satellite", label: "Voyager", color: "#4a90d9" },
+  { id: "osm", label: "OpenStreetMap", color: "#e8ecd9" },
+  { id: "esri-satellite", label: "ESRI Satellite", color: "#233a2b" },
+  { id: "opentopomap", label: "OpenTopoMap", color: "#f3ead7" },
 ] as const;
 
 /* ──────────────────────────────────────────────────────────────────────────── */
@@ -141,7 +141,7 @@ export function MapBuilder({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(true);
-  const [basemap, setBasemap] = useState("dataviz-dark");
+  const [basemap, setBasemap] = useState("opentopomap");
   const [centerLng, setCenterLng] = useState(0);
   const [centerLat, setCenterLat] = useState(20);
   const [zoom, setZoom] = useState(2.5);
@@ -175,7 +175,7 @@ export function MapBuilder({
       setTitle(editingMap.title || "");
       setDescription(editingMap.description || "");
       setIsPublic(!!editingMap.is_public);
-      setBasemap(editingMap.basemap || "dataviz-dark");
+      setBasemap(editingMap.basemap || "opentopomap");
       setCenterLng(editingMap.center_lng ?? 0);
       setCenterLat(editingMap.center_lat ?? 20);
       setZoom(editingMap.zoom ?? 2.5);
@@ -229,7 +229,7 @@ export function MapBuilder({
 
         const map = new Map({
           container: previewRef.current,
-          style: BASEMAP_URLS[basemap] || BASEMAP_URLS["dataviz-dark"],
+          style: BASEMAP_STYLES[basemap] || BASEMAP_STYLES["opentopomap"],
           center: [centerLng, centerLat],
           zoom: zoom,
           bearing: bearing,

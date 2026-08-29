@@ -12,7 +12,7 @@ class ProjectCreate(BaseModel):
     center_lng: float = Field(default=0.0, ge=-180.0, le=180.0)
     center_lat: float = Field(default=20.0, ge=-90.0, le=90.0)
     zoom: float = Field(default=2.5, ge=0.0, le=24.0)
-    basemap: str = Field(default="dataviz-dark")
+    basemap: str = Field(default="opentopomap")
     layers_config: List[MapLayerItem] = Field(default_factory=list)
     annotations: List[Any] = Field(default_factory=list)
     bookmarks: List[Any] = Field(default_factory=list)

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { fetchMapById, MapItem } from "@/lib/maps";
-import { BASEMAP_URLS } from "@/hooks/useMapLibre";
+import { BASEMAP_STYLES } from "@/hooks/useMapLibre";
 import { Globe, Layers, ZoomIn, ZoomOut, Compass, LogIn } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
@@ -53,7 +53,7 @@ export default function PublicMapPage() {
 
         const map = new Map({
           container: mapContainerRef.current,
-          style: BASEMAP_URLS[mapData.basemap] || BASEMAP_URLS["dataviz-dark"],
+          style: BASEMAP_STYLES[mapData.basemap] || BASEMAP_STYLES["opentopomap"],
           center: [mapData.center_lng, mapData.center_lat],
           zoom: mapData.zoom,
           bearing: (mapData as any).bearing || 0,

@@ -19,7 +19,7 @@ import {
   type MapHandle,
   type ToolDispatchContext,
 } from "@/lib/ai";
-import { BASEMAP_URLS } from "@/hooks/useMapLibre";
+import { BASEMAP_STYLES } from "@/hooks/useMapLibre";
 
 /* ── Message types ─────────────────────────────────────────────────────────── */
 
@@ -38,7 +38,7 @@ interface AIChatPanelProps {
   onClose: () => void;
   mapRef: React.RefObject<any>;
   mapReady: boolean;
-  /** Current basemap id (e.g. "dataviz-dark"). */
+  /** Current basemap id (e.g. "opentopomap"). */
   basemap: string;
   /** Switch the basemap (MapPage re-renders the map style). */
   setBasemap: (id: string) => void;
@@ -142,7 +142,7 @@ export default function AIChatPanel({
         map,
         setBasemap,
         setLayerVisible,
-        basemapUrls: BASEMAP_URLS,
+        basemapStyles: BASEMAP_STYLES,
       };
       return dispatchToolCall(call, ctx);
     },

@@ -27,9 +27,9 @@ const FONT_OPTIONS: { id: FontScale; label: string }[] = [
 ];
 
 const BASEMAPS: { id: string; label: string }[] = [
-  { id: "dataviz-dark", label: "Dark Matter (CARTO)" },
-  { id: "dataviz-light", label: "Positron Light (CARTO)" },
-  { id: "satellite", label: "Voyager Satellite" },
+  { id: "osm", label: "OpenStreetMap" },
+  { id: "esri-satellite", label: "ESRI Satellite" },
+  { id: "opentopomap", label: "OpenTopoMap" },
 ];
 
 export default function AppearanceSection() {

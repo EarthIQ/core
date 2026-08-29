@@ -95,7 +95,7 @@ export default function MapPage() {
     zoomIn,
     zoomOut,
     resetNorth,
-  } = useMapLibre(mapInstance, "dataviz-dark");
+  } = useMapLibre(mapInstance, "opentopomap");
 
   const tree = useLayerTree([]);
 
@@ -232,7 +232,7 @@ export default function MapPage() {
       .then((projData) => {
         setCurrentProject(projData);
         setPublishedMaps(projData.maps || []);
-        setBasemap(projData.basemap || "dataviz-dark");
+        setBasemap(projData.basemap || "opentopomap");
         tree.setNodes(
           projData.layers_config?.length
             ? fromMapLayerItems(projData.layers_config as any)
@@ -525,7 +525,7 @@ export default function MapPage() {
       {/* Map canvas — @packages/map <Map> primitive (provides MapContext to
           package controls and pushes the instance into the outer provider) */}
       <MapCanvas
-        style={BASEMAP_STYLES["dataviz-dark"]}
+        style={BASEMAP_STYLES["opentopomap"]}
         initialViewState={{
           longitude: 0,
           latitude: 20,

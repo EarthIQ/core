@@ -3,17 +3,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 /**
  * Build a self-contained raster basemap style.
  *
- * The CARTO "gl-style" JSONs previously used here (see BASEMAP_URLS) depend
- * on a remote sprite + glyph + vector-tile pipeline that no longer loads
- * reliably under MapLibre v6 — the map would come up blank. Inline raster
- * styles have no such dependencies (no sprite sheet, no glyph ranges, no
- * remote vector source), which is the same pattern as the manually added
- * satellite layer that kept working through the upgrade.
+ * Inline raster styles have no remote dependencies (no sprite sheet, no glyph
+ * ranges, no remote vector source), so they keep working reliably under
+ * MapLibre v6 (the old CARTO "gl-style" JSONs no longer load).
+ * `saturation` maps to the MapLibre `raster-saturation` paint property
+ * (-1 = fully desaturated / grayscale, 0 = no change).
  */
 const rasterStyle = (
   tiles: string[],
   attribution: string,
-  subdomains?: string,
+  saturation = 0,
 ): any => ({
   version: 8,
   sources: {
@@ -22,45 +21,37 @@ const rasterStyle = (
     "basemap-source": {
       type: "raster",
       tiles,
-      ...(subdomains ? { subdomains } : {}),
       tileSize: 256,
       attribution,
     },
   },
-  layers: [{ id: "basemap", type: "raster", source: "basemap-source" }],
+  layers: [
+    {
+      id: "basemap",
+      type: "raster",
+      source: "basemap-source",
+      ...(saturation ? { paint: { "raster-saturation": saturation } } : {}),
+    },
+  ],
 });
 
 /** Inline basemap styles (self-contained raster tiles, no remote style). */
 export const BASEMAP_STYLES: Record<string, any> = {
-  "dataviz-dark": rasterStyle(
-    ["https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"],
-    '© <a href="https://carto.com/" target="_blank" rel="noopener">CARTO</a>, © OpenStreetMap contributors',
-    "abcd",
+  osm: rasterStyle(
+    ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+    '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors (ODbL)',
   ),
-  "dataviz-light": rasterStyle(
-    ["https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"],
-    '© <a href="https://carto.com/" target="_blank" rel="noopener">CARTO</a>, © OpenStreetMap contributors',
-    "abcd",
-  ),
-  satellite: rasterStyle(
+  "esri-satellite": rasterStyle(
     [
-      "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg",
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     ],
-    "© ESA Sentinel-2, EOX GIS",
+    "© Esri, Maxar, Earthstar Geographics",
   ),
-};
-
-/**
- * @deprecated Kept for backward compatibility (AI tooling context, etc).
- * These remote style URLs were replaced by BASEMAP_STYLES after the
- * MapLibre v6 upgrade — prefer BASEMAP_STYLES for map styling.
- */
-export const BASEMAP_URLS: Record<string, string> = {
-  "dataviz-dark":
-    "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-  "dataviz-light":
-    "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
-  satellite: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+  opentopomap: rasterStyle(
+    ["https://a.tile.opentopomap.org/{z}/{x}/{y}.png"],
+    '© <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a> (CC-BY-SA)',
+    -1,
+  ),
 };
 
 interface FlyTarget {
@@ -134,7 +125,7 @@ export function useMapLibre(map: any | null, initialBasemap: string) {
     const zoom = map.getZoom();
     const bearingVal = map.getBearing?.() ?? 0;
     const pitch = map.getPitch?.() ?? 0;
-    const style = BASEMAP_STYLES[basemap] || BASEMAP_STYLES["dataviz-dark"];
+    const style = BASEMAP_STYLES[basemap] || BASEMAP_STYLES["opentopomap"];
     map.setStyle(style);
     map.once("styledata", () =>
       map.jumpTo({ center, zoom, bearing: bearingVal, pitch }),

@@ -489,7 +489,7 @@ function CreateProjectModal({
         center_lng: 0.0,
         center_lat: 20.0,
         zoom: 2.5,
-        basemap: "dataviz-light",
+        basemap: "opentopomap",
       };
       await createProject(input);
       setTitle("");

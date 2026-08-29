@@ -12,7 +12,7 @@ router = APIRouter(tags=["viz"])
 class BasemapStyle(BaseModel):
     id: str
     name: str
-    style_url: str         # MapLibre style JSON URL
+    style_url: str         # Tile URL (XYZ) or MapLibre style JSON URL
     preview_url: Optional[str] = None
     dark: bool = False
 
@@ -20,7 +20,7 @@ class BasemapStyle(BaseModel):
 class MapConfig(BaseModel):
     default_center: List[float] = [0.0, 20.0]   # [lng, lat]
     default_zoom: float = 2.5
-    default_basemap: str = "dataviz-dark"
+    default_basemap: str = "opentopomap"
     basemaps: List[BasemapStyle] = []
 
 
@@ -28,21 +28,21 @@ class MapConfig(BaseModel):
 
 _BASEMAPS: List[BasemapStyle] = [
     BasemapStyle(
-        id="dataviz-dark",
-        name="DataViz Dark",
-        style_url="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-        dark=True,
-    ),
-    BasemapStyle(
-        id="dataviz-light",
-        name="DataViz Light",
-        style_url="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+        id="osm",
+        name="OpenStreetMap",
+        style_url="https://tile.openstreetmap.org/{z}/{x}/{y}.png",
         dark=False,
     ),
     BasemapStyle(
-        id="satellite",
-        name="Satellite",
-        style_url="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+        id="esri-satellite",
+        name="ESRI Satellite",
+        style_url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        dark=False,
+    ),
+    BasemapStyle(
+        id="opentopomap",
+        name="OpenTopoMap",
+        style_url="https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
         dark=False,
     ),
 ]

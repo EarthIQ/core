@@ -25,7 +25,7 @@ class ProjectModel(Base):
     center_lng: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     center_lat: Mapped[float] = mapped_column(Float, default=20.0, nullable=False)
     zoom: Mapped[float] = mapped_column(Float, default=2.5, nullable=False)
-    basemap: Mapped[str] = mapped_column(String(100), default="dataviz-dark", nullable=False)
+    basemap: Mapped[str] = mapped_column(String(100), default="opentopomap", nullable=False)
 
     # Layer configurations
     layers_config: Mapped[Any] = mapped_column(JSON, default=list, nullable=False)
