@@ -90,7 +90,7 @@ async def grant_access(
     db: AsyncSession = Depends(get_db),
     actor: User = Depends(get_current_user),
 ):
-    return await svc.grant_access(db, token, body.role, actor)
+    return await svc.grant_access(db, token, actor, body.role)
 
 
 @router.post(
