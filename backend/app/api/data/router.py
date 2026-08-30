@@ -16,6 +16,7 @@ from app.api.data.schemas import (
     GeoDatasetListResponse,
     GeoDatasetOut,
     GeoDatasetUpdate,
+    GeometrySummary,
     LayerInfo,
     RasterLayerMeta,
     VectorFeatureCollection,
@@ -138,6 +139,48 @@ def dataset_vocabulary():
         "types": DATA_TYPES,
         "default_type_for_format": DEFAULT_TYPE_FOR_FORMAT,
     }
+
+
+# ── Geometry summary (point / line / polygon profile) ───────────────────────
+# NOTE: `/datasets/geometry` MUST be declared before `/datasets/{dataset_id}`
+# so FastAPI does not match "geometry" as a dataset id.
+
+
+@router.get(
+    "/datasets/geometry",
+    summary="Geometry-type summary for datasets (batch)",
+)
+async def dataset_geometry_summaries(
+    ids: str = "",
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Return the point/line/polygon profile for multiple datasets.
+
+    - **ids**: comma-separated dataset ids (max 100). Unknown ids are omitted.
+    """
+    id_list = [i.strip() for i in ids.split(",") if i.strip()][:100]
+    items = await data_service.get_geometry_summaries(db, id_list)
+    return {"items": items}
+
+
+@router.get(
+    "/datasets/{dataset_id}/geometry",
+    response_model=GeometrySummary,
+    summary="Geometry-type summary for a dataset",
+)
+async def dataset_geometry_summary(
+    dataset_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Return which geometry kinds (point / line / polygon) a dataset contains
+    and which one is dominant. Used by the layer panel to pick type icons.
+    """
+    summary = await data_service.get_geometry_summary(db, dataset_id)
+    if summary is None:
+        raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")
+    return GeometrySummary.model_validate(summary)
 
 
 # ── GeoDataset endpoints ──────────────────────────────────────────────────────

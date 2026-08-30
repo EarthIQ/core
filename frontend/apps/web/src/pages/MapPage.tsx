@@ -259,10 +259,27 @@ export default function MapPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
+  // Source ids the layer panel created — stale cleanup only ever touches
+  // these, so basemap / terrain sources are never removed by accident.
+  const panelSources = useRef<Set<string>>(new Set());
+
   // Synchronize layer tree nodes with MapLibre map sources and layers
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
+
+    const removePanelSource = (id: string) => {
+      panelSources.current.delete(id);
+      try {
+        const style = map.getStyle();
+        for (const lyr of style?.layers ?? []) {
+          if (lyr.source === id && map.getLayer(lyr.id)) map.removeLayer(lyr.id);
+        }
+        if (map.getSource(id)) map.removeSource(id);
+      } catch (err) {
+        console.error("Error removing stale map layer/source:", id, err);
+      }
+    };
 
     const syncLayers = () => {
       if (!map.isStyleLoaded()) {
@@ -272,41 +289,37 @@ export default function MapPage() {
 
       const leafLayers = tree.nodes.filter(
         (n) => n.kind === "layer" && (n as any).tileUrl,
-      );
+      ) as any[];
       const leafIds = new Set(leafLayers.map((l) => l.id));
 
-      // 1. Remove layers whose URL changed
-      leafLayers.forEach((layer: any) => {
-        const existingSource = map.getSource(layer.id) as any;
-        if (existingSource) {
-          const tiles: string[] = existingSource.tiles || [];
-          if (tiles[0] !== layer.tileUrl) {
-            if (map.getLayer(layer.id)) map.removeLayer(layer.id);
-            map.removeSource(layer.id);
-          }
-        }
-      });
-
-      // 2. Remove stale layers not present in the layer tree
-      const style = map.getStyle();
-      if (style && style.layers) {
-        style.layers.forEach((lyr: any) => {
-          if (map.getSource(lyr.id) && !leafIds.has(lyr.id)) {
-            try {
-              if (map.getLayer(lyr.id)) map.removeLayer(lyr.id);
-              if (map.getSource(lyr.id)) map.removeSource(lyr.id);
-            } catch (err) {
-              console.error("Error removing stale map layer/source:", err);
-            }
-          }
-        });
+      // 1. Remove panel sources that are no longer in the tree.
+      for (const id of [...panelSources.current]) {
+        if (!leafIds.has(id)) removePanelSource(id);
       }
 
-      // 3. Add or update layers
-      leafLayers.forEach((layer: any) => {
+      // 2. Add or update layers (vector renders fill + line + circle so
+      //    point / line / polygon datasets all show; raster gets its style).
+      leafLayers.forEach((layer) => {
         try {
-          if (!map.getSource(layer.id)) {
-            if (layer.layerType === "raster") {
+          const existing = map.getSource(layer.id) as any;
+
+          // Rebuild the source when its URL or kind changed.
+          if (existing) {
+            const srcKind = existing.type === "vector" ? "vector" : "raster";
+            const tiles: string[] = existing.tiles || [];
+            if (
+              srcKind !== layer.layerType ||
+              (layer.layerType === "raster" && tiles[0] !== layer.tileUrl)
+            ) {
+              removePanelSource(layer.id);
+            }
+          }
+
+          const visibility = layer.visible ? "visible" : "none";
+          const color = layer.color || "#3b82f6";
+
+          if (layer.layerType === "raster") {
+            if (!map.getSource(layer.id)) {
               map.addSource(layer.id, {
                 type: "raster",
                 tiles: [layer.tileUrl],
@@ -316,49 +329,98 @@ export default function MapPage() {
                 id: layer.id,
                 type: "raster",
                 source: layer.id,
-                layout: {
-                  visibility: layer.visible ? "visible" : "none",
-                },
+                layout: { visibility },
               });
-            } else {
+              panelSources.current.add(layer.id);
+            }
+            if (map.getLayer(layer.id)) {
+              map.setLayoutProperty(layer.id, "visibility", visibility);
+              map.setPaintProperty(
+                layer.id,
+                "raster-opacity",
+                layer.opacity ?? 0.8,
+              );
+              map.setPaintProperty(
+                layer.id,
+                "raster-brightness",
+                layer.brightness ?? 1,
+              );
+              // Panel treats contrast 1 as neutral; MapLibre treats 0 as neutral.
+              map.setPaintProperty(
+                layer.id,
+                "raster-contrast",
+                (layer.contrast ?? 1) - 1,
+              );
+            }
+          } else {
+            if (!map.getSource(layer.id)) {
               map.addSource(layer.id, {
                 type: "vector",
                 tiles: [layer.tileUrl],
               });
               map.addLayer({
-                id: layer.id,
+                id: `${layer.id}-fill`,
                 type: "fill",
                 source: layer.id,
                 "source-layer": "default",
                 paint: {
-                  "fill-color": layer.color || "#3b82f6",
-                  "fill-opacity": layer.opacity ?? 0.6,
+                  "fill-color": color,
+                  "fill-opacity": Math.min(0.85, (layer.opacity ?? 0.8) * 0.6),
                 },
-                layout: {
-                  visibility: layer.visible ? "visible" : "none",
-                },
+                layout: { visibility },
               });
+              map.addLayer({
+                id: `${layer.id}-line`,
+                type: "line",
+                source: layer.id,
+                "source-layer": "default",
+                paint: {
+                  "line-color": color,
+                  "line-width": layer.lineWidth ?? 2,
+                  "line-opacity": layer.opacity ?? 0.9,
+                },
+                layout: { visibility },
+              });
+              map.addLayer({
+                id: `${layer.id}-circle`,
+                type: "circle",
+                source: layer.id,
+                "source-layer": "default",
+                paint: {
+                  "circle-color": color,
+                  "circle-radius": 4 + (layer.lineWidth ?? 2),
+                  "circle-stroke-color": "rgba(255,255,255,0.65)",
+                  "circle-stroke-width": 1.25,
+                  "circle-opacity": layer.opacity ?? 0.9,
+                },
+                layout: { visibility },
+              });
+              panelSources.current.add(layer.id);
             }
-          } else {
-            const visibility = layer.visible ? "visible" : "none";
-            if (map.getLayer(layer.id)) {
-              if (
-                map.getLayoutProperty(layer.id, "visibility") !== visibility
-              ) {
-                map.setLayoutProperty(layer.id, "visibility", visibility);
+            for (const suffix of ["fill", "line", "circle"] as const) {
+              const layerId = `${layer.id}-${suffix}`;
+              if (map.getLayer(layerId)) {
+                map.setLayoutProperty(layerId, "visibility", visibility);
               }
-              if (layer.layerType === "vector") {
-                map.setPaintProperty(
-                  layer.id,
-                  "fill-color",
-                  layer.color || "#3b82f6",
-                );
-                map.setPaintProperty(
-                  layer.id,
-                  "fill-opacity",
-                  layer.opacity ?? 0.6,
-                );
-              }
+            }
+            if (map.getLayer(`${layer.id}-fill`)) {
+              map.setPaintProperty(
+                `${layer.id}-fill`,
+                "fill-color",
+                color,
+              );
+              map.setPaintProperty(
+                `${layer.id}-fill`,
+                "fill-opacity",
+                Math.min(0.85, (layer.opacity ?? 0.8) * 0.6),
+              );
+              map.setPaintProperty(`${layer.id}-line`, "line-color", color);
+              map.setPaintProperty(
+                `${layer.id}-line`,
+                "line-width",
+                layer.lineWidth ?? 2,
+              );
+              map.setPaintProperty(`${layer.id}-circle`, "circle-color", color);
             }
           }
         } catch (e) {
@@ -388,9 +450,13 @@ export default function MapPage() {
 
   // Stable ref so the unmount cleanup can always call the latest version
   const saveConfigRef = useRef<() => Promise<void>>(async () => {});
+  /** In-flight guard so a debounced save and the unmount save never overlap. */
+  const savingRef = useRef(false);
 
   const handleSaveConfig = useCallback(async () => {
     if (!projectId || !currentProject) return;
+    if (savingRef.current) return;
+    savingRef.current = true;
     try {
       const map = mapRef.current;
       const center = map?.getCenter?.() || {
@@ -411,6 +477,8 @@ export default function MapPage() {
       setCurrentProject(updated);
     } catch (err) {
       console.error("Auto-save failed:", err);
+    } finally {
+      savingRef.current = false;
     }
   }, [projectId, currentProject, basemap, tree.nodes]);
 
@@ -425,6 +493,18 @@ export default function MapPage() {
       saveConfigRef.current();
     };
   }, []);
+
+  // Debounced auto-save: persist the layer tree (folders + layers) shortly
+  // after any change, so work is never lost to a refresh / closed tab. The
+  // unmount save above remains as a last resort when navigating away.
+  const hasProject = !!currentProject;
+  useEffect(() => {
+    if (!projectId || !hasProject) return;
+    const t = setTimeout(() => {
+      void saveConfigRef.current();
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [tree.nodes, projectId, hasProject]);
 
   // Published maps handlers
   async function handlePublishMap(config: MapBuilderConfig) {

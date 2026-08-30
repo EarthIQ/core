@@ -1,6 +1,9 @@
 export type LayerKind = "vector" | "raster";
 export type NodeSource = "catalog" | "resource" | "uploaded";
 
+/** Dominant geometry kind of a vector layer (drives the panel's type icon). */
+export type GeometryType = "point" | "line" | "polygon";
+
 export interface BaseTreeNode {
   id: string;
   name: string;
@@ -18,6 +21,10 @@ export interface LayerTreeNode extends BaseTreeNode {
   layerType: LayerKind;
   visible: boolean;
   tileUrl?: string;
+  /** Source dataset id (catalog layer) — used to fetch the geometry summary. */
+  datasetId?: string;
+  /** Dominant geometry kind for vector layers (point / line / polygon). */
+  geometryType?: GeometryType;
   color?: string;
   opacity?: number;
   lineWidth?: number;

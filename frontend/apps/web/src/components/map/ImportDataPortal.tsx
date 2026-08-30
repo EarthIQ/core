@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { Search, Database, X } from "lucide-react";
-import { listDatasets, GeoDatasetOut, getVectorTileUrl } from "@/lib/datasets";
+import {
+  listDatasets,
+  GeoDatasetOut,
+  getVectorTileUrl,
+  getGeometrySummaries,
+  GeometrySummary,
+} from "@/lib/datasets";
 import { nextLayerColor, type NewLayerInput } from "./layer-panel/useLayerTree";
 import { resources, type Resource } from "@modules/resources";
 
@@ -145,8 +151,24 @@ export function ImportDataPortal({
 
   const totalSelected = selected.size + resSelected.size;
 
-  function handleImport() {
+  async function handleImport() {
     const toLayers: NewLayerInput[] = [];
+
+    // Geometry profiles (dominant point/line/polygon) for the selected
+    // catalog vector datasets — best effort; import proceeds without them.
+    const isRasterType = (d: GeoDatasetOut) =>
+      d.type === "raster" || d.type === "remote-sensing";
+    const vectorDatasetIds = datasets
+      .filter((d) => selected.has(d.id) && !isRasterType(d))
+      .map((d) => d.id);
+    let geometry: Record<string, GeometrySummary> = {};
+    if (vectorDatasetIds.length > 0) {
+      try {
+        geometry = await getGeometrySummaries(vectorDatasetIds);
+      } catch {
+        geometry = {};
+      }
+    }
 
     // Catalog datasets
     datasets
@@ -155,12 +177,13 @@ export function ImportDataPortal({
         toLayers.push({
           id: d.id,
           name: d.name,
-          layerType:
-            d.type === "raster" || d.type === "remote-sensing"
-              ? "raster"
-              : "vector",
+          layerType: isRasterType(d) ? "raster" : "vector",
           visible: true,
           tileUrl: d.type === "vector" ? getVectorTileUrl(d.id) : undefined,
+          datasetId: d.id,
+          geometryType: !isRasterType(d)
+            ? (geometry[d.id]?.dominant ?? undefined)
+            : undefined,
           color: nextLayerColor(),
           opacity: 0.8,
           lineWidth: 2,

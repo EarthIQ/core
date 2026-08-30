@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   ChevronRight,
   ChevronDown,
@@ -13,6 +13,7 @@ import {
   EyeOff,
   GripVertical,
 } from "lucide-react";
+import { Dropdown } from "@packages/ui";
 import type { FolderTreeNode } from "./types";
 import type { DropPos } from "./dnd";
 import { getDropPosition } from "./dnd";
@@ -58,21 +59,9 @@ export function FolderRow({
   onDrop,
   children,
 }: FolderRowProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState(folder.name);
-  const menuRef = useRef<HTMLDivElement>(null);
   const rowRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    function handler(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node))
-        setMenuOpen(false);
-    }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [menuOpen]);
 
   function commitRename() {
     const trimmed = nameDraft.trim();
@@ -102,10 +91,10 @@ export function FolderRow({
           if (!rowRef.current) return;
           onDrop(getDropPosition(e, rowRef.current, true));
         }}
-        className={`group relative flex items-center gap-1 py-1.5 px-1 rounded-md cursor-grab active:cursor-grabbing transition-colors duration-150 ${
+        className={`group relative flex items-center gap-1 py-1.5 pr-1 rounded-lg cursor-grab active:cursor-grabbing transition-colors duration-150 ${
           isDragging ? "opacity-40" : "hover:bg-surface-hover"
         }`}
-        style={{ paddingLeft: 2 + depth * 14 }}
+        style={{ paddingLeft: 4 + depth * 14 }}
       >
         {isDropTarget && dropPosition === "before" && (
           <div className="absolute left-2 right-2 -top-0.5 h-0.5 bg-primary rounded-full" />
@@ -118,8 +107,8 @@ export function FolderRow({
         )}
 
         <GripVertical
-          size={10}
-          className="opacity-0 group-hover:opacity-40 text-text-quaternary shrink-0"
+          size={11}
+          className="opacity-35 text-text-quaternary shrink-0"
         />
 
         <button
@@ -134,23 +123,10 @@ export function FolderRow({
           )}
         </button>
 
-        <button
-          type="button"
-          onClick={onToggleVisibility}
-          className="p-0.5 rounded text-text-tertiary hover:text-text-primary shrink-0"
-          title={anyVisible ? "Hide folder layers" : "Show folder layers"}
-        >
-          {anyVisible ? (
-            <Eye size={12} />
-          ) : (
-            <EyeOff size={12} className="opacity-40" />
-          )}
-        </button>
-
         {folder.collapsed ? (
-          <Folder size={13} className="text-warning shrink-0" />
+          <Folder size={14} strokeWidth={1.75} className="text-warning shrink-0" />
         ) : (
-          <FolderOpen size={13} className="text-warning shrink-0" />
+          <FolderOpen size={14} strokeWidth={1.75} className="text-warning shrink-0" />
         )}
 
         {editing ? (
@@ -182,78 +158,49 @@ export function FolderRow({
           {childCount}
         </span>
 
-        <div className="relative" ref={menuRef}>
-          <button
-            type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded text-text-quaternary hover:text-text-primary hover:bg-surface-hover transition-all"
-            title="Folder options"
-          >
-            <MoreHorizontal size={13} />
-          </button>
-          {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-elevated border border-border-primary rounded-lg shadow-dropdown py-1 z-50 animate-fade-in">
-              <button
-                type="button"
-                className="dropdown-item w-full gap-2"
-                onClick={() => {
-                  onAddDataHere();
-                  setMenuOpen(false);
-                }}
-              >
-                <FolderInput size={12} />
-                <span>Add Data Here</span>
-              </button>
-              <button
-                type="button"
-                className="dropdown-item w-full gap-2"
-                onClick={() => {
-                  onAddSubfolder();
-                  setMenuOpen(false);
-                }}
-              >
-                <FolderPlus size={12} />
-                <span>New Subfolder</span>
-              </button>
-              <button
-                type="button"
-                className="dropdown-item w-full gap-2"
-                onClick={() => {
-                  setEditing(true);
-                  setMenuOpen(false);
-                }}
-              >
-                <Pencil size={12} />
-                <span>Rename Folder</span>
-              </button>
-              <button
-                type="button"
-                className="dropdown-item w-full gap-2"
-                onClick={() => {
-                  onToggleVisibility();
-                  setMenuOpen(false);
-                }}
-              >
-                {anyVisible ? <EyeOff size={12} /> : <Eye size={12} />}
-                <span>
-                  {anyVisible ? "Hide All Layers" : "Show All Layers"}
-                </span>
-              </button>
-              <div className="h-px bg-border-secondary mx-2 my-1" />
-              <button
-                type="button"
-                className="dropdown-item w-full gap-2 text-red-400 hover:bg-red-500/10"
-                onClick={() => {
-                  onRemove();
-                  setMenuOpen(false);
-                }}
-              >
-                <Trash2 size={12} />
-                <span>Delete Folder</span>
-              </button>
-            </div>
-          )}
-        </div>
+        {/* ── Right-side visibility toggle: always visible ──────────────── */}
+        <button
+          type="button"
+          onClick={onToggleVisibility}
+          className={`p-1.5 rounded-md transition-colors shrink-0 hover:bg-surface-hover ${
+            anyVisible
+              ? "text-text-secondary hover:text-text-primary"
+              : "text-text-quaternary hover:text-text-primary"
+          }`}
+          title={anyVisible ? "Hide folder layers" : "Show folder layers"}
+          aria-label={
+            anyVisible ? "Hide all folder layers" : "Show all folder layers"
+          }
+        >
+          {anyVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+        </button>
+
+        <Dropdown
+          trigger={
+            <button
+              type="button"
+              className="p-1.5 rounded-md text-text-quaternary hover:text-text-primary hover:bg-surface-hover transition-colors border-none bg-transparent cursor-pointer"
+              title="Folder options"
+              aria-label="Folder options"
+            >
+              <MoreHorizontal size={14} />
+            </button>
+          }
+          placement="bottom-end"
+          items={[
+            { key: "add-data", label: "Add Data Here", icon: <FolderInput size={15} />, onClick: onAddDataHere },
+            { key: "subfolder", label: "New Subfolder", icon: <FolderPlus size={15} />, onClick: onAddSubfolder },
+            { key: "rename", label: "Rename Folder", icon: <Pencil size={15} />, onClick: () => setEditing(true) },
+            {
+              key: "visibility",
+              label: anyVisible ? "Hide All Layers" : "Show All Layers",
+              icon: anyVisible ? <EyeOff size={15} /> : <Eye size={15} />,
+              onClick: onToggleVisibility,
+            },
+            { key: "divider", divider: true },
+            { key: "delete", label: "Delete Folder", icon: <Trash2 size={15} />, danger: true, onClick: onRemove },
+          ]}
+        />
       </div>
 
       {!folder.collapsed && (

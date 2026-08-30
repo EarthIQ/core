@@ -819,3 +819,115 @@ async def get_download(
     data = await object_storage.download_file(dataset.storage_key)
     filename = dataset.storage_key.rsplit("/", 1)[-1]
     return data, filename, _content_type_for_format(dataset.format)
+
+
+# ---------------------------------------------------------------------------
+# Geometry summary (point / line / polygon profile of a dataset)
+# ---------------------------------------------------------------------------
+
+_GEOMETRY_PROFILE_SQL = text(
+    """
+    WITH feats AS (
+        SELECT ST_AsText(f.geom) AS wkt
+        FROM geo_features f
+        WHERE f.dataset_id = :dsid AND f.geom IS NOT NULL
+    )
+    SELECT
+        COALESCE(SUM(
+            (length(wkt) - length(replace(wkt, 'POINT (', '')))  / length('POINT (')
+          + (length(wkt) - length(replace(wkt, 'POINT(', '')))   / length('POINT(')
+        ), 0) AS points,
+        COALESCE(SUM(
+            (length(wkt) - length(replace(wkt, 'LINESTRING (', ''))) / length('LINESTRING (')
+          + (length(wkt) - length(replace(wkt, 'LINESTRING(', '')))  / length('LINESTRING(')
+        ), 0) AS lines,
+        COALESCE(SUM(
+            (length(wkt) - length(replace(wkt, 'POLYGON (', ''))) / length('POLYGON (')
+          + (length(wkt) - length(replace(wkt, 'POLYGON(', '')))  / length('POLYGON(')
+        ), 0) AS polygons
+    FROM feats
+    """
+)
+
+_GEOMETRY_KINDS = ("point", "line", "polygon")
+
+
+async def get_geometry_summary(
+    db: AsyncSession, dataset_id: str
+) -> dict[str, Any] | None:
+    """Compute the geometry-type profile of a dataset's features.
+
+    Returns a dict (shaped like ``GeometrySummary``) with:
+      - ``kind``     — ``"vector"`` or ``"raster"``
+      - ``dominant`` — ``"point"`` | ``"line"`` | ``"polygon"`` | None
+      - ``counts``   — per-kind feature counts
+      - ``total``    — total features with a geometry
+
+    Degrades gracefully on non-PostGIS engines (e.g. in-memory SQLite) by
+    returning an empty profile instead of raising.
+    """
+    dataset = await get_dataset(db, dataset_id)
+    if dataset is None:
+        return None
+
+    if dataset.type in ("raster", "remote-sensing"):
+        return {
+            "dataset_id": dataset.id,
+            "kind": "raster",
+            "dominant": None,
+            "counts": {},
+            "total": dataset.feature_count or 0,
+        }
+
+    counts: dict[str, int] = {}
+    try:
+        row = (
+            await db.execute(_GEOMETRY_PROFILE_SQL, {"dsid": dataset_id})
+        ).first()
+        if row is not None:
+            for attr, label in (
+                ("points", "point"),
+                ("lines", "line"),
+                ("polygons", "polygon"),
+            ):
+                value = int(getattr(row, attr))
+                if value:
+                    counts[label] = value
+    except Exception:
+        # Non-PostGIS engine (no ST_AsText/replace) or missing feature table.
+        return {
+            "dataset_id": dataset.id,
+            "kind": "vector",
+            "dominant": None,
+            "counts": {},
+            "total": 0,
+        }
+
+    total = sum(counts.values())
+    dominant: str | None = None
+    candidates = {k: v for k, v in counts.items() if k in _GEOMETRY_KINDS}
+    if candidates:
+        dominant = max(candidates.items(), key=lambda kv: kv[1])[0]
+
+    return {
+        "dataset_id": dataset.id,
+        "kind": "vector",
+        "dominant": dominant,
+        "counts": counts,
+        "total": total,
+    }
+
+
+async def get_geometry_summaries(
+    db: AsyncSession, dataset_ids: list[str]
+) -> dict[str, dict[str, Any]]:
+    """Batch variant of :func:`get_geometry_summary` keyed by dataset id.
+
+    Unknown dataset ids are simply omitted from the result.
+    """
+    out: dict[str, dict[str, Any]] = {}
+    for dataset_id in dataset_ids:
+        summary = await get_geometry_summary(db, dataset_id)
+        if summary is not None:
+            out[dataset_id] = summary
+    return out

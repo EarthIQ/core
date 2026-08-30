@@ -5,10 +5,18 @@ export type PermissionLevel = "read" | "write" | "admin";
 export interface MapLayerItem {
   id: string;
   name: string;
-  type: "vector" | "raster";
-  visible: boolean;
+  type?: "vector" | "raster";
+  visible?: boolean;
   url?: string;
   style?: Record<string, unknown>;
+  /** Folder nodes from the layer panel tree have no `type`/`url`. */
+  kind?: "layer" | "folder";
+  parentId?: string | null;
+  order?: number;
+  collapsed?: boolean;
+  datasetId?: string;
+  geometryType?: string;
+  source?: string;
 }
 
 export interface GroupAccess {

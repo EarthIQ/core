@@ -2,19 +2,38 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, List, Literal, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 PermissionLevel = Literal["read", "write", "admin"]
 
 
 class MapLayerItem(BaseModel):
+    """One entry of ``layers_config``.
+
+    An entry is either a renderable *layer* (``type`` of ``vector`` /
+    ``raster``, usually with a ``url``) or a *folder* node of the layer
+    panel tree (``kind == "folder"`` with ``parentId`` / ``order`` and no
+    ``type``). Frontend-only metadata (``datasetId``, ``geometryType``,
+    ``source``, ...) is declared / allowed so it survives save-and-load
+    round-trips untouched.
+    """
+    model_config = ConfigDict(extra="allow")
+
     id: str
     name: str
-    type: Literal["vector", "raster"]
+    type: Optional[Literal["vector", "raster"]] = None
     visible: bool = False
     url: Optional[str] = None
     style: Optional[dict[str, Any]] = None
+    # Folder-tree / dataset metadata (round-tripped verbatim)
+    kind: Optional[str] = None
+    parentId: Optional[str] = None
+    order: Optional[int] = None
+    collapsed: Optional[bool] = None
+    datasetId: Optional[str] = None
+    geometryType: Optional[str] = None
+    source: Optional[str] = None
 
 
 class GroupAccessSchema(BaseModel):

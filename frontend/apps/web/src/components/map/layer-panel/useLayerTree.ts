@@ -5,6 +5,7 @@ import type {
   LayerTreeNode,
   LayerKind,
   NodeSource,
+  GeometryType,
 } from "./types";
 
 let _uid = 0;
@@ -38,6 +39,8 @@ export interface NewLayerInput {
   color?: string;
   opacity?: number;
   lineWidth?: number;
+  datasetId?: string;
+  geometryType?: GeometryType;
 }
 
 export function useLayerTree(initial: TreeNode[] = []) {
@@ -93,6 +96,8 @@ export function useLayerTree(initial: TreeNode[] = []) {
           color: l.color ?? nextLayerColor(),
           opacity: l.opacity ?? 0.8,
           lineWidth: l.lineWidth ?? 2,
+          datasetId: l.datasetId,
+          geometryType: l.geometryType,
           source: l.source ?? "catalog",
         }));
         return [...prev, ...additions];

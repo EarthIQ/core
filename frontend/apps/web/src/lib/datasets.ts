@@ -78,6 +78,15 @@ export interface DatasetPreview {
   asset_meta: Record<string, unknown>;
 }
 
+/** Geometry-type profile of a dataset (point / line / polygon mix). */
+export interface GeometrySummary {
+  dataset_id: string;
+  kind: "vector" | "raster" | string;
+  dominant: "point" | "line" | "polygon" | null;
+  counts: Record<string, number>;
+  total: number;
+}
+
 export interface UploadDatasetParams {
   file: File;
   format?: DatasetFormat | string;
@@ -230,6 +239,44 @@ export async function previewDataset(
     throw new Error(body?.detail ?? `HTTP ${res.status}`);
   }
   return (await res.json()) as DatasetPreview;
+}
+
+/** Fetch the geometry-type profile (dominant point/line/polygon) for one dataset. */
+export async function getGeometrySummary(
+  datasetId: string,
+): Promise<GeometrySummary> {
+  const res = await fetch(
+    `${API_BASE}/api/data/datasets/${encodeURIComponent(datasetId)}/geometry`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.detail ?? `HTTP ${res.status}`);
+  }
+  return (await res.json()) as GeometrySummary;
+}
+
+/**
+ * Batch-fetch geometry profiles for several datasets.
+ * Unknown ids are omitted by the server; failures reject the promise
+ * (callers should treat the profile as optional and fall back to `{}`).
+ */
+export async function getGeometrySummaries(
+  datasetIds: string[],
+): Promise<Record<string, GeometrySummary>> {
+  if (datasetIds.length === 0) return {};
+  const res = await fetch(
+    `${API_BASE}/api/data/datasets/geometry?ids=${encodeURIComponent(
+      datasetIds.slice(0, 100).join(","),
+    )}`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.detail ?? `HTTP ${res.status}`);
+  }
+  const data = (await res.json()) as { items: Record<string, GeometrySummary> };
+  return data.items ?? {};
 }
 
 /** Upload a dataset file with metadata. Reports progress via onProgress callback. */

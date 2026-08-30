@@ -137,6 +137,19 @@ class GeoDatasetOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class GeometrySummary(BaseModel):
+    """Geometry-type profile of a dataset (point / line / polygon mix).
+
+    ``dominant`` is the most common geometry kind among the dataset's
+    features (``None`` when the dataset is raster or has no geometries).
+    """
+    dataset_id: str
+    kind: str  # "vector" | "raster"
+    dominant: Optional[str] = None  # "point" | "line" | "polygon"
+    counts: Dict[str, int] = Field(default_factory=dict)
+    total: int = 0
+
+
 class GeoDatasetUpdate(BaseModel):
     """Partial metadata update payload (PATCH /datasets/{id})."""
     name: Optional[str] = Field(default=None, min_length=1, max_length=512)

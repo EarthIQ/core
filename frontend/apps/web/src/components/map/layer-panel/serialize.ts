@@ -23,6 +23,8 @@ export function toMapLayerItems(nodes: TreeNode[]): any[] {
       type: l.layerType,
       visible: l.visible,
       url: l.tileUrl,
+      datasetId: l.datasetId,
+      geometryType: l.geometryType,
       style: {
         color: l.color,
         opacity: l.opacity,
@@ -57,6 +59,8 @@ export function fromMapLayerItems(items: any[]): TreeNode[] {
       layerType: raw.type ?? raw.layerType ?? "vector",
       visible: raw.visible ?? true,
       tileUrl: raw.url ?? raw.tileUrl,
+      datasetId: raw.datasetId ?? undefined,
+      geometryType: raw.geometryType ?? undefined,
       color: raw.style?.color ?? raw.color,
       opacity: raw.style?.opacity ?? raw.opacity,
       lineWidth: raw.style?.lineWidth ?? raw.lineWidth,

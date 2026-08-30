@@ -15,6 +15,8 @@ interface LayerTreeProps {
   onMove: (id: string, newParentId: string | null, targetIndex: number) => void;
   onAddFolderInside: (parentId: string) => void;
   onAddDataToFolder: (parentId: string) => void;
+  /** When set, only nodes in this id-set are rendered (search filter). */
+  filterIds?: Set<string> | null;
 }
 
 export function LayerTree({
@@ -28,6 +30,7 @@ export function LayerTree({
   onMove,
   onAddFolderInside,
   onAddDataToFolder,
+  filterIds = null,
 }: LayerTreeProps) {
   const { draggingId, setDraggingId, dropTarget, setDropTarget, reset } =
     useLayerDnd();
@@ -49,9 +52,18 @@ export function LayerTree({
   }
 
   function renderLevel(parentId: string | null, depth: number) {
-    return childrenOf(parentId).map((node) =>
-      isFolder(node) ? (
-        <div key={node.id}>
+    return childrenOf(parentId).map((node) => {
+      // Search filter: skip nodes that are not in the visible set.
+      if (filterIds && !filterIds.has(node.id)) return null;
+
+      if (isFolder(node)) {
+        // While filtering, folders with visible children stay expanded.
+        const hasVisibleChildren =
+          filterIds !== null &&
+          childrenOf(node.id).some((c) => filterIds.has(c.id));
+        const expanded = !node.collapsed || hasVisibleChildren;
+        return (
+          <div key={node.id}>
           <FolderRow
             folder={node}
             depth={depth}
@@ -75,10 +87,13 @@ export function LayerTree({
             }
             onDrop={(pos) => handleDrop(node, pos)}
           >
-            {!node.collapsed && renderLevel(node.id, depth + 1)}
-          </FolderRow>
-        </div>
-      ) : (
+            {expanded && renderLevel(node.id, depth + 1)}
+            </FolderRow>
+          </div>
+        );
+      }
+
+      return (
         <LayerRow
           key={node.id}
           layer={node}
@@ -95,8 +110,8 @@ export function LayerTree({
           onDragOverRow={(pos) => setDropTarget({ id: node.id, position: pos })}
           onDrop={(pos) => handleDrop(node, pos)}
         />
-      ),
-    );
+      );
+    });
   }
 
   return <div className="flex flex-col gap-0.5">{renderLevel(null, 0)}</div>;
