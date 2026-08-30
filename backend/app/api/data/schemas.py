@@ -160,6 +160,15 @@ class GeoDatasetUpdate(BaseModel):
     crs: Optional[str] = Field(default=None, max_length=128)
 
 
+class FeaturesIn(BaseModel):
+    """Payload for replacing a dataset's features (in-app map editor)."""
+
+    features: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="GeoJSON features (id / geometry / properties) to store.",
+    )
+
+
 class GeoDatasetListResponse(BaseModel):
     items: List[GeoDatasetOut]
     total: int

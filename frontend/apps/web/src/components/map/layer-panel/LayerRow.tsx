@@ -12,6 +12,7 @@ import {
   Hexagon,
   Grid3x3,
   Layers,
+  Shapes,
   type LucideIcon,
 } from "lucide-react";
 import { Dropdown } from "@packages/ui";
@@ -29,6 +30,8 @@ interface LayerRowProps {
   onOpenStyle: () => void;
   onRemove: () => void;
   onRename: (name: string) => void;
+  /** Edit the layer's shapes on the map (vector layers with a dataset). */
+  onEditLayer?: () => void;
   onDragStart: () => void;
   onDragEnd: () => void;
   onDragOverRow: (pos: DropPos) => void;
@@ -98,6 +101,7 @@ export function LayerRow({
   onOpenStyle,
   onRemove,
   onRename,
+  onEditLayer,
   onDragStart,
   onDragEnd,
   onDragOverRow,
@@ -185,6 +189,20 @@ export function LayerRow({
         {!editing && layer.layerType === "raster" && (
           <RasterStyleLine layer={layer} />
         )}
+        {!editing && layer.pending && (
+          <div className="mt-1 flex items-center gap-1.5 min-w-0">
+            <span
+              className="h-1.5 w-1.5 rounded-full animate-pulse shrink-0"
+              style={{ background: "var(--warning)" }}
+            />
+            <span
+              className="text-[0.6rem] leading-none truncate"
+              style={{ color: "var(--warning-text)" }}
+            >
+              unsaved
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ── Right-side controls: always visible ──────────────────────────── */}
@@ -221,6 +239,16 @@ export function LayerRow({
             icon: <Palette size={15} />,
             onClick: onOpenStyle,
           },
+          ...(onEditLayer
+            ? [
+                {
+                  key: "edit",
+                  label: "Edit Shapes",
+                  icon: <Shapes size={15} />,
+                  onClick: onEditLayer,
+                },
+              ]
+            : []),
           {
             key: "rename",
             label: "Rename Layer",

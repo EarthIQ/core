@@ -30,6 +30,8 @@ interface LayerPanelProps {
   onOpenStyle: (layer: TreeNode) => void;
   onRemoveNode: (id: string) => void;
   onRenameNode: (id: string, name: string) => void;
+  /** Edit a saved vector layer's shapes on the map (optional). */
+  onEditLayer?: (layer: TreeNode) => void;
   onMoveNode: (
     id: string,
     newParentId: string | null,
@@ -82,6 +84,7 @@ export function LayerPanel({
   onToggleVisibility,
   onToggleCollapse,
   onOpenStyle,
+  onEditLayer,
   onRemoveNode,
   onRenameNode,
   onMoveNode,
@@ -380,6 +383,7 @@ export function LayerPanel({
               onToggleVisibility={onToggleVisibility}
               onToggleCollapse={onToggleCollapse}
               onOpenStyle={onOpenStyle}
+              onEditLayer={onEditLayer}
               onRemove={onRemoveNode}
               onRename={onRenameNode}
               onMove={onMoveNode}

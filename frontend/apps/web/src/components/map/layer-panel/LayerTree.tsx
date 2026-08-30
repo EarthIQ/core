@@ -12,6 +12,8 @@ interface LayerTreeProps {
   onOpenStyle: (layer: TreeNode) => void;
   onRemove: (id: string) => void;
   onRename: (id: string, name: string) => void;
+  /** Edit a saved vector layer's shapes on the map. */
+  onEditLayer?: (layer: TreeNode) => void;
   onMove: (id: string, newParentId: string | null, targetIndex: number) => void;
   onAddFolderInside: (parentId: string) => void;
   onAddDataToFolder: (parentId: string) => void;
@@ -27,6 +29,7 @@ export function LayerTree({
   onOpenStyle,
   onRemove,
   onRename,
+  onEditLayer,
   onMove,
   onAddFolderInside,
   onAddDataToFolder,
@@ -105,6 +108,11 @@ export function LayerTree({
           onOpenStyle={() => onOpenStyle(node)}
           onRemove={() => onRemove(node.id)}
           onRename={(name) => onRename(node.id, name)}
+          onEditLayer={
+            onEditLayer && !node.pending
+              ? () => onEditLayer(node)
+              : undefined
+          }
           onDragStart={() => setDraggingId(node.id)}
           onDragEnd={reset}
           onDragOverRow={(pos) => setDropTarget({ id: node.id, position: pos })}

@@ -5,6 +5,8 @@ import type {
   AnnotationKind,
   Bookmark,
   CommentItem,
+  DrawnFeature,
+  DrawSession,
   PointAnnotation,
   ShapeAnnotation,
 } from "./types";
@@ -55,6 +57,8 @@ interface Snapshot {
   annotations: Annotation[];
   bookmarks: Bookmark[];
   comments: CommentItem[];
+  /** Committed TerraDraw shapes (undo/redo covers these too). */
+  drawnFeatures: DrawnFeature[];
 }
 
 interface MapEditorState extends Snapshot {
@@ -62,6 +66,8 @@ interface MapEditorState extends Snapshot {
   selectionId: string | null;
   pendingPointKind: AnnotationKind | null;
   pendingRadius: number | null;
+  /** Active shape draw-session (create new layer / edit saved layer). */
+  drawSession: DrawSession | null;
   past: Snapshot[];
   future: Snapshot[];
   bookmarkOpen: boolean;
@@ -81,6 +87,20 @@ interface MapEditorState extends Snapshot {
   ) => void;
   removeAnnotation: (id: string) => void;
   clearAnnotations: () => void;
+
+  // drawn features (TerraDraw engine)
+  /** Update drawn features without a history entry (e.g. live edits). */
+  syncDrawnFeatures: (features: DrawnFeature[]) => void;
+  /** Update drawn features with a history entry (create / delete / restore). */
+  commitDrawnFeatures: (features: DrawnFeature[]) => void;
+  /** Remove all drawn features with a history entry. */
+  clearDrawnFeatures: () => void;
+
+  // draw-session (draw new layer / edit saved layer)
+  /** Begin a shape session; resets the undo/redo history to a clean slate. */
+  startDrawSession: (session: DrawSession) => void;
+  /** End the shape session: clears features + history + session. */
+  endDrawSession: () => void;
 
   // bookmarks (history-tracked)
   addBookmark: (
@@ -116,6 +136,7 @@ function snapshot(s: MapEditorState): Snapshot {
     annotations: s.annotations,
     bookmarks: s.bookmarks,
     comments: s.comments,
+    drawnFeatures: s.drawnFeatures,
   };
 }
 
@@ -134,6 +155,8 @@ export const useMapEditor = create<MapEditorState>((set) => ({
   annotations: [],
   bookmarks: [],
   comments: [],
+  drawnFeatures: [],
+  drawSession: null,
   past: [],
   future: [],
   bookmarkOpen: false,
@@ -178,6 +201,39 @@ export const useMapEditor = create<MapEditorState>((set) => ({
         ? { ...pushHistory(s), annotations: [], selectionId: null }
         : {},
     ),
+
+  syncDrawnFeatures: (features) =>
+    set((s) =>
+      JSON.stringify(s.drawnFeatures) === JSON.stringify(features)
+        ? {}
+        : { drawnFeatures: features, selectionId: null },
+    ),
+
+  commitDrawnFeatures: (features) =>
+    set((s) =>
+      JSON.stringify(s.drawnFeatures) === JSON.stringify(features)
+        ? {}
+        : { ...pushHistory(s), drawnFeatures: features, selectionId: null },
+    ),
+
+  clearDrawnFeatures: () =>
+    set((s) =>
+      s.drawnFeatures.length
+        ? { ...pushHistory(s), drawnFeatures: [], selectionId: null }
+        : {},
+    ),
+
+  startDrawSession: (session) =>
+    set({ drawSession: session, past: [], future: [], selectionId: null }),
+
+  endDrawSession: () =>
+    set({
+      drawSession: null,
+      drawnFeatures: [],
+      past: [],
+      future: [],
+      selectionId: null,
+    }),
 
   addBookmark: (name, view) =>
     set((s) => ({
@@ -255,6 +311,8 @@ export const useMapEditor = create<MapEditorState>((set) => ({
       annotations: snap.annotations,
       bookmarks: snap.bookmarks,
       comments: snap.comments,
+      drawnFeatures: snap.drawnFeatures ?? [],
+      drawSession: null,
       past: [],
       future: [],
       selectionId: null,
@@ -267,6 +325,10 @@ export function selectSelectedAnnotation(
 ): Annotation | undefined {
   return s.annotations.find((a) => a.id === s.selectionId);
 }
+
+/** Whether a shape draw-session is active (drives Save/Undo/Redo buttons). */
+export const selectSessionActive = (s: MapEditorState) =>
+  s.drawSession !== null;
 
 /** Whether undo is currently possible. */
 export const selectCanUndo = (s: MapEditorState) => s.past.length > 0;

@@ -25,7 +25,7 @@ import {
   toMapLayerItems,
   fromMapLayerItems,
 } from "@/components/map/layer-panel/serialize";
-import type { TreeNode } from "@/components/map/layer-panel/types";
+import type { TreeNode, LayerTreeNode } from "@/components/map/layer-panel/types";
 import { useMapLibre, BASEMAP_STYLES } from "@/hooks/useMapLibre";
 import { PublishedMapsPanel } from "@/components/map/PublishedMapsPanel";
 import type { MapBuilderConfig } from "@/components/map/MapBuilder";
@@ -37,8 +37,17 @@ import {
   useMapEditor,
   selectCanUndo,
   selectCanRedo,
+  selectSessionActive,
 } from "@/lib/mapEditor/store";
+import {
+  uploadDataset,
+  getVectorTileUrl,
+  getGeometrySummary,
+  getDatasetFeatures,
+  replaceDatasetFeatures,
+} from "@/lib/datasets";
 import { useMapTools } from "@/hooks/useMapTools";
+import { useMapDrawing } from "@/hooks/useMapDrawing";
 import { AnnotationOverlays } from "@/components/map/AnnotationOverlays";
 import { AnnotationInspector } from "@/components/map/AnnotationInspector";
 import { BookmarkPanel } from "@/components/map/BookmarkPanel";
@@ -152,6 +161,8 @@ export default function MapPage() {
 
   // ── Map drawing / annotation engine ──────────────────────────────────────────
   useMapTools(mapRef, mapReady);
+  // TerraDraw draw engine (Draw group) with shared undo/redo (mapEditor store)
+  useMapDrawing(mapInstance, mapReady);
 
   // Map editor state (tools, annotations, bookmarks, comments, history)
   const activeTool = useMapEditor((s) => s.activeTool);
@@ -169,6 +180,173 @@ export default function MapPage() {
   const storeAnnotations = useMapEditor((s) => s.annotations);
   const storeBookmarks = useMapEditor((s) => s.bookmarks);
   const storeComments = useMapEditor((s) => s.comments);
+  const sessionActive = useMapEditor(selectSessionActive);
+  const drawSessionDetail = useMapEditor((s) => s.drawSession);
+  const drawnFeatures = useMapEditor((s) => s.drawnFeatures);
+
+  const addLayers = tree.addLayers;
+  const patchLayer = tree.patchLayer;
+  const removeNode = tree.removeNode;
+
+  /* ── Shape draw-sessions ──────────────────────────────────────────────────
+     - create: the first committed shape spawns a pending "Drawings" layer in
+       the panel; Save uploads the shapes as a dataset and the layer becomes
+       a real vector layer (the panel node is patched in place).
+     - edit:   a saved vector layer's features are loaded into the TerraDraw
+       editor (add / modify / delete); Save writes them back to the dataset.
+     While a session is active the action bar shows Save + Undo/Redo; after
+     Save they all disappear. ──────────────────────────────────────────────── */
+  const [drawSaving, setDrawSaving] = useState(false);
+  const [layerEditBusy, setLayerEditBusy] = useState<string | null>(null);
+
+  // Create-session: starts when the first shape is committed.
+  useEffect(() => {
+    if (drawnFeatures.length === 0) return;
+    if (useMapEditor.getState().drawSession) return;
+    const nodeId = `drawn_${Date.now().toString(36)}`;
+    addLayers([
+      {
+        id: nodeId,
+        name: "Drawings",
+        layerType: "vector",
+        visible: true,
+        pending: true,
+      },
+    ]);
+    useMapEditor.getState().startDrawSession({
+      mode: "create",
+      layerNodeId: nodeId,
+    });
+  }, [drawnFeatures.length, addLayers]);
+
+  // Create-session: ends again if every drawn shape is removed (e.g. undo).
+  useEffect(() => {
+    if (drawnFeatures.length !== 0) return;
+    const s = useMapEditor.getState().drawSession;
+    if (!s || s.mode !== "create") return;
+    removeNode(s.layerNodeId);
+    useMapEditor.getState().endDrawSession();
+  }, [drawnFeatures.length, removeNode]);
+
+  /** Save the active draw-session (new layer → upload; edit → replace). */
+  const handleSaveDrawings = useCallback(async () => {
+    const store = useMapEditor.getState();
+    const session = store.drawSession;
+    const features = store.drawnFeatures;
+    if (!session || drawSaving) return;
+    if (session.mode === "create" && features.length === 0) return;
+    setDrawSaving(true);
+    try {
+      if (session.mode === "create") {
+        const file = new File(
+          [JSON.stringify({ type: "FeatureCollection", features })],
+          "drawings.geojson",
+          { type: "application/geo+json" },
+        );
+        const ds = await uploadDataset({
+          file,
+          format: "GeoJSON",
+          type: "vector",
+          tags: "drawn,map-editor",
+          description: "Shapes drawn on the map",
+          source: "map-drawing",
+        });
+        let geometryType: "point" | "line" | "polygon" | undefined;
+        try {
+          geometryType =
+            (await getGeometrySummary(ds.id)).dominant ?? undefined;
+        } catch {
+          geometryType = undefined;
+        }
+        const node = tree.getNode(session.layerNodeId);
+        patchLayer(session.layerNodeId, {
+          datasetId: ds.id,
+          tileUrl: getVectorTileUrl(ds.id),
+          geometryType,
+          source: "uploaded",
+          pending: false,
+        });
+        setStatusMsg(
+          `Saved ${features.length} shape${
+            features.length === 1 ? "" : "s"
+          } to "${node?.name ?? "Drawings"}"`,
+        );
+      } else if (session.datasetId) {
+        await replaceDatasetFeatures(session.datasetId, features);
+        const node = tree.getNode(session.layerNodeId) as
+          | LayerTreeNode
+          | undefined;
+        const base =
+          node?.tileUrl?.split("?")[0] ?? getVectorTileUrl(session.datasetId);
+        // Cache-bust the MVT tiles so edited geometry renders immediately.
+        patchLayer(session.layerNodeId, {
+          tileUrl: `${base}?v=${Date.now()}`,
+          visible: session.wasVisible ?? true,
+        });
+        setStatusMsg(`Saved edits to "${node?.name ?? "layer"}"`);
+      }
+      useMapEditor.getState().endDrawSession();
+      window.setTimeout(() => setStatusMsg(null), 3000);
+    } catch (err) {
+      console.error("Failed to save shapes:", err);
+      setStatusMsg(
+        err instanceof Error ? err.message : "Failed to save shapes",
+      );
+      window.setTimeout(() => setStatusMsg(null), 4000);
+    } finally {
+      setDrawSaving(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawSaving, patchLayer]);
+
+  /** Open a saved vector layer in the TerraDraw editor (add / edit / delete). */
+  const handleEditLayer = useCallback(
+    async (node: TreeNode) => {
+      const layer = node as LayerTreeNode;
+      if (layer.layerType !== "vector" || !layer.datasetId) return;
+      if (layerEditBusy) return;
+      const store = useMapEditor.getState();
+      const existing = store.drawSession;
+      if (existing && existing.layerNodeId !== layer.id) {
+        const discard = window.confirm(
+          "You have unsaved drawing changes. Discard them and edit this layer?",
+        );
+        if (!discard) return;
+        if (existing.mode === "create") removeNode(existing.layerNodeId);
+        store.endDrawSession();
+      }
+      setLayerEditBusy(layer.id);
+      try {
+        const features = await getDatasetFeatures(layer.datasetId);
+        store.startDrawSession({
+          mode: "edit",
+          layerNodeId: layer.id,
+          datasetId: layer.datasetId,
+          wasVisible: layer.visible,
+        });
+        store.syncDrawnFeatures(features);
+        // Hide the tile rendering while TerraDraw shows the editable features
+        // (restored with its original visibility on Save).
+        patchLayer(layer.id, { visible: false });
+        store.setActiveTool({ groupId: "navigate", variantId: "select" });
+        setStatusMsg(
+          `Editing "${layer.name}" — drag points to edit, add new shapes, then Save`,
+        );
+        window.setTimeout(() => setStatusMsg(null), 4000);
+      } catch (err) {
+        console.error("Failed to load layer for editing:", err);
+        setStatusMsg(
+          err instanceof Error
+            ? err.message
+            : "Failed to open layer for editing",
+        );
+        window.setTimeout(() => setStatusMsg(null), 4000);
+      } finally {
+        setLayerEditBusy(null);
+      }
+    },
+    [layerEditBusy, removeNode, patchLayer],
+  );
 
   // Keyboard shortcuts: tool selection + undo/redo
   useEffect(() => {
@@ -243,10 +421,12 @@ export default function MapPage() {
             : [],
         );
         // Hydrate annotation/bookmark/comment state from the backend
+        // (drawn shapes are in-memory for now → reset to empty)
         hydrate({
           annotations: projData.annotations ?? [],
           bookmarks: projData.bookmarks ?? [],
           comments: projData.comments ?? [],
+          drawnFeatures: [],
         });
         flyOrQueue({
           center: [projData.center_lng, projData.center_lat],
@@ -313,7 +493,7 @@ export default function MapPage() {
             const tiles: string[] = existing.tiles || [];
             if (
               srcKind !== layer.layerType ||
-              (layer.layerType === "raster" && tiles[0] !== layer.tileUrl)
+              tiles[0] !== layer.tileUrl
             ) {
               removePanelSource(layer.id);
             }
@@ -684,6 +864,7 @@ export default function MapPage() {
           onToggleVisibility={tree.toggleVisibility}
           onToggleCollapse={tree.toggleCollapse}
           onOpenStyle={(l) => setStyledLayer(l)}
+          onEditLayer={canEdit ? handleEditLayer : undefined}
           onRemoveNode={(id) => {
             tree.removeNode(id);
             if (styledLayer?.id === id) setStyledLayer(null);
@@ -768,9 +949,19 @@ export default function MapPage() {
         onUndo={undo}
         onRedo={redo}
         onClearAnnotations={clearAnnotations}
+        sessionActive={sessionActive}
+        onSave={handleSaveDrawings}
+        saving={drawSaving}
         toolboxActive={toolboxOpen}
         onToggleToolbox={() => setToolboxOpen((v) => !v)}
       />
+
+      {/* Shape-session status toast (save success / failure feedback) */}
+      {statusMsg && (
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30 bg-elevated border border-base rounded-full shadow-xl px-4 py-2 text-xs text-base animate-fade-in-up whitespace-nowrap max-w-[80vw] overflow-hidden text-ellipsis">
+          {statusMsg}
+        </div>
+      )}
 
       {/* Annotation inspector (only visible when something is selected) */}
       <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30">

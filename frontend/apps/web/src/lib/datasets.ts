@@ -87,6 +87,15 @@ export interface GeometrySummary {
   total: number;
 }
 
+/** A feature stored in the PostGIS feature store (GeoJSON Feature). */
+export interface GeoDatasetFeature {
+  id: string;
+  type: "Feature";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  geometry: any;
+  properties: Record<string, unknown>;
+}
+
 export interface UploadDatasetParams {
   file: File;
   format?: DatasetFormat | string;
@@ -329,6 +338,54 @@ export async function uploadDataset(
 
     xhr.send(form);
   });
+}
+
+/** Fetch a dataset's stored features (for editing on the map). */
+export async function getDatasetFeatures(
+  datasetId: string,
+): Promise<GeoDatasetFeature[]> {
+  const res = await fetch(
+    `${API_BASE}/api/data/datasets/${datasetId}/features`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.detail ?? `HTTP ${res.status}`);
+  }
+  const data = (await res.json()) as {
+    type: string;
+    features: GeoDatasetFeature[];
+  };
+  return data.features ?? [];
+}
+
+/**
+ * Replace a dataset's stored features (save in-app map edits back to the
+ * same layer). Accepts GeoJSON features; `geometry` / `properties` are the
+ * only fields used server-side.
+ */
+export async function replaceDatasetFeatures(
+  datasetId: string,
+  features: Array<{
+    id?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    geometry?: any;
+    properties?: Record<string, unknown>;
+  }>,
+): Promise<GeoDatasetOut> {
+  const res = await fetch(
+    `${API_BASE}/api/data/datasets/${datasetId}/features`,
+    {
+      method: "PUT",
+      headers: { ...authHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify({ features }),
+    },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.detail ?? `HTTP ${res.status}`);
+  }
+  return (await res.json()) as GeoDatasetOut;
 }
 
 /** Delete a dataset by ID. */

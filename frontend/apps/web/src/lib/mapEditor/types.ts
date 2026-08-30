@@ -69,6 +69,39 @@ export interface ShapeAnnotation extends BaseAnnotation {
 
 export type Annotation = PointAnnotation | ShapeAnnotation;
 
+/**
+ * A feature committed by the TerraDraw-based drawing engine
+ * (minimal GeoJSON Feature). Kept structural to avoid a hard geojson-types dep.
+ */
+export interface DrawnFeature {
+  id: string;
+  type: "Feature";
+  /** GeoJSON geometry. Kept as `any` to avoid a hard geojson-types dep. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  geometry: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  properties?: Record<string, any>;
+}
+
+/**
+ * An active shape draw-session in the map editor:
+ * - `create` — new shapes are being drawn; on Save they are uploaded as a
+ *   new dataset and the pending panel layer becomes a real vector layer.
+ * - `edit`   — an existing saved vector layer is being edited (add / modify /
+ *   delete features); on Save the features are written back to its dataset.
+ *
+ * While a session is active the action bar shows Save + Undo/Redo.
+ */
+export interface DrawSession {
+  mode: "create" | "edit";
+  /** The layer-panel node this session is bound to. */
+  layerNodeId: string;
+  /** Edit mode: the dataset to persist features to on Save. */
+  datasetId?: string;
+  /** Edit mode: layer visibility to restore when the session ends. */
+  wasVisible?: boolean;
+}
+
 export type AnnotationGroup = "navigate" | "draw" | "annotate";
 
 export interface Bookmark {

@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Undo2,
   Redo2,
+  Save,
   ChevronDown,
   Toolbox,
 } from "lucide-react";
@@ -57,7 +58,7 @@ const NAVIGATE_GROUP: ToolGroupDef = {
 const DRAW_GROUP: ToolGroupDef = {
   id: "draw",
   variants: [
-    { id: "shape", label: "Shape", icon: Shapes, shortcut: "S" },
+    { id: "shape", label: "Polygon", icon: Shapes, shortcut: "S" },
     { id: "line", label: "Line", icon: Spline, shortcut: "L" },
     { id: "circle", label: "Circle", icon: CircleIcon, shortcut: "C" },
     { id: "rectangle", label: "Rectangle", icon: Square, shortcut: "R" },
@@ -236,6 +237,13 @@ interface MapActionBarProps {
   onUndo?: () => void;
   onRedo?: () => void;
   onClearAnnotations?: () => void;
+  /** A shape draw-session is active (drawing new / editing a saved layer).
+      While true, the bar shows Save + contextual Undo/Redo. */
+  sessionActive?: boolean;
+  /** Persist the current session's shapes (Save). */
+  onSave?: () => void;
+  /** Save is in flight. */
+  saving?: boolean;
 }
 
 export function MapActionBar({
@@ -250,6 +258,9 @@ export function MapActionBar({
   onUndo,
   onRedo,
   onClearAnnotations,
+  sessionActive = false,
+  onSave,
+  saving = false,
 }: MapActionBarProps) {
   // Fallback internal tool for uncontrolled usage.
   const [internalTool] = useState<ActiveTool>({
@@ -322,28 +333,52 @@ export function MapActionBar({
         </button>
       </Tooltip>
 
-      {/* Undo / Redo */}
-      <Tooltip content="Undo" placement="top">
-        <button
-          type="button"
-          onClick={onUndo}
-          disabled={!canUndo}
-          className="flex items-center justify-center w-9 h-9 rounded-full text-text-secondary hover:bg-surface-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
-        >
-          <Undo2 size={17} />
-        </button>
-      </Tooltip>
+      {/* Draw-session controls: appear only while shapes are being drawn
+          (new layer) or edited (saved layer), and disappear once saved. */}
+      {sessionActive && (
+        <>
+          <div
+            className="w-px h-5 mx-0.5"
+            style={{ background: "var(--border-secondary)" }}
+          />
 
-      <Tooltip content="Redo" placement="top">
-        <button
-          type="button"
-          onClick={onRedo}
-          disabled={!canRedo}
-          className="flex items-center justify-center w-9 h-9 rounded-full text-text-secondary hover:bg-surface-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
-        >
-          <Redo2 size={17} />
-        </button>
-      </Tooltip>
+          <Tooltip content="Save shapes to the layer" placement="top">
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={saving}
+              className="flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            >
+              <Save size={15} />
+              {saving ? "Saving…" : "Save"}
+            </button>
+          </Tooltip>
+
+          {canUndo && (
+            <Tooltip content="Undo shape change" placement="top">
+              <button
+                type="button"
+                onClick={onUndo}
+                className="flex items-center justify-center w-9 h-9 rounded-full text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
+              >
+                <Undo2 size={17} />
+              </button>
+            </Tooltip>
+          )}
+
+          {canRedo && (
+            <Tooltip content="Redo shape change" placement="top">
+              <button
+                type="button"
+                onClick={onRedo}
+                className="flex items-center justify-center w-9 h-9 rounded-full text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
+              >
+                <Redo2 size={17} />
+              </button>
+            </Tooltip>
+          )}
+        </>
+      )}
     </div>
   );
 }

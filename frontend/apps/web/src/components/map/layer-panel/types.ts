@@ -33,6 +33,8 @@ export interface LayerTreeNode extends BaseTreeNode {
   brightness?: number;
   contrast?: number;
   source?: NodeSource;
+  /** True while shapes are drawn but not yet saved to a backend dataset. */
+  pending?: boolean;
 }
 
 export type TreeNode = FolderTreeNode | LayerTreeNode;

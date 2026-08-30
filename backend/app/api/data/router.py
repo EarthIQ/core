@@ -13,6 +13,7 @@ from app.api.data.schemas import (
     DATA_TYPES,
     DEFAULT_TYPE_FOR_FORMAT,
     DatasetPreview,
+    FeaturesIn,
     GeoDatasetListResponse,
     GeoDatasetOut,
     GeoDatasetUpdate,
@@ -324,6 +325,52 @@ async def update_dataset(
     if not ds:
         raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")
 
+    return GeoDatasetOut.model_validate(ds)
+
+
+@router.get(
+    "/datasets/{dataset_id}/features",
+    summary="Get a dataset's features as GeoJSON",
+)
+async def get_dataset_features(
+    dataset_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the dataset's stored features as a GeoJSON FeatureCollection."""
+    features = await data_service.get_dataset_features(db, dataset_id)
+    if features is None:
+        raise HTTPException(
+            status_code=404, detail=f"Dataset '{dataset_id}' not found."
+        )
+    return {"type": "FeatureCollection", "features": features}
+
+
+@router.put(
+    "/datasets/{dataset_id}/features",
+    response_model=GeoDatasetOut,
+    summary="Replace a dataset's features (save in-app map edits)",
+)
+async def replace_dataset_features(
+    dataset_id: str,
+    payload: FeaturesIn,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Replace all stored features of a vector dataset with the given GeoJSON
+    features. Backs the in-app shape editor: draw / edit shapes on the map,
+    then persist them back to the same layer.
+    """
+    try:
+        ds = await data_service.replace_dataset_features(
+            db, dataset_id, payload.features
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    if not ds:
+        raise HTTPException(
+            status_code=404, detail=f"Dataset '{dataset_id}' not found."
+        )
     return GeoDatasetOut.model_validate(ds)
 
 

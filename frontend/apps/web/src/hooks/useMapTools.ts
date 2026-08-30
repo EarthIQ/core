@@ -22,18 +22,14 @@ const PREVIEW_FILL = "eaiq_preview_fill";
 const PREVIEW_LINE = "eaiq_preview_line";
 
 /** How the active tool maps to an interactive mode. */
-type Mode = "navigate" | "point" | "box" | "circle" | "clickline" | "clickpoly";
+type Mode = "navigate" | "point" | "box";
 
 function toolToMode(tool: ActiveTool | null): Mode {
   if (!tool) return "navigate";
   const { groupId, variantId } = tool;
-  if (groupId === "navigate") return "navigate";
-  // draw
-  if (variantId === "shape") return "clickpoly";
-  if (variantId === "line") return "clickline";
-  if (variantId === "circle") return "circle";
-  if (variantId === "rectangle") return "box";
-  // annotate
+  // navigate + draw-group tools are handled elsewhere: the draw group by the
+  // TerraDraw engine (useMapDrawing / @packages/map useTerraDraw)
+  if (groupId === "navigate" || groupId === "draw") return "navigate";
   if (variantId === "highlighter") return "box";
   if (["marker", "text", "note", "image", "link", "video"].includes(variantId))
     return "point";
@@ -50,12 +46,6 @@ function modeToKind(
   switch (mode) {
     case "box":
       return variantId === "highlighter" ? "highlight" : "rectangle";
-    case "circle":
-      return "circle";
-    case "clickline":
-      return "line";
-    case "clickpoly":
-      return "shape";
     case "point":
       if (POINT_KINDS.includes(variantId as any)) return variantId as any;
       return null;
@@ -94,11 +84,6 @@ function circleToPolygon(
     ]);
   }
   return { type: "Polygon", coordinates: [coords] };
-}
-
-/** Convert an array of [lng, lat] into a LineString. */
-function toLine(coords: [number, number][]) {
-  return { type: "LineString", coordinates: coords };
 }
 
 /** Convert an array of [lng, lat] into a closed Polygon. */
@@ -168,7 +153,6 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
   const modeRef = useRef<Mode>("navigate");
   const draggingRef = useRef(false);
   const startRef = useRef<[number, number] | null>(null);
-  const pointsRef = useRef<[number, number][]>([]);
 
   /* ── ensure source + layers exist ─────────────────────────────────────── */
   const ensureLayers = useCallback(() => {
@@ -284,7 +268,6 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
       const map = mapRef.current;
       if (!map) return;
       modeRef.current = mode;
-      pointsRef.current = [];
       draggingRef.current = false;
       const canvas = map.getCanvas();
       if (mode === "navigate") {
@@ -387,7 +370,7 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
     const onMouseDown = (e: MouseEvent) => {
       if (e.button !== 0) return;
       const mode = modeRef.current;
-      if (mode === "box" || mode === "circle") {
+      if (mode === "box") {
         draggingRef.current = true;
         startRef.current = getLngLat(e);
       }
@@ -405,11 +388,6 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
           [aLng, bLat],
         ];
         setPreview(toPolygon(poly));
-      } else if (mode === "circle" && draggingRef.current && startRef.current) {
-        const center = startRef.current;
-        const cur = getLngLat(e);
-        const radius = map.distance(center, cur);
-        setPreview(circleToPolygon(center, radius));
       }
     };
 
@@ -440,12 +418,6 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
           return;
         }
         commitShape(toPolygon(poly), kind, {});
-      } else if (mode === "circle") {
-        const radius = Math.max(1, map.distance(start, cur));
-        commitShape(circleToPolygon(start, radius), "circle", {
-          radius,
-          geometry: { type: "Point", coordinates: start },
-        });
       }
       startRef.current = null;
       clearPreview();
@@ -459,22 +431,6 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
       if (mode === "point") {
         const kind = modeToKind(store.activeTool, "point");
         if (kind) commitPoint(kind, lngLat);
-        return;
-      }
-
-      if (mode === "clickline" || mode === "clickpoly") {
-        pointsRef.current.push(lngLat);
-        if (mode === "clickline") {
-          setPreview(toLine(pointsRef.current));
-        } else {
-          setPreview(
-            toPolygon(
-              pointsRef.current.length >= 2
-                ? pointsRef.current
-                : [lngLat, lngLat],
-            ),
-          );
-        }
         return;
       }
 
@@ -499,66 +455,17 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
       }
     };
 
-    const onDoubleClick = (e: any) => {
-      const mode = modeRef.current;
-      if (mode === "clickline") {
-        if (pointsRef.current.length >= 2) {
-          commitShape(toLine(pointsRef.current), "line", {});
-        }
-        pointsRef.current = [];
-        clearPreview();
-      } else if (mode === "clickpoly") {
-        if (pointsRef.current.length >= 3) {
-          commitShape(toPolygon(pointsRef.current), "shape", {});
-        }
-        pointsRef.current = [];
-        clearPreview();
-      }
-    };
-
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable)
-      )
-        return;
-      const mode = modeRef.current;
-      if (e.key === "Escape") {
-        pointsRef.current = [];
-        startRef.current = null;
-        draggingRef.current = false;
-        clearPreview();
-      } else if (
-        e.key === "Enter" &&
-        (mode === "clickline" || mode === "clickpoly")
-      ) {
-        if (mode === "clickline" && pointsRef.current.length >= 2)
-          commitShape(toLine(pointsRef.current), "line", {});
-        if (mode === "clickpoly" && pointsRef.current.length >= 3)
-          commitShape(toPolygon(pointsRef.current), "shape", {});
-        pointsRef.current = [];
-        clearPreview();
-      }
-    };
-
     map.getCanvas().addEventListener("mousedown", onMouseDown);
     map.getCanvas().addEventListener("mousemove", onMouseMove);
     map.getCanvas().addEventListener("mouseup", onMouseUp);
     map.on("click", onClick);
-    map.on("dblclick", onDoubleClick);
-    window.addEventListener("keydown", onKey);
 
     return () => {
       map.getCanvas().removeEventListener("mousedown", onMouseDown);
       map.getCanvas().removeEventListener("mousemove", onMouseMove);
       map.getCanvas().removeEventListener("mouseup", onMouseUp);
       map.off("click", onClick);
-      map.off("dblclick", onDoubleClick);
       map.off("styledata", onStyle);
-      window.removeEventListener("keydown", onKey);
     };
   }, [mapReady, mapRef, commitPoint, commitShape, setPreview, clearPreview]);
 

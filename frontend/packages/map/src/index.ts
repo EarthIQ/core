@@ -117,6 +117,13 @@ export { useMapBounds } from "./hooks/useMapBounds";
 export { useGeoJSON } from "./hooks/useGeoJSON";
 export { useFeaturesInView } from "./hooks/useFeaturesInView";
 export { useDrawnFeatures } from "./hooks/useDrawnFeatures";
+export {
+  useTerraDraw,
+  type TerraDrawFeature,
+  type TerraDrawChangeAction,
+  type UseTerraDrawCallbacks,
+  type UseTerraDrawResult,
+} from "./hooks/useTerraDraw";
 export { useGeolocation } from "./hooks/useGeolocation";
 export { useMapImage } from "./hooks/useMapImage";
 export { useMapURLSync } from "./hooks/useMapURLSync";

@@ -750,6 +750,89 @@ async def update_dataset(
     return dataset
 
 
+async def get_dataset_features(
+    db: AsyncSession, dataset_id: str
+) -> list[dict[str, Any]] | None:
+    """Return a dataset's stored features as GeoJSON feature dicts.
+
+    Returns ``None`` when the dataset does not exist (distinct from an
+    empty feature list).
+    """
+    dataset = await get_dataset(db, dataset_id)
+    if not dataset:
+        return None
+
+    rows = (
+        await db.execute(
+            text(
+                "SELECT id, ST_AsGeoJSON(geom) AS geom, properties "
+                "FROM geo_features WHERE dataset_id = :dsid"
+            ),
+            {"dsid": dataset_id},
+        )
+    ).all()
+
+    features: list[dict[str, Any]] = []
+    for row in rows:
+        geom: Any = None
+        if row.geom:
+            try:
+                geom = json.loads(row.geom)
+            except (TypeError, ValueError):
+                geom = None
+        features.append(
+            {
+                "id": row.id,
+                "type": "Feature",
+                "geometry": geom,
+                "properties": row.properties or {},
+            }
+        )
+    return features
+
+
+async def replace_dataset_features(
+    db: AsyncSession, dataset_id: str, features: list[dict[str, Any]]
+) -> GeoDataset | None:
+    """Replace a vector dataset's stored features with the given GeoJSON.
+
+    This backs the in-app map editor: shapes are drawn/edited with TerraDraw
+    and persisted back to the same dataset. Metadata (feature count,
+    attribute schema) is refreshed to match the new features.
+
+    Returns ``None`` when the dataset does not exist; raises ``ValueError``
+    when the dataset type does not support feature edits.
+    """
+    dataset = await get_dataset(db, dataset_id)
+    if not dataset:
+        return None
+    if dataset.type != "vector":
+        raise ValueError("Only vector datasets support feature edits.")
+
+    sanitized = [
+        {
+            "geometry": (f or {}).get("geometry"),
+            "properties": (f or {}).get("properties") or {},
+        }
+        for f in features
+    ]
+
+    await db.execute(
+        text("DELETE FROM geo_features WHERE dataset_id = :dsid"),
+        {"dsid": dataset_id},
+    )
+    if sanitized:
+        await _insert_features_raw(db, dataset_id, sanitized)
+
+    dataset.feature_count = len(sanitized)
+    dataset.attributes = _extract_attributes(
+        [f["properties"] for f in sanitized]
+    )
+    await db.flush()
+    await db.refresh(dataset)
+    return dataset
+
+
 async def delete_dataset(db: AsyncSession, dataset_id: str) -> bool:
     """Delete a dataset and all its features.  Returns True if found."""
     dataset = await get_dataset(db, dataset_id)

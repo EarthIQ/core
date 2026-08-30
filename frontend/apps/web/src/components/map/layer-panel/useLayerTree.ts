@@ -41,6 +41,8 @@ export interface NewLayerInput {
   lineWidth?: number;
   datasetId?: string;
   geometryType?: GeometryType;
+  /** Unsaved drawn layer (no dataset yet). */
+  pending?: boolean;
 }
 
 export function useLayerTree(initial: TreeNode[] = []) {
@@ -99,6 +101,7 @@ export function useLayerTree(initial: TreeNode[] = []) {
           datasetId: l.datasetId,
           geometryType: l.geometryType,
           source: l.source ?? "catalog",
+          pending: l.pending,
         }));
         return [...prev, ...additions];
       });
