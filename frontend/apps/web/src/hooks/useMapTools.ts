@@ -369,6 +369,7 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
 
     const onMouseDown = (e: MouseEvent) => {
       if (e.button !== 0) return;
+      if (useMapEditor.getState().commentPlacement) return; // comment pin drop
       const mode = modeRef.current;
       if (mode === "box") {
         draggingRef.current = true;
@@ -427,6 +428,9 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
       const mode = modeRef.current;
       const lngLat = [e.lngLat.lng, e.lngLat.lat] as [number, number];
       const store = useMapEditor.getState();
+
+      // While placing a comment pin, map clicks belong to the comment flow.
+      if (store.commentPlacement) return;
 
       if (mode === "point") {
         const kind = modeToKind(store.activeTool, "point");

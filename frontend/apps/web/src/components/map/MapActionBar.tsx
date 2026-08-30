@@ -43,7 +43,6 @@ export interface ActiveTool {
   groupId: string;
   variantId: string;
 }
-
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Tool group definitions                                                   */
 /* ──────────────────────────────────────────────────────────────────────── */
@@ -228,8 +227,9 @@ interface MapActionBarProps {
   /** Controlled active tool. When provided, the bar reflects this value. */
   activeTool?: ActiveTool | null;
   onToolChange?: (tool: ActiveTool) => void;
-  commentsActive?: boolean;
-  onToggleComments?: () => void;
+  /** Comment pin placement mode: click the map to drop a comment pin. */
+  commentPlacement?: boolean;
+  onToggleCommentPlacement?: () => void;
   toolboxActive?: boolean;
   onToggleToolbox?: () => void;
   canUndo?: boolean;
@@ -249,8 +249,8 @@ interface MapActionBarProps {
 export function MapActionBar({
   activeTool: controlledTool,
   onToolChange,
-  commentsActive = false,
-  onToggleComments,
+  commentPlacement = false,
+  onToggleCommentPlacement,
   toolboxActive = false,
   onToggleToolbox,
   canUndo = false,
@@ -318,14 +318,21 @@ export function MapActionBar({
       </Tooltip>
 
       {/* Standalone toggle buttons */}
-      <Tooltip content="Comment" placement="top">
+      <Tooltip
+        content={
+          commentPlacement
+            ? "Click the map to place the comment"
+            : "Add a comment to the map"
+        }
+        placement="top"
+      >
         <button
           type="button"
-          onClick={onToggleComments}
-          aria-pressed={commentsActive}
+          onClick={onToggleCommentPlacement}
+          aria-pressed={commentPlacement}
           className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
-            commentsActive
-              ? "bg-surface-hover text-primary"
+            commentPlacement
+              ? "bg-primary text-white shadow-sm"
               : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
           }`}
         >
@@ -355,7 +362,7 @@ export function MapActionBar({
           </Tooltip>
 
           {canUndo && (
-            <Tooltip content="Undo shape change" placement="top">
+            <Tooltip content="Undo(ctrl+z)" placement="top">
               <button
                 type="button"
                 onClick={onUndo}
@@ -367,7 +374,7 @@ export function MapActionBar({
           )}
 
           {canRedo && (
-            <Tooltip content="Redo shape change" placement="top">
+            <Tooltip content="Redo(ctrl+shift+z)" placement="top">
               <button
                 type="button"
                 onClick={onRedo}

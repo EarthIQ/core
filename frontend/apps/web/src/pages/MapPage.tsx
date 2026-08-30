@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { MessageSquare } from "lucide-react";
 import { deleteMap, updateMap, MapItem } from "@/lib/maps";
 import {
   fetchProjectById,
@@ -51,6 +52,7 @@ import { useMapDrawing } from "@/hooks/useMapDrawing";
 import { AnnotationOverlays } from "@/components/map/AnnotationOverlays";
 import { AnnotationInspector } from "@/components/map/AnnotationInspector";
 import { BookmarkPanel } from "@/components/map/BookmarkPanel";
+import { CommentPins } from "@/components/map/CommentPins";
 import { CommentsPanel } from "@/components/map/CommentsPanel";
 import {
   ToolboxPanel,
@@ -169,8 +171,29 @@ export default function MapPage() {
   const setActiveTool = useMapEditor((s) => s.setActiveTool);
   const bookmarkActive = useMapEditor((s) => s.bookmarkOpen);
   const setBookmarkOpen = useMapEditor((s) => s.setBookmarkOpen);
-  const commentsActive = useMapEditor((s) => s.commentsOpen);
   const setCommentsOpen = useMapEditor((s) => s.setCommentsOpen);
+  const commentPlacement = useMapEditor((s) => s.commentPlacement);
+  const setCommentPlacement = useMapEditor((s) => s.setCommentPlacement);
+  const setPendingCommentLocation = useMapEditor(
+    (s) => s.setPendingCommentLocation,
+  );
+  const pendingCommentLocation = useMapEditor(
+    (s) => s.pendingCommentLocation,
+  );
+  /** Right-click "Add comment": drop a comment pin at the clicked spot. */
+  const commentMenuItems = useMemo(
+    () => [
+      {
+        id: "add-comment",
+        label: "Add comment",
+        icon: <MessageSquare size={15} />,
+        onClick: (coords: { lat: number; lng: number }) => {
+          setPendingCommentLocation([coords.lng, coords.lat]);
+        },
+      },
+    ],
+    [setPendingCommentLocation],
+  );
   const canUndo = useMapEditor(selectCanUndo);
   const canRedo = useMapEditor(selectCanRedo);
   const undo = useMapEditor((s) => s.undo);
@@ -406,6 +429,68 @@ export default function MapPage() {
   useEffect(() => {
     if (mapRef.current) setTimeout(() => mapRef.current?.resize(), 300);
   }, [aiChatOpen, toolboxOpen, mapRef]);
+
+  /* Comment placement: while placing (and while the composer card is open),
+     the map canvas is made inert to ALL mouse input. This is the bulletproof
+     way to guarantee the view never pans / zooms / double-click-zooms when
+     you click to drop a pin or while typing — no matter which MapLibre
+     controls are enabled by other hooks. The pin is dropped from a click on
+     the map *container* (which still receives the event now that the canvas
+     is inert), so the flow keeps working. Restored automatically on cleanup. */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+
+    const locked = commentPlacement || !!pendingCommentLocation;
+    if (!locked) return;
+
+    const canvas = map.getCanvas?.();
+    const container = map.getContainer?.();
+    if (!canvas || !container) return;
+
+    // 1) Inert canvas: blocks drag-pan, box-zoom, double-click-zoom, scroll,
+    //    keyboard — every mouse-driven camera change at once.
+    const prevPointerEvents = canvas.style.pointerEvents;
+    canvas.style.pointerEvents = "none";
+
+    // 2) Drop the pin from a container click (only while still placing, i.e.
+    //    no pin dropped yet). Once the composer is open, further map clicks
+    //    must not move the pending pin.
+    const placing = commentPlacement && !pendingCommentLocation;
+    let handleContainerClick: ((e: MouseEvent) => void) | undefined;
+    if (placing) {
+      handleContainerClick = (e: MouseEvent) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
+        const p = map.unproject([x, y]);
+        setPendingCommentLocation([p.lng, p.lat]);
+      };
+      container.addEventListener("click", handleContainerClick);
+    }
+
+    return () => {
+      canvas.style.pointerEvents = prevPointerEvents;
+      if (handleContainerClick) {
+        container.removeEventListener("click", handleContainerClick);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commentPlacement, pendingCommentLocation, mapReady]);
+
+  /* Escape: cancel placement / close the composer / close the thread card. */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      const st = useMapEditor.getState();
+      if (st.pendingCommentLocation) st.setPendingCommentLocation(null);
+      else if (st.commentPlacement) st.setCommentPlacement(false);
+      else if (st.activeThreadId) st.setActiveThreadId(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   /* Load selected project workspace */
   useEffect(() => {
@@ -688,7 +773,7 @@ export default function MapPage() {
       void saveConfigRef.current();
     }, 1500);
     return () => clearTimeout(t);
-  }, [tree.nodes, projectId, hasProject]);
+  }, [tree.nodes, storeComments, projectId, hasProject]);
 
   // Published maps handlers
   async function handlePublishMap(config: MapBuilderConfig) {
@@ -816,7 +901,7 @@ export default function MapPage() {
       />
 
       {/* Right-click context menu — copy coordinates / center here (map pkg) */}
-      <ContextMenuControl coordinateFormat="both" />
+      <ContextMenuControl coordinateFormat="both" items={commentMenuItems} />
 
       {/* Collaborator cursor overlay — cursors are placed with map.project()
           (canvas-relative), so this box must mirror the map canvas box exactly,
@@ -939,10 +1024,15 @@ export default function MapPage() {
       <MapActionBar
         activeTool={activeTool}
         onToolChange={(tool) => setActiveTool(tool)}
-        commentsActive={commentsActive}
-        onToggleComments={() => {
-          setBookmarkOpen(false);
-          setCommentsOpen(!commentsActive);
+        commentPlacement={commentPlacement}
+        onToggleCommentPlacement={() => {
+          if (commentPlacement) {
+            setCommentPlacement(false);
+          } else {
+            setBookmarkOpen(false);
+            setCommentsOpen(false);
+            setCommentPlacement(true);
+          }
         }}
         canUndo={canUndo}
         canRedo={canRedo}
@@ -963,13 +1053,21 @@ export default function MapPage() {
         </div>
       )}
 
+      {/* Comment placement hint */}
+      {commentPlacement && !statusMsg && (
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30 bg-elevated border border-base rounded-full shadow-xl px-4 py-2 text-xs text-base animate-fade-in-up whitespace-nowrap">
+          Click anywhere on the map to drop a comment pin · Esc to cancel
+        </div>
+      )}
+
       {/* Annotation inspector (only visible when something is selected) */}
       <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30">
         <AnnotationInspector mapRef={mapRef} mapReady={mapReady} />
       </div>
 
-      {/* Bookmark + Comments panels (self-positioning) */}
+      {/* Bookmark + Comments panels (self-positioning) + comment pins */}
       <BookmarkPanel mapRef={mapRef} mapReady={mapReady} />
+      <CommentPins mapRef={mapRef} mapReady={mapReady} />
       <CommentsPanel mapRef={mapRef} mapReady={mapReady} />
 
       {/* Toolbox — tools exposed by enabled modules (auto-discovered) */}

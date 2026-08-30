@@ -4,7 +4,8 @@ import type {
   Annotation,
   AnnotationKind,
   Bookmark,
-  CommentItem,
+  CommentMessage,
+  CommentThread,
   DrawnFeature,
   DrawSession,
   PointAnnotation,
@@ -50,13 +51,95 @@ export function defaultAnnotationFor(
   } as ShapeAnnotation;
 }
 
+/**
+ * Normalize persisted comment data into the threaded model.
+ * Accepts the legacy flat format (`{ id, body, author, lngLat?, createdAt }`)
+ * as well as the current `{ id, messages: [...], resolved, ... }` format,
+ * so older projects keep working.
+ */
+function migrateComments(raw: unknown): CommentThread[] {
+  if (!Array.isArray(raw)) return [];
+  const out: CommentThread[] = [];
+  const lngLat = (v: unknown): [number, number] | null =>
+    Array.isArray(v) && v.length === 2 &&
+    Number.isFinite(Number(v[0])) &&
+    Number.isFinite(Number(v[1]))
+      ? [Number(v[0]), Number(v[1])]
+      : null;
+
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const c = item as Record<string, unknown>;
+
+    if (Array.isArray(c.messages)) {
+      // Current threaded format
+      const messages: CommentMessage[] = (c.messages as any[])
+        .filter((m) => m && typeof m.body === "string" && m.body.trim())
+        .map((m) => ({
+          id: typeof m.id === "string" ? m.id : uid("msg"),
+          body: m.body,
+          author: typeof m.author === "string" && m.author ? m.author : "Unknown",
+          authorId: typeof m.authorId === "string" ? m.authorId : "",
+          createdAt:
+            typeof m.createdAt === "number" ? m.createdAt : Date.now(),
+        }));
+      if (messages.length === 0) continue;
+      out.push({
+        id: typeof c.id === "string" ? c.id : uid("cm"),
+        lngLat: lngLat(c.lngLat),
+        messages,
+        resolved: !!c.resolved,
+        resolvedById:
+          typeof c.resolvedById === "string" ? c.resolvedById : undefined,
+        resolvedByName:
+          typeof c.resolvedByName === "string" ? c.resolvedByName : undefined,
+        resolvedAt:
+          typeof c.resolvedAt === "number" ? c.resolvedAt : undefined,
+        createdAt:
+          typeof c.createdAt === "number"
+            ? c.createdAt
+            : messages[0].createdAt,
+        updatedAt:
+          typeof c.updatedAt === "number"
+            ? c.updatedAt
+            : messages[messages.length - 1].createdAt,
+      });
+      continue;
+    }
+
+    // Legacy flat comment
+    if (typeof c.body === "string" && c.body.trim()) {
+      const createdAt =
+        typeof c.createdAt === "number" ? c.createdAt : Date.now();
+      out.push({
+        id: typeof c.id === "string" ? c.id : uid("cm"),
+        lngLat: lngLat(c.lngLat),
+        messages: [
+          {
+            id: uid("msg"),
+            body: c.body,
+            author:
+              typeof c.author === "string" && c.author ? c.author : "Unknown",
+            authorId: typeof c.authorId === "string" ? c.authorId : "",
+            createdAt,
+          },
+        ],
+        resolved: !!c.resolved,
+        createdAt,
+        updatedAt: createdAt,
+      });
+    }
+  }
+  return out;
+}
+
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  State + actions                                                          */
 /* ──────────────────────────────────────────────────────────────────────── */
 interface Snapshot {
   annotations: Annotation[];
   bookmarks: Bookmark[];
-  comments: CommentItem[];
+  comments: CommentThread[];
   /** Committed TerraDraw shapes (undo/redo covers these too). */
   drawnFeatures: DrawnFeature[];
 }
@@ -72,6 +155,12 @@ interface MapEditorState extends Snapshot {
   future: Snapshot[];
   bookmarkOpen: boolean;
   commentsOpen: boolean;
+  /** Comment placement mode: the next map click drops a comment pin. */
+  commentPlacement: boolean;
+  /** A dropped pin waiting for its first message (composer open). */
+  pendingCommentLocation: [number, number] | null;
+  /** The thread whose card is currently open on the map. */
+  activeThreadId: string | null;
 
   // tool + selection
   setActiveTool: (tool: ActiveTool | null) => void;
@@ -115,17 +204,37 @@ interface MapEditorState extends Snapshot {
   removeBookmark: (id: string) => void;
   renameBookmark: (id: string, name: string) => void;
 
-  // comments (history-tracked)
-  addComment: (body: string, author: string, lngLat?: [number, number]) => void;
-  removeComment: (id: string) => void;
+  // comments (history-tracked) — threaded, pinned discussions
+  addThread: (
+    lngLat: [number, number],
+    body: string,
+    author: string,
+    authorId: string,
+  ) => void;
+  replyToThread: (
+    threadId: string,
+    body: string,
+    author: string,
+    authorId: string,
+  ) => void;
+  setThreadResolved: (
+    threadId: string,
+    resolved: boolean,
+    resolvedById?: string,
+    resolvedByName?: string,
+  ) => void;
+  removeThread: (threadId: string) => void;
 
   // history
   undo: () => void;
   redo: () => void;
 
-  // panel toggles
+  // panel toggles + comment placement flow
   setBookmarkOpen: (open: boolean) => void;
   setCommentsOpen: (open: boolean) => void;
+  setCommentPlacement: (placing: boolean) => void;
+  setPendingCommentLocation: (lngLat: [number, number] | null) => void;
+  setActiveThreadId: (id: string | null) => void;
 
   // seed from a loaded project (no history entry)
   hydrate: (snap: Snapshot) => void;
@@ -161,6 +270,9 @@ export const useMapEditor = create<MapEditorState>((set) => ({
   future: [],
   bookmarkOpen: false,
   commentsOpen: false,
+  commentPlacement: false,
+  pendingCommentLocation: null,
+  activeThreadId: null,
 
   setActiveTool: (tool) =>
     set({
@@ -264,19 +376,76 @@ export const useMapEditor = create<MapEditorState>((set) => ({
       bookmarks: s.bookmarks.map((b) => (b.id === id ? { ...b, name } : b)),
     })),
 
-  addComment: (body, author, lngLat) =>
+  addThread: (lngLat, body, author, authorId) =>
+    set((s) => {
+      const now = Date.now();
+      const message = {
+        id: uid("msg"),
+        body,
+        author,
+        authorId,
+        createdAt: now,
+      };
+      return {
+        ...pushHistory(s),
+        commentPlacement: false,
+        pendingCommentLocation: null,
+        activeThreadId: null,
+        comments: [
+          ...s.comments,
+          {
+            id: uid("cm"),
+            lngLat,
+            messages: [message],
+            resolved: false,
+            createdAt: now,
+            updatedAt: now,
+          },
+        ],
+      };
+    }),
+
+  replyToThread: (threadId, body, author, authorId) =>
+    set((s) => {
+      const now = Date.now();
+      return {
+        ...pushHistory(s),
+        comments: s.comments.map((c) =>
+          c.id === threadId
+            ? {
+                ...c,
+                updatedAt: now,
+                messages: [
+                  ...c.messages,
+                  { id: uid("msg"), body, author, authorId, createdAt: now },
+                ],
+              }
+            : c,
+        ),
+      };
+    }),
+
+  setThreadResolved: (threadId, resolved, resolvedById, resolvedByName) =>
     set((s) => ({
       ...pushHistory(s),
-      comments: [
-        ...s.comments,
-        { id: uid("cm"), body, author, lngLat, createdAt: Date.now() },
-      ],
+      comments: s.comments.map((c) =>
+        c.id === threadId
+          ? {
+              ...c,
+              resolved,
+              resolvedAt: resolved ? Date.now() : undefined,
+              resolvedById: resolved ? resolvedById : undefined,
+              resolvedByName: resolved ? resolvedByName : undefined,
+            }
+          : c,
+      ),
     })),
 
-  removeComment: (id) =>
+  removeThread: (threadId) =>
     set((s) => ({
       ...pushHistory(s),
-      comments: s.comments.filter((c) => c.id !== id),
+      activeThreadId: s.activeThreadId === threadId ? null : s.activeThreadId,
+      comments: s.comments.filter((c) => c.id !== threadId),
     })),
 
   undo: () =>
@@ -305,17 +474,30 @@ export const useMapEditor = create<MapEditorState>((set) => ({
 
   setBookmarkOpen: (open) => set({ bookmarkOpen: open }),
   setCommentsOpen: (open) => set({ commentsOpen: open }),
+  setCommentPlacement: (placing) =>
+    set(
+      placing
+        ? { commentPlacement: true, activeThreadId: null, commentsOpen: false }
+        : { commentPlacement: false, pendingCommentLocation: null },
+    ),
+  setPendingCommentLocation: (lngLat) =>
+    set({ pendingCommentLocation: lngLat, activeThreadId: null }),
+  setActiveThreadId: (id) =>
+    set({ activeThreadId: id, pendingCommentLocation: null }),
 
   hydrate: (snap) =>
     set({
       annotations: snap.annotations,
       bookmarks: snap.bookmarks,
-      comments: snap.comments,
+      comments: migrateComments(snap.comments),
       drawnFeatures: snap.drawnFeatures ?? [],
       drawSession: null,
       past: [],
       future: [],
       selectionId: null,
+      commentPlacement: false,
+      pendingCommentLocation: null,
+      activeThreadId: null,
     }),
 }));
 

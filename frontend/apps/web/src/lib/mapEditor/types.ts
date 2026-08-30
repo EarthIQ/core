@@ -121,3 +121,32 @@ export interface CommentItem {
   lngLat?: [number, number];
   createdAt: number;
 }
+
+/** A single message inside a comment thread. */
+export interface CommentMessage {
+  id: string;
+  body: string;
+  /** Display name of the author. */
+  author: string;
+  /** Auth user id of the author ("" for legacy comments). */
+  authorId: string;
+  createdAt: number;
+}
+
+/**
+ * A discussion thread pinned at a location on the map.
+ * The first message opens the thread; the rest are replies.
+ * `lngLat` may be null for legacy comments saved before pins existed.
+ */
+export interface CommentThread {
+  id: string;
+  lngLat: [number, number] | null;
+  /** All messages, oldest first. */
+  messages: CommentMessage[];
+  resolved: boolean;
+  resolvedById?: string;
+  resolvedByName?: string;
+  resolvedAt?: number;
+  createdAt: number;
+  updatedAt: number;
+}

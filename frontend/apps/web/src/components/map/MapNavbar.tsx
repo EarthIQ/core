@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ArrowLeft, Share2, ChevronDown, Check, Blocks } from "lucide-react";
+import {
+  ArrowLeft,
+  Share2,
+  ChevronDown,
+  Check,
+  Blocks,
+  MessageSquare,
+} from "lucide-react";
 import { Button, Tooltip } from "@packages/ui";
 import { useAuth } from "@/lib/auth";
+import { useMapEditor } from "@/lib/mapEditor/store";
 import type { MapItem } from "@/lib/maps";
 import type { CollaboratorState } from "@/lib/useCollaboration";
 import { ShareDialog } from "./share/ShareDialog";
@@ -53,6 +61,14 @@ export function MapNavbar({
   const [shareOpen, setShareOpen] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
   const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : "U";
+
+  /* Comments history (threaded, pinned discussions on the map) */
+  const commentsOpen = useMapEditor((s) => s.commentsOpen);
+  const setCommentsOpen = useMapEditor((s) => s.setCommentsOpen);
+  const setCommentPlacement = useMapEditor((s) => s.setCommentPlacement);
+  const openCommentCount = useMapEditor(
+    (s) => s.comments.reduce((n, c) => n + (c.resolved ? 0 : 1), 0),
+  );
 
   useEffect(() => {
     if (!switcherOpen) return;
@@ -245,6 +261,38 @@ export function MapNavbar({
             >
               <Share2 size={16} />
             </Button>
+          </Tooltip>
+
+          {/* Comments history — open / resolved threads on the map */}
+          <Tooltip
+            content={commentsOpen ? "Close comments" : "Comments history"}
+            placement="bottom"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                if (commentsOpen) {
+                  setCommentsOpen(false);
+                } else {
+                  setCommentPlacement(false);
+                  setCommentsOpen(true);
+                }
+              }}
+              aria-pressed={commentsOpen}
+              aria-label="Comments history"
+              className={`relative flex items-center justify-center p-1.5 rounded-lg transition-colors ${
+                commentsOpen
+                  ? "bg-primary/10 text-primary"
+                  : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+              }`}
+            >
+              <MessageSquare size={16} />
+              {openCommentCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center border border-elevated">
+                  {openCommentCount}
+                </span>
+              )}
+            </button>
           </Tooltip>
 
           {/* Self avatar — right end of the bar */}

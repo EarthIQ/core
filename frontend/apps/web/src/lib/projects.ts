@@ -6,7 +6,7 @@ import type {
   PermissionLevel,
   MapCreateInput,
 } from "./maps";
-import type { Annotation, Bookmark, CommentItem } from "@/lib/mapEditor/types";
+import type { Annotation, Bookmark, CommentThread } from "@/lib/mapEditor/types";
 
 export interface ProjectItem {
   id: string;
@@ -19,7 +19,7 @@ export interface ProjectItem {
   layers_config: MapLayerItem[];
   annotations: Annotation[];
   bookmarks: Bookmark[];
-  comments: CommentItem[];
+  comments: CommentThread[];
   owner_id: string;
   owner?: {
     id: string;
@@ -43,7 +43,7 @@ export interface ProjectCreateInput {
   layers_config?: MapLayerItem[];
   annotations?: Annotation[];
   bookmarks?: Bookmark[];
-  comments?: CommentItem[];
+  comments?: CommentThread[];
   group_access?: GroupAccess[];
 }
 
@@ -57,7 +57,7 @@ export interface ProjectUpdateInput {
   layers_config?: MapLayerItem[];
   annotations?: Annotation[];
   bookmarks?: Bookmark[];
-  comments?: CommentItem[];
+  comments?: CommentThread[];
 }
 
 export async function fetchProjects(): Promise<ProjectItem[]> {
