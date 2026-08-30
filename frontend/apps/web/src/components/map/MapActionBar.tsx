@@ -290,22 +290,6 @@ export function MapActionBar({
         );
       })}
 
-      {/* Standalone toggle buttons */}
-      <Tooltip content="Comment" placement="top">
-        <button
-          type="button"
-          onClick={onToggleComments}
-          aria-pressed={commentsActive}
-          className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
-            commentsActive
-              ? "bg-surface-hover text-primary"
-              : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
-          }`}
-        >
-          <MessageSquare size={17} />
-        </button>
-      </Tooltip>
-
       {/* Toolbox — opens the right-side panel of module tools */}
       <Tooltip content="Toolbox" placement="top">
         <button
@@ -319,6 +303,22 @@ export function MapActionBar({
           }`}
         >
           <Toolbox size={17} />
+        </button>
+      </Tooltip>
+
+      {/* Standalone toggle buttons */}
+      <Tooltip content="Comment" placement="top">
+        <button
+          type="button"
+          onClick={onToggleComments}
+          aria-pressed={commentsActive}
+          className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
+            commentsActive
+              ? "bg-surface-hover text-primary"
+              : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+          }`}
+        >
+          <MessageSquare size={17} />
         </button>
       </Tooltip>
 
