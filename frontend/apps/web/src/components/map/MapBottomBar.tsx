@@ -52,7 +52,7 @@ export function MapBottomBar({
   const isRotated = Math.abs(bearing) > 0.5;
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center gap-1 px-3 h-10 bg-elevated/90 backdrop-blur-lg border-t border-border-primary text-xs">
+    <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center gap-1 px-3 h-10 bg-elevated border-t border-border-primary text-xs">
       <Tooltip content="Toggle AI Assistant" placement="top">
         <Button
           variant="ghost"

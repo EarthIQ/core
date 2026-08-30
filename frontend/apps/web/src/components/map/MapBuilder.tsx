@@ -401,7 +401,7 @@ export function MapBuilder({
   return (
     <div className="fixed inset-0 z-[2000] flex flex-col bg-bg-primary animate-fade-in">
       {/* ── Header ────────────────────────────────────────────────────────── */}
-      <header className="flex items-center justify-between px-5 py-3 border-b border-border-primary bg-elevated/80 backdrop-blur-xl shrink-0">
+      <header className="flex items-center justify-between px-5 py-3 border-b border-border-primary bg-elevated shrink-0">
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
@@ -446,7 +446,7 @@ export function MapBuilder({
 
           {/* Live widget overlays (mirrors what the viewer will see) */}
           {widgets.titleCard && title && (
-            <div className="absolute top-4 left-4 z-10 max-w-xs bg-elevated/90 backdrop-blur-xl border border-border-primary rounded-xl p-3.5 shadow-xl pointer-events-none">
+            <div className="absolute top-4 left-4 z-10 max-w-xs bg-elevated border border-border-primary rounded-xl p-3.5 shadow-xl pointer-events-none">
               <h2 className="text-sm font-bold text-text-primary">{title}</h2>
               {description && (
                 <p className="text-[11px] text-text-secondary mt-1">
@@ -457,7 +457,7 @@ export function MapBuilder({
           )}
 
           {widgets.layerList && layers.filter((l) => l.url).length > 0 && (
-            <div className="absolute top-4 right-4 z-10 w-52 bg-elevated/90 backdrop-blur-xl border border-border-primary rounded-xl p-3 shadow-xl pointer-events-none">
+            <div className="absolute top-4 right-4 z-10 w-52 bg-elevated border border-border-primary rounded-xl p-3 shadow-xl pointer-events-none">
               <div className="flex items-center gap-1.5 text-xs font-bold text-text-primary mb-2">
                 <Layers size={12} className="text-primary" />
                 Layers
@@ -483,10 +483,10 @@ export function MapBuilder({
           {/* Zoom controls overlay */}
           {widgets.zoomControls && (
             <div className="absolute bottom-6 right-6 z-10 flex flex-col gap-1 pointer-events-none">
-              <div className="w-8 h-8 rounded-lg bg-elevated/80 backdrop-blur border border-border-primary flex items-center justify-center text-text-tertiary">
+              <div className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-tertiary">
                 <ZoomIn size={14} />
               </div>
-              <div className="w-8 h-8 rounded-lg bg-elevated/80 backdrop-blur border border-border-primary flex items-center justify-center text-text-tertiary">
+              <div className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-tertiary">
                 <Compass size={14} />
               </div>
             </div>
@@ -508,7 +508,7 @@ export function MapBuilder({
           )}
 
           {/* Map status badge */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-elevated/90 backdrop-blur border border-border-primary pointer-events-none">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-elevated border border-border-primary pointer-events-none">
             <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
             <span className="text-[10px] font-semibold text-text-secondary">
               Live Preview
@@ -517,7 +517,7 @@ export function MapBuilder({
         </div>
 
         {/* RIGHT: Configuration Panel */}
-        <aside className="w-80 border-l border-border-primary bg-elevated/60 backdrop-blur-xl flex flex-col shrink-0">
+        <aside className="w-80 border-l border-border-primary bg-elevated flex flex-col shrink-0">
           {/* Tab bar */}
           <nav className="flex border-b border-border-primary shrink-0">
             {(

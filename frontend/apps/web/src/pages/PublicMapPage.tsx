@@ -170,7 +170,7 @@ export default function PublicMapPage() {
 
   if (loading || (denied && authLoading)) {
     return (
-      <div className="w-screen h-screen flex flex-col items-center justify-center bg-[#090d16] text-text-primary">
+      <div className="w-screen h-screen flex flex-col items-center justify-center bg-bg-primary text-text-primary">
         <Globe size={40} className="text-primary animate-spin mb-4" />
         <span className="text-sm font-semibold tracking-wider animate-pulse">
           Loading map dashboard...
@@ -185,14 +185,14 @@ export default function PublicMapPage() {
   if (denied) {
     if (isAuthenticated) {
       return (
-        <div className="w-screen h-screen flex items-center justify-center bg-[#090d16] p-6">
+        <div className="w-screen h-screen flex items-center justify-center bg-bg-primary p-6">
           <AccessRequestCard entityType="map" entityId={mapId ?? ""} />
         </div>
       );
     }
     const from = mapId ? `/share/map/${mapId}` : "/share";
     return (
-      <div className="w-screen h-screen flex flex-col items-center justify-center bg-[#090d16] text-text-primary px-6 text-center">
+      <div className="w-screen h-screen flex flex-col items-center justify-center bg-bg-primary text-text-primary px-6 text-center">
         <div className="text-5xl mb-4">🔒</div>
         <h3 className="text-lg font-bold text-text-primary">
           Sign in to continue
@@ -216,7 +216,7 @@ export default function PublicMapPage() {
 
   if (errorMsg || !mapData) {
     return (
-      <div className="w-screen h-screen flex flex-col items-center justify-center bg-[#090d16] text-text-primary px-6 text-center">
+      <div className="w-screen h-screen flex flex-col items-center justify-center bg-bg-primary text-text-primary px-6 text-center">
         <div className="text-5xl mb-4">🔒</div>
         <h3 className="text-lg font-bold text-text-primary">Access Denied</h3>
         <p className="mt-2 text-text-secondary text-sm max-w-sm">
@@ -242,7 +242,7 @@ export default function PublicMapPage() {
 
       {/* Title Card Widget */}
       {widgets.titleCard && (
-        <div className="absolute top-4 left-4 z-10 max-w-sm bg-elevated/90 backdrop-blur-xl border border-border-primary rounded-xl p-4 shadow-xl animate-fade-in flex flex-col gap-1.5">
+        <div className="absolute top-4 left-4 z-10 max-w-sm bg-elevated border border-border-primary rounded-xl p-4 shadow-xl animate-fade-in flex flex-col gap-1.5">
           <h1 className="text-sm font-bold text-text-primary tracking-wide">
             {mapData.title}
           </h1>
@@ -262,7 +262,7 @@ export default function PublicMapPage() {
 
       {/* Layer Toggle Widget */}
       {widgets.layerList && layersList.filter((l) => l.url).length > 0 && (
-        <div className="absolute top-4 right-4 z-10 w-60 bg-elevated/90 backdrop-blur-xl border border-border-primary rounded-xl p-3.5 shadow-xl animate-fade-in flex flex-col gap-2">
+        <div className="absolute top-4 right-4 z-10 w-60 bg-elevated border border-border-primary rounded-xl p-3.5 shadow-xl animate-fade-in flex flex-col gap-2">
           <div className="flex items-center gap-1.5 border-b border-border-secondary/60 pb-1.5 mb-1">
             <Layers size={13} className="text-primary" />
             <span className="text-xs font-bold text-text-primary">
@@ -287,7 +287,7 @@ export default function PublicMapPage() {
                 </div>
                 {layer.style?.color && (
                   <span
-                    className="w-2.5 h-2.5 rounded-full border border-white/10 shrink-0"
+                    className="w-2.5 h-2.5 rounded-full border border-border-primary shrink-0"
                     style={{ backgroundColor: layer.style.color }}
                   />
                 )}
@@ -302,21 +302,21 @@ export default function PublicMapPage() {
         <div className="absolute bottom-6 right-6 z-10 flex flex-col gap-1.5">
           <button
             onClick={handleZoomIn}
-            className="w-8 h-8 rounded-lg bg-elevated/90 backdrop-blur-xl border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
+            className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
             title="Zoom In"
           >
             <ZoomIn size={15} />
           </button>
           <button
             onClick={handleZoomOut}
-            className="w-8 h-8 rounded-lg bg-elevated/90 backdrop-blur-xl border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
+            className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
             title="Zoom Out"
           >
             <ZoomOut size={15} />
           </button>
           <button
             onClick={handleResetNorth}
-            className="w-8 h-8 rounded-lg bg-elevated/90 backdrop-blur-xl border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
+            className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
             title="Reset North"
           >
             <Compass size={15} />

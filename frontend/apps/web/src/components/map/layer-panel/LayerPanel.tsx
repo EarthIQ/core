@@ -114,7 +114,7 @@ export function LayerPanel({
 
   return (
     <div
-      className={`absolute top-16 z-20 flex flex-col bg-elevated/95 backdrop-blur-xl border border-border-primary rounded-xl shadow-elevated transition-all duration-300 ease-in-out ${
+      className={`absolute top-16 z-20 flex flex-col bg-elevated border border-border-primary rounded-xl shadow-elevated transition-all duration-300 ease-in-out ${
         minimized ? "w-10" : "w-64"
       }`}
       style={leftStyle}

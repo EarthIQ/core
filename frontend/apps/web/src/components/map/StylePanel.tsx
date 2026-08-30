@@ -84,7 +84,7 @@ export function StylePanel({
 
   return (
     <div
-      className="absolute top-16 right-3 z-30 w-72 bg-elevated/97 backdrop-blur-xl border border-border-primary rounded-xl shadow-2xl"
+      className="absolute top-16 right-3 z-30 w-72 bg-elevated border border-border-primary rounded-xl shadow-2xl"
       style={{ maxHeight: "calc(100vh - 8rem)", overflowY: "auto" }}
     >
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-border-secondary">

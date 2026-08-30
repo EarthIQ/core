@@ -272,7 +272,7 @@ export function MapActionBar({
 
   return (
     <div
-      className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 px-2 py-1.5 bg-elevated/95 backdrop-blur-xl border border-border-primary rounded-full shadow-xl"
+      className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 px-2 py-1.5 bg-elevated border border-border-primary rounded-full shadow-xl"
       id="map-action-bar"
     >
       {TOOL_GROUPS.map((group) => {

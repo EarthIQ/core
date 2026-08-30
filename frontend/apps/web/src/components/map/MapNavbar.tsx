@@ -86,7 +86,7 @@ export function MapNavbar({
 
   return (
     <>
-      <header className="absolute top-0 left-0 right-0 z-30 h-14 bg-elevated/90 backdrop-blur-xl border-b border-border-primary flex items-center justify-between px-4">
+      <header className="absolute top-0 left-0 right-0 z-30 h-14 bg-elevated border-b border-border-primary flex items-center justify-between px-4">
         {/* Left: back + map switcher (unchanged) */}
         <div className="flex items-center gap-3">
           <Tooltip content="Back to projects" placement="bottom">

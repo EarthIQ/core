@@ -87,7 +87,7 @@ export function PublishedMapsPanel({
 
       {/* Slide-in panel */}
       <div
-        className={`absolute top-14 right-0 bottom-0 z-20 flex flex-col w-72 bg-elevated/98 backdrop-blur-xl border-l border-border-primary shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`absolute top-14 right-0 bottom-0 z-20 flex flex-col w-72 bg-elevated border-l border-border-primary shadow-2xl transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
