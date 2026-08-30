@@ -47,7 +47,12 @@ import {
   ToolboxPanel,
   TOOLBOX_PANEL_WIDTH,
 } from "@/components/map/ToolboxPanel";
-import { Map as MapCanvas, MapProvider, ScaleControl } from "@packages/map";
+import {
+  Map as MapCanvas,
+  MapProvider,
+  ScaleControl,
+  ContextMenuControl,
+} from "@packages/map";
 import { Spinner } from "@packages/ui";
 
 export default function MapPage() {
@@ -87,7 +92,6 @@ export default function MapPage() {
     mapRef,
     mapReady,
     zoomLevel,
-    coords,
     bearing,
     basemap,
     setBasemap,
@@ -631,6 +635,9 @@ export default function MapPage() {
         }}
       />
 
+      {/* Right-click context menu — copy coordinates / center here (map pkg) */}
+      <ContextMenuControl coordinateFormat="both" />
+
       {/* Collaborator cursor overlay — cursors are placed with map.project()
           (canvas-relative), so this box must mirror the map canvas box exactly,
           same as the AnnotationOverlays wrapper below. */}
@@ -751,11 +758,6 @@ export default function MapPage() {
       <MapActionBar
         activeTool={activeTool}
         onToolChange={(tool) => setActiveTool(tool)}
-        bookmarkActive={bookmarkActive}
-        onToggleBookmark={() => {
-          setCommentsOpen(false);
-          setBookmarkOpen(!bookmarkActive);
-        }}
         commentsActive={commentsActive}
         onToggleComments={() => {
           setBookmarkOpen(false);
@@ -795,11 +797,15 @@ export default function MapPage() {
         onZoomOut={zoomOut}
         activeBasemap={basemap}
         onBasemapChange={setBasemap}
-        coords={coords}
         mapReady={mapReady}
         bearing={bearing}
         onResetNorth={resetNorth}
         onToggleAI={() => setAiChatOpen((v) => !v)}
+        bookmarkActive={bookmarkActive}
+        onToggleBookmark={() => {
+          setCommentsOpen(false);
+          setBookmarkOpen(!bookmarkActive);
+        }}
       />
 
       <div className="absolute top-14 left-0 bottom-10 z-20">

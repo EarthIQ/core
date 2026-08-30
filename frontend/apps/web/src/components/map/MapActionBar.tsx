@@ -13,7 +13,6 @@ import {
   Image as ImageIcon,
   Link2,
   Play,
-  Bookmark,
   MessageSquare,
   Undo2,
   Redo2,
@@ -228,8 +227,6 @@ interface MapActionBarProps {
   /** Controlled active tool. When provided, the bar reflects this value. */
   activeTool?: ActiveTool | null;
   onToolChange?: (tool: ActiveTool) => void;
-  bookmarkActive?: boolean;
-  onToggleBookmark?: () => void;
   commentsActive?: boolean;
   onToggleComments?: () => void;
   toolboxActive?: boolean;
@@ -244,8 +241,6 @@ interface MapActionBarProps {
 export function MapActionBar({
   activeTool: controlledTool,
   onToolChange,
-  bookmarkActive = false,
-  onToggleBookmark,
   commentsActive = false,
   onToggleComments,
   toolboxActive = false,
@@ -296,21 +291,6 @@ export function MapActionBar({
       })}
 
       {/* Standalone toggle buttons */}
-      <Tooltip content="Bookmark" placement="top">
-        <button
-          type="button"
-          onClick={onToggleBookmark}
-          aria-pressed={bookmarkActive}
-          className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
-            bookmarkActive
-              ? "bg-surface-hover text-primary"
-              : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
-          }`}
-        >
-          <Bookmark size={17} fill={bookmarkActive ? "currentColor" : "none"} />
-        </button>
-      </Tooltip>
-
       <Tooltip content="Comment" placement="top">
         <button
           type="button"

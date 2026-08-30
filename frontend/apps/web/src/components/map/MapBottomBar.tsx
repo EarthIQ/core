@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Tooltip } from "@packages/ui";
 import { TerrainControl } from "@packages/map";
-import { Compass } from "lucide-react";
+import { Compass, Bookmark } from "lucide-react";
 
 /**
  * Terrain source for the 3D terrain toggle (MapTern terrarium tiles).
@@ -25,13 +25,16 @@ interface MapBottomBarProps {
   onZoomOut: () => void;
   activeBasemap: string;
   onBasemapChange: (id: string) => void;
-  coords: { lat: number; lng: number } | null;
   mapReady: boolean;
   bearing?: number;
   onResetNorth?: () => void;
   onToggleAI: () => void;
   /** Notified when the 3D terrain toggle changes (on = terrain active). */
   onTerrainChange?: (enabled: boolean) => void;
+  /** Bookmark panel open state (drives the toggle button's active style). */
+  bookmarkActive?: boolean;
+  /** Toggles the bookmark panel. Omit to hide the button. */
+  onToggleBookmark?: () => void;
 }
 
 export function MapBottomBar({
@@ -40,12 +43,13 @@ export function MapBottomBar({
   onZoomOut,
   activeBasemap,
   onBasemapChange,
-  coords,
   mapReady,
   bearing = 0,
   onResetNorth,
   onToggleAI,
   onTerrainChange,
+  bookmarkActive = false,
+  onToggleBookmark,
 }: MapBottomBarProps) {
   const [basemapOpen, setBasemapOpen] = useState(false);
   const activeOption = BASEMAP_OPTIONS.find((b) => b.id === activeBasemap);
@@ -166,12 +170,30 @@ export function MapBottomBar({
         onChange={onTerrainChange}
       />
 
-      <div className="flex-1" />
-
-      {coords && (
-        <span className="font-mono text-[0.7rem] text-text-tertiary tabular-nums tracking-tight">
-          {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
-        </span>
+      {/* Bookmark — pinned to the right end of the bar */}
+      {onToggleBookmark && (
+        <div className="ml-auto">
+          <Tooltip content="Bookmark" placement="top">
+            <Button
+              variant="ghost"
+              size="sm"
+              iconOnly
+              onClick={onToggleBookmark}
+              aria-label="Bookmark"
+              aria-pressed={bookmarkActive}
+              className={
+                bookmarkActive
+                  ? "text-primary"
+                  : "text-text-secondary hover:text-text-primary"
+              }
+            >
+              <Bookmark
+                size={16}
+                fill={bookmarkActive ? "currentColor" : "none"}
+              />
+            </Button>
+          </Tooltip>
+        </div>
       )}
     </div>
   );
