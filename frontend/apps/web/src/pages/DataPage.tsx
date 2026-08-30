@@ -1,46 +1,63 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Alert,
+  Button,
+  Drawer,
+  IconButton,
+  Input,
+  Select,
+  ToastProvider,
+  useToast,
+} from "@packages/ui";
+import {
+  CloudUpload,
+  LayoutGrid,
+  List,
+  RefreshCw,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import { listDatasets, type GeoDatasetOut } from "../lib/datasets";
 import {
-  BulkActionBar,
   ConfirmDeleteModal,
-  DataPageHeader,
   DatasetGrid,
   DatasetTable,
   EditModal,
-  FilterSidebar,
+  FolderTree,
+  type FolderSelection,
   Pagination,
   PreviewModal,
   SummaryStats,
-  SupportedFormats,
   TileUrlModal,
-  Toasts,
   UploadModal,
   useDatasetActions,
 } from "../components/data";
-import type {
-  DatasetItem,
-  SortDir,
-  SortField,
-  Toast,
-  ViewMode,
+import {
+  FORMATS,
+  type DatasetItem,
+  type SortDir,
+  type SortField,
+  type ViewMode,
 } from "../components/data";
 
-let toastSeq = 0;
-
-export default function DataPage() {
+function DataPageInner() {
   const navigate = useNavigate();
+  const { success: toastSuccess, error: toastError, info: toastInfo } =
+    useToast();
 
   // ── Data state ──────────────────────────────────────────────────────────────
   const [datasets, setDatasets] = useState<DatasetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // ── Filtering ───────────────────────────────────────────────────────────────
+  // ── Navigation (folder tree) + filters ─────────────────────────────────────
+  const [selection, setSelection] = useState<FolderSelection>({
+    type: "all",
+    tag: null,
+  });
   const [searchQuery, setSearchQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
   const [formatFilter, setFormatFilter] = useState<string>("all");
-  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
 
   // ── Sorting / view / pagination ─────────────────────────────────────────────
   const [sortField, setSortField] = useState<SortField>("updated");
@@ -49,25 +66,23 @@ export default function DataPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // ── Selection ────────────────────────────────────────────────────────────────
+  // ── Selection / modals ──────────────────────────────────────────────────────
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-
-  // ── Upload modal ────────────────────────────────────────────────────────────
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  // ── Toasts ───────────────────────────────────────────────────────────────────
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
-  const addToast = useCallback((type: Toast["type"], message: string) => {
-    const id = ++toastSeq;
-    setToasts((prev) => [...prev, { id, type, message }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3200);
-  }, []);
-
-  const dismissToast = (id: number) =>
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+  // ── Toast adapter (keeps (type, message) signature for shared hooks) ──────
+  const addToast = useCallback(
+    (type: "success" | "error" | "info", message: string) => {
+      (type === "success"
+        ? toastSuccess
+        : type === "error"
+          ? toastError
+          : toastInfo
+      )(message, { duration: 4200 });
+    },
+    [toastSuccess, toastError, toastInfo],
+  );
 
   // ── Fetch datasets ───────────────────────────────────────────────────────────
   const fetchDatasets = useCallback(async () => {
@@ -75,7 +90,7 @@ export default function DataPage() {
     setFetchError(null);
     try {
       const items: GeoDatasetOut[] = await listDatasets({
-        type: typeFilter,
+        type: selection.type,
         format: formatFilter,
         search: searchQuery,
       });
@@ -85,7 +100,7 @@ export default function DataPage() {
     } finally {
       setLoading(false);
     }
-  }, [typeFilter, formatFilter, searchQuery]);
+  }, [selection.type, formatFilter, searchQuery]);
 
   useEffect(() => {
     const timer = setTimeout(fetchDatasets, 300);
@@ -96,47 +111,25 @@ export default function DataPage() {
   useEffect(() => {
     setPage(1);
     setSelectedIds(new Set());
-  }, [searchQuery, typeFilter, formatFilter, selectedTags, pageSize]);
+  }, [searchQuery, selection, formatFilter, pageSize]);
 
-  // ── Shared dataset actions ───────────────────────────────────────────────────
+  // ── Shared dataset actions ──────────────────────────────────────────────────
   const actions = useDatasetActions({
     addToast,
     updateDatasets: (fn) => setDatasets((prev) => fn(prev)),
     refresh: fetchDatasets,
   });
 
-  // ── Escape key closes modals; lock scroll while any modal open ──────────────
-  const anyModalOpen = isAddModalOpen || actions.anyModalOpen;
-
-  useEffect(() => {
-    if (!anyModalOpen) return;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsAddModalOpen(false);
-        actions.closeAllModals();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [anyModalOpen, actions.closeAllModals]);
-
-  // ── Derived data ────────────────────────────────────────────────────────────
-  const allTags = useMemo(() => {
-    const s = new Set<string>();
-    datasets.forEach((d) => d.tags?.forEach((t) => s.add(t)));
-    return Array.from(s).sort();
-  }, [datasets]);
+  // ── Derived: tag filter is applied client-side ──────────────────────────────
+  const tagFiltered = useMemo(() => {
+    if (!selection.tag) return datasets;
+    if (selection.tag === "__untagged__")
+      return datasets.filter((d) => !d.tags || d.tags.length === 0);
+    return datasets.filter((d) => d.tags?.includes(selection.tag!));
+  }, [datasets, selection.tag]);
 
   const processedDatasets = useMemo(() => {
-    let list = datasets;
-    if (selectedTags.size > 0) {
-      list = list.filter((d) => d.tags?.some((t) => selectedTags.has(t)));
-    }
-    const sorted = [...list].sort((a, b) => {
+    const sorted = [...tagFiltered].sort((a, b) => {
       let cmp = 0;
       switch (sortField) {
         case "name":
@@ -155,7 +148,7 @@ export default function DataPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return sorted;
-  }, [datasets, selectedTags, sortField, sortDir]);
+  }, [tagFiltered, sortField, sortDir]);
 
   const totalPages = Math.max(
     1,
@@ -167,135 +160,272 @@ export default function DataPage() {
     clampedPage * pageSize,
   );
 
-  const activeFilterCount =
-    (searchQuery ? 1 : 0) +
-    (typeFilter !== "all" ? 1 : 0) +
-    (formatFilter !== "all" ? 1 : 0) +
-    selectedTags.size;
+  // ── Selection handlers (table view) ─────────────────────────────────────────
+  const allOnPageSelected =
+    pageItems.length > 0 && pageItems.every((d) => selectedIds.has(d.id));
 
-  // ── Filter / sort handlers ─────────────────────────────────────────────────
-  function clearFilters() {
-    setSearchQuery("");
-    setTypeFilter("all");
-    setFormatFilter("all");
-    setSelectedTags(new Set());
-  }
-
-  function toggleSort(field: SortField) {
-    if (sortField === field) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortField(field);
-      setSortDir("asc");
-    }
-  }
-
-  function toggleTag(tag: string) {
-    setSelectedTags((prev) => {
-      const next = new Set(prev);
-      if (next.has(tag)) next.delete(tag);
-      else next.add(tag);
-      return next;
-    });
-  }
-
-  // ── Selection helpers ───────────────────────────────────────────────────────
-  function toggleSelectRow(id: string) {
+  const toggleSelectRow = useCallback((id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  }
+  }, []);
 
-  function toggleSelectAllOnPage(checked: boolean) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      pageItems.forEach((d) => {
-        if (checked) next.add(d.id);
-        else next.delete(d.id);
+  const toggleSelectAll = useCallback(
+    (checked: boolean) => {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        pageItems.forEach((d) => {
+          if (checked) next.add(d.id);
+          else next.delete(d.id);
+        });
+        return next;
       });
-      return next;
-    });
-  }
+    },
+    [pageItems],
+  );
 
-  const allOnPageSelected =
-    pageItems.length > 0 && pageItems.every((d) => selectedIds.has(d.id));
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Filter helpers ───────────────────────────────────────────────────────────
+  const activeFilterCount = useMemo(() => {
+    let n = 0;
+    if (selection.type !== "all") n += 1;
+    if (selection.tag) n += 1;
+    if (formatFilter !== "all") n += 1;
+    if (searchQuery.trim()) n += 1;
+    return n;
+  }, [selection.type, selection.tag, formatFilter, searchQuery]);
+
+  const clearFilters = useCallback(() => {
+    setSelection({ type: "all", tag: null });
+    setFormatFilter("all");
+    setSearchQuery("");
+  }, []);
+
+  const onToggleSort = useCallback(
+    (field: SortField) => {
+      if (sortField === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      else {
+        setSortField(field);
+        setSortDir("asc");
+      }
+    },
+    [sortField],
+  );
+
+  // ── Navigation / modal / bulk handlers ─────────────────────────────────────
+  const onNavigate = useCallback((sel: FolderSelection) => {
+    setSelection(sel);
+    setMobileNavOpen(false);
+  }, []);
+
+  const onAddData = useCallback(() => {
+    setIsAddModalOpen(true);
+    setMobileNavOpen(false);
+  }, []);
+
+  const handleAddToProject = useCallback(() => {
+    const n = selectedIds.size;
+    addToast("info", `Added ${n} dataset${n === 1 ? "" : "s"} — opening Projects.`);
+    navigate("/projects");
+  }, [addToast, selectedIds.size, navigate]);
+
+  const handleBulkDelete = useCallback(() => {
+    actions.requestBulkDelete(Array.from(selectedIds));
+  }, [actions, selectedIds]);
+
+  const formatOptions = useMemo(
+    () => [
+      { value: "all", label: "All formats" },
+      ...FORMATS.map((f) => ({ value: f.value, label: f.label })),
+    ],
+    [],
+  );
+
   return (
-    <div className="max-w-[100rem] mx-auto flex flex-col gap-5">
-      <DataPageHeader onAddData={() => setIsAddModalOpen(true)} />
+    <div className="min-h-full bg-base px-4 py-6 sm:px-6 lg:px-8 mx-auto max-w-[1600px]">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="min-w-0">
+          <div className="text-xs font-semibold uppercase tracking-widest text-primary mb-1.5">
+            Spatial Catalog
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
+            Data Hub
+          </h1>
+          <p className="mt-1.5 text-sm text-text-secondary max-w-2xl">
+            Upload, manage, and inspect every common geospatial format — GeoJSON,
+            Shapefile, KML, GeoTIFF/COG, GeoPackage, GeoParquet, and CSV.
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          size="md"
+          leftIcon={<CloudUpload size={16} />}
+          onClick={onAddData}
+          className="shrink-0"
+        >
+          Add Data
+        </Button>
+      </div>
 
-      <SummaryStats datasets={datasets} loading={loading} />
+      {/* ── Fetch error ────────────────────────────────────────────────────── */}
+      {fetchError && (
+        <div className="mt-4">
+          <Alert
+            variant="error"
+            title="Couldn't load datasets"
+            onClose={() => setFetchError(null)}
+          >
+            {fetchError}
+          </Alert>
+        </div>
+      )}
 
-      {/* ── Supported formats reference ─────────────────────────────────────── */}
-      <SupportedFormats onAddData={() => setIsAddModalOpen(true)} />
+      {/* ── Summary ────────────────────────────────────────────────────────── */}
+      <div className="mt-5">
+        <SummaryStats datasets={datasets} loading={loading} />
+      </div>
 
-      {/* ── Workspace: sidebar filters + content ───────────────────────────── */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start">
-        <FilterSidebar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          typeFilter={typeFilter}
-          onTypeFilterChange={setTypeFilter}
-          formatFilter={formatFilter}
-          onFormatFilterChange={setFormatFilter}
-          activeFilterCount={activeFilterCount}
-          onClearFilters={clearFilters}
-          allTags={allTags}
-          selectedTags={selectedTags}
-          onToggleTag={toggleTag}
-          sortField={sortField}
-          onSortFieldChange={setSortField}
-          sortDir={sortDir}
-          onToggleSortDir={() =>
-            setSortDir((d) => (d === "asc" ? "desc" : "asc"))
-          }
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          onRefresh={fetchDatasets}
-        />
+      <div className="mt-6 flex gap-6 items-start">
+        {/* ── Folder navigation (desktop) ──────────────────────────────────── */}
+        <aside className="hidden lg:block w-72 shrink-0">
+          <div className="sticky top-4">
+            <FolderTree
+              datasets={datasets}
+              loading={loading}
+              selection={selection}
+              onNavigate={onNavigate}
+              onOpenDataset={actions.openPreview}
+            />
+          </div>
+        </aside>
 
-        {/* ── Content column ─────────────────────────────────────────────── */}
-        <div className="flex-1 min-w-0 flex flex-col gap-4 w-full">
-          {/* Error Banner */}
-          {fetchError && (
-            <div className="alert alert-error">
-              <span className="alert-icon">⚠️</span>
-              <span className="alert-content text-sm">{fetchError}</span>
+        {/* ── Main content ─────────────────────────────────────────────────── */}
+        <div className="flex-1 min-w-0 flex flex-col gap-4">
+          {/* Toolbar */}
+          <div className="card p-3 flex flex-wrap items-center gap-2.5">
+            <IconButton
+              icon={<SlidersHorizontal size={18} />}
+              label="Browse folders"
+              variant="ghost"
+              size="md"
+              className="lg:hidden"
+              onClick={() => setMobileNavOpen(true)}
+            />
+            <div className="flex-1 min-w-[200px]">
+              <Input
+                leftIcon={<Search size={16} />}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search datasets…"
+                aria-label="Search datasets"
+              />
+            </div>
+            <div className="w-48">
+              <Select
+                options={formatOptions}
+                value={formatFilter}
+                onChange={(v) => setFormatFilter(v)}
+                size="md"
+              />
+            </div>
+            <IconButton
+              icon={
+                <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+              }
+              label="Refresh"
+              variant="ghost"
+              size="md"
+              onClick={fetchDatasets}
+            />
+            <div
+              className="flex rounded-lg overflow-hidden border"
+              style={{ borderColor: "var(--border-primary)" }}
+              role="group"
+              aria-label="View mode"
+            >
               <button
-                onClick={fetchDatasets}
-                className="ml-auto text-error underline text-sm bg-transparent border-none cursor-pointer"
+                type="button"
+                onClick={() => setViewMode("table")}
+                aria-label="Table view"
+                title="Table view"
+                className="px-3 h-10 flex items-center transition-colors cursor-pointer"
+                style={
+                  viewMode === "table"
+                    ? {
+                        color: "var(--primary)",
+                        backgroundColor:
+                          "oklch(from var(--primary) l c h / 0.12)",
+                      }
+                    : { color: "var(--text-secondary)" }
+                }
               >
-                Retry
+                <List size={16} />
               </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                aria-label="Grid view"
+                title="Grid view"
+                className="px-3 h-10 flex items-center transition-colors cursor-pointer"
+                style={
+                  viewMode === "grid"
+                    ? {
+                        color: "var(--primary)",
+                        backgroundColor:
+                          "oklch(from var(--primary) l c h / 0.12)",
+                      }
+                    : { color: "var(--text-secondary)" }
+                }
+              >
+                <LayoutGrid size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* Bulk action bar */}
+          {selectedIds.size > 0 && (
+            <div className="card px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 bg-primary/5 border-primary/20 animate-fade-in">
+              <span className="text-sm font-medium text-text-primary">
+                {selectedIds.size} selected
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleAddToProject}
+                >
+                  Add to Project
+                </Button>
+                <Button variant="error" size="sm" onClick={handleBulkDelete}>
+                  Delete
+                </Button>
+                <Button variant="ghost" size="sm" onClick={clearSelection}>
+                  Clear
+                </Button>
+              </div>
             </div>
           )}
 
-          <BulkActionBar
-            count={selectedIds.size}
-            onAddToProject={() => navigate("/projects")}
-            onDelete={() => actions.requestBulkDelete(Array.from(selectedIds))}
-            onClear={() => setSelectedIds(new Set())}
-          />
-
+          {/* Table or Grid */}
           {viewMode === "table" ? (
             <DatasetTable
               items={pageItems}
               loading={loading}
               selectedIds={selectedIds}
               allOnPageSelected={allOnPageSelected}
-              onToggleSelectAll={toggleSelectAllOnPage}
+              onToggleSelectAll={toggleSelectAll}
               onToggleSelectRow={toggleSelectRow}
               sortField={sortField}
               sortDir={sortDir}
-              onToggleSort={toggleSort}
+              onToggleSort={onToggleSort}
               activeFilterCount={activeFilterCount}
-              fetchError={fetchError}
               onClearFilters={clearFilters}
-              onAddData={() => setIsAddModalOpen(true)}
+              onAddData={onAddData}
               onInspect={actions.openPreview}
               onEdit={actions.openEdit}
               onDownload={actions.handleDownload}
@@ -306,11 +436,9 @@ export default function DataPage() {
             <DatasetGrid
               items={pageItems}
               loading={loading}
-              selectedIds={selectedIds}
-              onToggleSelectRow={toggleSelectRow}
               activeFilterCount={activeFilterCount}
               onClearFilters={clearFilters}
-              onAddData={() => setIsAddModalOpen(true)}
+              onAddData={onAddData}
               onInspect={actions.openPreview}
               onEdit={actions.openEdit}
               onDownload={actions.handleDownload}
@@ -319,6 +447,7 @@ export default function DataPage() {
             />
           )}
 
+          {/* Pagination */}
           <Pagination
             loading={loading}
             totalItems={processedDatasets.length}
@@ -332,7 +461,24 @@ export default function DataPage() {
         </div>
       </div>
 
-      {/* ── Upload Modal ───────────────────────────────────────────────────── */}
+      {/* ── Mobile folder drawer ────────────────────────────────────────────── */}
+      <Drawer
+        isOpen={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+        position="left"
+        size="md"
+        title="Browse catalog"
+      >
+        <FolderTree
+          datasets={datasets}
+          loading={loading}
+          selection={selection}
+          onNavigate={onNavigate}
+          onOpenDataset={actions.openPreview}
+        />
+      </Drawer>
+
+      {/* ── Upload ─────────────────────────────────────────────────────────── */}
       <UploadModal
         open={isAddModalOpen}
         addToast={addToast}
@@ -342,7 +488,7 @@ export default function DataPage() {
         }
       />
 
-      {/* ── Preview Modal (with attribute view) ────────────────────────────── */}
+      {/* ── Preview / Inspect ──────────────────────────────────────────────── */}
       {actions.inspectTarget && (
         <PreviewModal
           dataset={actions.inspectTarget}
@@ -356,7 +502,7 @@ export default function DataPage() {
         />
       )}
 
-      {/* ── Edit Metadata Modal ─────────────────────────────────────────────── */}
+      {/* ── Edit metadata ──────────────────────────────────────────────────── */}
       {actions.editDataset && (
         <EditModal
           dataset={actions.editDataset}
@@ -366,7 +512,7 @@ export default function DataPage() {
         />
       )}
 
-      {/* ── Tile URL Modal ─────────────────────────────────────────────────── */}
+      {/* ── Tile URL ───────────────────────────────────────────────────────── */}
       {actions.tileUrlDataset && (
         <TileUrlModal
           dataset={actions.tileUrlDataset}
@@ -376,14 +522,13 @@ export default function DataPage() {
         />
       )}
 
-      {/* ── Confirm Delete Modal ───────────────────────────────────────────── */}
+      {/* ── Confirm delete ─────────────────────────────────────────────────── */}
       {actions.confirmDelete && (
         <ConfirmDeleteModal
           label={actions.confirmDelete.label}
           onCancel={() => actions.setConfirmDelete(null)}
           onConfirm={() =>
             actions.performDelete(() => {
-              // Clear deleted ids from selection
               setSelectedIds((prev) => {
                 const next = new Set(prev);
                 actions.confirmDelete?.ids.forEach((id) => next.delete(id));
@@ -393,8 +538,14 @@ export default function DataPage() {
           }
         />
       )}
-
-      <Toasts toasts={toasts} onDismiss={dismissToast} />
     </div>
+  );
+}
+
+export default function DataPage() {
+  return (
+    <ToastProvider position="bottom-right" maxToasts={5} defaultDuration={4200}>
+      <DataPageInner />
+    </ToastProvider>
   );
 }

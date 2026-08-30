@@ -13,6 +13,8 @@ export { default as EditModal } from "./EditModal";
 export { default as PreviewModal } from "./PreviewModal";
 export { default as UploadModal } from "./UploadModal";
 export { default as SupportedFormats } from "./SupportedFormats";
+export { default as FolderTree } from "./FolderTree";
+export type { FolderSelection } from "./FolderTree";
 
 export { useDatasetActions } from "./useDatasetActions";
 export type { DatasetActionsState } from "./useDatasetActions";

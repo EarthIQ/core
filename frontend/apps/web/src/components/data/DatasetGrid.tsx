@@ -1,13 +1,25 @@
+import { Badge, EmptyState, cn } from "@packages/ui";
+import {
+  Database,
+  Globe,
+  Hash,
+  PackageOpen,
+  type LucideIcon,
+} from "lucide-react";
 import { formatBytes } from "../../lib/datasets";
-import DatasetActions from "./DatasetActions";
-import { featureCountLabel, formatIcon, typeIcon, typeLabel } from "./helpers";
+import RowActions from "./RowActions";
+import {
+  featureCountLabel,
+  formatLucide,
+  isStoredAsset,
+  typeLabel,
+  typeLucide,
+} from "./helpers";
 import type { DatasetItem } from "./types";
 
 interface Props {
   items: DatasetItem[];
   loading: boolean;
-  selectedIds: Set<string>;
-  onToggleSelectRow: (id: string) => void;
   activeFilterCount: number;
   onClearFilters: () => void;
   onAddData: () => void;
@@ -18,11 +30,29 @@ interface Props {
   onRequestDelete: (id: string, name: string) => void;
 }
 
+function Meta({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-1.5 min-w-0">
+      <Icon size={12} className="shrink-0 text-text-tertiary" />
+      <span className="text-text-tertiary shrink-0">{label}</span>
+      <span className="truncate text-text-secondary font-medium" title={value}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
 export default function DatasetGrid({
   items,
   loading,
-  selectedIds,
-  onToggleSelectRow,
   activeFilterCount,
   onClearFilters,
   onAddData,
@@ -33,100 +63,125 @@ export default function DatasetGrid({
   onRequestDelete,
 }: Props) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
       {loading ? (
         Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="card p-4 flex flex-col gap-3">
             <div className="skeleton h-4 rounded w-2/3" />
             <div className="skeleton h-3 rounded w-1/2" />
             <div className="skeleton h-3 rounded w-1/3" />
+            <div className="skeleton h-3 rounded w-3/4" />
           </div>
         ))
       ) : items.length === 0 ? (
-        <div className="col-span-full flex flex-col items-center gap-3 text-center py-14">
-          <div className="text-4xl">🗺️</div>
-          <div className="text-text-secondary text-sm max-w-sm">
-            {activeFilterCount > 0
-              ? "No datasets match your current filters."
-              : "No datasets found. Upload your first file to get started."}
-          </div>
-          <button
-            onClick={() =>
-              activeFilterCount > 0 ? onClearFilters() : onAddData()
+        <div className="col-span-full card">
+          <EmptyState
+            size="md"
+            icon={<Database size={26} />}
+            title={
+              activeFilterCount > 0
+                ? "No matching datasets"
+                : "Your catalog is empty"
             }
-            className="btn btn-primary btn-sm"
-          >
-            {activeFilterCount > 0 ? "Clear Filters" : "Upload Dataset"}
-          </button>
+            description={
+              activeFilterCount > 0
+                ? "No datasets match the current folder, filters or search."
+                : "Upload your first geospatial file to start building your catalog."
+            }
+            action={
+              activeFilterCount > 0
+                ? { label: "Clear filters", onClick: onClearFilters }
+                : { label: "Upload dataset", onClick: onAddData }
+            }
+          />
         </div>
       ) : (
-        items.map((d) => (
-          <div
-            key={d.id}
-            className={`card p-4 flex flex-col gap-3 hover-lift transition-shadow ${
-              selectedIds.has(d.id) ? "ring-2 ring-primary/40" : ""
-            }`}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <input
-                  type="checkbox"
-                  checked={selectedIds.has(d.id)}
-                  onChange={() => onToggleSelectRow(d.id)}
-                  aria-label={`Select ${d.name}`}
+        items.map((d) => {
+          const FIcon = formatLucide(d.format);
+          const TIcon = typeLucide(d.type);
+          return (
+            <div
+              key={d.id}
+              className={
+                "card p-4 flex flex-col gap-3 transition-shadow " +
+                (d._optimistic ? "opacity-60" : "")
+              }
+            >
+              {/* Header */}
+              <div className="flex items-start gap-2.5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <FIcon size={17} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => onInspect(d)}
+                    className="font-semibold text-text-primary text-sm truncate block max-w-full hover:text-primary cursor-pointer text-left"
+                    title="Inspect"
+                  >
+                    {d.name}
+                  </button>
+                  <div className="flex items-center gap-1 text-[0.7rem] text-text-tertiary">
+                    <TIcon size={11} />
+                    {typeLabel(d.type)}
+                  </div>
+                </div>
+                <RowActions
+                  d={d}
+                  onInspect={onInspect}
+                  onEdit={onEdit}
+                  onDownload={onDownload}
+                  onOpenTileUrl={onOpenTileUrl}
+                  onRequestDelete={onRequestDelete}
                 />
-                <span className="text-xl shrink-0">{typeIcon(d.type)}</span>
-                <span className="font-semibold text-text-primary text-sm truncate">
-                  {d.name}
-                </span>
               </div>
-            </div>
 
-            <div className="flex flex-wrap gap-1">
-              {d.tags.map((t) => (
-                <span
-                  key={t}
-                  className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20"
-                >
-                  #{t}
-                </span>
-              ))}
-            </div>
+              {/* Tags */}
+              {d.tags && d.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {d.tags.slice(0, 4).map((t) => (
+                    <Badge key={t} size="xs" variant="primary">
+                      #{t}
+                    </Badge>
+                  ))}
+                  {d.tags.length > 4 && (
+                    <span className="text-[0.65rem] text-text-tertiary self-center">
+                      +{d.tags.length - 4}
+                    </span>
+                  )}
+                </div>
+              )}
 
-            <div className="grid grid-cols-2 gap-2 text-xs text-text-secondary">
-              <div>
-                <span className="text-text-tertiary">Format: </span>
-                {formatIcon(d.format)} {d.format}
+              {/* Meta grid */}
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                <Meta
+                  icon={Hash}
+                  label="Features"
+                  value={featureCountLabel(d)}
+                />
+                <Meta icon={Globe} label="CRS" value={d.crs || "—"} />
+                <Meta
+                  icon={Database}
+                  label="Size"
+                  value={formatBytes(d.file_size_bytes)}
+                />
+                <Meta
+                  icon={PackageOpen}
+                  label="Updated"
+                  value={d.updated_at ? d.updated_at.slice(0, 10) : "—"}
+                />
               </div>
-              <div>
-                <span className="text-text-tertiary">Type: </span>
-                {typeLabel(d.type)}
-              </div>
-              <div>
-                <span className="text-text-tertiary">CRS: </span>
-                <span className="font-mono">{d.crs}</span>
-              </div>
-              <div>
-                <span className="text-text-tertiary">Size: </span>
-                {formatBytes(d.file_size_bytes)}
-              </div>
-            </div>
 
-            <div className="text-xs text-text-primary font-medium">
-              {featureCountLabel(d)}
+              {/* Stored-asset marker */}
+              {isStoredAsset(d) && (
+                <div className="flex items-center gap-1.5 text-[0.7rem] text-info">
+                  <PackageOpen size={12} />
+                  Stored asset — download the original file
+                </div>
+              )}
             </div>
-
-            <DatasetActions
-              d={d}
-              compact
-              onInspect={onInspect}
-              onEdit={onEdit}
-              onDownload={onDownload}
-              onOpenTileUrl={onOpenTileUrl}
-              onRequestDelete={onRequestDelete}
-            />
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );

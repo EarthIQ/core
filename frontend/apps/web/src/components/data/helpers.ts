@@ -1,5 +1,61 @@
+import {
+  Box,
+  File,
+  FileBox,
+  FileText,
+  Globe,
+  Map,
+  MapPin,
+  Radio,
+  Satellite,
+  Table2,
+  type LucideIcon,
+} from "lucide-react";
 import { INGESTED_FORMATS, STORED_FORMATS, TYPES } from "./constants";
 import type { DatasetFormat, DatasetItem } from "./types";
+
+/** Lucide icon for a dataset format (replaces the old emoji map). */
+export function formatLucide(format: string): LucideIcon {
+  switch (format) {
+    case "GeoJSON":
+      return FileText;
+    case "Shapefile":
+      return Box;
+    case "KML":
+      return MapPin;
+    case "GeoRSS":
+      return Radio;
+    case "GeoTIFF":
+    case "COG":
+      return Satellite;
+    case "GeoPackage":
+      return FileBox;
+    case "GeoParquet":
+      return FileText;
+    case "CSV":
+      return Table2;
+    default:
+      return File;
+  }
+}
+
+/** Lucide icon for a dataset semantic type. */
+export function typeLucide(type: string): LucideIcon {
+  switch (type) {
+    case "vector":
+      return Map;
+    case "raster":
+      return Satellite;
+    case "remote-sensing":
+      return Globe;
+    case "tabular":
+      return Table2;
+    case "points":
+      return MapPin;
+    default:
+      return Box;
+  }
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 export function featureCountLabel(ds: DatasetItem): string {

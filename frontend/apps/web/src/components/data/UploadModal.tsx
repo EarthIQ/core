@@ -1,12 +1,32 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Badge,
+  Button,
+  Input,
+  Modal,
+  ModalFooter,
+  Progress,
+  Select,
+  Textarea,
+  cn,
+} from "@packages/ui";
+import {
+  AlertTriangle,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  CloudUpload,
+  FileText,
+  X,
+} from "lucide-react";
+import {
   formatBytes,
   uploadDataset,
   type DatasetFormat,
   type DatasetType,
   type GeoDatasetOut,
 } from "../../lib/datasets";
-import { FORMATS, TYPES } from "./constants";
+import { FORMATS, INGESTED_FORMATS, STORED_FORMATS, TYPES } from "./constants";
 import { detectFormat } from "./helpers";
 import type { FileEntry } from "./types";
 
@@ -44,6 +64,7 @@ export default function UploadModal({
   const [source, setSource] = useState("");
   const [batchUploading, setBatchUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [showFormats, setShowFormats] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function resetForm() {
@@ -55,6 +76,7 @@ export default function UploadModal({
     setDescription("");
     setSource("");
     setBatchUploading(false);
+    setShowFormats(false);
   }
 
   // Reset form when modal opens fresh (e.g., after closing with files queued)
@@ -62,12 +84,6 @@ export default function UploadModal({
     if (!open) resetForm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
-
-  const overallProgress = useMemo(() => {
-    if (fileEntries.length === 0) return 0;
-    const sum = fileEntries.reduce((acc, e) => acc + e.progress, 0);
-    return Math.round(sum / fileEntries.length);
-  }, [fileEntries]);
 
   function handleFilesSelected(list: FileList | File[] | null) {
     if (!list) return;
@@ -198,287 +214,269 @@ export default function UploadModal({
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[999] flex items-center justify-center p-4 overlay animate-fade-in"
-      onClick={() => {
+    <Modal
+      isOpen
+      onClose={() => {
         if (!batchUploading) {
           onClose();
           resetForm();
         }
       }}
+      closeOnOverlayClick={!batchUploading}
+      title="Upload Spatial Dataset"
+      description="GeoJSON · Shapefile · KML · GeoRSS · GeoTIFF · GeoPackage · GeoParquet · CSV"
+      size="lg"
     >
-      <div
-        className="w-full max-w-lg bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden max-h-[90vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
+      <form
+        onSubmit={handleUploadSubmit}
+        className="flex flex-col gap-4 max-h-[calc(90vh-14rem)] overflow-y-auto scrollbar-thin pr-1"
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-primary shrink-0">
-          <div>
-            <h2 className="text-lg font-bold text-text-primary">
-              Upload Spatial Dataset
-            </h2>
-            <p className="text-xs text-text-tertiary mt-0.5">
-              GeoJSON · Shapefile · KML · GeoRSS · GeoTIFF · GeoPackage ·
-              GeoParquet · CSV
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              if (!batchUploading) {
-                onClose();
-                resetForm();
-              }
+        {/* Dropzone */}
+        <div
+          onClick={handleDropzoneClick}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={cn(
+            "border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200",
+            isDragOver
+              ? "border-primary bg-primary/5 scale-[1.01]"
+              : fileEntries.length > 0
+                ? "border-success/60 bg-success/5"
+                : "border-border-hover bg-surface-hover hover:border-primary/50 hover:bg-primary/5",
+          )}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".geojson,.json,.zip,.shp,.kml,.kmz,.xml,.tif,.tiff,.gpkg,.parquet,.csv,.tsv,.txt"
+            className="hidden"
+            onChange={(e) => {
+              handleFilesSelected(e.target.files);
+              e.target.value = "";
             }}
-            className="btn btn-ghost btn-icon btn-sm text-text-tertiary hover:text-text-primary"
-            aria-label="Close"
-          >
-            ✕
-          </button>
+          />
+          {fileEntries.length > 0 ? (
+            <div className="flex flex-col items-center gap-1">
+              <Check size={22} className="text-success" />
+              <div className="font-semibold text-sm text-success">
+                {fileEntries.length} file
+                {fileEntries.length === 1 ? "" : "s"} selected
+              </div>
+              <div className="text-xs text-text-tertiary">
+                Click or drop more files to add to the batch
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-1">
+              <CloudUpload size={26} className="text-text-tertiary" />
+              <div className="font-semibold text-sm text-text-primary">
+                Drag & drop geospatial files
+              </div>
+              <div className="text-xs text-text-tertiary">
+                or <span className="text-primary">browse</span> from your
+                device
+              </div>
+            </div>
+          )}
         </div>
 
-        <form
-          onSubmit={handleUploadSubmit}
-          className="p-6 flex flex-col gap-4 overflow-y-auto scrollbar-thin"
-        >
-          {/* Dropzone */}
-          <div
-            onClick={handleDropzoneClick}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${
-              isDragOver
-                ? "border-primary bg-primary/8 scale-[1.01]"
-                : fileEntries.length > 0
-                  ? "border-success/60 bg-success/4"
-                  : "border-border-hover bg-surface-hover hover:border-primary/50 hover:bg-primary/4"
-            }`}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept=".geojson,.json,.zip,.shp,.kml,.kmz,.xml,.tif,.tiff,.gpkg,.parquet,.csv,.tsv,.txt"
-              className="hidden"
-              onChange={(e) => handleFilesSelected(e.target.files)}
-            />
-
-            {fileEntries.length > 0 ? (
-              <>
-                <div className="text-3xl mb-2">✅</div>
-                <div className="font-semibold text-sm text-success">
-                  {fileEntries.length} file
-                  {fileEntries.length === 1 ? "" : "s"} selected
-                </div>
-                <div className="text-xs text-text-tertiary mt-1">
-                  Click or drop more files to add to the batch
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="text-4xl mb-2">📁</div>
-                <div className="font-semibold text-sm text-text-primary">
-                  Click or drag your file here
-                </div>
-                <div className="text-xs text-text-tertiary mt-1">
-                  Any supported geospatial format · max 500 MB
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* File list with per-file progress */}
-          {fileEntries.length > 0 && (
-            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto scrollbar-thin pr-1">
-              {fileEntries.map((entry, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col gap-1 p-2.5 rounded-lg bg-bg-tertiary border border-border-secondary"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-sm shrink-0">
-                        {entry.status === "success"
-                          ? "✅"
-                          : entry.status === "error"
-                            ? "⚠️"
-                            : entry.status === "uploading"
-                              ? "⏳"
-                              : "📄"}
-                      </span>
-                      <span className="text-xs font-medium text-text-primary truncate">
+        {/* File list */}
+        {fileEntries.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {fileEntries.map((entry, i) => (
+              <div
+                key={`${entry.file.name}-${i}`}
+                className="rounded-lg border border-border-secondary bg-surface-hover/40 p-2.5"
+              >
+                <div className="flex items-center gap-2.5">
+                  <FileText size={15} className="shrink-0 text-text-tertiary" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-xs font-medium text-text-primary">
                         {entry.file.name}
                       </span>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[0.65rem] text-text-tertiary">
+                      <span className="shrink-0 text-[0.65rem] text-text-tertiary">
                         {formatBytes(entry.file.size)}
                       </span>
-                      {entry.status === "idle" && (
-                        <button
-                          type="button"
-                          onClick={() => removeFileEntry(i)}
-                          className="text-text-tertiary hover:text-error text-xs"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
+                    {entry.status === "uploading" && (
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <Progress value={entry.progress} size="sm" />
+                        <span className="shrink-0 text-[0.65rem] tabular-nums text-text-tertiary">
+                          {entry.progress}%
+                        </span>
+                      </div>
+                    )}
+                    {entry.status === "success" && (
+                      <div className="mt-1 inline-flex items-center gap-1 text-[0.7rem] text-success">
+                        <Check size={11} /> Uploaded
+                      </div>
+                    )}
+                    {entry.status === "error" && (
+                      <div className="mt-1 inline-flex items-center gap-1 text-[0.7rem] text-error">
+                        <AlertTriangle size={11} /> {entry.error}
+                      </div>
+                    )}
                   </div>
-                  {entry.status === "uploading" && (
-                    <div className="progress h-1.5">
-                      <div
-                        className="progress-bar bg-gradient-to-r from-primary to-info"
-                        style={{ width: `${entry.progress}%` }}
-                      />
-                    </div>
-                  )}
-                  {entry.status === "error" && entry.error && (
-                    <div className="text-[0.65rem] text-error">
-                      {entry.error}
-                    </div>
+                  {!batchUploading && (
+                    <button
+                      type="button"
+                      onClick={() => removeFileEntry(i)}
+                      aria-label={`Remove ${entry.file.name}`}
+                      className="shrink-0 rounded-md p-1 text-text-tertiary hover:bg-error/10 hover:text-error cursor-pointer transition-colors"
+                    >
+                      <X size={14} />
+                    </button>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
-
-          {/* Overall Upload Progress */}
-          {batchUploading && (
-            <div className="flex flex-col gap-1.5">
-              <div className="flex justify-between text-xs text-text-tertiary">
-                <span>Uploading & processing…</span>
-                <span className="tabular-nums">{overallProgress}%</span>
               </div>
-              <div className="progress">
-                <div
-                  className="progress-bar bg-gradient-to-r from-primary to-info"
-                  style={{ width: `${overallProgress}%` }}
-                />
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
+        )}
 
-          {/* Format + Category */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="form-field">
-              <label className="form-label">Format</label>
-              <select
-                value={format}
-                onChange={(e) => setFormat(e.target.value as DatasetFormat)}
-                className="input select"
-              >
+        {/* Format + category */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Select
+            label="Format"
+            value={format}
+            onChange={(v) => {
+              setFormat(v as DatasetFormat);
+              const suggested = SUGGESTED_TYPE[v as DatasetFormat];
+              if (suggested) setType(suggested);
+            }}
+            size="sm"
+            options={FORMATS.map((f) => ({ value: f.value, label: f.label }))}
+          />
+          <Select
+            label="Category"
+            value={type}
+            onChange={(v) => setType(v as DatasetType)}
+            size="sm"
+            options={TYPES.map((t) => ({ value: t.value, label: t.label }))}
+          />
+        </div>
+
+        {/* CRS */}
+        <Input
+          label="Coordinate Reference System (CRS)"
+          value={crs}
+          onChange={(e) => setCrs(e.target.value)}
+          inputSize="sm"
+        />
+
+        {/* Tags */}
+        <Input
+          label="Tags (comma-separated)"
+          placeholder="e.g. hydrology, elevation, 2026"
+          value={tagsInput}
+          onChange={(e) => setTagsInput(e.target.value)}
+          description="Tags become folders in the Data library sidebar."
+          inputSize="sm"
+        />
+
+        {/* Description */}
+        <Textarea
+          label="Description"
+          placeholder="What is this dataset? Where does it come from?"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          inputSize="sm"
+          autoResize
+        />
+
+        {/* Source */}
+        <Input
+          label="Source / Provenance"
+          placeholder="e.g. Copernicus, USGS, internal GIS team"
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+          inputSize="sm"
+        />
+
+        {/* Supported formats reference */}
+        <div className="rounded-lg border border-border-secondary">
+          <button
+            type="button"
+            onClick={() => setShowFormats((v) => !v)}
+            aria-expanded={showFormats}
+            className="flex w-full items-center justify-between px-3 py-2.5 cursor-pointer hover:bg-surface-hover transition-colors"
+          >
+            <span className="text-xs font-semibold text-text-secondary">
+              Supported formats & how they're handled
+            </span>
+            {showFormats ? (
+              <ChevronDown size={14} className="text-text-tertiary" />
+            ) : (
+              <ChevronRight size={14} className="text-text-tertiary" />
+            )}
+          </button>
+          {showFormats && (
+            <div className="border-t border-border-secondary p-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {FORMATS.map((f) => (
-                  <option key={f.value} value={f.value}>
-                    {f.label}
-                  </option>
+                  <div
+                    key={f.value}
+                    className="flex items-center gap-2 rounded-md px-2 py-1.5"
+                  >
+                    <FileText size={13} className="shrink-0 text-text-tertiary" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-medium text-text-primary">
+                        {f.value}
+                      </div>
+                      <code className="text-[0.62rem] text-text-tertiary">
+                        {f.extensions}
+                      </code>
+                    </div>
+                    {INGESTED_FORMATS.has(f.value) ? (
+                      <Badge size="xs" variant="success">
+                        Ingested
+                      </Badge>
+                    ) : STORED_FORMATS.has(f.value) ? (
+                      <Badge size="xs" variant="info">
+                        Stored
+                      </Badge>
+                    ) : (
+                      <Badge size="xs" variant="warning">
+                        Conditional
+                      </Badge>
+                    )}
+                  </div>
                 ))}
-              </select>
+              </div>
+              <p className="mt-2 text-[0.68rem] text-text-tertiary">
+                Ingested layers are served as Mapbox Vector Tiles (MVT) and can
+                be queried directly. Stored assets are kept on disk and
+                available for download.
+              </p>
             </div>
+          )}
+        </div>
 
-            <div className="form-field">
-              <label className="form-label">Category</label>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value as DatasetType)}
-                className="input select"
-              >
-                {TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* CRS */}
-          <div className="form-field">
-            <label className="form-label">
-              Coordinate Reference System (CRS)
-            </label>
-            <input
-              type="text"
-              value={crs}
-              onChange={(e) => setCrs(e.target.value)}
-              className="input"
-            />
-          </div>
-
-          {/* Tags */}
-          <div className="form-field">
-            <label className="form-label">Tags (comma-separated)</label>
-            <input
-              type="text"
-              placeholder="e.g. hydrology, elevation, 2026"
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              className="input"
-            />
-          </div>
-
-          {/* Description */}
-          <div className="form-field">
-            <label className="form-label">
-              Description{" "}
-              <span className="text-text-tertiary text-xs">(optional)</span>
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="input resize-none"
-              rows={2}
-              placeholder="What is this dataset? Where does it come from?"
-            />
-          </div>
-
-          {/* Source */}
-          <div className="form-field">
-            <label className="form-label">
-              Source / Provenance{" "}
-              <span className="text-text-tertiary text-xs">(optional)</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Copernicus, USGS, internal GIS team"
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              className="input"
-            />
-          </div>
-
-          <div className="flex gap-3 justify-end mt-2">
-            <button
-              type="button"
-              disabled={batchUploading}
-              onClick={() => {
-                onClose();
-                resetForm();
-              }}
-              className="btn btn-secondary btn-md disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={fileEntries.length === 0 || batchUploading}
-              className="btn btn-primary btn-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {batchUploading ? (
-                <>
-                  <span className="w-4 h-4 rounded-full border-2 border-text-on-primary border-t-transparent animate-spin" />
-                  Uploading…
-                </>
-              ) : (
-                `Upload & Register${
-                  fileEntries.length > 1 ? ` (${fileEntries.length})` : ""
-                }`
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <ModalFooter>
+          <Button
+            variant="ghost"
+            disabled={batchUploading}
+            onClick={() => {
+              onClose();
+              resetForm();
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={fileEntries.length === 0}
+            loading={batchUploading}
+            loadingText="Uploading…"
+            leftIcon={<CloudUpload size={16} />}
+          >
+            Upload & Register
+            {fileEntries.length > 1 ? ` (${fileEntries.length})` : ""}
+          </Button>
+        </ModalFooter>
+      </form>
+    </Modal>
   );
 }

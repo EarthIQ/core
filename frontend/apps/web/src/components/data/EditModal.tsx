@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Button, Input, Modal, ModalFooter, Textarea } from "@packages/ui";
 import type { DatasetItem } from "./types";
 
 interface Props {
@@ -14,7 +15,12 @@ interface Props {
   }) => void;
 }
 
-export default function EditModal({ dataset, saving, onClose, onSave }: Props) {
+export default function EditModal({
+  dataset,
+  saving,
+  onClose,
+  onSave,
+}: Props) {
   const [name, setName] = useState(dataset.name);
   const [desc, setDesc] = useState(dataset.description ?? "");
   const [source, setSource] = useState(dataset.source ?? "");
@@ -45,117 +51,59 @@ export default function EditModal({ dataset, saving, onClose, onSave }: Props) {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[999] flex items-center justify-center p-4 overlay animate-fade-in"
-      onClick={() => !saving && onClose()}
+    <Modal
+      isOpen
+      onClose={() => !saving && onClose()}
+      closeOnOverlayClick={!saving}
+      title="Edit Dataset Metadata"
+      description={dataset.name}
+      size="md"
     >
-      <div
-        className="w-full max-w-md bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden max-h-[90vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-      >
-        <div className="flex items-start justify-between px-6 py-4 border-b border-border-primary shrink-0">
-          <div>
-            <h2 className="text-lg font-bold text-text-primary">
-              Edit Dataset Metadata
-            </h2>
-            <div className="text-xs text-text-tertiary mt-0.5">
-              {dataset.name}
-            </div>
-          </div>
-          <button
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <Input
+          label="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <Textarea
+          label="Description"
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+          placeholder="What is this dataset?"
+          autoResize
+        />
+        <Input
+          label="Source / Provenance"
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+          placeholder="e.g. Copernicus, USGS"
+        />
+        <Input
+          label="CRS"
+          value={crs}
+          onChange={(e) => setCrs(e.target.value)}
+        />
+        <Input
+          label="Tags (comma-separated)"
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          placeholder="e.g. hydrology, elevation, 2026"
+        />
+
+        <ModalFooter>
+          <Button
+            variant="ghost"
+            disabled={saving}
             onClick={() => !saving && onClose()}
-            className="btn btn-ghost btn-icon btn-sm text-text-tertiary hover:text-text-primary"
-            aria-label="Close"
           >
-            ✕
-          </button>
-        </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className="p-6 flex flex-col gap-4 overflow-y-auto scrollbar-thin"
-        >
-          <div className="form-field">
-            <label className="form-label">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="input"
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">Description</label>
-            <textarea
-              value={desc}
-              onChange={(e) => setDesc(e.target.value)}
-              className="input resize-none"
-              rows={3}
-              placeholder="What is this dataset?"
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">Source / Provenance</label>
-            <input
-              type="text"
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              className="input"
-              placeholder="e.g. Copernicus, USGS"
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">CRS</label>
-            <input
-              type="text"
-              value={crs}
-              onChange={(e) => setCrs(e.target.value)}
-              className="input"
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">Tags (comma-separated)</label>
-            <input
-              type="text"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              className="input"
-              placeholder="e.g. hydrology, elevation, 2026"
-            />
-          </div>
-
-          <div className="flex gap-3 justify-end mt-2">
-            <button
-              type="button"
-              disabled={saving}
-              onClick={onClose}
-              className="btn btn-secondary btn-md disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="btn btn-primary btn-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? (
-                <>
-                  <span className="w-4 h-4 rounded-full border-2 border-text-on-primary border-t-transparent animate-spin" />
-                  Saving…
-                </>
-              ) : (
-                "Save Changes"
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            Cancel
+          </Button>
+          <Button type="submit" loading={saving} loadingText="Saving…">
+            Save Changes
+          </Button>
+        </ModalFooter>
+      </form>
+    </Modal>
   );
 }
