@@ -1,4 +1,12 @@
 import { useMemo } from "react";
+import {
+  Database,
+  FolderArchive,
+  HardDrive,
+  Layers,
+  Satellite,
+  Table2,
+} from "lucide-react";
 import { formatBytes } from "../../lib/datasets";
 import { isStoredAsset, isVectorized } from "./helpers";
 import type { DatasetItem } from "./types";
@@ -16,19 +24,19 @@ export default function SummaryStats({ datasets, loading }: Props) {
 
   const stats = [
     {
-      icon: "📦",
+      icon: Database,
       value: loading ? "—" : datasets.length,
-      label: "Datasets",
-      color: "bg-primary/10 text-primary",
+      label: "Total Datasets",
+      color: "bg-primary/10 text-primary border-primary/20",
     },
     {
-      icon: "🗺️",
+      icon: Layers,
       value: loading ? "—" : datasets.filter((d) => isVectorized(d)).length,
       label: "Tiled Layers",
-      color: "bg-accent/10 text-accent",
+      color: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
     },
     {
-      icon: "🛰️",
+      icon: Satellite,
       value: loading
         ? "—"
         : datasets.filter(
@@ -38,50 +46,57 @@ export default function SummaryStats({ datasets, loading }: Props) {
               d.type === "raster" ||
               d.type === "remote-sensing",
           ).length,
-      label: "Rasters",
-      color: "bg-warning/10 text-warning",
+      label: "Rasters & COG",
+      color: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
     },
     {
-      icon: "📑",
+      icon: Table2,
       value: loading
         ? "—"
         : datasets.filter((d) => d.type === "tabular").length,
-      label: "Tables",
-      color: "bg-success/10 text-success",
+      label: "Tabular Files",
+      color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
     },
     {
-      icon: "📁",
+      icon: FolderArchive,
       value: loading ? "—" : datasets.filter((d) => isStoredAsset(d)).length,
       label: "Stored Assets",
-      color: "bg-info/10 text-info",
+      color: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
     },
     {
-      icon: "💾",
+      icon: HardDrive,
       value: loading ? "—" : formatBytes(totalStorageBytes),
-      label: "Storage",
-      color: "bg-primary/10 text-primary",
+      label: "Catalog Storage",
+      color: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-      {stats.map((s) => (
-        <div key={s.label} className="card p-3 flex items-center gap-2.5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+      {stats.map((s) => {
+        const Icon = s.icon;
+        return (
           <div
-            className={`w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0 ${s.color}`}
+            key={s.label}
+            className="card p-3.5 flex items-center gap-3 bg-surface border border-border-primary hover:border-border-hover transition-all duration-150 rounded-xl"
           >
-            {s.icon}
-          </div>
-          <div className="min-w-0">
-            <div className="text-lg font-bold text-text-primary tabular-nums leading-none truncate">
-              {s.value}
+            <div
+              className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${s.color}`}
+            >
+              <Icon size={17} />
             </div>
-            <div className="text-[0.68rem] text-text-tertiary mt-0.5">
-              {s.label}
+            <div className="min-w-0 flex-1">
+              <div className="text-lg font-bold text-text-primary tabular-nums leading-tight truncate">
+                {s.value}
+              </div>
+              <div className="text-[0.7rem] font-medium text-text-tertiary truncate">
+                {s.label}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
+

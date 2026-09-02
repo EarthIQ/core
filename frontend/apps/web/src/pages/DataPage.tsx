@@ -239,42 +239,55 @@ function DataPageInner() {
 
   const formatOptions = useMemo(
     () => [
-      { value: "all", label: "All formats" },
+      { value: "all", label: "All Formats" },
       ...FORMATS.map((f) => ({ value: f.value, label: f.label })),
     ],
     [],
   );
 
   return (
-    <div className="min-h-full bg-base px-4 py-6 sm:px-6 lg:px-8 mx-auto max-w-[1600px]">
+    <div className="w-full max-w-[1600px] mx-auto space-y-6">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-xs font-semibold uppercase tracking-widest text-primary mb-1.5">
+          <div className="text-xs font-semibold uppercase tracking-widest text-primary mb-1.5 flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             Spatial Catalog
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
             Data Hub
           </h1>
-          <p className="mt-1.5 text-sm text-text-secondary max-w-2xl">
-            Upload, manage, and inspect every common geospatial format — GeoJSON,
-            Shapefile, KML, GeoTIFF/COG, GeoPackage, GeoParquet, and CSV.
+          <p className="mt-1 text-sm text-text-secondary max-w-2xl leading-relaxed">
+            Upload, inspect, and manage your vector and raster datasets — GeoJSON,
+            Shapefile, COG, GeoPackage, GeoParquet, KML, and CSV.
           </p>
         </div>
-        <Button
-          variant="primary"
-          size="md"
-          leftIcon={<CloudUpload size={16} />}
-          onClick={onAddData}
-          className="shrink-0"
-        >
-          Add Data
-        </Button>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <IconButton
+            icon={
+              <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+            }
+            label="Refresh catalog"
+            variant="secondary"
+            size="md"
+            onClick={fetchDatasets}
+            className="border-border-primary"
+          />
+          <Button
+            variant="primary"
+            size="md"
+            leftIcon={<CloudUpload size={16} />}
+            onClick={onAddData}
+            className="shadow-sm font-semibold"
+          >
+            Add Dataset
+          </Button>
+        </div>
       </div>
 
       {/* ── Fetch error ────────────────────────────────────────────────────── */}
       {fetchError && (
-        <div className="mt-4">
+        <div>
           <Alert
             variant="error"
             title="Couldn't load datasets"
@@ -285,12 +298,11 @@ function DataPageInner() {
         </div>
       )}
 
-      {/* ── Summary ────────────────────────────────────────────────────────── */}
-      <div className="mt-5">
-        <SummaryStats datasets={datasets} loading={loading} />
-      </div>
+      {/* ── Summary Stats ─────────────────────────────────────────────────── */}
+      <SummaryStats datasets={datasets} loading={loading} />
 
-      <div className="mt-6 flex gap-6 items-start">
+      {/* ── Main Catalog Workspace ────────────────────────────────────────── */}
+      <div className="flex gap-6 items-start">
         {/* ── Folder navigation (desktop) ──────────────────────────────────── */}
         <aside className="hidden lg:block w-72 shrink-0">
           <div className="sticky top-4">
@@ -307,105 +319,111 @@ function DataPageInner() {
         {/* ── Main content ─────────────────────────────────────────────────── */}
         <div className="flex-1 min-w-0 flex flex-col gap-4">
           {/* Toolbar */}
-          <div className="card p-3 flex flex-wrap items-center gap-2.5">
-            <IconButton
-              icon={<SlidersHorizontal size={18} />}
-              label="Browse folders"
-              variant="ghost"
-              size="md"
-              className="lg:hidden"
-              onClick={() => setMobileNavOpen(true)}
-            />
-            <div className="flex-1 min-w-[200px]">
-              <Input
-                leftIcon={<Search size={16} />}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search datasets…"
-                aria-label="Search datasets"
-              />
-            </div>
-            <div className="w-48">
-              <Select
-                options={formatOptions}
-                value={formatFilter}
-                onChange={(v) => setFormatFilter(v)}
+          <div className="card p-3 bg-surface border border-border-primary rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2.5 flex-1 min-w-[240px]">
+              <IconButton
+                icon={<SlidersHorizontal size={18} />}
+                label="Browse folders"
+                variant="ghost"
                 size="md"
+                className="lg:hidden shrink-0 text-text-secondary"
+                onClick={() => setMobileNavOpen(true)}
               />
+              <div className="flex-1 max-w-md">
+                <Input
+                  leftIcon={<Search size={16} className="text-text-tertiary" />}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by dataset name, format, or tag…"
+                  aria-label="Search datasets"
+                  className="h-9 text-xs"
+                />
+              </div>
             </div>
-            <IconButton
-              icon={
-                <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
-              }
-              label="Refresh"
-              variant="ghost"
-              size="md"
-              onClick={fetchDatasets}
-            />
-            <div
-              className="flex rounded-lg overflow-hidden border"
-              style={{ borderColor: "var(--border-primary)" }}
-              role="group"
-              aria-label="View mode"
-            >
-              <button
-                type="button"
-                onClick={() => setViewMode("table")}
-                aria-label="Table view"
-                title="Table view"
-                className="px-3 h-10 flex items-center transition-colors cursor-pointer"
-                style={
-                  viewMode === "table"
-                    ? {
-                        color: "var(--primary)",
-                        backgroundColor:
-                          "oklch(from var(--primary) l c h / 0.12)",
-                      }
-                    : { color: "var(--text-secondary)" }
-                }
+
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="w-44">
+                <Select
+                  options={formatOptions}
+                  value={formatFilter}
+                  onChange={(v) => setFormatFilter(v)}
+                  size="sm"
+                />
+              </div>
+
+              {/* View Switcher */}
+              <div
+                className="flex rounded-lg overflow-hidden border border-border-primary bg-surface-hover/50 p-0.5"
+                role="group"
+                aria-label="View mode"
               >
-                <List size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("grid")}
-                aria-label="Grid view"
-                title="Grid view"
-                className="px-3 h-10 flex items-center transition-colors cursor-pointer"
-                style={
-                  viewMode === "grid"
-                    ? {
-                        color: "var(--primary)",
-                        backgroundColor:
-                          "oklch(from var(--primary) l c h / 0.12)",
-                      }
-                    : { color: "var(--text-secondary)" }
-                }
-              >
-                <LayoutGrid size={16} />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("table")}
+                  aria-label="Table view"
+                  title="Table view"
+                  className={`px-2.5 h-7 flex items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                    viewMode === "table"
+                      ? "bg-surface text-primary shadow-xs"
+                      : "text-text-tertiary hover:text-text-primary"
+                  }`}
+                >
+                  <List size={14} />
+                  <span>Table</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("grid")}
+                  aria-label="Grid view"
+                  title="Grid view"
+                  className={`px-2.5 h-7 flex items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                    viewMode === "grid"
+                      ? "bg-surface text-primary shadow-xs"
+                      : "text-text-tertiary hover:text-text-primary"
+                  }`}
+                >
+                  <LayoutGrid size={14} />
+                  <span>Grid</span>
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Bulk action bar */}
           {selectedIds.size > 0 && (
-            <div className="card px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 bg-primary/5 border-primary/20 animate-fade-in">
-              <span className="text-sm font-medium text-text-primary">
-                {selectedIds.size} selected
-              </span>
+            <div className="card px-4 py-3 flex flex-wrap items-center justify-between gap-3 bg-primary/[0.08] border border-primary/25 rounded-xl animate-fade-in shadow-xs">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 rounded-full bg-primary text-white text-xs font-bold items-center justify-center">
+                  {selectedIds.size}
+                </span>
+                <span className="text-xs font-semibold text-text-primary">
+                  dataset{selectedIds.size === 1 ? "" : "s"} selected
+                </span>
+              </div>
               <div className="flex items-center gap-2">
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={handleAddToProject}
+                  className="text-xs font-semibold"
                 >
                   Add to Project
                 </Button>
-                <Button variant="error" size="sm" onClick={handleBulkDelete}>
-                  Delete
+                <Button
+                  variant="error"
+                  size="sm"
+                  onClick={handleBulkDelete}
+                  className="text-xs font-semibold"
+                >
+                  Delete Selected
                 </Button>
-                <Button variant="ghost" size="sm" onClick={clearSelection}>
-                  Clear
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSelection}
+                  className="text-xs"
+                >
+                  Deselect All
                 </Button>
               </div>
             </div>

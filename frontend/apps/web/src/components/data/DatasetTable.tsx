@@ -1,10 +1,16 @@
-import { Badge, Checkbox, EmptyState } from "@packages/ui";
+import { Checkbox, EmptyState, IconButton, Tooltip } from "@packages/ui";
 import {
   ArrowDown,
   ArrowUp,
+  ArrowUpDown,
+  Clock,
   Database,
+  Download,
+  Eye,
+  Globe2,
   Hash,
   Layers,
+  MapPin,
   PackageOpen,
   X,
 } from "lucide-react";
@@ -12,8 +18,10 @@ import { formatBytes } from "../../lib/datasets";
 import RowActions from "./RowActions";
 import {
   featureCountLabel,
+  formatColor,
   formatLucide,
   isStoredAsset,
+  isVectorized,
   typeLabel,
   typeLucide,
 } from "./helpers";
@@ -57,14 +65,28 @@ function SortHeader({
     <button
       type="button"
       onClick={() => onToggleSort(field)}
-      className={
-        "inline-flex items-center gap-1 cursor-pointer " +
-        (active ? "text-primary" : "hover:text-text-primary")
-      }
+      className={`inline-flex items-center gap-1.5 py-1 text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer select-none group ${
+        active
+          ? "text-primary"
+          : "text-text-secondary hover:text-text-primary"
+      }`}
     >
-      {label}
-      {active &&
-        (sortDir === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
+      <span>{label}</span>
+      <span
+        className={`transition-opacity ${
+          active ? "opacity-100 text-primary" : "opacity-0 group-hover:opacity-60"
+        }`}
+      >
+        {active ? (
+          sortDir === "asc" ? (
+            <ArrowUp size={13} className="stroke-[2.5]" />
+          ) : (
+            <ArrowDown size={13} className="stroke-[2.5]" />
+          )
+        ) : (
+          <ArrowUpDown size={12} />
+        )}
+      </span>
     </button>
   );
 }
@@ -89,20 +111,22 @@ export default function DatasetTable({
   onRequestDelete,
 }: Props) {
   return (
-    <div className="card overflow-hidden">
-      <div className="table-wrapper">
-        <table className="table">
+    <div className="card overflow-hidden border border-border-primary rounded-xl shadow-xs bg-surface">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full text-left border-collapse min-w-[760px]">
           <thead>
-            <tr>
-              <th className="w-10">
-                <Checkbox
-                  size="sm"
-                  checked={allOnPageSelected}
-                  onChange={(e) => onToggleSelectAll(e.target.checked)}
-                  aria-label="Select all on page"
-                />
+            <tr className="border-b border-border-secondary bg-surface-hover/50">
+              <th className="w-12 px-4 py-3 text-center">
+                <div className="flex items-center justify-center">
+                  <Checkbox
+                    size="sm"
+                    checked={allOnPageSelected}
+                    onChange={(e) => onToggleSelectAll(e.target.checked)}
+                    aria-label="Select all on page"
+                  />
+                </div>
               </th>
-              <th>
+              <th className="px-4 py-3">
                 <SortHeader
                   label="Dataset"
                   field="name"
@@ -111,7 +135,7 @@ export default function DatasetTable({
                   onToggleSort={onToggleSort}
                 />
               </th>
-              <th>
+              <th className="px-4 py-3">
                 <SortHeader
                   label="Format"
                   field="format"
@@ -120,16 +144,21 @@ export default function DatasetTable({
                   onToggleSort={onToggleSort}
                 />
               </th>
-              <th>
+              <th className="px-4 py-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                  Type / CRS
+                </span>
+              </th>
+              <th className="px-4 py-3">
                 <SortHeader
-                  label="Size"
+                  label="Records & Size"
                   field="size"
                   sortField={sortField}
                   sortDir={sortDir}
                   onToggleSort={onToggleSort}
                 />
               </th>
-              <th>
+              <th className="px-4 py-3">
                 <SortHeader
                   label="Updated"
                   field="updated"
@@ -138,53 +167,69 @@ export default function DatasetTable({
                   onToggleSort={onToggleSort}
                 />
               </th>
-              <th className="w-12">
-                <span className="sr-only">Actions</span>
+              <th className="w-36 px-4 py-3 text-right">
+                <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                  Actions
+                </span>
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border-secondary text-sm">
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i}>
-                  <td>
-                    <div className="skeleton h-4 w-4 rounded" />
+                <tr key={i} className="animate-pulse">
+                  <td className="px-4 py-3.5 text-center">
+                    <div className="skeleton h-4 w-4 rounded mx-auto" />
                   </td>
-                  <td>
-                    <div className="skeleton h-4 rounded w-2/3" />
+                  <td className="px-4 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="skeleton h-9 w-9 rounded-lg shrink-0" />
+                      <div className="flex flex-col gap-1.5 flex-1 max-w-xs">
+                        <div className="skeleton h-4 rounded w-3/4" />
+                        <div className="skeleton h-3 rounded w-1/2" />
+                      </div>
+                    </div>
                   </td>
-                  <td>
-                    <div className="skeleton h-4 rounded w-1/2" />
+                  <td className="px-4 py-3.5">
+                    <div className="skeleton h-5 rounded-full w-16" />
                   </td>
-                  <td>
-                    <div className="skeleton h-4 rounded w-1/3" />
+                  <td className="px-4 py-3.5">
+                    <div className="skeleton h-4 rounded w-20" />
                   </td>
-                  <td>
-                    <div className="skeleton h-4 rounded w-1/3" />
+                  <td className="px-4 py-3.5">
+                    <div className="flex flex-col gap-1">
+                      <div className="skeleton h-4 rounded w-20" />
+                      <div className="skeleton h-3 rounded w-14" />
+                    </div>
                   </td>
-                  <td />
+                  <td className="px-4 py-3.5">
+                    <div className="skeleton h-4 rounded w-20" />
+                  </td>
+                  <td className="px-4 py-3.5 text-right">
+                    <div className="skeleton h-7 w-16 rounded ml-auto" />
+                  </td>
                 </tr>
               ))
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={6}>
+                <td colSpan={7} className="p-8">
                   <EmptyState
                     size="md"
-                    icon={<Database size={26} />}
+                    icon={<Database size={28} className="text-primary" />}
                     title={
                       activeFilterCount > 0
-                        ? "No matching datasets"
+                        ? "No matching datasets found"
                         : "Your catalog is empty"
                     }
                     description={
                       activeFilterCount > 0
-                        ? "No datasets match the current folder, filters or search."
+                        ? "Try adjusting or clearing your search and filters to see more datasets."
                         : "Upload your first geospatial file to start building your catalog."
                     }
                     action={
                       activeFilterCount > 0
                         ? {
-                            label: "Clear filters",
+                            label: "Clear all filters",
                             onClick: onClearFilters,
                           }
                         : { label: "Upload dataset", onClick: onAddData }
@@ -196,59 +241,100 @@ export default function DatasetTable({
               items.map((d) => {
                 const FIcon = formatLucide(d.format);
                 const TIcon = typeLucide(d.type);
+                const colors = formatColor(d.format);
                 const selected = selectedIds.has(d.id);
+                const vectorized = isVectorized(d);
+                const stored = isStoredAsset(d);
+
                 return (
                   <tr
                     key={d.id}
-                    className={
-                      (d._optimistic ? "opacity-60 " : "") +
-                      (selected ? "bg-primary/5" : "")
-                    }
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (
+                        target.closest("button") ||
+                        target.closest("input") ||
+                        target.closest("a")
+                      ) {
+                        return;
+                      }
+                      onInspect(d);
+                    }}
+                    className={`group transition-colors duration-150 cursor-pointer ${
+                      selected
+                        ? "bg-primary/[0.08] hover:bg-primary/[0.12]"
+                        : "hover:bg-surface-hover/70"
+                    } ${d._optimistic ? "opacity-60" : ""}`}
                   >
-                    <td>
-                      <Checkbox
-                        size="sm"
-                        checked={selected}
-                        onChange={() => onToggleSelectRow(d.id)}
-                        aria-label={`Select ${d.name}`}
-                      />
+                    {/* Checkbox */}
+                    <td
+                      className="px-4 py-3.5 text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-center">
+                        <Checkbox
+                          size="sm"
+                          checked={selected}
+                          onChange={() => onToggleSelectRow(d.id)}
+                          aria-label={`Select ${d.name}`}
+                        />
+                      </div>
                     </td>
 
-                    {/* Name + description + tags */}
-                    <td>
-                      <div className="flex items-start gap-2.5">
-                        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                          <FIcon size={15} />
-                        </span>
-                        <div className="min-w-0">
+                    {/* Dataset Name, Tags & Meta */}
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${colors.bg} ${colors.text} ${colors.border}`}
+                          title={`${d.format} file`}
+                        >
+                          <FIcon size={16} />
+                        </div>
+                        <div className="min-w-0 max-w-sm lg:max-w-md">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-semibold text-text-primary text-sm truncate max-w-[16rem]">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onInspect(d);
+                              }}
+                              className="font-semibold text-text-primary text-sm truncate max-w-[18rem] text-left hover:text-primary transition-colors cursor-pointer"
+                              title={d.name}
+                            >
                               {d.name}
-                            </span>
-                            {isStoredAsset(d) && (
-                              <Badge
-                                size="xs"
-                                variant="info"
-                                leftIcon={<PackageOpen size={10} />}
-                              >
+                            </button>
+                            {stored && (
+                              <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-info/10 text-info border border-info/20">
+                                <PackageOpen size={10} />
                                 Stored
-                              </Badge>
+                              </span>
+                            )}
+                            {vectorized && (
+                              <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-accent/10 text-accent border border-accent/20">
+                                <Layers size={10} />
+                                Tiled
+                              </span>
                             )}
                           </div>
+
                           {d.description && (
-                            <div className="text-xs text-text-tertiary truncate max-w-[22rem]">
+                            <p className="text-xs text-text-tertiary truncate max-w-[22rem] mt-0.5">
                               {d.description}
-                            </div>
+                            </p>
                           )}
+
                           {d.tags && d.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
+                            <div className="flex flex-wrap items-center gap-1 mt-1.5">
                               {d.tags.slice(0, 3).map((t) => (
-                                <Badge key={t} size="xs" variant="primary">
+                                <span
+                                  key={t}
+                                  className="text-[0.65rem] font-medium px-1.5 py-0.2 rounded bg-surface-hover text-text-secondary border border-border-secondary"
+                                >
                                   #{t}
-                                </Badge>
+                                </span>
                               ))}
                               {d.tags.length > 3 && (
-                                <span className="text-[0.65rem] text-text-tertiary self-center">
+                                <span className="text-[0.65rem] text-text-tertiary">
                                   +{d.tags.length - 3}
                                 </span>
                               )}
@@ -258,47 +344,110 @@ export default function DatasetTable({
                       </div>
                     </td>
 
-                    {/* Format + type */}
-                    <td>
+                    {/* Format Badge */}
+                    <td className="px-4 py-3.5 whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${colors.bg} ${colors.text} ${colors.border}`}
+                      >
+                        {d.format}
+                      </span>
+                    </td>
+
+                    {/* Type & CRS */}
+                    <td className="px-4 py-3.5 whitespace-nowrap">
                       <div className="flex flex-col gap-1">
-                        <span className="text-sm font-medium text-text-primary whitespace-nowrap">
-                          {d.format}
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-[0.7rem] text-text-tertiary">
-                          <TIcon size={11} />
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary">
+                          <TIcon size={13} className="text-text-tertiary" />
                           {typeLabel(d.type)}
                         </span>
+                        {d.crs ? (
+                          <span className="inline-flex items-center gap-1 text-[0.7rem] text-text-tertiary font-mono">
+                            <Globe2 size={11} />
+                            {d.crs}
+                          </span>
+                        ) : (
+                          <span className="text-[0.7rem] text-text-tertiary">
+                            Standard CRS
+                          </span>
+                        )}
                       </div>
                     </td>
 
-                    {/* Features + size */}
-                    <td>
-                      <div className="flex flex-col gap-0.5 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1.5 text-sm text-text-primary">
+                    {/* Records & Size */}
+                    <td className="px-4 py-3.5 whitespace-nowrap">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-primary">
                           <Hash size={12} className="text-text-tertiary" />
                           {featureCountLabel(d)}
                         </span>
-                        <span className="text-xs text-text-tertiary">
+                        <span className="text-[0.72rem] text-text-tertiary font-mono">
                           {formatBytes(d.file_size_bytes)}
                         </span>
                       </div>
                     </td>
 
-                    {/* Updated */}
-                    <td className="text-sm text-text-tertiary whitespace-nowrap">
-                      {d.updated_at ? d.updated_at.slice(0, 10) : "—"}
+                    {/* Last Updated */}
+                    <td className="px-4 py-3.5 whitespace-nowrap">
+                      <div className="inline-flex items-center gap-1.5 text-xs text-text-secondary">
+                        <Clock size={12} className="text-text-tertiary" />
+                        <span>{d.updated_at ? d.updated_at.slice(0, 10) : "—"}</span>
+                      </div>
                     </td>
 
-                    {/* Actions */}
-                    <td className="text-right">
-                      <RowActions
-                        d={d}
-                        onInspect={onInspect}
-                        onEdit={onEdit}
-                        onDownload={onDownload}
-                        onOpenTileUrl={onOpenTileUrl}
-                        onRequestDelete={onRequestDelete}
-                      />
+                    {/* Quick & Row Actions */}
+                    <td
+                      className="px-4 py-3.5 text-right whitespace-nowrap"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="inline-flex items-center justify-end gap-1">
+                        {/* Quick action buttons */}
+                        <div className="hidden sm:flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                          <Tooltip content="Inspect dataset" placement="top">
+                            <IconButton
+                              icon={<Eye size={14} />}
+                              label="Inspect"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onInspect(d)}
+                              className="text-text-tertiary hover:text-primary hover:bg-surface-hover h-7 w-7"
+                            />
+                          </Tooltip>
+
+                          {vectorized && (
+                            <Tooltip content="MVT Tile URL" placement="top">
+                              <IconButton
+                                icon={<MapPin size={14} />}
+                                label="MVT URL"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onOpenTileUrl(d)}
+                                className="text-text-tertiary hover:text-accent hover:bg-surface-hover h-7 w-7"
+                              />
+                            </Tooltip>
+                          )}
+
+                          <Tooltip content="Download file" placement="top">
+                            <IconButton
+                              icon={<Download size={14} />}
+                              label="Download"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onDownload(d)}
+                              className="text-text-tertiary hover:text-primary hover:bg-surface-hover h-7 w-7"
+                            />
+                          </Tooltip>
+                        </div>
+
+                        {/* More dropdown menu */}
+                        <RowActions
+                          d={d}
+                          onInspect={onInspect}
+                          onEdit={onEdit}
+                          onDownload={onDownload}
+                          onOpenTileUrl={onOpenTileUrl}
+                          onRequestDelete={onRequestDelete}
+                        />
+                      </div>
                     </td>
                   </tr>
                 );
@@ -308,20 +457,29 @@ export default function DatasetTable({
         </table>
       </div>
 
-      {/* Active-filter footer with an escape hatch */}
+      {/* Active-filter footer badge */}
       {activeFilterCount > 0 && !loading && items.length > 0 && (
-        <div className="flex items-center gap-2 border-t border-border-secondary px-4 py-2 text-xs text-text-tertiary">
-          <Layers size={12} />
-          {activeFilterCount} active filter{activeFilterCount > 1 ? "s" : ""}
+        <div className="flex items-center justify-between border-t border-border-secondary px-4 py-2.5 bg-surface-hover/30 text-xs text-text-secondary">
+          <div className="flex items-center gap-2">
+            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span>
+              Filtered view:{" "}
+              <strong className="font-semibold text-text-primary">
+                {items.length}
+              </strong>{" "}
+              dataset{items.length === 1 ? "" : "s"} shown
+            </span>
+          </div>
           <button
             type="button"
             onClick={onClearFilters}
-            className="inline-flex items-center gap-1 text-error hover:underline cursor-pointer"
+            className="inline-flex items-center gap-1 font-semibold text-error hover:text-error/80 transition-colors cursor-pointer"
           >
-            <X size={11} /> Clear all
+            <X size={12} /> Clear all filters
           </button>
         </div>
       )}
     </div>
   );
 }
+

@@ -8,6 +8,8 @@ import {
   FolderX,
   HardDrive,
   Layers,
+  Sparkles,
+  Tag,
 } from "lucide-react";
 import { cn } from "@packages/ui";
 import { formatBytes } from "../../lib/datasets";
@@ -34,9 +36,6 @@ interface Props {
 
 /**
  * Folder-tree browser for the dataset catalog.
- * Collections (tags) are folders whose children are the datasets tagged
- * with them; semantic types are a second branch. Clicking a folder
- * selects (filters) it; clicking a dataset leaf opens its preview.
  */
 export default function FolderTree({
   datasets,
@@ -141,8 +140,8 @@ export default function FolderTree({
     return (
       <div
         key={key}
-        className="flex items-center gap-0.5 rounded-lg group"
-        style={{ paddingLeft: indent * 16 }}
+        className="flex items-center gap-1 rounded-lg group"
+        style={{ paddingLeft: indent * 14 }}
       >
         {chevron !== null && (
           <button
@@ -172,17 +171,17 @@ export default function FolderTree({
           onClick={onClick}
           aria-current={active ? "true" : undefined}
           className={cn(
-            "flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5",
-            "text-left text-[0.8rem] transition-colors cursor-pointer",
+            "flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 py-1.5",
+            "text-left text-xs transition-all duration-150 cursor-pointer font-medium",
             active
-              ? "bg-primary/10 text-primary font-semibold"
+              ? "bg-primary/10 text-primary font-semibold shadow-xs"
               : "text-text-secondary hover:bg-surface-hover hover:text-text-primary",
             dim && !active && "text-text-tertiary",
           )}
         >
           <span
             className={cn(
-              "shrink-0",
+              "shrink-0 transition-colors",
               active
                 ? "text-primary"
                 : "text-text-tertiary group-hover:text-text-secondary",
@@ -194,8 +193,10 @@ export default function FolderTree({
           {typeof count === "number" && (
             <span
               className={cn(
-                "shrink-0 text-[0.65rem] tabular-nums",
-                active ? "text-primary" : "text-text-tertiary",
+                "shrink-0 text-[0.65rem] px-1.5 py-0.5 rounded-full tabular-nums font-semibold",
+                active
+                  ? "bg-primary/20 text-primary"
+                  : "bg-surface-hover text-text-tertiary group-hover:text-text-secondary",
               )}
             >
               {count}
@@ -206,7 +207,7 @@ export default function FolderTree({
     );
   }
 
-  // ── Dataset leaf rows (shared by tag folders & ungrouped) ──────────────────
+  // ── Dataset leaf rows ──────────────────────────────────────────────────────
   function renderLeafList(items: DatasetItem[]) {
     return (
       <div className="flex flex-col gap-0.5 mt-0.5">
@@ -218,7 +219,7 @@ export default function FolderTree({
             return renderRow({
               key: `ds:${ds.id}`,
               indent: 1,
-              icon: <FIcon size={14} />,
+              icon: <FIcon size={13} />,
               label: ds.name,
               dim: true,
               onClick: () => onOpenDataset(ds),
@@ -231,12 +232,13 @@ export default function FolderTree({
   // ── Loading placeholder ────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="card p-3 flex flex-col gap-2.5" aria-busy="true">
-        {[0, 1, 2, 3, 4, 5].map((i) => (
+      <div className="card p-4 flex flex-col gap-3 bg-surface border border-border-primary rounded-xl" aria-busy="true">
+        <div className="skeleton h-4 w-24 rounded" />
+        {[0, 1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="skeleton h-4 rounded"
-            style={{ width: `${88 - i * 8}%` }}
+            className="skeleton h-8 rounded-lg"
+            style={{ width: `${92 - i * 8}%` }}
           />
         ))}
       </div>
@@ -244,124 +246,140 @@ export default function FolderTree({
   }
 
   return (
-    <nav
-      aria-label="Dataset library"
-      className="flex flex-col gap-4 max-h-[calc(100vh-18rem)] overflow-y-auto scrollbar-thin pr-1"
-    >
-      {/* ── Library ─────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-1">
-        <div className="px-2 pb-1 text-[0.62rem] font-semibold uppercase tracking-widest text-text-tertiary">
-          Library
-        </div>
-        {renderRow({
-          key: "all",
-          icon: <Database size={15} />,
-          label: "All Datasets",
-          count: datasets.length,
-          active: isAllActive,
-          onClick: () => onNavigate({ type: "all", tag: null }),
-        })}
-      </div>
-
-      {/* ── Collections (tag folders) ───────────────────────────────────────── */}
-      <div className="flex flex-col gap-1">
-        <div className="px-2 pb-1 text-[0.62rem] font-semibold uppercase tracking-widest text-text-tertiary">
-          Collections
-        </div>
-
-        {tagGroups.length === 0 && untagged.length === 0 && (
-          <div className="flex items-start gap-2 rounded-lg bg-surface-hover px-2.5 py-2">
-            <FolderX size={14} className="mt-0.5 shrink-0 text-text-tertiary" />
-            <p className="text-[0.7rem] leading-snug text-text-tertiary">
-              No collections yet. Tag datasets and they will appear here as
-              folders.
-            </p>
+    <div className="card p-3 bg-surface border border-border-primary rounded-xl flex flex-col gap-4 shadow-xs">
+      <nav
+        aria-label="Dataset library"
+        className="flex flex-col gap-4 max-h-[calc(100vh-20rem)] overflow-y-auto scrollbar-thin pr-1"
+      >
+        {/* ── Library ───────────────────────────────────────────────────────── */}
+        <div className="flex flex-col gap-1">
+          <div className="px-2.5 pb-1 text-[0.65rem] font-bold uppercase tracking-wider text-text-tertiary flex items-center gap-1.5">
+            <Sparkles size={11} className="text-primary" />
+            <span>Library</span>
           </div>
-        )}
+          {renderRow({
+            key: "all",
+            icon: <Database size={15} />,
+            label: "All Datasets",
+            count: datasets.length,
+            active: isAllActive,
+            onClick: () => onNavigate({ type: "all", tag: null }),
+          })}
+        </div>
 
-        {tagGroups.map(([tag, items]) => {
-          const key = `tag:${tag}`;
-          const isOpen = expanded.has(key);
-          const active = activeTagActive(tag);
-          return (
-            <div key={key}>
-              {renderRow({
-                key: `row:${key}`,
-                icon: isOpen ? <FolderOpen size={15} /> : <Folder size={15} />,
-                label: tag,
-                count: items.length,
-                active,
-                chevron: "open",
-                onChevron: () => toggleExpand(key),
-                onClick: () => {
-                  onNavigate({ type: "all", tag });
-                  expand(key);
-                },
-              })}
-              {isOpen && renderLeafList(items)}
+        {/* ── Collections (tag folders) ─────────────────────────────────────── */}
+        <div className="flex flex-col gap-1">
+          <div className="px-2.5 pb-1 text-[0.65rem] font-bold uppercase tracking-wider text-text-tertiary flex items-center gap-1.5">
+            <Tag size={11} className="text-accent" />
+            <span>Collections</span>
+          </div>
+
+          {tagGroups.length === 0 && untagged.length === 0 && (
+            <div className="flex items-start gap-2 rounded-lg bg-surface-hover px-2.5 py-2">
+              <FolderX size={14} className="mt-0.5 shrink-0 text-text-tertiary" />
+              <p className="text-[0.7rem] leading-snug text-text-tertiary">
+                No collections yet. Add tags to organize datasets as folders.
+              </p>
             </div>
-          );
-        })}
+          )}
 
-        {untagged.length > 0 &&
-          (() => {
-            const key = "tag:untagged";
+          {tagGroups.map(([tag, items]) => {
+            const key = `tag:${tag}`;
             const isOpen = expanded.has(key);
-            const active = activeTagActive("__untagged__");
+            const active = activeTagActive(tag);
             return (
-              <div>
+              <div key={key}>
                 {renderRow({
                   key: `row:${key}`,
-                  icon: isOpen ? <FolderOpen size={15} /> : <FolderX size={15} />,
-                  label: "Ungrouped",
-                  count: untagged.length,
+                  icon: isOpen ? <FolderOpen size={14} /> : <Folder size={14} />,
+                  label: tag,
+                  count: items.length,
                   active,
                   chevron: "open",
                   onChevron: () => toggleExpand(key),
                   onClick: () => {
-                    onNavigate({ type: "all", tag: "__untagged__" });
+                    onNavigate({ type: "all", tag });
                     expand(key);
                   },
                 })}
-                {isOpen && renderLeafList(untagged)}
+                {isOpen && renderLeafList(items)}
               </div>
             );
-          })()}
-      </div>
+          })}
 
-      {/* ── Types ───────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-1">
-        <div className="px-2 pb-1 text-[0.62rem] font-semibold uppercase tracking-widest text-text-tertiary">
-          Types
+          {untagged.length > 0 &&
+            (() => {
+              const key = "tag:untagged";
+              const isOpen = expanded.has(key);
+              const active = activeTagActive("__untagged__");
+              return (
+                <div>
+                  {renderRow({
+                    key: `row:${key}`,
+                    icon: isOpen ? <FolderOpen size={14} /> : <FolderX size={14} />,
+                    label: "Ungrouped",
+                    count: untagged.length,
+                    active,
+                    chevron: "open",
+                    onChevron: () => toggleExpand(key),
+                    onClick: () => {
+                      onNavigate({ type: "all", tag: "__untagged__" });
+                      expand(key);
+                    },
+                  })}
+                  {isOpen && renderLeafList(untagged)}
+                </div>
+              );
+            })()}
         </div>
-        {TYPES.map((t) => {
-          const TIcon = typeLucide(t.value);
-          return renderRow({
-            key: `type:${t.value}`,
-            icon: <TIcon size={15} />,
-            label: typeLabel(t.value),
-            count: typeCounts[t.value] ?? 0,
-            active: activeTypeActive(t.value),
-            onClick: () =>
-              onNavigate({
-                type: activeTypeActive(t.value) ? "all" : t.value,
-                tag: null,
-              }),
-          });
-        })}
-      </div>
 
-      {/* ── Storage footer ──────────────────────────────────────────────────── */}
-      <div className="rounded-lg border border-border-secondary bg-surface-hover/50 p-2.5 flex flex-col gap-1.5">
-        <div className="flex items-center gap-2 text-[0.72rem] text-text-secondary">
-          <Layers size={13} className="text-text-tertiary shrink-0" />
-          <span className="flex-1">{tiledCount} vector layers</span>
+        {/* ── Types ─────────────────────────────────────────────────────────── */}
+        <div className="flex flex-col gap-1">
+          <div className="px-2.5 pb-1 text-[0.65rem] font-bold uppercase tracking-wider text-text-tertiary flex items-center gap-1.5">
+            <Layers size={11} className="text-secondary" />
+            <span>Formats & Types</span>
+          </div>
+          {TYPES.map((t) => {
+            const TIcon = typeLucide(t.value);
+            return renderRow({
+              key: `type:${t.value}`,
+              icon: <TIcon size={14} />,
+              label: typeLabel(t.value),
+              count: typeCounts[t.value] ?? 0,
+              active: activeTypeActive(t.value),
+              onClick: () =>
+                onNavigate({
+                  type: activeTypeActive(t.value) ? "all" : t.value,
+                  tag: null,
+                }),
+            });
+          })}
         </div>
-        <div className="flex items-center gap-2 text-[0.72rem] text-text-secondary">
-          <HardDrive size={13} className="text-text-tertiary shrink-0" />
-          <span className="flex-1">{formatBytes(totalBytes)} used</span>
+      </nav>
+
+      {/* ── Storage meter footer ──────────────────────────────────────────── */}
+      <div className="rounded-xl border border-border-secondary bg-surface-hover/40 p-3 flex flex-col gap-2">
+        <div className="flex items-center justify-between text-xs font-semibold text-text-primary">
+          <div className="flex items-center gap-1.5">
+            <HardDrive size={13} className="text-primary shrink-0" />
+            <span>Catalog Usage</span>
+          </div>
+          <span className="text-[0.7rem] text-text-tertiary font-mono">
+            {formatBytes(totalBytes)}
+          </span>
+        </div>
+        <div className="w-full bg-border-secondary h-1.5 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-primary rounded-full transition-all duration-300"
+            style={{ width: `${Math.min(100, Math.max(8, datasets.length * 8))}%` }}
+          />
+        </div>
+        <div className="flex items-center justify-between text-[0.68rem] text-text-tertiary">
+          <span>{tiledCount} vectorized layer{tiledCount === 1 ? "" : "s"}</span>
+          <span>{datasets.length} dataset{datasets.length === 1 ? "" : "s"}</span>
         </div>
       </div>
-    </nav>
+    </div>
   );
 }
+
