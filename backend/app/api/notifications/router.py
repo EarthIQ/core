@@ -1,7 +1,7 @@
 """
 Notifications — REST + WebSocket Router (core).
 
-Mounted under ``/api/notifications`` (see ``app.main``).
+Mounted under ``/api/v1/notifications`` (see ``app.main``).
 
 REST endpoints (all authenticated as the *current* user unless noted)
 -----------------------------------------------------------------------

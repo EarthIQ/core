@@ -7,7 +7,7 @@ Regression coverage for a real bug: the router called
 is ``grant_access(db, token, actor: User, role: str)`` — the role string was
 treated as the actor and blew up with
 ``AttributeError: 'str' object has no attribute 'is_superuser'`` (HTTP 500)
-on ``POST /api/access/request/grant``.
+on ``POST /api/v1/access/request/grant``.
 
 Hermetic: in-memory SQLite (StaticPool), FastAPI over ASGITransport,
 ``get_db`` overridden. No venv, no network, no real SMTP (email no-ops).
@@ -62,10 +62,10 @@ _TEST_TABLE_NAMES = [
 
 def _make_share_test_app() -> FastAPI:
     app = FastAPI()
-    app.include_router(auth_router, prefix="/api/auth")
-    app.include_router(share_util_router, prefix="/api")
-    app.include_router(entity_share_router, prefix="/api/maps/{entity_id}/share")
-    app.include_router(entity_share_router, prefix="/api/projects/{entity_id}/share")
+    app.include_router(auth_router, prefix="/api/v1/auth")
+    app.include_router(share_util_router, prefix="/api/v1")
+    app.include_router(entity_share_router, prefix="/api/v1/maps/{entity_id}/share")
+    app.include_router(entity_share_router, prefix="/api/v1/projects/{entity_id}/share")
     return app
 
 
@@ -125,17 +125,17 @@ async def _register(
     full_name: str = "Test User",
     is_superuser: bool = False,
 ) -> dict:
-    resp = await client.post("/api/auth/register", json={
+    resp = await client.post("/api/v1/auth/register", json={
         "email": email,
         "password": password,
         "full_name": full_name,
         "is_superuser": is_superuser,
     })
     assert resp.status_code == 201, resp.text
-    resp = await client.post("/api/auth/token", json={"email": email, "password": password})
+    resp = await client.post("/api/v1/auth/token", json={"email": email, "password": password})
     assert resp.status_code == 200, resp.text
     token = resp.json()["access_token"]
-    me = await client.get("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
+    me = await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert me.status_code == 200, me.text
     return {"headers": {"Authorization": f"Bearer {token}"}, "id": me.json()["id"]}
 
@@ -178,7 +178,7 @@ async def _map_access_rows(share_engine, map_id: str):
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
 async def test_owner_can_grant_access_request(share_client: AsyncClient, share_engine):
-    """The exact flow that used to 500: POST /api/access/request/grant."""
+    """The exact flow that used to 500: POST /api/v1/access/request/grant."""
     session_factory = async_sessionmaker(share_engine, expire_on_commit=False)
 
     owner = await _register(share_client, "owner@eqcorp.com", full_name="Owner")
@@ -187,7 +187,7 @@ async def test_owner_can_grant_access_request(share_client: AsyncClient, share_e
 
     # 1. Requester asks for access (owner would receive an email with the token).
     resp = await share_client.post(
-        f"/api/maps/{map_id}/share/request",
+        f"/api/v1/maps/{map_id}/share/request",
         json={"message": "I need this map", "requested_role": "editor"},
         headers=alice["headers"],
     )
@@ -201,7 +201,7 @@ async def test_owner_can_grant_access_request(share_client: AsyncClient, share_e
 
     # 2. Owner (token link) fetches the request.
     resp = await share_client.get(
-        "/api/access/request", params={"token": token}, headers=owner["headers"]
+        "/api/v1/access/request", params={"token": token}, headers=owner["headers"]
     )
     assert resp.status_code == 200, resp.text
     assert resp.json()["status"] == "pending"
@@ -209,7 +209,7 @@ async def test_owner_can_grant_access_request(share_client: AsyncClient, share_e
     # 3. Owner grants with a chosen role — regression: this was
     #    AttributeError: 'str' object has no attribute 'is_superuser' (500).
     resp = await share_client.post(
-        "/api/access/request/grant",
+        "/api/v1/access/request/grant",
         params={"token": token},
         json={"role": "editor"},
         headers=owner["headers"],
@@ -237,7 +237,7 @@ async def test_non_owner_cannot_grant_access_request(share_client: AsyncClient, 
     map_id = await _create_map(session_factory, owner["id"])
 
     resp = await share_client.post(
-        f"/api/maps/{map_id}/share/request",
+        f"/api/v1/maps/{map_id}/share/request",
         json={"message": "please", "requested_role": "viewer"},
         headers=alice["headers"],
     )
@@ -245,7 +245,7 @@ async def test_non_owner_cannot_grant_access_request(share_client: AsyncClient, 
     token = await _approval_token(share_engine, map_id, alice["id"])
 
     resp = await share_client.post(
-        "/api/access/request/grant",
+        "/api/v1/access/request/grant",
         params={"token": token},
         json={"role": "editor"},
         headers=bob["headers"],
@@ -254,7 +254,7 @@ async def test_non_owner_cannot_grant_access_request(share_client: AsyncClient, 
 
     # And the request is untouched.
     resp = await share_client.get(
-        "/api/access/request", params={"token": token}, headers=owner["headers"]
+        "/api/v1/access/request", params={"token": token}, headers=owner["headers"]
     )
     assert resp.status_code == 200
     assert resp.json()["status"] == "pending"
@@ -262,7 +262,7 @@ async def test_non_owner_cannot_grant_access_request(share_client: AsyncClient, 
 
 async def test_grant_requires_authentication(share_client: AsyncClient, share_engine):
     resp = await share_client.post(
-        "/api/access/request/grant",
+        "/api/v1/access/request/grant",
         params={"token": "whatever"},
         json={"role": "editor"},
     )
@@ -277,7 +277,7 @@ async def test_owner_can_deny_access_request(share_client: AsyncClient, share_en
     map_id = await _create_map(session_factory, owner["id"])
 
     resp = await share_client.post(
-        f"/api/maps/{map_id}/share/request",
+        f"/api/v1/maps/{map_id}/share/request",
         json={"message": "please", "requested_role": "viewer"},
         headers=alice["headers"],
     )
@@ -285,7 +285,7 @@ async def test_owner_can_deny_access_request(share_client: AsyncClient, share_en
     token = await _approval_token(share_engine, map_id, alice["id"])
 
     resp = await share_client.post(
-        "/api/access/request/deny", params={"token": token}, headers=owner["headers"]
+        "/api/v1/access/request/deny", params={"token": token}, headers=owner["headers"]
     )
     assert resp.status_code == 200, resp.text
     assert resp.json()["status"] == "denied"
@@ -303,7 +303,7 @@ async def test_grant_twice_is_rejected(share_client: AsyncClient, share_engine):
     map_id = await _create_map(session_factory, owner["id"])
 
     resp = await share_client.post(
-        f"/api/maps/{map_id}/share/request",
+        f"/api/v1/maps/{map_id}/share/request",
         json={"message": "please", "requested_role": "viewer"},
         headers=alice["headers"],
     )
@@ -311,7 +311,7 @@ async def test_grant_twice_is_rejected(share_client: AsyncClient, share_engine):
     token = await _approval_token(share_engine, map_id, alice["id"])
 
     first = await share_client.post(
-        "/api/access/request/grant",
+        "/api/v1/access/request/grant",
         params={"token": token},
         json={"role": "editor"},
         headers=owner["headers"],
@@ -320,7 +320,7 @@ async def test_grant_twice_is_rejected(share_client: AsyncClient, share_engine):
     assert first.json()["status"] == "granted"
 
     second = await share_client.post(
-        "/api/access/request/grant",
+        "/api/v1/access/request/grant",
         params={"token": token},
         json={"role": "commenter"},
         headers=owner["headers"],
@@ -332,7 +332,7 @@ async def test_grant_twice_is_rejected(share_client: AsyncClient, share_engine):
 async def test_grant_unknown_token_404(share_client: AsyncClient, share_engine):
     owner = await _register(share_client, "owner@eqcorp.com", full_name="Owner")
     resp = await share_client.post(
-        "/api/access/request/grant",
+        "/api/v1/access/request/grant",
         params={"token": "does-not-exist"},
         json={"role": "editor"},
         headers=owner["headers"],

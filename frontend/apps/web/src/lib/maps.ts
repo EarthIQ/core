@@ -83,42 +83,42 @@ export interface GroupItem {
 }
 
 export async function fetchMaps(): Promise<MapItem[]> {
-  return api.get<MapItem[]>("/api/maps");
+  return api.get<MapItem[]>("/api/v1/maps");
 }
 
 export async function fetchMapById(mapId: string): Promise<MapItem> {
-  return api.get<MapItem>(`/api/maps/${mapId}`);
+  return api.get<MapItem>(`/api/v1/maps/${mapId}`);
 }
 
 export async function createMap(input: MapCreateInput): Promise<MapItem> {
-  return api.post<MapItem>("/api/maps", input);
+  return api.post<MapItem>("/api/v1/maps", input);
 }
 
 export async function updateMap(
   mapId: string,
   input: MapUpdateInput,
 ): Promise<MapItem> {
-  return api.put<MapItem>(`/api/maps/${mapId}`, input);
+  return api.put<MapItem>(`/api/v1/maps/${mapId}`, input);
 }
 
 export async function deleteMap(mapId: string): Promise<void> {
-  return api.delete<void>(`/api/maps/${mapId}`);
+  return api.delete<void>(`/api/v1/maps/${mapId}`);
 }
 
 export async function shareMap(
   mapId: string,
   shareData: { is_public?: boolean; group_access?: GroupAccess[] },
 ): Promise<MapItem> {
-  return api.post<MapItem>(`/api/maps/${mapId}/share`, shareData);
+  return api.post<MapItem>(`/api/v1/maps/${mapId}/share`, shareData);
 }
 
 export async function fetchUserGroups(): Promise<GroupItem[]> {
-  return api.get<GroupItem[]>("/api/auth/groups");
+  return api.get<GroupItem[]>("/api/v1/auth/groups");
 }
 
 export async function createGroup(
   name: string,
   description?: string,
 ): Promise<GroupItem> {
-  return api.post<GroupItem>("/api/auth/groups", { name, description });
+  return api.post<GroupItem>("/api/v1/auth/groups", { name, description });
 }

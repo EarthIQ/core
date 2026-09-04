@@ -1,5 +1,5 @@
 /**
- * Geocoding — OSM Nominatim via the core backend proxy (`GET /api/geocode`).
+ * Geocoding — OSM Nominatim via the core backend proxy (`GET /api/v1/geocode`).
  *
  * The public Nominatim API sends no CORS headers and requires a valid
  * server-side User-Agent, so the browser must NOT call it directly; the
@@ -42,7 +42,7 @@ export async function searchPlaces(
       : "";
   const params = new URLSearchParams({ q: query });
   if (lang) params.set("lang", lang);
-  return api.get<PlaceResult[]>(`/api/geocode?${params.toString()}`, {
+  return api.get<PlaceResult[]>(`/api/v1/geocode?${params.toString()}`, {
     signal,
   });
 }

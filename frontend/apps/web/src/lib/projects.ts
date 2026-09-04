@@ -61,35 +61,35 @@ export interface ProjectUpdateInput {
 }
 
 export async function fetchProjects(): Promise<ProjectItem[]> {
-  return api.get<ProjectItem[]>("/api/projects");
+  return api.get<ProjectItem[]>("/api/v1/projects");
 }
 
 export async function fetchProjectById(
   projectId: string,
 ): Promise<ProjectItem> {
-  return api.get<ProjectItem>(`/api/projects/${projectId}`);
+  return api.get<ProjectItem>(`/api/v1/projects/${projectId}`);
 }
 
 export async function createProject(
   input: ProjectCreateInput,
 ): Promise<ProjectItem> {
-  return api.post<ProjectItem>("/api/projects", input);
+  return api.post<ProjectItem>("/api/v1/projects", input);
 }
 
 export async function updateProject(
   projectId: string,
   input: ProjectUpdateInput,
 ): Promise<ProjectItem> {
-  return api.put<ProjectItem>(`/api/projects/${projectId}`, input);
+  return api.put<ProjectItem>(`/api/v1/projects/${projectId}`, input);
 }
 
 export async function deleteProject(projectId: string): Promise<void> {
-  return api.delete<void>(`/api/projects/${projectId}`);
+  return api.delete<void>(`/api/v1/projects/${projectId}`);
 }
 
 export async function publishMapFromProject(
   projectId: string,
   input: MapCreateInput,
 ): Promise<MapItem> {
-  return api.post<MapItem>(`/api/projects/${projectId}/maps`, input);
+  return api.post<MapItem>(`/api/v1/projects/${projectId}/maps`, input);
 }

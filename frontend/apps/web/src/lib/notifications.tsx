@@ -2,8 +2,8 @@
  * Notifications — live in-app notification hub (core).
  *
  * Backed by the core notifications API:
- *   • REST  ``/api/notifications*`` (list, counts, read state, preferences)
- *   • WS    ``/api/notifications/stream?token=…`` (push new notifications)
+ *   • REST  ``/api/v1/notifications*`` (list, counts, read state, preferences)
+ *   • WS    ``/api/v1/notifications/stream?token=…`` (push new notifications)
  *
  * The provider keeps the recent notification window, the live unread count,
  * per-user delivery preferences, and a small toast stack (rendered for every
@@ -168,7 +168,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         page: number;
         page_size: number;
         total_pages: number;
-      }>(`/api/notifications?${qs}`);
+      }>(`/api/v1/notifications?${qs}`);
       setItems((prev) => (append ? [...prev, ...data.items] : data.items));
       setTotal(data.total);
       setTotalPages(data.total_pages);
@@ -186,11 +186,11 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     await Promise.all([
       loadPage(1, false),
       api
-        .get<{ unread: number }>("/api/notifications/unread-count")
+        .get<{ unread: number }>("/api/v1/notifications/unread-count")
         .then((r) => setUnread(r.unread))
         .catch(() => {}),
       api
-        .get<NotificationPrefs>("/api/notifications/preferences")
+        .get<NotificationPrefs>("/api/v1/notifications/preferences")
         .then(setPrefs)
         .catch(() => {}),
     ]);
@@ -218,7 +218,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
     function connect() {
       if (closed || deadRef.current) return;
-      ws = new WebSocket(wsUrl("/api/notifications/stream"));
+      ws = new WebSocket(wsUrl("/api/v1/notifications/stream"));
       ws.onopen = () => {
         attempt = 0;
         setConnected(true);
@@ -304,17 +304,17 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const markRead = useCallback((id: string) => {
     setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     setUnread((u) => Math.max(0, u - 1));
-    api.post(`/api/notifications/${id}/read`).catch(() => {});
+    api.post(`/api/v1/notifications/${id}/read`).catch(() => {});
   }, []);
 
   const markUnread = useCallback((id: string) => {
     setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: false } : n)));
     setUnread((u) => u + 1);
-    api.post(`/api/notifications/${id}/unread`).catch(() => {});
+    api.post(`/api/v1/notifications/${id}/unread`).catch(() => {});
   }, []);
 
   const markAllRead = useCallback(() => {
-    api.post<{ marked: number }>("/api/notifications/read-all").catch(() => {});
+    api.post<{ marked: number }>("/api/v1/notifications/read-all").catch(() => {});
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnread(0);
   }, []);
@@ -326,7 +326,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       return prev.filter((n) => n.id !== id);
     });
     setTotal((t) => Math.max(0, t - 1));
-    api.delete(`/api/notifications/${id}`).catch(() => {});
+    api.delete(`/api/v1/notifications/${id}`).catch(() => {});
   }, []);
 
   const loadMore = useCallback(() => {
@@ -342,7 +342,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       updated_at: p?.updated_at ?? null,
       ...partial,
     }));
-    api.put("/api/notifications/preferences", partial).catch(() => {});
+    api.put("/api/v1/notifications/preferences", partial).catch(() => {});
   }, []);
 
   const stop = useCallback(() => {

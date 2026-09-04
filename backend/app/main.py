@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
@@ -80,11 +80,8 @@ app.add_middleware(
     RateLimitMiddleware,
     limiter=_rate_limiter,
     sensitive_prefixes=(
-        "/api/data/datasets/upload",
         "/api/v1/data/datasets/upload",
-        "/api/ai/",
         "/api/v1/ai/",
-        "/api/storage/upload",
         "/api/v1/storage/upload",
     ),
 )
@@ -114,20 +111,20 @@ async def health_ready():
     return report
 
 
-@app.get("/api/health", tags=["platform"])
+@app.get("/api/v1/health", tags=["platform"])
 async def health_liveness():
     return await health()
 
 
-@app.get("/api/health/ready", tags=["platform"])
+@app.get("/api/v1/health/ready", tags=["platform"])
 async def health_readiness():
     return await health_ready()
 
 
 # ── Core routers ──────────────────────────────────────────────────────────────
-# The same core routers are mounted under both ``/api`` and the ``/api/v1``
-# alias (ticket T-06). ``v1`` is assembled fully (core + modules) and included
-# into the app in one step.
+# All core + module routes are served under a single versioned root,
+# ``/api/v1``. (The previous bare ``/api`` mount was a 1:1 alias — ticket
+# T-06 — and has been retired so ``/api/v1`` is the one and only API prefix.)
 _CORE_ROUTERS = [
     (auth_router, "/auth"),
     (data_router, "/data"),
@@ -142,30 +139,17 @@ _CORE_ROUTERS = [
     (geocode_router, "/geocode"),
 ]
 
-v1 = APIRouter()  # no prefix — every include passes its full /api/v1/... prefix
-
 for _router, _sub in _CORE_ROUTERS:
-    app.include_router(_router, prefix=f"/api{_sub}")
-    v1.include_router(_router, prefix=f"/api/v1{_sub}")
+    app.include_router(_router, prefix=f"/api/v1{_sub}")
 
 # ── Share utility routes (people search & invite accept) ─────────────────────
-app.include_router(share_util_router, prefix="/api")
-v1.include_router(share_util_router, prefix="/api/v1")
+app.include_router(share_util_router, prefix="/api/v1")
 
 # ── Per-entity share routes (maps AND projects) ───────────────────────────────
 # NOTE: the prefix placeholder must be named `entity_id` to match the handler
 # signature (FastAPI binds path params by name).
-app.include_router(entity_share_router, prefix="/api/maps/{entity_id}/share")
-app.include_router(entity_share_router, prefix="/api/projects/{entity_id}/share")
-v1.include_router(entity_share_router, prefix="/api/v1/maps/{entity_id}/share")
-v1.include_router(entity_share_router, prefix="/api/v1/projects/{entity_id}/share")
-
-# ── Health + readiness on the /api/v1 alias ───────────────────────────────────
-v1.add_api_route("/api/v1/health", health, methods=["GET"], tags=["platform"])
-v1.add_api_route("/api/v1/health/ready", health_ready, methods=["GET"], tags=["platform"])
+app.include_router(entity_share_router, prefix="/api/v1/maps/{entity_id}/share")
+app.include_router(entity_share_router, prefix="/api/v1/projects/{entity_id}/share")
 
 # ── Pluggable module routers (from modules.lock.yaml) ─────────────────────────
-# Mounted under both /api and /api/v1 so the alias is a true 1:1 mirror.
-load_modules(app)             # → /api/<module-prefix>
-load_modules(v1, prefix="/api/v1")  # → /api/v1/<module-prefix>
-app.include_router(v1)
+load_modules(app, prefix="/api/v1")  # → /api/v1/<module-prefix>

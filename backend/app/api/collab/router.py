@@ -1,6 +1,6 @@
 """
 Collaboration WebSocket Router
-Endpoint: /api/collab/ws/{project_id}?token=<jwt>
+Endpoint: /api/v1/collab/ws/{project_id}?token=<jwt>
 
 Authentication via query param because HTTP Authorization headers
 are not supported in the WebSocket upgrade handshake.

@@ -1,7 +1,7 @@
 import { api } from "./api";
 
 /**
- * Front-end client for the AI harness (``/api/ai``) + the map tool dispatcher.
+ * Front-end client for the AI harness (``/api/v1/ai``) + the map tool dispatcher.
  *
  * The harness is provider-agnostic (OpenAI-compatible, Anthropic, Ollama) and
  * lets any "section" of the app run an LLM with its own system prompt + context,
@@ -10,8 +10,8 @@ import { api } from "./api";
  *
  * Tool-calling model
  * ------------------
- * * ``GET /api/ai/tools``  → the metadata for every tool (name, args, side).
- * * ``POST /api/ai/chat``  → with ``tools: [names]`` the model may answer with
+ * * ``GET /api/v1/ai/tools``  → the metadata for every tool (name, args, side).
+ * * ``POST /api/v1/ai/chat``  → with ``tools: [names]`` the model may answer with
  *   ``{"tool": name, "arguments": {...}}``. The server returns that call in
  *   ``resp.tool_call``. **Front-end** tools are dispatched here (by
  *   :func:`dispatchToolCall`) against the live map; **server** tools are
@@ -90,7 +90,7 @@ export interface AIConfig {
   supported_providers: string[];
 }
 
-/* ── Tool metadata (from ``GET /api/ai/tools``) ────────────────────────────── */
+/* ── Tool metadata (from ``GET /api/v1/ai/tools``) ────────────────────────────── */
 
 export interface AITool {
   name: string;
@@ -102,17 +102,17 @@ export interface AITool {
 
 /** Run a single completion through the AI harness. */
 export async function aiChat(req: AIRequest): Promise<AIResponse> {
-  return api.post<AIResponse>("/api/ai/chat", req);
+  return api.post<AIResponse>("/api/v1/ai/chat", req);
 }
 
 /** Introspect the harness provider configuration (masked). */
 export async function getAIConfig(): Promise<AIConfig> {
-  return api.get<AIConfig>("/api/ai/config");
+  return api.get<AIConfig>("/api/v1/ai/config");
 }
 
 /** List the tools the AI can invoke (metadata only — no executors). */
 export async function listAITools(): Promise<AITool[]> {
-  return api.get<AITool[]>("/api/ai/tools");
+  return api.get<AITool[]>("/api/v1/ai/tools");
 }
 
 /* ────────────────────────────────────────────────────────────────────────────

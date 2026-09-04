@@ -40,7 +40,7 @@ export function useModules(): UseModulesResult {
       return;
     }
     if (!_promise) {
-      _promise = api.get<ModuleInfo[]>("/api/modules").then((data) => {
+      _promise = api.get<ModuleInfo[]>("/api/v1/modules").then((data) => {
         _cache = data;
         return data;
       });

@@ -5,12 +5,12 @@ OLD approach (static imports, hardcoded in bundle):
   import * as mod from "@modules/hello";
   export const moduleRoutes = [...mod.routes];
 
-NEW approach (lazy registry — routes activated by /api/modules at runtime):
+NEW approach (lazy registry — routes activated by /api/v1/modules at runtime):
   export const moduleRegistry = {
     "hydrology-module": () => import("@modules/hydrology"),
   };
 
-The App shell fetches /api/modules, checks enabled modules, and only mounts
+The App shell fetches /api/v1/modules, checks enabled modules, and only mounts
 routes for modules that are both in the registry AND enabled server-side.
 """
 from .registry import ROOT, load_module_meta
@@ -63,7 +63,7 @@ def generate_frontend_routes(lock: dict) -> None:
         " * Registry of all *installed* module loaders.",
         " * Keyed by the module name in modules.lock.yaml.",
         " *",
-        " * The shell uses /api/modules to decide which entries to activate at runtime.",
+        " * The shell uses /api/v1/modules to decide which entries to activate at runtime.",
         " * Only modules present here AND enabled server-side will be mounted.",
         " */",
         "export const moduleRegistry: Record<string, () => Promise<ModuleBundle>> = {",

@@ -161,7 +161,7 @@ export default function AdminUsersPage() {
         params.set("page_size", String(filters.page_size));
 
         const res = await api.get<PaginatedResponse<UserSummary>>(
-          `/api/auth/users?${params.toString()}`,
+          `/api/v1/auth/users?${params.toString()}`,
         );
         setUsers(res.items);
         setUserTotal(res.total);
@@ -189,7 +189,7 @@ export default function AdminUsersPage() {
         params.set("page_size", String(filters.page_size));
 
         const res = await api.get<PaginatedResponse<GroupSummary>>(
-          `/api/auth/groups?${params.toString()}`,
+          `/api/v1/auth/groups?${params.toString()}`,
         );
         setGroups(res.items);
         setGroupTotal(res.total);
@@ -217,7 +217,7 @@ export default function AdminUsersPage() {
         params.set("page_size", String(filters.page_size));
 
         const res = await api.get<PaginatedResponse<PermissionSummary>>(
-          `/api/auth/permissions?${params.toString()}`,
+          `/api/v1/auth/permissions?${params.toString()}`,
         );
         setPermissions(res.items);
         setPermissionTotal(res.total);
@@ -236,9 +236,9 @@ export default function AdminUsersPage() {
   const loadMetadata = useCallback(async () => {
     try {
       const [groupsRes, permsRes, usersRes] = await Promise.all([
-        api.get<GroupSummary[]>("/api/auth/groups"),
-        api.get<PermissionSummary[]>("/api/auth/permissions"),
-        api.get<PaginatedResponse<UserSummary>>("/api/auth/users?page_size=100"),
+        api.get<GroupSummary[]>("/api/v1/auth/groups"),
+        api.get<PermissionSummary[]>("/api/v1/auth/permissions"),
+        api.get<PaginatedResponse<UserSummary>>("/api/v1/auth/users?page_size=100"),
       ]);
       setAllGroups(Array.isArray(groupsRes) ? groupsRes : (groupsRes as PaginatedResponse<GroupSummary>).items);
       setAllPermissions(Array.isArray(permsRes) ? permsRes : (permsRes as PaginatedResponse<PermissionSummary>).items);
@@ -294,7 +294,7 @@ export default function AdminUsersPage() {
     event.preventDefault();
     setSubmitting(true);
     try {
-      const created = await api.post<UserSummary>("/api/auth/users", {
+      const created = await api.post<UserSummary>("/api/v1/auth/users", {
         email: userForm.email,
         password: userForm.password,
         full_name: userForm.full_name || undefined,
@@ -338,7 +338,7 @@ export default function AdminUsersPage() {
       if (editUserForm.password) payload.password = editUserForm.password;
 
       const updated = await api.put<UserSummary>(
-        `/api/auth/users/${editingUserId}`,
+        `/api/v1/auth/users/${editingUserId}`,
         payload,
       );
       setEditingUserId(null);
@@ -356,7 +356,7 @@ export default function AdminUsersPage() {
   const deleteUser = async (userId: string) => {
     setSubmitting(true);
     try {
-      await api.delete(`/api/auth/users/${userId}`);
+      await api.delete(`/api/v1/auth/users/${userId}`);
       notify("User deleted successfully");
       void loadUsers(userFilters);
       void loadMetadata();
@@ -373,7 +373,7 @@ export default function AdminUsersPage() {
     event.preventDefault();
     setSubmitting(true);
     try {
-      const created = await api.post<GroupSummary>("/api/auth/groups", {
+      const created = await api.post<GroupSummary>("/api/v1/auth/groups", {
         name: groupForm.name,
         description: groupForm.description || undefined,
         permissions: groupForm.permissions,
@@ -407,7 +407,7 @@ export default function AdminUsersPage() {
     setSubmitting(true);
     try {
       const updated = await api.put<GroupSummary>(
-        `/api/auth/groups/${editingGroupId}`,
+        `/api/v1/auth/groups/${editingGroupId}`,
         {
           name: editGroupForm.name,
           description: editGroupForm.description || undefined,
@@ -430,7 +430,7 @@ export default function AdminUsersPage() {
   const deleteGroup = async (groupId: string) => {
     setSubmitting(true);
     try {
-      await api.delete(`/api/auth/groups/${groupId}`);
+      await api.delete(`/api/v1/auth/groups/${groupId}`);
       notify("Group deleted successfully");
       void loadGroups(groupFilters);
       void loadMetadata();
@@ -448,7 +448,7 @@ export default function AdminUsersPage() {
     setSubmitting(true);
     try {
       const created = await api.post<PermissionSummary>(
-        "/api/auth/permissions",
+        "/api/v1/auth/permissions",
         {
           name: permissionForm.name,
           description: permissionForm.description || undefined,
@@ -480,7 +480,7 @@ export default function AdminUsersPage() {
     setSubmitting(true);
     try {
       const updated = await api.put<PermissionSummary>(
-        `/api/auth/permissions/${editingPermissionId}`,
+        `/api/v1/auth/permissions/${editingPermissionId}`,
         {
           name: editPermissionForm.name,
           description: editPermissionForm.description || undefined,
@@ -501,7 +501,7 @@ export default function AdminUsersPage() {
   const deletePermission = async (permissionId: string) => {
     setSubmitting(true);
     try {
-      await api.delete(`/api/auth/permissions/${permissionId}`);
+      await api.delete(`/api/v1/auth/permissions/${permissionId}`);
       notify("Permission deleted successfully");
       void loadPermissions(permissionFilters);
       void loadMetadata();

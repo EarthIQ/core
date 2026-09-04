@@ -6,7 +6,7 @@
  *   • applied to the DOM instantly (theme class, CSS variables, root font
  *     size, `.compact` class) — so changes are live;
  *   • persisted to ``localStorage`` (works logged-out / offline);
- *   • synced to ``PUT /api/profile/me/preferences`` when authenticated, so a
+ *   • synced to ``PUT /api/v1/profile/me/preferences`` when authenticated, so a
  *     user's experience follows them across devices.
  *
  * The theme *mode* is applied through the existing ThemeProvider
@@ -232,7 +232,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
         accent_color?: string | null;
         compact_mode?: boolean;
         font_scale?: string;
-      }>("/api/profile/me/preferences")
+      }>("/api/v1/profile/me/preferences")
       .then((server) => {
         if (cancelled) return;
         const merged: UIPreferences = {
@@ -277,7 +277,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
       return next;
     });
     const t = setTimeout(() => {
-      api.put("/api/profile/me/preferences", { theme_mode: theme }).catch(() => {});
+      api.put("/api/v1/profile/me/preferences", { theme_mode: theme }).catch(() => {});
     }, 250);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -298,7 +298,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
         if (partial.accent_color !== undefined) body.accent_color = partial.accent_color;
         if (partial.compact_mode !== undefined) body.compact_mode = partial.compact_mode;
         if (partial.font_scale !== undefined) body.font_scale = partial.font_scale;
-        api.put("/api/profile/me/preferences", body).catch(() => {
+        api.put("/api/v1/profile/me/preferences", body).catch(() => {
           /* offline — local state already applied */
         });
       }, 250);
@@ -310,7 +310,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     applyAll(PREFERENCE_DEFAULTS);
     if (!isAuthenticated) return;
     api
-      .put("/api/profile/me/preferences", {
+      .put("/api/v1/profile/me/preferences", {
         theme_mode: PREFERENCE_DEFAULTS.theme_mode,
         map_units: PREFERENCE_DEFAULTS.map_units,
         default_basemap: PREFERENCE_DEFAULTS.default_basemap,

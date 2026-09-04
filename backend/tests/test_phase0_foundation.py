@@ -5,7 +5,7 @@ Covers:
   * T-03 presigned-URL host rewrite            (app.core.storage)
   * T-04 production secret guardrail           (app.core.guardrail)
   * T-05 rate limiting                         (app.core.rate_limit)
-  * T-06 /api/v1 alias + uniform error envelope (app.core.errors, app.main)
+  * T-06 versioned /api/v1 API root + uniform error envelope (app.core.errors, app.main)
   * T-07 basemaps data-driven                  (app.api.viz.router)
   * T-10 component health (db/redis/storage)   (app.core.health)
 
@@ -115,18 +115,18 @@ def test_sliding_window_limiter_reset():
 async def rate_client():
     app = FastAPI()
 
-    @app.post("/api/data/datasets/upload")
+    @app.post("/api/v1/data/datasets/upload")
     async def upload():
         return {"ok": True}
 
-    @app.get("/api/other")
+    @app.get("/api/v1/other")
     async def other():
         return {"ok": True}
 
     app.add_middleware(
         RateLimitMiddleware,
         limiter=SlidingWindowLimiter(limit=3, window_seconds=60),
-        sensitive_prefixes=("/api/data/datasets/upload",),
+        sensitive_prefixes=("/api/v1/data/datasets/upload",),
     )
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://t") as ac:
@@ -135,9 +135,9 @@ async def rate_client():
 
 async def test_rate_limit_enforces_429(rate_client):
     for _ in range(3):
-        r = await rate_client.post("/api/data/datasets/upload")
+        r = await rate_client.post("/api/v1/data/datasets/upload")
         assert r.status_code == 200
-    r = await rate_client.post("/api/data/datasets/upload")
+    r = await rate_client.post("/api/v1/data/datasets/upload")
     assert r.status_code == 429
     assert "Retry-After" in r.headers
     assert r.json()["error"]["code"] == "rate_limited"
@@ -145,7 +145,7 @@ async def test_rate_limit_enforces_429(rate_client):
 
 async def test_rate_limit_does_not_affect_other_paths(rate_client):
     for _ in range(10):
-        r = await rate_client.get("/api/other")
+        r = await rate_client.get("/api/v1/other")
         assert r.status_code == 200
 
 
@@ -351,8 +351,6 @@ async def health_client(monkeypatch):
             raise HTTPException(status_code=503, detail="not ready")
         return report
 
-    app.add_api_route("/api/health", health, methods=["GET"])
-    app.add_api_route("/api/health/ready", ready, methods=["GET"])
     app.add_api_route("/api/v1/health", health, methods=["GET"])
     app.add_api_route("/api/v1/health/ready", ready, methods=["GET"])
 
@@ -367,12 +365,8 @@ async def health_client(monkeypatch):
 
 
 async def test_health_and_ready_ok(health_client):
-    assert (await health_client.get("/api/health")).json()["status"] == "ok"
-    assert (await health_client.get("/api/health/ready")).status_code == 200
-    # v1 alias mirrors liveness
-    r = await health_client.get("/api/v1/health")
-    assert r.status_code == 200
-    assert r.json()["status"] == "ok"
+    assert (await health_client.get("/api/v1/health")).json()["status"] == "ok"
+    assert (await health_client.get("/api/v1/health/ready")).status_code == 200
 
 
 async def test_ready_503_when_degraded(health_client, monkeypatch):
@@ -380,20 +374,21 @@ async def test_ready_503_when_degraded(health_client, monkeypatch):
         return {"status": "error", "error": "down"}
     monkeypatch.setattr(health_mod, "check_redis", bad)
     # Liveness stays 200 but reports degraded…
-    r = await health_client.get("/api/health")
+    r = await health_client.get("/api/v1/health")
     assert r.status_code == 200
     assert r.json()["status"] == "degraded"
     # …while the readiness gate returns 503 with the uniform envelope.
-    r = await health_client.get("/api/health/ready")
+    r = await health_client.get("/api/v1/health/ready")
     assert r.status_code == 503
     assert r.json()["error"]["code"] == "service_unavailable"
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# T-06 — /api/v1 alias (mirror mechanism + real app routes)
+# T-06 — versioned /api/v1 API root (single prefix, no bare /api feature routes)
 # ────────────────────────────────────────────────────────────────────────────
 
-async def test_v1_alias_mirrors_routes():
+async def test_versioned_prefix_serves_routes():
+    """A router mounted under the versioned /api/v1 prefix is served at that path."""
     core = APIRouter()
 
     @core.get("/ping")
@@ -401,36 +396,36 @@ async def test_v1_alias_mirrors_routes():
         return {"pong": True}
 
     app = FastAPI()
-    app.include_router(core, prefix="/api/core")
-    v1 = APIRouter(prefix="/api/v1")
-    v1.include_router(core, prefix="/core")
-    app.include_router(v1)
+    app.include_router(core, prefix="/api/v1/core")
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://t") as ac:
-        r1 = await ac.get("/api/core/ping")
-        r2 = await ac.get("/api/v1/core/ping")
-    assert r1.json() == r2.json() == {"pong": True}
+        r = await ac.get("/api/v1/core/ping")
+    assert r.json() == {"pong": True}
 
 
-def test_main_app_exposes_v1_alias():
-    """Import the real app and assert both /api and /api/v1 routes exist.
+def test_main_app_serves_v1_only():
+    """Import the real app and assert it serves the versioned /api/v1 root.
 
-    Uses the OpenAPI schema (``app.openapi()["paths"]``) as the source of
-    truth — this reliably reflects every mounted route regardless of how
-    FastAPI wraps included sub-routers internally.
+    The bare ``/api`` feature routes have been retired (only the ``/api/v1``
+    version remains), so the ``/api/v1`` paths must exist and the legacy bare
+    paths must be gone. The OpenAPI schema (``app.openapi()["paths"]``) is the
+    source of truth for every mounted route.
     """
     import app.main as m
 
     paths = set(m.app.openapi().get("paths", {}).keys())
     for p in (
-        "/api/health",
-        "/api/auth/register",
-        "/api/data/datasets/upload",
         "/api/v1/health",
         "/api/v1/auth/register",
         "/api/v1/data/datasets/upload",
     ):
         assert p in paths, f"missing OpenAPI path {p}"
+    for p in (
+        "/api/health",
+        "/api/auth/register",
+        "/api/data/datasets/upload",
+    ):
+        assert p not in paths, f"legacy bare /api path should be gone: {p}"
 
 
 

@@ -7,5 +7,5 @@ This package owns:
   - server-persisted *user preferences* (theme, units, basemap, ...)
 
 It re-exports the core ``Base`` / session helpers and is mounted at
-``/api/profile`` (see ``app.main``). It is transport-agnostic and testable.
+``/api/v1/profile`` (see ``app.main``). It is transport-agnostic and testable.
 """

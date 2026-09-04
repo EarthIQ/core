@@ -54,7 +54,7 @@ class ShareSettingsRead(BaseModel):
 
 
 class ShareStateRead(BaseModel):
-    """Full share state returned by GET /api/maps/{id}/share."""
+    """Full share state returned by GET /api/v1/maps/{id}/share."""
 
     entries: List[AccessEntryRead]
     general: GeneralAccessRead

@@ -9,8 +9,8 @@ Redis is probed with a raw RESP ``PING`` over a TCP socket so we do not add a
 for its real work (pub/sub, job queue) elsewhere.
 
 Exposes two endpoints (wired in ``app.main``):
-* ``GET /api/health``       — liveness: always 200, reports component status.
-* ``GET /api/health/ready`` — readiness: 200 only when every dep is healthy.
+* ``GET /api/v1/health``       — liveness: always 200, reports component status.
+* ``GET /api/v1/health/ready`` — readiness: 200 only when every dep is healthy.
 
 Ticket: T-10 (health expands to db/storage/redis).
 """

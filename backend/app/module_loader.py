@@ -11,12 +11,12 @@ ROOT = Path(__file__).resolve().parents[2]        # core/
 LOCK_FILE = ROOT / "modules.lock.yaml"
 
 
-def load_modules(app, prefix: str = "/api") -> None:
-    """Mount every selected module's router onto *app* (or an APIRouter).
+def load_modules(app, prefix: str = "/api/v1") -> None:
+    """Mount every selected module's router onto *app*.
 
-    ``prefix`` lets the same routers be mounted under both ``/api`` and the
-    ``/api/v1`` alias (ticket T-06). Any object exposing ``include_router``
-    (a :class:`FastAPI` app or :class:`APIRouter`) is accepted.
+    ``prefix`` is the API root the module is mounted under (``/api/v1`` in
+    production). Any object exposing ``include_router`` (a :class:`FastAPI`
+    app or :class:`APIRouter`) is accepted.
     """
     if not LOCK_FILE.exists():
         logger.info("No modules.lock.yaml — running core with zero modules.")

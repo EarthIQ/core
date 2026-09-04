@@ -4,7 +4,7 @@
  * This file is the single source of truth for the **optional** tool contract
  * that modules may follow to surface tools in the core Map → Toolbox panel.
  * The core shell contains NO module names: it walks the enabled modules
- * (from /api/modules ∩ the auto-generated moduleRegistry), imports each
+ * (from /api/v1/modules ∩ the auto-generated moduleRegistry), imports each
  * bundle, and picks up a valid `tools` export when present.
  *
  * ── Module contract (what a module must do to appear here) ─────────────────
@@ -154,7 +154,7 @@ async function collectModuleTools(): Promise<ResolvedTool[]> {
   if (_toolsPromise) return _toolsPromise;
 
   _toolsPromise = (async () => {
-    const modules = await api.get<ModuleInfo[]>("/api/modules");
+    const modules = await api.get<ModuleInfo[]>("/api/v1/modules");
     const tools: ResolvedTool[] = [];
     const seenIds = new Set<string>();
 

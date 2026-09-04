@@ -2,7 +2,7 @@
  * EarthIQ Core — App Shell
  *
  * Module routes are 100% dynamic:
- *  1. /api/modules tells us which modules are enabled at runtime.
+ *  1. /api/v1/modules tells us which modules are enabled at runtime.
  *  2. moduleRegistry (auto-generated) maps names → lazy bundle loaders.
  *  3. We mount a lazy <Route> only for modules that are BOTH in the
  *     registry AND enabled server-side. App.tsx itself never references
@@ -80,7 +80,7 @@ let _resolvedModulesCache: ActiveModule[] | null = null;
 /**
  * Resolves enabled module bundles to obtain their self-declared routePaths.
  * Returns `resolving: true` only during the async bundle import phase —
- * NOT while /api/modules is loading — so core routes always render immediately.
+ * NOT while /api/v1/modules is loading — so core routes always render immediately.
  */
 function useActiveModules() {
   const { modules, isLoading: modulesLoading } = useModules();
@@ -90,7 +90,7 @@ function useActiveModules() {
   const [resolving, setResolving] = useState(false);
 
   useEffect(() => {
-    // Wait for the /api/modules response before doing anything.
+    // Wait for the /api/v1/modules response before doing anything.
     if (modulesLoading) return;
 
     // Serve from cache on subsequent renders.

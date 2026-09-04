@@ -1,10 +1,10 @@
 """FastAPI router for map & project sharing.
 
-Mounted at:  /api/maps/{map_id}/share          (via main.py include)
-            /api/projects/{project_id}/share  (via main.py include)
-Additional:  /api/people             (user search, mounted on the app)
-             /api/invite/accept      (token acceptance, any entity)
-             /api/maps/invite/accept (legacy alias)
+Mounted at:  /api/v1/maps/{map_id}/share          (via main.py include)
+            /api/v1/projects/{project_id}/share  (via main.py include)
+Additional:  /api/v1/people             (user search, mounted on the app)
+             /api/v1/invite/accept      (token acceptance, any entity)
+             /api/v1/maps/invite/accept (legacy alias)
 """
 from __future__ import annotations
 

@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     api
-      .get<AuthUser>("/api/auth/me")
+      .get<AuthUser>("/api/v1/auth/me")
       .then((u) => { setUser(u); setIsLoading(false); })
       .catch(() => {
         localStorage.removeItem(TOKEN_KEY);
@@ -67,11 +67,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const data = await api.post<{ access_token: string; token_type: string }>(
-      "/api/auth/token",
+      "/api/v1/auth/token",
       { email, password },
     );
     localStorage.setItem(TOKEN_KEY, data.access_token);
-    const me = await api.get<AuthUser>("/api/auth/me");
+    const me = await api.get<AuthUser>("/api/v1/auth/me");
     setUser(me);
   }, []);
 
@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) return;
     try {
-      const me = await api.get<AuthUser>("/api/auth/me");
+      const me = await api.get<AuthUser>("/api/v1/auth/me");
       setUser(me);
     } catch {
       /* keep current user */

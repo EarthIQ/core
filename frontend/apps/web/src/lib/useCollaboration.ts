@@ -76,12 +76,12 @@ export function useCollaboration(
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) return;
 
-    // Build WS URL: ws(s)://host/api/collab/ws/{projectId}?token=...
+    // Build WS URL: ws(s)://host/api/v1/collab/ws/{projectId}?token=...
     const proto = window.location.protocol === "https:" ? "wss" : "ws";
     const host = import.meta.env.VITE_API_URL
       ? new URL(import.meta.env.VITE_API_URL).host
       : window.location.host;
-    const url = `${proto}://${host}/api/collab/ws/${projectId}?token=${encodeURIComponent(token)}`;
+    const url = `${proto}://${host}/api/v1/collab/ws/${projectId}?token=${encodeURIComponent(token)}`;
 
     const ws = new WebSocket(url);
     wsRef.current = ws;

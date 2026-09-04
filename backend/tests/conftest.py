@@ -69,12 +69,12 @@ def _test_tables():
 def _make_test_app() -> FastAPI:
     """Create a minimal FastAPI app with the auth + notifications routers."""
     test_app = FastAPI()
-    test_app.include_router(auth_router, prefix="/api/auth")
-    test_app.include_router(notifications_router, prefix="/api/notifications")
-    test_app.include_router(profile_router, prefix="/api/profile")
+    test_app.include_router(auth_router, prefix="/api/v1/auth")
+    test_app.include_router(notifications_router, prefix="/api/v1/notifications")
+    test_app.include_router(profile_router, prefix="/api/v1/profile")
 
     # Simple health endpoint for smoke tests
-    @test_app.get("/api/health")
+    @test_app.get("/api/v1/health")
     async def health():
         return {"status": "ok"}
 
@@ -166,13 +166,13 @@ async def _register_and_login(
     is_superuser: bool = True,
 ) -> dict:
     """Register a user and return auth headers for subsequent requests."""
-    await client.post("/api/auth/register", json={
+    await client.post("/api/v1/auth/register", json={
         "email": email,
         "password": password,
         "full_name": full_name,
         "is_superuser": is_superuser,
     })
-    resp = await client.post("/api/auth/token", json={"email": email, "password": password})
+    resp = await client.post("/api/v1/auth/token", json={"email": email, "password": password})
     token = resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
 
@@ -185,15 +185,15 @@ async def _register_login_with_id(
     is_superuser: bool = False,
 ) -> tuple[dict, str, str]:
     """Register + login, returning ``(headers, user_id, token)``."""
-    await client.post("/api/auth/register", json={
+    await client.post("/api/v1/auth/register", json={
         "email": email,
         "password": password,
         "full_name": full_name,
         "is_superuser": is_superuser,
     })
-    resp = await client.post("/api/auth/token", json={"email": email, "password": password})
+    resp = await client.post("/api/v1/auth/token", json={"email": email, "password": password})
     token = resp.json()["access_token"]
-    me = await client.get("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
+    me = await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
     user_id = me.json()["id"]
     return {"Authorization": f"Bearer {token}"}, user_id, token
 

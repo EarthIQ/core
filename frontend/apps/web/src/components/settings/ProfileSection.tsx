@@ -1,8 +1,8 @@
 /**
  * Settings — Profile section (core).
  *
- * Edit the signed-in user's public profile (GET/PUT ``/api/profile/me``) and
- * change the password (POST ``/api/profile/me/password``).
+ * Edit the signed-in user's public profile (GET/PUT ``/api/v1/profile/me``) and
+ * change the password (POST ``/api/v1/profile/me/password``).
  */
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
@@ -91,7 +91,7 @@ export default function ProfileSection() {
 
   useEffect(() => {
     api
-      .get<Profile>("/api/profile/me")
+      .get<Profile>("/api/v1/profile/me")
       .then((p) => {
         setProfile(p);
         setForm({
@@ -120,7 +120,7 @@ export default function ProfileSection() {
     if (!profile) return;
     setStatus({ kind: "saving" });
     try {
-      const updated = await api.put<Profile>("/api/profile/me", {
+      const updated = await api.put<Profile>("/api/v1/profile/me", {
         full_name: form.full_name || null,
         bio: form.bio || null,
         avatar_url: form.avatar_url || null,
@@ -151,7 +151,7 @@ export default function ProfileSection() {
     }
     setPwStatus({ kind: "saving" });
     try {
-      await api.post("/api/profile/me/password", {
+      await api.post("/api/v1/profile/me/password", {
         current_password: pw.current,
         new_password: pw.next,
       });

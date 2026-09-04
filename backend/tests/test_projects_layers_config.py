@@ -3,7 +3,7 @@ Regression test: folder nodes in ``layers_config`` must be accepted and
 round-trip through project create/update/read.
 
 Previously ``MapLayerItem`` required ``type: Literal["vector", "raster"]``,
-so any ``PUT /api/projects/{id}`` payload containing a folder entry
+so any ``PUT /api/v1/projects/{id}`` payload containing a folder entry
 (``{id, name, parentId, order, kind: "folder", collapsed}``) failed
 Pydantic validation with a 422 — the frontend swallowed that error and the
 whole layer tree (folders AND layers) was silently lost.
@@ -107,8 +107,8 @@ async def client():
                 raise
 
     app = FastAPI()
-    app.include_router(auth_router, prefix="/api/auth")
-    app.include_router(projects_router, prefix="/api/projects")
+    app.include_router(auth_router, prefix="/api/v1/auth")
+    app.include_router(projects_router, prefix="/api/v1/projects")
     app.dependency_overrides[get_db] = _override_get_db
 
     transport = ASGITransport(app=app)
@@ -118,14 +118,14 @@ async def client():
 
 
 async def _auth(client: AsyncClient) -> dict:
-    await client.post("/api/auth/register", json={
+    await client.post("/api/v1/auth/register", json={
         "email": "owner@test.com",
         "password": "S3curePass!2024",
         "full_name": "Owner",
         "is_superuser": False,
     })
     resp = await client.post(
-        "/api/auth/token",
+        "/api/v1/auth/token",
         json={"email": "owner@test.com", "password": "S3curePass!2024"},
     )
     token = resp.json()["access_token"]
@@ -135,7 +135,7 @@ async def _auth(client: AsyncClient) -> dict:
 async def test_create_project_with_folder_in_layers_config(client: AsyncClient):
     headers = await _auth(client)
     resp = await client.post(
-        "/api/projects",
+        "/api/v1/projects",
         headers=headers,
         json={"title": "Hydro workspace", "layers_config": [FOLDER, LAYER]},
     )
@@ -159,7 +159,7 @@ async def test_update_project_folder_structure_roundtrip(client: AsyncClient):
     # Start with the layer at root.
     root_layer = {**LAYER, "parentId": None}
     resp = await client.post(
-        "/api/projects",
+        "/api/v1/projects",
         headers=headers,
         json={"title": "Hydro workspace", "layers_config": [FOLDER, root_layer]},
     )
@@ -169,7 +169,7 @@ async def test_update_project_folder_structure_roundtrip(client: AsyncClient):
     # Now move the layer into the folder (the exact failing path: a PUT whose
     # layers_config contains a folder entry) and bump the viewport.
     resp = await client.put(
-        f"/api/projects/{project_id}",
+        f"/api/v1/projects/{project_id}",
         headers=headers,
         json={
             "zoom": 5.5,
@@ -190,7 +190,7 @@ async def test_update_project_folder_structure_roundtrip(client: AsyncClient):
 
     # Read it back through GET — the read model must validate the stored
     # folder entry as well.
-    resp = await client.get(f"/api/projects/{project_id}", headers=headers)
+    resp = await client.get(f"/api/v1/projects/{project_id}", headers=headers)
     assert resp.status_code == 200, resp.text
     items = {i["id"]: i for i in resp.json()["layers_config"]}
     assert items["folder_1"]["kind"] == "folder"

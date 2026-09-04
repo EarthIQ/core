@@ -130,12 +130,12 @@ export function formatBytes(bytes: number): string {
 
 /** Returns the MVT tile URL pattern for use with map libraries. */
 export function getVectorTileUrl(datasetId: string): string {
-  return `${API_BASE}/api/data/tiles/${datasetId}/{z}/{x}/{y}.mvt`;
+  return `${API_BASE}/api/v1/data/tiles/${datasetId}/{z}/{x}/{y}.mvt`;
 }
 
 /** Returns a direct download URL for the original uploaded file. */
 export function getDownloadUrl(datasetId: string): string {
-  return `${API_BASE}/api/data/datasets/${datasetId}/download`;
+  return `${API_BASE}/api/v1/data/datasets/${datasetId}/download`;
 }
 
 function downloadToken(): string | null {
@@ -182,7 +182,7 @@ export async function listDatasets(params?: {
   if (params?.search) qs.set("search", params.search);
 
   const res = await fetch(
-    `${API_BASE}/api/data/datasets${qs.size ? `?${qs}` : ""}`,
+    `${API_BASE}/api/v1/data/datasets${qs.size ? `?${qs}` : ""}`,
     { headers: authHeaders() },
   );
   if (!res.ok) {
@@ -195,7 +195,7 @@ export async function listDatasets(params?: {
 
 /** Fetch the supported format/type vocabulary (for driving UI dropdowns). */
 export async function getDatasetVocabulary(): Promise<DatasetVocabulary> {
-  const res = await fetch(`${API_BASE}/api/data/datasets/meta`, {
+  const res = await fetch(`${API_BASE}/api/v1/data/datasets/meta`, {
     headers: authHeaders(),
   });
   if (!res.ok) {
@@ -207,7 +207,7 @@ export async function getDatasetVocabulary(): Promise<DatasetVocabulary> {
 
 /** Fetch a single dataset by ID. */
 export async function getDataset(datasetId: string): Promise<GeoDatasetOut> {
-  const res = await fetch(`${API_BASE}/api/data/datasets/${datasetId}`, {
+  const res = await fetch(`${API_BASE}/api/v1/data/datasets/${datasetId}`, {
     headers: authHeaders(),
   });
   if (!res.ok) {
@@ -222,7 +222,7 @@ export async function updateDataset(
   datasetId: string,
   payload: UpdateDatasetParams,
 ): Promise<GeoDatasetOut> {
-  const res = await fetch(`${API_BASE}/api/data/datasets/${datasetId}`, {
+  const res = await fetch(`${API_BASE}/api/v1/data/datasets/${datasetId}`, {
     method: "PATCH",
     headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -240,7 +240,7 @@ export async function previewDataset(
   maxRows = 20,
 ): Promise<DatasetPreview> {
   const res = await fetch(
-    `${API_BASE}/api/data/datasets/${datasetId}/preview?max_rows=${maxRows}`,
+    `${API_BASE}/api/v1/data/datasets/${datasetId}/preview?max_rows=${maxRows}`,
     { headers: authHeaders() },
   );
   if (!res.ok) {
@@ -255,7 +255,7 @@ export async function getGeometrySummary(
   datasetId: string,
 ): Promise<GeometrySummary> {
   const res = await fetch(
-    `${API_BASE}/api/data/datasets/${encodeURIComponent(datasetId)}/geometry`,
+    `${API_BASE}/api/v1/data/datasets/${encodeURIComponent(datasetId)}/geometry`,
     { headers: authHeaders() },
   );
   if (!res.ok) {
@@ -275,7 +275,7 @@ export async function getGeometrySummaries(
 ): Promise<Record<string, GeometrySummary>> {
   if (datasetIds.length === 0) return {};
   const res = await fetch(
-    `${API_BASE}/api/data/datasets/geometry?ids=${encodeURIComponent(
+    `${API_BASE}/api/v1/data/datasets/geometry?ids=${encodeURIComponent(
       datasetIds.slice(0, 100).join(","),
     )}`,
     { headers: authHeaders() },
@@ -304,7 +304,7 @@ export async function uploadDataset(
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${API_BASE}/api/data/datasets/upload`);
+    xhr.open("POST", `${API_BASE}/api/v1/data/datasets/upload`);
 
     const token = localStorage.getItem("eq_token");
     if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
@@ -345,7 +345,7 @@ export async function getDatasetFeatures(
   datasetId: string,
 ): Promise<GeoDatasetFeature[]> {
   const res = await fetch(
-    `${API_BASE}/api/data/datasets/${datasetId}/features`,
+    `${API_BASE}/api/v1/data/datasets/${datasetId}/features`,
     { headers: authHeaders() },
   );
   if (!res.ok) {
@@ -374,7 +374,7 @@ export async function replaceDatasetFeatures(
   }>,
 ): Promise<GeoDatasetOut> {
   const res = await fetch(
-    `${API_BASE}/api/data/datasets/${datasetId}/features`,
+    `${API_BASE}/api/v1/data/datasets/${datasetId}/features`,
     {
       method: "PUT",
       headers: { ...authHeaders(), "Content-Type": "application/json" },
@@ -390,7 +390,7 @@ export async function replaceDatasetFeatures(
 
 /** Delete a dataset by ID. */
 export async function deleteDataset(datasetId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/data/datasets/${datasetId}`, {
+  const res = await fetch(`${API_BASE}/api/v1/data/datasets/${datasetId}`, {
     method: "DELETE",
     headers: authHeaders(),
   });

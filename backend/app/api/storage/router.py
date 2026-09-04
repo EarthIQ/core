@@ -5,10 +5,10 @@ Object-storage REST endpoints backed by RustFS via the core storage service.
 
 Endpoints
 ---------
-POST   /api/storage/upload            Multipart upload → UploadResponse
-GET    /api/storage/download/{key}    Presigned-URL redirect
-DELETE /api/storage/{key}             Delete object
-GET    /api/storage/list              List objects (optional ?prefix=)
+POST   /api/v1/storage/upload            Multipart upload → UploadResponse
+GET    /api/v1/storage/download/{key}    Presigned-URL redirect
+DELETE /api/v1/storage/{key}             Delete object
+GET    /api/v1/storage/list              List objects (optional ?prefix=)
 """
 from __future__ import annotations
 

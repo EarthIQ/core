@@ -2,10 +2,10 @@
  * Settings — the user's personalization center (core).
  *
  * Tabs:
- *   • Profile       — identity, bio, contact, password   (PUT /api/profile/me)
- *   • Appearance    — theme, accent, font scale, density (PUT /api/profile/me/preferences)
- *   • Notifications — delivery settings                  (PUT /api/notifications/preferences)
- *   • Organization  — orgs, members, roles               (PUT /api/profile/organizations…)
+ *   • Profile       — identity, bio, contact, password   (PUT /api/v1/profile/me)
+ *   • Appearance    — theme, accent, font scale, density (PUT /api/v1/profile/me/preferences)
+ *   • Notifications — delivery settings                  (PUT /api/v1/notifications/preferences)
+ *   • Organization  — orgs, members, roles               (PUT /api/v1/profile/organizations…)
  */
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";

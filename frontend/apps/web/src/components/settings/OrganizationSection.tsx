@@ -6,7 +6,7 @@
  * manage members (add by email, change role, remove), set the primary org,
  * leave or delete an organization.
  *
- * All calls go to ``/api/profile/organizations…``.
+ * All calls go to ``/api/v1/profile/organizations…``.
  */
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
@@ -99,7 +99,7 @@ export default function OrganizationSection() {
   const loadOrgs = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await api.get<Org[]>("/api/profile/organizations");
+      const list = await api.get<Org[]>("/api/v1/profile/organizations");
       setOrgs(list);
     } catch (e) {
       notify(null, e instanceof Error ? e.message : "Could not load organizations");
@@ -114,7 +114,7 @@ export default function OrganizationSection() {
 
   const loadMembers = useCallback(async (orgId: string) => {
     try {
-      const list = await api.get<Member[]>(`/api/profile/organizations/${orgId}/members`);
+      const list = await api.get<Member[]>(`/api/v1/profile/organizations/${orgId}/members`);
       setMembers(list);
     } catch {
       setMembers([]);
@@ -147,7 +147,7 @@ export default function OrganizationSection() {
     if (!create.name.trim()) return;
     setCreating(true);
     try {
-      const org = await api.post<Org>("/api/profile/organizations", {
+      const org = await api.post<Org>("/api/v1/profile/organizations", {
         name: create.name.trim(),
         description: create.description.trim() || null,
         industry: create.industry.trim() || null,
@@ -167,7 +167,7 @@ export default function OrganizationSection() {
     if (!selectedId) return;
     setSaving(true);
     try {
-      await api.put(`/api/profile/organizations/${selectedId}`, {
+      await api.put(`/api/v1/profile/organizations/${selectedId}`, {
         name: edit.name.trim(),
         description: edit.description.trim() || null,
         industry: edit.industry.trim() || null,
@@ -186,7 +186,7 @@ export default function OrganizationSection() {
 
   const setPrimary = async (orgId: string) => {
     try {
-      await api.post(`/api/profile/organizations/${orgId}/primary`, {});
+      await api.post(`/api/v1/profile/organizations/${orgId}/primary`, {});
       notify("Primary organization set", null);
       await loadOrgs();
     } catch (e) {
@@ -200,7 +200,7 @@ export default function OrganizationSection() {
       message: `You will lose access to “${org.name}”. This cannot be undone.`,
       action: async () => {
         try {
-          await api.delete(`/api/profile/organizations/${org.id}/me`);
+          await api.delete(`/api/v1/profile/organizations/${org.id}/me`);
           setSelectedId(null);
           notify("You have left the organization", null);
           await loadOrgs();
@@ -219,7 +219,7 @@ export default function OrganizationSection() {
       message: `“${org.name}” and its membership records will be permanently deleted.`,
       action: async () => {
         try {
-          await api.delete(`/api/profile/organizations/${org.id}`);
+          await api.delete(`/api/v1/profile/organizations/${org.id}`);
           setSelectedId(null);
           notify("Organization deleted", null);
           await loadOrgs();
@@ -239,7 +239,7 @@ export default function OrganizationSection() {
     setAdding(true);
     try {
       const list = await api.post<Member[]>(
-        `/api/profile/organizations/${selectedId}/members`,
+        `/api/v1/profile/organizations/${selectedId}/members`,
         { email: addMemberDraft.email.trim(), role: addMemberDraft.role },
       );
       setMembers(list);
@@ -257,7 +257,7 @@ export default function OrganizationSection() {
     if (!selectedId) return;
     try {
       const list = await api.put<Member[]>(
-        `/api/profile/organizations/${selectedId}/members/${memberId}`,
+        `/api/v1/profile/organizations/${selectedId}/members/${memberId}`,
         { role },
       );
       setMembers(list);
@@ -275,10 +275,10 @@ export default function OrganizationSection() {
       action: async () => {
         try {
           await api.delete(
-            `/api/profile/organizations/${selectedId}/members/${m.user_id}`,
+            `/api/v1/profile/organizations/${selectedId}/members/${m.user_id}`,
           );
           const list = await api.get<Member[]>(
-            `/api/profile/organizations/${selectedId}/members`,
+            `/api/v1/profile/organizations/${selectedId}/members`,
           );
           setMembers(list);
           notify("Member removed", null);

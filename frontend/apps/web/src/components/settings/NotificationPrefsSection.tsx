@@ -2,7 +2,7 @@
  * Settings — Notifications section (core).
  *
  * Per-user delivery preferences for in-app notifications
- * (GET/PUT ``/api/notifications/preferences``). Toggles apply instantly and
+ * (GET/PUT ``/api/v1/notifications/preferences``). Toggles apply instantly and
  * are persisted server-side.
  */
 import { NOTIFICATION_CATEGORIES, useNotifications } from "@/lib/notifications";

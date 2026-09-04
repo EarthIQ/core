@@ -1,6 +1,6 @@
 """Profile / Organization / Preferences — REST Router (core).
 
-Mounted under ``/api/profile`` (see ``app.main``). All endpoints authenticate the
+Mounted under ``/api/v1/profile`` (see ``app.main``). All endpoints authenticate the
 *current* user via the core ``get_current_user`` dependency (single source of
 truth for auth) and are self-service unless otherwise noted.
 

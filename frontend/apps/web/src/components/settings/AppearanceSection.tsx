@@ -3,7 +3,7 @@
  *
  * Live, server-synced customization: theme mode, accent color, font scale,
  * compact mode, map units and default basemap. Every control applies to the
- * running UI immediately and persists via ``PUT /api/profile/me/preferences``.
+ * running UI immediately and persists via ``PUT /api/v1/profile/me/preferences``.
  */
 import { useState } from "react";
 import {

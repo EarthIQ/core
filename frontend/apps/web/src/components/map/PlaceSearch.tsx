@@ -2,7 +2,7 @@
  * PlaceSearch — location search for the map builder.
  *
  * Geocodes free-text queries ("Kathmandu", "Eiffel Tower") through the core
- * backend's OSM Nominatim proxy (`GET /api/geocode`, see `lib/geocode.ts`)
+ * backend's OSM Nominatim proxy (`GET /api/v1/geocode`, see `lib/geocode.ts`)
  * and, on selection, flies the live map to the place and drops a labeled
  * marker. Replaces the old dead "Search locations…" input in MapNavbar.
  *
