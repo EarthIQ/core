@@ -13,6 +13,7 @@ from typing import AsyncGenerator, BinaryIO, List
 
 import aioboto3
 from botocore.exceptions import ClientError
+from urllib.parse import urlsplit, urlunsplit
 
 from app.core.config import get_settings
 
@@ -60,6 +61,20 @@ async def ensure_bucket() -> None:
                 await s3.create_bucket(Bucket=bucket)
             else:
                 raise
+
+
+async def head_bucket() -> bool:
+    """
+    Return ``True`` when the configured bucket is reachable, ``False`` otherwise.
+    Used by the readiness health probe (T-10) — never raises for a missing bucket.
+    """
+    settings = get_settings()
+    async with _client() as s3:
+        try:
+            await s3.head_bucket(Bucket=settings.storage_bucket)
+            return True
+        except ClientError:
+            return False
 
 
 async def upload_file(
@@ -111,6 +126,11 @@ async def presign_url(key: str, expires_in: int = 3600) -> str:
     Generate a presigned GET URL valid for *expires_in* seconds (default 1 h).
     Clients can fetch the object directly from RustFS without going through
     FastAPI.
+
+    When ``settings.storage_public_base_url`` is configured, the host of the
+    signed URL is rewritten to that public base so the URL is reachable from an
+    external browser (ticket T-03). The signature is host-independent for
+    path-style URLs, so only the scheme+netloc (and any base path) are swapped.
     """
     settings = get_settings()
     async with _client() as s3:
@@ -119,7 +139,27 @@ async def presign_url(key: str, expires_in: int = 3600) -> str:
             Params={"Bucket": settings.storage_bucket, "Key": key},
             ExpiresIn=expires_in,
         )
-    return url
+    return _apply_public_base(url)
+
+
+def _apply_public_base(url: str) -> str:
+    """Rewrite the scheme+netloc (and optional base path) of *url* to the
+    configured public storage base URL. A no-op when not configured."""
+    settings = get_settings()
+    base = (settings.storage_public_base_url or "").strip()
+    if not base:
+        return url
+    scheme, sep, rest = base.partition("://")
+    if not sep:
+        scheme, rest = "https", base
+    base_netloc = rest.split("/", 1)[0]
+    base_path = rest.split("/", 1)[1] if "/" in rest else ""
+
+    parts = urlsplit(url)
+    if not parts.netloc:
+        return url
+    new_path = (base_path.rstrip("/") + parts.path) if base_path else parts.path
+    return urlunsplit((scheme, base_netloc, new_path, parts.query, parts.fragment))
 
 
 async def list_objects(prefix: str = "") -> List[dict]:

@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     app_name: str = "EarthIQ Core"
     app_version: str = "0.1.0"
     debug: bool = False
+    # Deployment environment. "dev" (default) | "prod"/"production".
+    # Used by the production secret guardrail (see app.core.guardrail).
+    app_env: str = "dev"
 
     # ── Database ──────────────────────────────────────────────────────────────
     database_url: str = (
@@ -31,8 +34,12 @@ class Settings(BaseSettings):
     # ── CORS ──────────────────────────────────────────────────────────────────
     cors_origins: List[str] = ["http://localhost:3000", "http://localhost:5173"]
 
-    # ── Tiles ─────────────────────────────────────────────────────────────────
+    # ── Tiles / Basemaps ──────────────────────────────────────────────────────
     maptiler_key: str = ""
+    # Optional JSON list of basemap definitions to *replace* the built-in
+    # defaults (see app.api.viz.router.get_basemaps). Example:
+    #   [{"id":"osm","name":"OSM","style_url":"https://.../{z}/{x}/{y}.png"}]
+    basemaps_config: str = ""
 
     # ── Object Storage (RustFS / S3-compatible) ───────────────────────────────
     storage_endpoint: str = "http://localhost:9000"
@@ -40,6 +47,20 @@ class Settings(BaseSettings):
     storage_secret_key: str = "earthiq"
     storage_bucket: str = "earthiq"
     storage_region: str = "us-east-1"  # Required by boto3; RustFS ignores it
+    # Public base URL that external browsers can reach, used to rewrite
+    # presigned GET URLs (e.g. "https://storage.example.com"). When empty the
+    # internal ``storage_endpoint`` host is used (browser-incompatible inside
+    # Compose — see ticket T-03).
+    storage_public_base_url: str = ""
+
+    # ── Redis ─────────────────────────────────────────────────────────────────
+    redis_url: str = "redis://localhost:6379/0"
+
+    # ── Rate limiting ─────────────────────────────────────────────────────────
+    # Applied to the heavy/sensitive endpoints (dataset upload, AI, storage).
+    rate_limit_enabled: bool = True
+    rate_limit_requests: int = 60        # max requests per window per client
+    rate_limit_window_seconds: int = 60  # sliding window size (seconds)
 
     # ── Email / SMTP ──────────────────────────────────────────────────────────
     # Leave smtp_host empty to disable email sending entirely (graceful no-op)

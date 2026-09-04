@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import StaticPool
 
 import app.api.data.service as data_service
+from app.api.data import crud as data_crud
 
 
 @pytest_asyncio.fixture
@@ -43,14 +44,14 @@ def _patch_get_dataset(monkeypatch: pytest.MonkeyPatch, dataset: _FakeDataset) -
     async def _fake(db, dataset_id: str):
         return dataset
 
-    monkeypatch.setattr(data_service, "get_dataset", _fake)
+    monkeypatch.setattr(data_crud, "get_dataset", _fake)
 
 
 async def test_unknown_dataset_returns_none(sqlite_session: AsyncSession, monkeypatch) -> None:
     async def _missing(db, dataset_id: str):
         return None
 
-    monkeypatch.setattr(data_service, "get_dataset", _missing)
+    monkeypatch.setattr(data_crud, "get_dataset", _missing)
     assert await data_service.get_geometry_summary(sqlite_session, "nope") is None
 
 
@@ -87,7 +88,7 @@ async def test_batch_omits_unknown_ids(sqlite_session: AsyncSession, monkeypatch
             return ds
         return None
 
-    monkeypatch.setattr(data_service, "get_dataset", _only_known)
+    monkeypatch.setattr(data_crud, "get_dataset", _only_known)
     out = await data_service.get_geometry_summaries(sqlite_session, ["known", "unknown"])
     assert set(out.keys()) == {"known"}
     assert out["known"]["dataset_id"] == "known"

@@ -2,12 +2,16 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.core.db import engine
 from app.core import storage as object_storage
+from app.core.errors import register_error_handlers
+from app.core.guardrail import validate_production_settings
+from app.core.health import run_health_checks
+from app.core.rate_limit import RateLimitMiddleware, SlidingWindowLimiter
 from app.module_loader import load_modules
 
 # ── Core API routers ──────────────────────────────────────────────────────────
@@ -37,6 +41,8 @@ import app.api.profile.models  # noqa: F401 — registers organizations, members
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Fail fast on insecure default secrets in production (ticket T-04).
+    validate_production_settings()
     # Ensure default permissions for core components & installed modules
     from app.core.db import AsyncSessionLocal
     from app.api.auth.service import ensure_default_component_permissions
@@ -60,6 +66,28 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# ── Uniform error envelope (ticket T-06) ──────────────────────────────────────
+register_error_handlers(app)
+
+# ── Rate limiting for heavy/sensitive endpoints (ticket T-05) ─────────────────
+# Added before CORS so CORS stays the outermost middleware (preflight OPTIONS
+# are short-circuited before the limiter).
+_rate_limiter = SlidingWindowLimiter(
+    limit=settings.rate_limit_requests,
+    window_seconds=settings.rate_limit_window_seconds,
+)
+app.add_middleware(
+    RateLimitMiddleware,
+    limiter=_rate_limiter,
+    sensitive_prefixes=(
+        "/api/data/datasets/upload",
+        "/api/v1/data/datasets/upload",
+        "/api/ai/",
+        "/api/v1/ai/",
+        "/api/storage/upload",
+        "/api/v1/storage/upload",
+    ),
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -68,33 +96,76 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Health ────────────────────────────────────────────────────────────────────
-@app.get("/api/health", tags=["platform"])
+
+# ── Health (liveness + readiness; ticket T-10) ────────────────────────────────
 async def health():
-    return {"status": "ok", "version": settings.app_version}
+    """Liveness + component status. Always 200 so it is safe as a liveness probe."""
+    return await run_health_checks()
+
+
+async def health_ready():
+    """Readiness gate. 200 only when every dependency is healthy, else 503."""
+    report = await run_health_checks()
+    if report["status"] != "ok":
+        raise HTTPException(
+            status_code=503,
+            detail="One or more dependencies are unavailable.",
+        )
+    return report
+
+
+@app.get("/api/health", tags=["platform"])
+async def health_liveness():
+    return await health()
+
+
+@app.get("/api/health/ready", tags=["platform"])
+async def health_readiness():
+    return await health_ready()
 
 
 # ── Core routers ──────────────────────────────────────────────────────────────
-app.include_router(auth_router, prefix="/api/auth")
-app.include_router(data_router, prefix="/api/data")
-app.include_router(viz_router, prefix="/api/viz")
-app.include_router(modules_router, prefix="/api/modules")
-app.include_router(maps_router, prefix="/api/maps")
-app.include_router(projects_router, prefix="/api/projects")
-app.include_router(storage_router, prefix="/api/storage")
-app.include_router(collab_router, prefix="/api/collab")
-app.include_router(notifications_router, prefix="/api/notifications")
-app.include_router(profile_router, prefix="/api/profile")
-app.include_router(geocode_router, prefix="/api/geocode")
+# The same core routers are mounted under both ``/api`` and the ``/api/v1``
+# alias (ticket T-06). ``v1`` is assembled fully (core + modules) and included
+# into the app in one step.
+_CORE_ROUTERS = [
+    (auth_router, "/auth"),
+    (data_router, "/data"),
+    (viz_router, "/viz"),
+    (modules_router, "/modules"),
+    (maps_router, "/maps"),
+    (projects_router, "/projects"),
+    (storage_router, "/storage"),
+    (collab_router, "/collab"),
+    (notifications_router, "/notifications"),
+    (profile_router, "/profile"),
+    (geocode_router, "/geocode"),
+]
+
+v1 = APIRouter()  # no prefix — every include passes its full /api/v1/... prefix
+
+for _router, _sub in _CORE_ROUTERS:
+    app.include_router(_router, prefix=f"/api{_sub}")
+    v1.include_router(_router, prefix=f"/api/v1{_sub}")
 
 # ── Share utility routes (people search & invite accept) ─────────────────────
 app.include_router(share_util_router, prefix="/api")
+v1.include_router(share_util_router, prefix="/api/v1")
 
 # ── Per-entity share routes (maps AND projects) ───────────────────────────────
 # NOTE: the prefix placeholder must be named `entity_id` to match the handler
 # signature (FastAPI binds path params by name).
 app.include_router(entity_share_router, prefix="/api/maps/{entity_id}/share")
 app.include_router(entity_share_router, prefix="/api/projects/{entity_id}/share")
+v1.include_router(entity_share_router, prefix="/api/v1/maps/{entity_id}/share")
+v1.include_router(entity_share_router, prefix="/api/v1/projects/{entity_id}/share")
+
+# ── Health + readiness on the /api/v1 alias ───────────────────────────────────
+v1.add_api_route("/api/v1/health", health, methods=["GET"], tags=["platform"])
+v1.add_api_route("/api/v1/health/ready", health_ready, methods=["GET"], tags=["platform"])
 
 # ── Pluggable module routers (from modules.lock.yaml) ─────────────────────────
-load_modules(app)
+# Mounted under both /api and /api/v1 so the alias is a true 1:1 mirror.
+load_modules(app)             # → /api/<module-prefix>
+load_modules(v1, prefix="/api/v1")  # → /api/v1/<module-prefix>
+app.include_router(v1)
