@@ -11,6 +11,7 @@ export { default as ConfirmDeleteModal } from "./ConfirmDeleteModal";
 export { default as TileUrlModal } from "./TileUrlModal";
 export { default as EditModal } from "./EditModal";
 export { default as PreviewModal } from "./PreviewModal";
+export { default as AskAIPanel } from "./AskAIPanel";
 export { default as UploadModal } from "./UploadModal";
 export { default as SupportedFormats } from "./SupportedFormats";
 export { default as FolderTree } from "./FolderTree";

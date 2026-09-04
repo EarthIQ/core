@@ -2,6 +2,7 @@
   "extends": "./tsconfig.paths.json",
   "include": ["src", "../../../modules/*/frontend/src"],
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "jsx": "react-jsx",
     "rootDir": "../../..",
     "noEmit": true,
