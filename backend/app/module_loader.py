@@ -67,6 +67,6 @@ def load_modules(app, prefix: str = "/api") -> None:
             logger.error("Failed to load module '%s': %s", mod["name"], exc, exc_info=True)
             continue
 
-        prefix = prefix.rstrip("/") + backend_cfg.get("prefix", f"/{mod['name']}")
-        app.include_router(router, prefix=prefix, tags=[mod["name"]])
-        logger.info("Loaded module '%s' at %s", mod["name"], prefix)
+        full_prefix = prefix.rstrip("/") + backend_cfg.get("prefix", f"/{mod['name']}")
+        app.include_router(router, prefix=full_prefix, tags=[mod["name"]])
+        logger.info("Loaded module '%s' at %s", mod["name"], full_prefix)
