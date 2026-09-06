@@ -12,13 +12,22 @@ import {
 } from "@packages/ui";
 import {
   CloudUpload,
+  ChevronRight,
   LayoutGrid,
   List,
   RefreshCw,
   Search,
   SlidersHorizontal,
 } from "lucide-react";
-import { listDatasets, type GeoDatasetOut } from "../lib/datasets";
+import {
+  createFolder,
+  deleteFolder,
+  listDatasets,
+  listFolders,
+  renameFolder,
+  type DataFolder,
+  type GeoDatasetOut,
+} from "../lib/datasets";
 import {
   ConfirmDeleteModal,
   DatasetGrid,
@@ -26,8 +35,10 @@ import {
   EditModal,
   FolderTree,
   type FolderSelection,
+  MoveModal,
   Pagination,
   PreviewModal,
+  ROOT_UNGROUPED,
   SummaryStats,
   TileUrlModal,
   UploadModal,
@@ -53,8 +64,8 @@ function DataPageInner() {
 
   // ── Navigation (folder tree) + filters ─────────────────────────────────────
   const [selection, setSelection] = useState<FolderSelection>({
+    folderId: null,
     type: "all",
-    tag: null,
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [formatFilter, setFormatFilter] = useState<string>("all");
@@ -84,6 +95,26 @@ function DataPageInner() {
     [toastSuccess, toastError, toastInfo],
   );
 
+  // ── Folders (catalog tree) ─────────────────────────────────────────────────
+  const [folders, setFolders] = useState<DataFolder[]>([]);
+  const [folderConfirm, setFolderConfirm] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [folderBusy, setFolderBusy] = useState(false);
+
+  const fetchFolders = useCallback(async () => {
+    try {
+      setFolders(await listFolders());
+    } catch {
+      /* non-fatal: the sidebar simply shows an empty folder list */
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFolders();
+  }, [fetchFolders]);
+
   // ── Fetch datasets ───────────────────────────────────────────────────────────
   const fetchDatasets = useCallback(async () => {
     setLoading(true);
@@ -93,6 +124,7 @@ function DataPageInner() {
         type: selection.type,
         format: formatFilter,
         search: searchQuery,
+        folder: selection.folderId ?? undefined,
       });
       setDatasets(items as DatasetItem[]);
     } catch (err: any) {
@@ -100,7 +132,7 @@ function DataPageInner() {
     } finally {
       setLoading(false);
     }
-  }, [selection.type, formatFilter, searchQuery]);
+  }, [selection.type, selection.folderId, formatFilter, searchQuery]);
 
   useEffect(() => {
     const timer = setTimeout(fetchDatasets, 300);
@@ -118,18 +150,91 @@ function DataPageInner() {
     addToast,
     updateDatasets: (fn) => setDatasets((prev) => fn(prev)),
     refresh: fetchDatasets,
+    refreshFolders: fetchFolders,
   });
 
-  // ── Derived: tag filter is applied client-side ──────────────────────────────
-  const tagFiltered = useMemo(() => {
-    if (!selection.tag) return datasets;
-    if (selection.tag === "__untagged__")
-      return datasets.filter((d) => !d.tags || d.tags.length === 0);
-    return datasets.filter((d) => d.tags?.includes(selection.tag!));
-  }, [datasets, selection.tag]);
+  // ── Folder management handlers ─────────────────────────────────────────────
+  const handleCreateFolder = useCallback(
+    async (name: string, parentId: string | null) => {
+      try {
+        await createFolder(name, parentId);
+        addToast("success", `Folder “${name}” created.`);
+        await fetchFolders();
+      } catch (err: any) {
+        addToast("error", err?.message ?? "Could not create folder.");
+      }
+    },
+    [addToast, fetchFolders],
+  );
+
+  const handleRenameFolder = useCallback(
+    async (folderId: string, name: string) => {
+      try {
+        await renameFolder(folderId, name);
+        addToast("success", "Folder renamed.");
+        await fetchFolders();
+      } catch (err: any) {
+        addToast("error", err?.message ?? "Could not rename folder.");
+      }
+    },
+    [addToast, fetchFolders],
+  );
+
+  const requestDeleteFolder = useCallback((folder: { id: string; name: string }) => {
+    setFolderConfirm(folder);
+  }, []);
+
+  const confirmDeleteFolder = useCallback(async () => {
+    if (!folderConfirm) return;
+    setFolderBusy(true);
+    try {
+      const res = await deleteFolder(folderConfirm.id);
+      addToast(
+        "success",
+        res.moved_datasets > 0
+          ? `Folder deleted — ${res.moved_datasets} dataset${
+              res.moved_datasets === 1 ? "" : "s"
+            } moved up a level.`
+          : "Folder deleted.",
+      );
+      // If we were browsing the deleted folder, step up to its parent.
+      setSelection((prev) => {
+        if (prev.folderId !== folderConfirm.id) return prev;
+        const parent =
+          folders.find((f) => f.id === folderConfirm.id)?.parent_id ?? null;
+        return { folderId: parent, type: prev.type };
+      });
+      setFolderConfirm(null);
+      await fetchFolders();
+      await fetchDatasets();
+    } catch (err: any) {
+      addToast("error", err?.message ?? "Could not delete folder.");
+    } finally {
+      setFolderBusy(false);
+    }
+  }, [folderConfirm, folders, addToast, fetchFolders, fetchDatasets]);
+
+  // ── Breadcrumb chain for the active folder ─────────────────────────────────
+  const breadcrumb = useMemo(() => {
+    const byId = new Map(folders.map((f) => [f.id, f] as const));
+    const chain: { id: string | null; name: string }[] = [];
+    let cur = selection.folderId;
+    let depth = 0;
+    while (cur && cur !== ROOT_UNGROUPED && byId.has(cur) && depth < 20) {
+      const f = byId.get(cur)!;
+      chain.unshift({ id: f.id, name: f.name });
+      cur = f.parent_id;
+      depth += 1;
+    }
+    if (selection.folderId === ROOT_UNGROUPED)
+      chain.unshift({ id: ROOT_UNGROUPED, name: "Ungrouped" });
+    if (selection.folderId === null || selection.folderId === ROOT_UNGROUPED)
+      chain.unshift({ id: null, name: "All Data" });
+    return chain;
+  }, [selection.folderId, folders]);
 
   const processedDatasets = useMemo(() => {
-    const sorted = [...tagFiltered].sort((a, b) => {
+    const sorted = [...datasets].sort((a, b) => {
       let cmp = 0;
       switch (sortField) {
         case "name":
@@ -148,7 +253,20 @@ function DataPageInner() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return sorted;
-  }, [tagFiltered, sortField, sortDir]);
+  }, [datasets, sortField, sortDir]);
+
+  // Totals for the sidebar storage footer (from the current dataset list).
+  const totalBytes = useMemo(
+    () => datasets.reduce((s, d) => s + (d.file_size_bytes ?? 0), 0),
+    [datasets],
+  );
+  const tiledCount = useMemo(
+    () =>
+      datasets.filter(
+        (d) => d.meta?.ingested || d.type === "vector" || d.type === "points",
+      ).length,
+    [datasets],
+  );
 
   const totalPages = Math.max(
     1,
@@ -193,14 +311,14 @@ function DataPageInner() {
   const activeFilterCount = useMemo(() => {
     let n = 0;
     if (selection.type !== "all") n += 1;
-    if (selection.tag) n += 1;
+    if (selection.folderId) n += 1;
     if (formatFilter !== "all") n += 1;
     if (searchQuery.trim()) n += 1;
     return n;
-  }, [selection.type, selection.tag, formatFilter, searchQuery]);
+  }, [selection.type, selection.folderId, formatFilter, searchQuery]);
 
   const clearFilters = useCallback(() => {
-    setSelection({ type: "all", tag: null });
+    setSelection({ folderId: null, type: "all" });
     setFormatFilter("all");
     setSearchQuery("");
   }, []);
@@ -236,6 +354,11 @@ function DataPageInner() {
   const handleBulkDelete = useCallback(() => {
     actions.requestBulkDelete(Array.from(selectedIds));
   }, [actions, selectedIds]);
+
+  const handleBulkMove = useCallback(() => {
+    const items = datasets.filter((d) => selectedIds.has(d.id));
+    actions.requestMove(items);
+  }, [actions, datasets, selectedIds]);
 
   const formatOptions = useMemo(
     () => [
@@ -307,17 +430,56 @@ function DataPageInner() {
         <aside className="hidden lg:block w-72 shrink-0">
           <div className="sticky top-4">
             <FolderTree
-              datasets={datasets}
+              folders={folders}
               loading={loading}
               selection={selection}
               onNavigate={onNavigate}
-              onOpenDataset={actions.openPreview}
+              onCreateFolder={handleCreateFolder}
+              onRenameFolder={handleRenameFolder}
+              onDeleteFolder={requestDeleteFolder}
+              totalDatasets={datasets.length}
+              totalBytes={totalBytes}
+              tiledCount={tiledCount}
             />
           </div>
         </aside>
 
         {/* ── Main content ─────────────────────────────────────────────────── */}
         <div className="flex-1 min-w-0 flex flex-col gap-4">
+          {/* Breadcrumb path */}
+          {breadcrumb.length > 1 && (
+            <nav
+              aria-label="Folder path"
+              className="flex items-center gap-1 text-xs text-text-tertiary flex-wrap"
+            >
+              {breadcrumb.map((crumb, i) => {
+                const last = i === breadcrumb.length - 1;
+                return (
+                  <span key={crumb.id ?? `root-${i}`} className="flex items-center gap-1">
+                    {i > 0 && <ChevronRight size={12} className="shrink-0" />}
+                    {last ? (
+                      <span className="font-semibold text-text-primary">
+                        {crumb.name}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onNavigate({
+                            folderId: crumb.id,
+                            type: "all",
+                          })
+                        }
+                        className="rounded px-1 py-0.5 hover:bg-surface-hover hover:text-text-primary cursor-pointer transition-colors"
+                      >
+                        {crumb.name}
+                      </button>
+                    )}
+                  </span>
+                );
+              })}
+            </nav>
+          )}
           {/* Toolbar */}
           <div className="card p-3 bg-surface border border-border-primary rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-2.5 flex-1 min-w-[240px]">
@@ -404,6 +566,14 @@ function DataPageInner() {
                 <Button
                   variant="secondary"
                   size="sm"
+                  onClick={handleBulkMove}
+                  className="text-xs font-semibold"
+                >
+                  Move to folder…
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={handleAddToProject}
                   className="text-xs font-semibold"
                 >
@@ -449,6 +619,7 @@ function DataPageInner() {
               onDownload={actions.handleDownload}
               onOpenTileUrl={actions.openTileUrl}
               onRequestDelete={actions.requestDelete}
+              onMove={(ds) => actions.requestMove([ds])}
             />
           ) : (
             <DatasetGrid
@@ -462,6 +633,7 @@ function DataPageInner() {
               onDownload={actions.handleDownload}
               onOpenTileUrl={actions.openTileUrl}
               onRequestDelete={actions.requestDelete}
+              onMove={(ds) => actions.requestMove([ds])}
             />
           )}
 
@@ -488,11 +660,16 @@ function DataPageInner() {
         title="Browse catalog"
       >
         <FolderTree
-          datasets={datasets}
+          folders={folders}
           loading={loading}
           selection={selection}
           onNavigate={onNavigate}
-          onOpenDataset={actions.openPreview}
+          onCreateFolder={handleCreateFolder}
+          onRenameFolder={handleRenameFolder}
+          onDeleteFolder={requestDeleteFolder}
+          totalDatasets={datasets.length}
+          totalBytes={totalBytes}
+          tiledCount={tiledCount}
         />
       </Drawer>
 
@@ -501,8 +678,13 @@ function DataPageInner() {
         open={isAddModalOpen}
         addToast={addToast}
         onClose={() => setIsAddModalOpen(false)}
-        onUploaded={(newDs) =>
-          setDatasets((prev) => [newDs as DatasetItem, ...prev])
+        onUploaded={(newDs) => {
+          setDatasets((prev) => [newDs as DatasetItem, ...prev]);
+          fetchFolders();
+        }}
+        folders={folders}
+        defaultFolderId={
+          selection.folderId === ROOT_UNGROUPED ? null : selection.folderId
         }
       />
 
@@ -554,6 +736,31 @@ function DataPageInner() {
               });
             })
           }
+        />
+      )}
+
+      {/* ── Move to folder ─────────────────────────────────────────────────── */}
+      {actions.moveTargets && (
+        <MoveModal
+          datasets={actions.moveTargets}
+          folders={folders}
+          moving={actions.moveSaving}
+          onClose={() => actions.setMoveTargets(null)}
+          onMove={(folderId) => {
+            actions.moveDatasets(folderId);
+            setSelectedIds(new Set());
+          }}
+        />
+      )}
+
+      {/* ── Confirm delete folder ──────────────────────────────────────────── */}
+      {folderConfirm && (
+        <ConfirmDeleteModal
+          label={`folder “${folderConfirm.name}”`}
+          onCancel={() => setFolderConfirm(null)}
+          onConfirm={() => {
+            if (!folderBusy) confirmDeleteFolder();
+          }}
         />
       )}
     </div>

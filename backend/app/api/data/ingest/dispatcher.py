@@ -46,6 +46,7 @@ async def ingest_dataset(
     description: str | None = None,
     source: str | None = None,
     db: AsyncSession,
+    folder_id: str | None = None,
 ) -> GeoDataset:
     """
     Register an uploaded file as a spatial dataset.
@@ -110,6 +111,7 @@ async def ingest_dataset(
             description=description,
             source=source,
             meta=meta,
+            folder_id=folder_id,
         )
         if ingested:
             await _insert_features_raw(
@@ -138,6 +140,7 @@ async def ingest_dataset(
             description=description,
             source=source,
             meta=meta,
+            folder_id=folder_id,
         )
         await _upload_best_effort(file_bytes, storage_key, _content_type_for_format(fmt))
         return dataset
@@ -158,6 +161,7 @@ async def ingest_dataset(
         description=description,
         source=source,
         meta=meta,
+        folder_id=folder_id,
     )
     await _insert_features_raw(db, dataset_id, features)
     await _upload_best_effort(file_bytes, storage_key, _content_type_for_format(fmt))

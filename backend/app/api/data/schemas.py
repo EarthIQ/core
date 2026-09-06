@@ -116,6 +116,7 @@ class GeoDatasetOut(BaseModel):
     feature_count: Optional[int] = None
     file_size_bytes: int
     storage_key: Optional[str] = None
+    folder_id: Optional[str] = None
     attributes: List[AttributeField] = []
     description: Optional[str] = None
     source: Optional[str] = None
@@ -172,6 +173,54 @@ class FeaturesIn(BaseModel):
 class GeoDatasetListResponse(BaseModel):
     items: List[GeoDatasetOut]
     total: int
+
+
+# ── Data folders (catalog tree) ──────────────────────────────────────────────
+
+
+class DataFolderIn(BaseModel):
+    """Payload for creating a folder (POST /folders)."""
+
+    name: str = Field(min_length=1, max_length=256)
+    parent_id: Optional[str] = None
+
+
+class DataFolderRename(BaseModel):
+    """Payload for renaming a folder (PATCH /folders/{id})."""
+
+    name: str = Field(min_length=1, max_length=256)
+
+
+class DataFolderMove(BaseModel):
+    """Payload for re-parenting a folder (POST /folders/{id}/move).
+
+    ``parent_id`` of ``None`` moves the folder to the root level.
+    """
+
+    parent_id: Optional[str] = None
+
+
+class DataFolderOut(BaseModel):
+    """API response shape for a catalog folder."""
+
+    id: str
+    name: str
+    parent_id: Optional[str] = None
+    dataset_count: int = 0
+    child_folder_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class DatasetMoveIn(BaseModel):
+    """Payload for moving a dataset into a folder (POST /datasets/{id}/move).
+
+    ``folder_id`` of ``None`` moves the dataset back to the root level.
+    """
+
+    folder_id: Optional[str] = None
 
 
 # ── Preview ───────────────────────────────────────────────────────────────────

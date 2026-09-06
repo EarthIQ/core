@@ -32,6 +32,7 @@ interface Props {
   onDownload: (ds: DatasetItem) => void;
   onOpenTileUrl: (ds: DatasetItem) => void;
   onRequestDelete: (id: string, name: string) => void;
+  onMove?: (ds: DatasetItem) => void;
 }
 
 function MetaTile({
@@ -65,6 +66,7 @@ export default function DatasetGrid({
   onDownload,
   onOpenTileUrl,
   onRequestDelete,
+  onMove,
 }: Props) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
@@ -171,6 +173,7 @@ export default function DatasetGrid({
                       onDownload={onDownload}
                       onOpenTileUrl={onOpenTileUrl}
                       onRequestDelete={onRequestDelete}
+                      onMove={onMove}
                     />
                   </div>
                 </div>

@@ -12,6 +12,11 @@ from app.api.data.schemas import (
     DATA_FORMATS,
     DATA_TYPES,
     DEFAULT_TYPE_FOR_FORMAT,
+    DataFolderIn,
+    DataFolderMove,
+    DataFolderOut,
+    DataFolderRename,
+    DatasetMoveIn,
     DatasetPreview,
     FeaturesIn,
     GeoDatasetListResponse,
@@ -22,6 +27,7 @@ from app.api.data.schemas import (
     RasterLayerMeta,
     VectorFeatureCollection,
 )
+from app.api.data import folders as folder_service
 from app.api.data import service as data_service
 
 router = APIRouter(tags=["data"])
@@ -184,6 +190,104 @@ async def dataset_geometry_summary(
     return GeometrySummary.model_validate(summary)
 
 
+# ── Data folder (catalog tree) endpoints ──────────────────────────────────────
+
+
+def _folder_out(folder, counts: dict) -> DataFolderOut:
+    ds_count, child_count = counts.get(folder.id, (0, 0))
+    return DataFolderOut(
+        id=folder.id,
+        name=folder.name,
+        parent_id=folder.parent_id,
+        dataset_count=ds_count,
+        child_folder_count=child_count,
+        created_at=folder.created_at,
+        updated_at=folder.updated_at,
+    )
+
+
+@router.get("/folders", response_model=List[DataFolderOut], summary="List catalog folders")
+async def list_folders(db: AsyncSession = Depends(get_db)):
+    """Return all folders as a flat list (nest via ``parent_id``)."""
+    folders = await folder_service.list_folders(db)
+    counts = await folder_service.folder_counts(db)
+    return [_folder_out(f, counts) for f in folders]
+
+
+@router.post(
+    "/folders", response_model=DataFolderOut, status_code=201, summary="Create a folder"
+)
+async def create_folder(
+    payload: DataFolderIn, db: AsyncSession = Depends(get_db)
+):
+    """Create a folder at the root level or inside another folder."""
+    try:
+        folder = await folder_service.create_folder(
+            db, name=payload.name, parent_id=(payload.parent_id or None)
+        )
+    except folder_service.FolderError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    counts = await folder_service.folder_counts(db)
+    return _folder_out(folder, counts)
+
+
+@router.patch(
+    "/folders/{folder_id}", response_model=DataFolderOut, summary="Rename a folder"
+)
+async def rename_folder(
+    folder_id: str, payload: DataFolderRename, db: AsyncSession = Depends(get_db)
+):
+    """Rename a folder."""
+    try:
+        folder = await folder_service.rename_folder(db, folder_id, payload.name)
+    except folder_service.FolderError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if folder is None:
+        raise HTTPException(status_code=404, detail=f"Folder '{folder_id}' not found.")
+    counts = await folder_service.folder_counts(db)
+    return _folder_out(folder, counts)
+
+
+@router.post(
+    "/folders/{folder_id}/move",
+    response_model=DataFolderOut,
+    summary="Move a folder to another parent",
+)
+async def move_folder(
+    folder_id: str, payload: DataFolderMove, db: AsyncSession = Depends(get_db)
+):
+    """Re-parent a folder (``parent_id: null`` moves it to the root level)."""
+    try:
+        folder = await folder_service.move_folder(
+            db, folder_id, (payload.parent_id or None)
+        )
+    except folder_service.FolderError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if folder is None:
+        raise HTTPException(status_code=404, detail=f"Folder '{folder_id}' not found.")
+    counts = await folder_service.folder_counts(db)
+    return _folder_out(folder, counts)
+
+
+@router.delete(
+    "/folders/{folder_id}",
+    summary="Delete a folder (its datasets move to the parent folder)",
+)
+async def delete_folder(folder_id: str, db: AsyncSession = Depends(get_db)):
+    """Delete a folder.
+
+    The folder's datasets are moved to its parent (or the root level).
+    Folders that still contain subfolders cannot be deleted.
+    """
+    if not await folder_service.get_folder(db, folder_id):
+        raise HTTPException(status_code=404, detail=f"Folder '{folder_id}' not found.")
+    try:
+        moved = await folder_service.delete_folder(db, folder_id)
+    except folder_service.FolderError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"deleted": True, "moved_datasets": moved}
+
+
 # ── GeoDataset endpoints ──────────────────────────────────────────────────────
 
 
@@ -192,6 +296,7 @@ async def list_datasets(
     type: Optional[str] = None,
     format: Optional[str] = None,
     search: Optional[str] = None,
+    folder: Optional[str] = None,
     limit: int = 200,
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
@@ -202,12 +307,15 @@ async def list_datasets(
     - **type**: filter by `vector` | `raster` | `tabular` | `remote-sensing`
     - **format**: filter by `GeoJSON` | `Shapefile` | `GeoTIFF` | `COG` | `GeoPackage` | `CSV`
     - **search**: partial match on name, description, or source
+    - **folder**: folder id for that folder's datasets, or `"root"` for datasets
+      not in any folder. Omit to list everything.
     """
     items = await data_service.list_datasets(
         db,
         type_filter=type,
         format_filter=format,
         search=search,
+        folder=folder,
         limit=limit,
         offset=offset,
     )
@@ -231,6 +339,7 @@ async def upload_dataset(
     tags: str = Form("", description="Comma-separated tags"),
     description: str = Form("", description="Optional human description"),
     source: str = Form("", description="Optional source / provenance"),
+    folder_id: str = Form("", description="Optional target folder id (empty = root level)"),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -265,6 +374,12 @@ async def upload_dataset(
     # Sensible default type when the client didn't specify one.
     resolved_type = (type or "").strip() or DEFAULT_TYPE_FOR_FORMAT.get(fmt, "vector")
 
+    resolved_folder = (folder_id or "").strip() or None
+    if resolved_folder and not await folder_service.get_folder(db, resolved_folder):
+        raise HTTPException(
+            status_code=404, detail=f"Folder '{resolved_folder}' not found."
+        )
+
     try:
         dataset = await data_service.ingest_dataset(
             file_bytes=file_bytes,
@@ -276,6 +391,7 @@ async def upload_dataset(
             description=(description or None),
             source=(source or None),
             db=db,
+            folder_id=resolved_folder,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
@@ -426,6 +542,28 @@ async def delete_dataset(
     if not deleted:
         raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")
     return Response(status_code=204)
+
+
+@router.post(
+    "/datasets/{dataset_id}/move",
+    response_model=GeoDatasetOut,
+    summary="Move a dataset to a folder",
+)
+async def move_dataset(
+    dataset_id: str,
+    payload: DatasetMoveIn,
+    db: AsyncSession = Depends(get_db),
+):
+    """Move a dataset into a folder, or back to the root level (``folder_id: null``)."""
+    try:
+        dataset = await folder_service.move_dataset(
+            db, dataset_id, (payload.folder_id or None)
+        )
+    except folder_service.FolderError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if dataset is None:
+        raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")
+    return GeoDatasetOut.model_validate(dataset)
 
 
 # ── Vector Tile (MVT) endpoint ────────────────────────────────────────────────

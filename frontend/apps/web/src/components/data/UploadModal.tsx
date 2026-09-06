@@ -24,6 +24,7 @@ import {
   uploadDataset,
   type DatasetFormat,
   type DatasetType,
+  type DataFolder,
   type GeoDatasetOut,
 } from "../../lib/datasets";
 import { FORMATS, INGESTED_FORMATS, STORED_FORMATS, TYPES } from "./constants";
@@ -35,6 +36,10 @@ interface Props {
   addToast: (type: "success" | "error" | "info", message: string) => void;
   onClose: () => void;
   onUploaded: (newDs: GeoDatasetOut) => void;
+  /** All catalog folders (flat; nested via parent_id) for the destination picker. */
+  folders?: DataFolder[];
+  /** Folder to pre-select (null/"root" = ungrouped). */
+  defaultFolderId?: string | null;
 }
 
 const SUGGESTED_TYPE: Record<DatasetFormat, DatasetType> = {
@@ -54,6 +59,8 @@ export default function UploadModal({
   addToast,
   onClose,
   onUploaded,
+  folders = [],
+  defaultFolderId = null,
 }: Props) {
   const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
   const [format, setFormat] = useState<DatasetFormat>("GeoJSON");
@@ -62,6 +69,7 @@ export default function UploadModal({
   const [tagsInput, setTagsInput] = useState("");
   const [description, setDescription] = useState("");
   const [source, setSource] = useState("");
+  const [folderId, setFolderId] = useState("");
   const [batchUploading, setBatchUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [showFormats, setShowFormats] = useState(false);
@@ -75,6 +83,7 @@ export default function UploadModal({
     setTagsInput("");
     setDescription("");
     setSource("");
+    setFolderId("");
     setBatchUploading(false);
     setShowFormats(false);
   }
@@ -82,8 +91,31 @@ export default function UploadModal({
   // Reset form when modal opens fresh (e.g., after closing with files queued)
   useEffect(() => {
     if (!open) resetForm();
+    else setFolderId(defaultFolderId === "root" ? "" : (defaultFolderId ?? ""));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  // Destination options: ungrouped + nested (indented) folder list.
+  const folderOptions = useMemo(() => {
+    const withDepth = folders.map((f) => {
+      const byId = new Map(folders.map((x) => [x.id, x]));
+      let depth = 0;
+      let cursor: DataFolder | undefined = f;
+      while (cursor?.parent_id && byId.has(cursor.parent_id) && depth < 20) {
+        cursor = byId.get(cursor.parent_id);
+        depth += 1;
+      }
+      return { ...f, depth };
+    });
+    withDepth.sort((a, b) => a.depth - b.depth || a.name.localeCompare(b.name));
+    return [
+      { value: "", label: "Ungrouped (All Data)" },
+      ...withDepth.map((f) => ({
+        value: f.id,
+        label: `${"  ".repeat(f.depth)}${f.depth > 0 ? "└ " : ""}${f.name}`,
+      })),
+    ];
+  }, [folders]);
 
   function handleFilesSelected(list: FileList | File[] | null) {
     if (!list) return;
@@ -157,6 +189,7 @@ export default function UploadModal({
             tags: tagsInput,
             description: description || undefined,
             source: source || undefined,
+            folderId: folderId || null,
           },
           (pct) => {
             setFileEntries((prev) =>
@@ -358,6 +391,15 @@ export default function UploadModal({
           />
         </div>
 
+        {/* Destination folder */}
+        <Select
+          label="Save to folder"
+          value={folderId}
+          onChange={(v) => setFolderId(v)}
+          size="sm"
+          options={folderOptions}
+        />
+
         {/* CRS */}
         <Input
           label="Coordinate Reference System (CRS)"
@@ -372,7 +414,7 @@ export default function UploadModal({
           placeholder="e.g. hydrology, elevation, 2026"
           value={tagsInput}
           onChange={(e) => setTagsInput(e.target.value)}
-          description="Tags become folders in the Data library sidebar."
+          description="Tags are free-form labels that help you find and filter datasets."
           inputSize="sm"
         />
 

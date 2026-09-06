@@ -45,6 +45,7 @@ interface Props {
   onDownload: (ds: DatasetItem) => void;
   onOpenTileUrl: (ds: DatasetItem) => void;
   onRequestDelete: (id: string, name: string) => void;
+  onMove?: (ds: DatasetItem) => void;
 }
 
 function SortHeader({
@@ -109,6 +110,7 @@ export default function DatasetTable({
   onDownload,
   onOpenTileUrl,
   onRequestDelete,
+  onMove,
 }: Props) {
   return (
     <div className="card overflow-hidden border border-border-primary rounded-xl shadow-xs bg-surface">
@@ -446,6 +448,7 @@ export default function DatasetTable({
                           onDownload={onDownload}
                           onOpenTileUrl={onOpenTileUrl}
                           onRequestDelete={onRequestDelete}
+                          onMove={onMove}
                         />
                       </div>
                     </td>

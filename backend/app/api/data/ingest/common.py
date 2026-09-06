@@ -166,6 +166,7 @@ async def _create_dataset_row(
     description: str | None,
     source: str | None,
     meta: dict[str, Any],
+    folder_id: str | None = None,
 ) -> GeoDataset:
     dataset = GeoDataset(
         id=dataset_id,
@@ -181,6 +182,7 @@ async def _create_dataset_row(
         description=description,
         source=source,
         meta=meta,
+        folder_id=folder_id,
     )
     db.add(dataset)
     await db.flush()

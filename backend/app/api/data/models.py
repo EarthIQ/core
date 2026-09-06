@@ -58,6 +58,14 @@ class GeoDataset(Base):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
+    # Parent folder in the catalog tree (NULL = ungrouped / root level).
+    folder_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("data_folders.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
     features: Mapped[list["GeoFeature"]] = relationship(
         "GeoFeature",
         back_populates="dataset",
@@ -67,6 +75,49 @@ class GeoDataset(Base):
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<GeoDataset id={self.id} name={self.name!r}>"
+
+
+class DataFolder(Base):
+    """A folder in the spatial data catalog (file-explorer style tree).
+
+    Folders nest via ``parent_id`` (NULL = root level). Datasets reference
+    their folder through ``GeoDataset.folder_id``; a folder's datasets are
+    moved to its parent when the folder is deleted.
+    """
+
+    __tablename__ = "data_folders"
+
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    name: Mapped[str] = mapped_column(String(256), nullable=False, index=True)
+    parent_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("data_folders.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    parent: Mapped["DataFolder | None"] = relationship(
+        "DataFolder", remote_side="DataFolder.id", lazy="noload"
+    )
+    children: Mapped[list["DataFolder"]] = relationship(
+        "DataFolder",
+        back_populates="parent",
+        cascade="all, delete-orphan",
+        lazy="noload",
+    )
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<DataFolder id={self.id} name={self.name!r} parent={self.parent_id!r}>"
 
 
 class GeoFeature(Base):

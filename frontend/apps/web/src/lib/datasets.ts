@@ -42,11 +42,25 @@ export interface GeoDatasetOut {
   feature_count: number | null;
   file_size_bytes: number;
   storage_key: string | null;
+  /** Parent folder id, or null when the dataset sits at the root level. */
+  folder_id: string | null;
   attributes: AttributeField[];
   description: string | null;
   source: string | null;
   /** Free-form, format-specific metadata (e.g. coordinate columns, ingested flag). */
   meta: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A folder in the catalog tree (file-explorer style). */
+export interface DataFolder {
+  id: string;
+  name: string;
+  /** Parent folder id, or null for root-level folders. */
+  parent_id: string | null;
+  dataset_count: number;
+  child_folder_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -104,6 +118,8 @@ export interface UploadDatasetParams {
   tags?: string;
   description?: string;
   source?: string;
+  /** Optional target folder id (null/undefined = root level). */
+  folderId?: string | null;
 }
 
 export interface UpdateDatasetParams {
@@ -169,17 +185,23 @@ export async function downloadDataset(
   URL.revokeObjectURL(url);
 }
 
-/** List all datasets, optionally filtered by type/format or search query. */
+/** List all datasets, optionally filtered by type/format or search query.
+
+ * `folder` semantics: omitted/"all" = everything; "root" = datasets not in
+ * any folder; any other value = that folder's datasets only. */
 export async function listDatasets(params?: {
   type?: string;
   format?: string;
   search?: string;
+  folder?: string | null;
 }): Promise<GeoDatasetOut[]> {
   const qs = new URLSearchParams();
   if (params?.type && params.type !== "all") qs.set("type", params.type);
   if (params?.format && params.format !== "all")
     qs.set("format", params.format);
   if (params?.search) qs.set("search", params.search);
+  if (params?.folder && params.folder !== "all")
+    qs.set("folder", params.folder);
 
   const res = await fetch(
     `${API_BASE}/api/v1/data/datasets${qs.size ? `?${qs}` : ""}`,
@@ -301,6 +323,7 @@ export async function uploadDataset(
   form.append("tags", params.tags ?? "");
   form.append("description", params.description ?? "");
   form.append("source", params.source ?? "");
+  form.append("folder_id", params.folderId ?? "");
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -398,4 +421,75 @@ export async function deleteDataset(datasetId: string): Promise<void> {
     const body = await res.json().catch(() => ({}));
     throw new Error(body?.detail ?? `HTTP ${res.status}`);
   }
+}
+
+// ── Data folders (catalog tree) ──────────────────────────────────────────────
+
+async function folderRequest<T>(
+  path: string,
+  init?: RequestInit,
+): Promise<T> {
+  const res = await fetch(`${API_BASE}/api/v1/data${path}`, {
+    headers: { ...authHeaders(), ...(init?.body ? { "Content-Type": "application/json" } : {}) },
+    ...init,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.detail ?? `HTTP ${res.status}`);
+  }
+  if (res.status === 204) return undefined as T;
+  return (await res.json()) as T;
+}
+
+/** List all catalog folders (flat; nest via `parent_id`). */
+export function listFolders(): Promise<DataFolder[]> {
+  return folderRequest<DataFolder[]>("/folders");
+}
+
+/** Create a folder. `parentId` null/undefined = root level. */
+export function createFolder(
+  name: string,
+  parentId?: string | null,
+): Promise<DataFolder> {
+  return folderRequest<DataFolder>("/folders", {
+    method: "POST",
+    body: JSON.stringify({ name, parent_id: parentId ?? null }),
+  });
+}
+
+/** Rename a folder. */
+export function renameFolder(folderId: string, name: string): Promise<DataFolder> {
+  return folderRequest<DataFolder>(`/folders/${folderId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ name }),
+  });
+}
+
+/** Re-parent a folder. `parentId` null = root level. */
+export function moveFolder(
+  folderId: string,
+  parentId: string | null,
+): Promise<DataFolder> {
+  return folderRequest<DataFolder>(`/folders/${folderId}/move`, {
+    method: "POST",
+    body: JSON.stringify({ parent_id: parentId }),
+  });
+}
+
+/** Delete a folder (its datasets move to the parent folder). */
+export function deleteFolder(folderId: string): Promise<{ moved_datasets: number }> {
+  return folderRequest<{ moved_datasets: number }>(`/folders/${folderId}`, {
+    method: "DELETE",
+  });
+}
+
+/** Move a dataset into a folder (`folderId` null = back to root level). */
+export function moveDataset(
+  datasetId: string,
+  folderId: string | null,
+): Promise<GeoDatasetOut> {
+  return folderRequest<GeoDatasetOut>(`/datasets/${datasetId}/move`, {
+    method: "POST",
+    body: JSON.stringify({ folder_id: folderId }),
+  });
 }

@@ -2,6 +2,7 @@ import { Dropdown, IconButton } from "@packages/ui";
 import {
   Download,
   Eye,
+  FolderInput,
   Map,
   MoreHorizontal,
   Pencil,
@@ -17,6 +18,7 @@ interface Props {
   onDownload: (ds: DatasetItem) => void;
   onOpenTileUrl: (ds: DatasetItem) => void;
   onRequestDelete: (id: string, name: string) => void;
+  onMove?: (ds: DatasetItem) => void;
 }
 
 /**
@@ -30,6 +32,7 @@ export default function RowActions({
   onDownload,
   onOpenTileUrl,
   onRequestDelete,
+  onMove,
 }: Props) {
   const items = [
     {
@@ -44,6 +47,16 @@ export default function RowActions({
       icon: <Pencil size={16} />,
       onClick: () => onEdit(d),
     },
+    ...(onMove
+      ? [
+          {
+            key: "move",
+            label: "Move to folder…",
+            icon: <FolderInput size={16} />,
+            onClick: () => onMove(d),
+          },
+        ]
+      : []),
     {
       key: "download",
       label: "Download",

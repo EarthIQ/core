@@ -3,6 +3,7 @@ import {
   deleteDataset,
   downloadDataset,
   getVectorTileUrl,
+  moveDataset,
   updateDataset,
 } from "../../lib/datasets";
 import type { DatasetItem, Toast } from "./types";
@@ -16,8 +17,10 @@ export function useDatasetActions(opts: {
   addToast: (type: Toast["type"], message: string) => void;
   updateDatasets: (fn: (prev: DatasetItem[]) => DatasetItem[]) => void;
   refresh: () => void;
+  /** Re-fetch the folder tree (called after moves / folder mutations). */
+  refreshFolders?: () => void;
 }) {
-  const { addToast, updateDatasets, refresh } = opts;
+  const { addToast, updateDatasets, refresh, refreshFolders } = opts;
 
   // Modal targets
   const [inspectTarget, setInspectTarget] = useState<DatasetItem | null>(null);
@@ -30,13 +33,21 @@ export function useDatasetActions(opts: {
     label: string;
   } | null>(null);
 
+  // Move-to-folder modal
+  const [moveTargets, setMoveTargets] = useState<DatasetItem[] | null>(null);
+  const [moveSaving, setMoveSaving] = useState(false);
+
   // Copy feedback
   const [tileCopied, setTileCopied] = useState(false);
   const [idCopied, setIdCopied] = useState(false);
   const copiedTimer = useRef<number | null>(null);
 
   const anyModalOpen =
-    !!inspectTarget || !!tileUrlDataset || !!confirmDelete || !!editDataset;
+    !!inspectTarget ||
+    !!tileUrlDataset ||
+    !!confirmDelete ||
+    !!editDataset ||
+    !!moveTargets;
 
   // ── Preview ─────────────────────────────────────────────────────────────────
   const openPreview = useCallback((ds: DatasetItem) => {
@@ -140,6 +151,40 @@ export function useDatasetActions(opts: {
     [confirmDelete, updateDatasets, addToast, refresh],
   );
 
+  // ── Move to folder ─────────────────────────────────────────────────────────
+  const requestMove = useCallback((datasets: DatasetItem[]) => {
+    if (datasets.length === 0) return;
+    setMoveTargets(datasets);
+  }, []);
+
+  const moveDatasets = useCallback(
+    async (folderId: string | null) => {
+      if (!moveTargets) return;
+      const ids = moveTargets.map((d) => d.id);
+      setMoveSaving(true);
+      try {
+        await Promise.all(ids.map((id) => moveDataset(id, folderId)));
+        updateDatasets((prev) =>
+          prev.map((d) => (ids.includes(d.id) ? { ...d, folder_id: folderId } : d)),
+        );
+        setMoveTargets(null);
+        refreshFolders?.();
+        if (folderId === null) refresh();
+        addToast(
+          "success",
+          moveTargets.length === 1
+            ? "Dataset moved."
+            : `${moveTargets.length} datasets moved.`,
+        );
+      } catch (err: any) {
+        addToast("error", err?.message ?? "Move failed.");
+      } finally {
+        setMoveSaving(false);
+      }
+    },
+    [moveTargets, updateDatasets, addToast, refresh, refreshFolders],
+  );
+
   // ── Copy helpers ─────────────────────────────────────────────────────────────
   const handleCopyTileUrl = useCallback(
     (ds: DatasetItem) => {
@@ -180,6 +225,7 @@ export function useDatasetActions(opts: {
     setEditDataset(null);
     setTileUrlDataset(null);
     setConfirmDelete(null);
+    setMoveTargets(null);
   }, []);
 
   return {
@@ -196,6 +242,9 @@ export function useDatasetActions(opts: {
     tileCopied,
     idCopied,
     anyModalOpen,
+    moveTargets,
+    setMoveTargets,
+    moveSaving,
 
     // Actions
     openPreview,
@@ -205,6 +254,8 @@ export function useDatasetActions(opts: {
     requestDelete,
     requestBulkDelete,
     performDelete,
+    requestMove,
+    moveDatasets,
     handleCopyTileUrl,
     handleCopyId,
     openTileUrl,

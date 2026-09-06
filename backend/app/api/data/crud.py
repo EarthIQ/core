@@ -32,10 +32,15 @@ async def list_datasets(
     type_filter: str | None = None,
     format_filter: str | None = None,
     search: str | None = None,
+    folder: str | None = None,
     limit: int = 200,
     offset: int = 0,
 ) -> list[GeoDataset]:
-    """Return all GeoDataset rows, optionally filtered."""
+    """Return all GeoDataset rows, optionally filtered.
+
+    ``folder`` semantics: ``None`` = all datasets; ``"root"`` = datasets not
+    in any folder; any other value = that folder's datasets only (non-recursive).
+    """
     from sqlalchemy import func, or_
 
     q = select(GeoDataset).order_by(GeoDataset.updated_at.desc())
@@ -43,6 +48,11 @@ async def list_datasets(
         q = q.where(GeoDataset.type == type_filter)
     if format_filter:
         q = q.where(GeoDataset.format == format_filter)
+    if folder:
+        if folder == "root":
+            q = q.where(GeoDataset.folder_id.is_(None))
+        else:
+            q = q.where(GeoDataset.folder_id == folder)
     if search:
         term = f"%{search.lower()}%"
         q = q.where(

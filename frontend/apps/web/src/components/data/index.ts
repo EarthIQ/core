@@ -16,6 +16,8 @@ export { default as UploadModal } from "./UploadModal";
 export { default as SupportedFormats } from "./SupportedFormats";
 export { default as FolderTree } from "./FolderTree";
 export type { FolderSelection } from "./FolderTree";
+export { ROOT_UNGROUPED } from "./FolderTree";
+export { default as MoveModal } from "./MoveModal";
 
 export { useDatasetActions } from "./useDatasetActions";
 export type { DatasetActionsState } from "./useDatasetActions";
