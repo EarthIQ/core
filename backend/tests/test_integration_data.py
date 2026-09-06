@@ -1,9 +1,9 @@
 """
-L4 — Integration tests for the **data** module against a real PostGIS database.
+L4 - Integration tests for the **data** module against a real PostGIS database.
 
 These tests are marked ``integration`` and require a running PostgreSQL
 instance with PostGIS (e.g. ``docker compose up -d postgres``). They use the
-real ``settings.database_url`` — NOT SQLite.
+real ``settings.database_url`` - NOT SQLite.
 
 Run with:
     cd backend && docker compose up -d postgres

@@ -80,7 +80,7 @@ describe("FormatUtils", () => {
 
   describe("csvToGeoJSON", () => {
     // csvToGeoJSON returns GeoJSON.FeatureCollection whose runtime shape is
-    // Feature<Point> rows, but the type is generic — cast for test ergonomics.
+    // Feature<Point> rows, but the type is generic - cast for test ergonomics.
     type PointFeature = {
       type: "Feature";
       geometry: { type: "Point"; coordinates: [number, number] };

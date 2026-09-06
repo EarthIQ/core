@@ -837,7 +837,7 @@ export function MapBuilder({
                   <div className="flex flex-col gap-1.5 text-[11px] text-text-secondary">
                     <div className="flex justify-between">
                       <span className="text-text-tertiary">Title</span>
-                      <span className="font-medium">{title || "—"}</span>
+                      <span className="font-medium">{title || "-"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-text-tertiary">Basemap</span>

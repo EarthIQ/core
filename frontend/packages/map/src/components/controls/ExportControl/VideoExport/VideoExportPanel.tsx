@@ -433,7 +433,7 @@ export function VideoExportPanel({
                   className="mt-1 text-[10px]"
                   style={{ color: "var(--text-tertiary)" }}
                 >
-                  Each keyframe auto-adds 5s. Timeline grows automatically — no
+                  Each keyframe auto-adds 5s. Timeline grows automatically - no
                   limit.
                 </p>
               </div>
@@ -448,7 +448,7 @@ export function VideoExportPanel({
                   border: "1px solid var(--warning-border)",
                 }}
               >
-                Move the map and add another keyframe — 5s transition will be
+                Move the map and add another keyframe - 5s transition will be
                 created automatically
               </div>
             )}

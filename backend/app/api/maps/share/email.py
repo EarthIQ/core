@@ -181,7 +181,7 @@ _GRANTED_TEMPLATE = """\
     <div class="body">
       <p>Good news!</p>
       <p>
-        <strong>{{ grantor_name }}</strong> approved your request — you now have
+        <strong>{{ grantor_name }}</strong> approved your request - you now have
         <span class="role-badge">{{ role }}</span> access to the
         {{ entity_label }} <strong>"{{ entity_title }}"</strong>.
       </p>
@@ -205,7 +205,7 @@ async def _render_and_send(*, to: str, subject: str, html: str) -> None:
 
     settings = get_settings()
     if not settings.smtp_host:
-        logger.info("SMTP not configured — skipping email to %s (%s)", to, subject)
+        logger.info("SMTP not configured - skipping email to %s (%s)", to, subject)
         return
 
     import aiosmtplib
@@ -309,7 +309,7 @@ async def send_invite_email(
     settings = get_settings()
     if not settings.smtp_host:
         logger.info(
-            "SMTP not configured — skipping invite email to %s for %s '%s'",
+            "SMTP not configured - skipping invite email to %s for %s '%s'",
             to,
             entity_label,
             entity_title,
@@ -348,5 +348,5 @@ async def send_invite_email(
         logger.info("Invite email sent to %s", to)
 
     except Exception as exc:  # noqa: BLE001
-        # Email is best-effort — don't fail the invite API call
+        # Email is best-effort - don't fail the invite API call
         logger.error("Failed to send invite email to %s: %s", to, exc)

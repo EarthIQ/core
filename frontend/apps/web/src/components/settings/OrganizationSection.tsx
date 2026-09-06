@@ -1,5 +1,5 @@
 /**
- * Settings — Organization section (core).
+ * Settings - Organization section (core).
  *
  * The user's "organization profile": list of organizations, create, edit the
  * org identity (name, description, industry, website, location, accent),
@@ -313,7 +313,7 @@ export default function OrganizationSection() {
         <div>
           <h3 className="text-sm font-semibold text-text-primary">Create an organization</h3>
           <p className="text-xs text-text-secondary mt-0.5">
-            A workspace for your team — you become the owner.
+            A workspace for your team - you become the owner.
           </p>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -556,7 +556,7 @@ export default function OrganizationSection() {
           </div>
           {!canManage && (
             <p className="text-xs text-text-tertiary">
-              You are a viewer — ask an admin or the owner to edit organization details.
+              You are a viewer - ask an admin or the owner to edit organization details.
             </p>
           )}
         </div>

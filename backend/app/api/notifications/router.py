@@ -1,5 +1,5 @@
 """
-Notifications — REST + WebSocket Router (core).
+Notifications - REST + WebSocket Router (core).
 
 Mounted under ``/api/v1/notifications`` (see ``app.main``).
 

@@ -12,7 +12,7 @@ Modules
 ``kml``          KML parser
 ``georss``       GeoRSS parser
 ``csv``          CSV parser + coordinate detection
-``dispatcher``   :func:`ingest_dataset` — the public entry point
+``dispatcher``   :func:`ingest_dataset` - the public entry point
 
 ``app.api.data.service`` remains the stable public facade and re-exports
 everything from here so existing imports keep working.

@@ -1,10 +1,10 @@
 /**
- * Preferences — server-synced, customizable UX (core).
+ * Preferences - server-synced, customizable UX (core).
  *
  * Owns the user's UI preferences (theme mode, accent color, font scale,
  * compact mode, map units, default basemap). Values are:
  *   • applied to the DOM instantly (theme class, CSS variables, root font
- *     size, `.compact` class) — so changes are live;
+ *     size, `.compact` class) - so changes are live;
  *   • persisted to ``localStorage`` (works logged-out / offline);
  *   • synced to ``PUT /api/v1/profile/me/preferences`` when authenticated, so a
  *     user's experience follows them across devices.
@@ -299,7 +299,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
         if (partial.compact_mode !== undefined) body.compact_mode = partial.compact_mode;
         if (partial.font_scale !== undefined) body.font_scale = partial.font_scale;
         api.put("/api/v1/profile/me/preferences", body).catch(() => {
-          /* offline — local state already applied */
+          /* offline - local state already applied */
         });
       }, 250);
     },

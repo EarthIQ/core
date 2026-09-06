@@ -1,4 +1,4 @@
-"""Profile / Organization / Preferences — Pydantic schemas (core)."""
+"""Profile / Organization / Preferences - Pydantic schemas (core)."""
 from __future__ import annotations
 
 import re

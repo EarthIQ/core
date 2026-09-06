@@ -37,7 +37,7 @@ export interface ModelDefinition {
   /**
    * Base rotation in the specified unit applied before per-feature rotation.
    * Useful for correcting model orientation (e.g., GLTF Y-up to map Z-up).
-   * @default [90, 0, 0] (degrees) — standard Y-up to Z-up correction
+   * @default [90, 0, 0] (degrees) - standard Y-up to Z-up correction
    */
   baseRotation?: [number, number, number];
   /**

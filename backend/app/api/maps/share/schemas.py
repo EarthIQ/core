@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Literal, Optional
 from pydantic import BaseModel, EmailStr, Field
 
-# ── Role literals — mirror frontend types.ts ──────────────────────────────────
+# ── Role literals - mirror frontend types.ts ──────────────────────────────────
 Role = Literal["owner", "editor", "commenter", "viewer"]
 LinkRole = Literal["editor", "commenter", "viewer"]
 GeneralAccessType = Literal["restricted", "link"]

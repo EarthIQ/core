@@ -233,7 +233,7 @@ export default function DatasetGrid({
                 <MetaTile
                   icon={Clock}
                   label="Date"
-                  value={d.updated_at ? d.updated_at.slice(0, 10) : "—"}
+                  value={d.updated_at ? d.updated_at.slice(0, 10) : "-"}
                 />
               </div>
             </div>

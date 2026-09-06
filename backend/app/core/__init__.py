@@ -1,1 +1,1 @@
-# EarthIQ — core utilities (config, db, security)
+# EarthIQ - core utilities (config, db, security)

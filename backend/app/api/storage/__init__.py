@@ -1,1 +1,1 @@
-"""app/api/storage — object storage REST endpoints."""
+"""app/api/storage - object storage REST endpoints."""

@@ -64,7 +64,7 @@ def _validate_format(filename: str, fmt: str) -> None:
         )
     ext = _file_ext(filename)
     if ext in {"shp", "zip"}:
-        # Shapefile archives may be labelled .shp.zip — accept either.
+        # Shapefile archives may be labelled .shp.zip - accept either.
         return
     allowed = FORMAT_EXTENSIONS.get(fmt, set())
     if allowed and ext and ext not in allowed:
@@ -239,10 +239,10 @@ async def upload_dataset(
 
     Behaviour by **format**:
 
-    * `GeoJSON` / `Shapefile` — features are parsed into PostGIS and tiled via MVT.
-    * `CSV` — column schema is captured; if a lat/lon pair is detected, rows
+    * `GeoJSON` / `Shapefile` - features are parsed into PostGIS and tiled via MVT.
+    * `CSV` - column schema is captured; if a lat/lon pair is detected, rows
       are also ingested as point features.
-    * `GeoTIFF` / `COG` / `GeoPackage` — registered as a downloadable asset.
+    * `GeoTIFF` / `COG` / `GeoPackage` - registered as a downloadable asset.
 
     Returns the newly created dataset record.
     """

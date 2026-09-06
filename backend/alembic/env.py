@@ -48,7 +48,7 @@ import app.api.profile.models         # noqa: F401
 # builds its script directory, so it cannot be set from here. This block only
 # imports module ORM models so `target_metadata` is complete (autogenerate).
 #
-# Set ALEMBIC_CORE_ONLY=1 to exclude module models — used when (re)generating
+# Set ALEMBIC_CORE_ONLY=1 to exclude module models - used when (re)generating
 # the *core* initial migration so module tables stay owned by the modules'
 # own migration branches (see modules/<name>-module/backend/alembic/).
 _lock_file = ROOT / "modules.lock.yaml"
@@ -73,7 +73,7 @@ if _lock_file.exists() and not _core_only:
         if _backend.get("models_attr"):
             try:
                 importlib.import_module(f'{_backend["package"]}.{_backend["models_attr"]}')
-            except Exception as _exc:  # noqa: BLE001 — keep the migration running
+            except Exception as _exc:  # noqa: BLE001 - keep the migration running
                 print(f"WARNING: could not import module models '{_backend['package']}': {_exc}")
 
 # ── Alembic config ────────────────────────────────────────────────────────────
@@ -172,7 +172,7 @@ def include_name(name, type_, parent_names):
 
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode — generates SQL without connecting."""
+    """Run migrations in 'offline' mode - generates SQL without connecting."""
     context.configure(
         url=config.get_main_option("sqlalchemy.url"),
         target_metadata=target_metadata,
@@ -205,7 +205,7 @@ async def run_async_migrations() -> None:
 
     async with connectable.connect() as connection:
         # Ensure PostGIS and pgvector exist BEFORE any migration runs
-        # (idempotent — covers fresh and pre-existing databases).
+        # (idempotent - covers fresh and pre-existing databases).
         await connection.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
         await connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await connection.commit()

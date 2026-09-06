@@ -21,5 +21,5 @@ assert not dups, f"duplicate routes: {dups}"
 from app.core.db import Base
 
 assert "access_requests" in Base.metadata.tables, "access_requests table not registered"
-print("\nOK — app imported; access_requests model registered; no duplicate routes.")
+print("\nOK - app imported; access_requests model registered; no duplicate routes.")
 

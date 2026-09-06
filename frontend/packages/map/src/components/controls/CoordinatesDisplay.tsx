@@ -890,7 +890,7 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
                   color: "var(--text-primary)",
                 }}
               >
-                {elevation !== null ? `${elevation.toFixed(0)}m` : "—"}
+                {elevation !== null ? `${elevation.toFixed(0)}m` : "-"}
               </span>
             </div>
           )}

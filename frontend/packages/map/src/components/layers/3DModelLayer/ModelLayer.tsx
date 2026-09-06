@@ -107,7 +107,7 @@ export const ModelLayer = ({
       }
       layerRef.current = null;
     };
-  }, [map, mapLoaded, layerId]); // Intentionally exclude lighting/performance — they require layer recreation
+  }, [map, mapLoaded, layerId]); // Intentionally exclude lighting/performance - they require layer recreation
 
   // ── Push loaded models into the layer ────────────────────────────────
 

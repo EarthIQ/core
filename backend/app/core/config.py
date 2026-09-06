@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     # Public base URL that external browsers can reach, used to rewrite
     # presigned GET URLs (e.g. "https://storage.example.com"). When empty the
     # internal ``storage_endpoint`` host is used (browser-incompatible inside
-    # Compose — see ticket T-03).
+    # Compose - see ticket T-03).
     storage_public_base_url: str = ""
 
     # ── Redis ─────────────────────────────────────────────────────────────────

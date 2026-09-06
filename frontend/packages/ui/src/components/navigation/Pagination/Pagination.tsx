@@ -56,7 +56,7 @@ export function Pagination({
 
   const pages = generatePages();
 
-  // Base classes without any color — colors applied via style prop
+  // Base classes without any color - colors applied via style prop
   const baseButtonClasses =
     "w-10 h-10 flex items-center justify-center rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none";
 

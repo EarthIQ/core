@@ -1,14 +1,14 @@
 """
-Notifications — SQLAlchemy ORM Models (core).
+Notifications - SQLAlchemy ORM Models (core).
 
 All tables are prefixed with ``notification_`` to avoid collisions. They share
 the core ``Base`` so the core Alembic env picks them up automatically.
 
 Tables
 ------
-notification_messages     — a single immutable notification (the "event")
-notification_recipients   — who the message was delivered to + read state
-notification_preferences  — per-user delivery / category preferences
+notification_messages     - a single immutable notification (the "event")
+notification_recipients   - who the message was delivered to + read state
+notification_preferences  - per-user delivery / category preferences
 
 A "notification" in the UI is a ``(message, recipient)`` pair. The message is
 stored once; each recipient gets their own row tracking whether they've read it.
@@ -136,7 +136,7 @@ class NotificationPreferences(Base):
         unique=True,
         index=True,
     )
-    # Master switch — when off, no in-app notifications are delivered to the user.
+    # Master switch - when off, no in-app notifications are delivered to the user.
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     # Per-category toggles, stored as a JSON object e.g.
     # {"system": true, "project": true, "dataset": true, "access_request": true, "ai": true, "mention": true}

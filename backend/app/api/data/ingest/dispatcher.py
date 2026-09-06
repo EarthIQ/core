@@ -118,7 +118,7 @@ async def ingest_dataset(
         await _upload_best_effort(file_bytes, storage_key, _content_type_for_format(fmt))
         return dataset
     else:
-        # Stored asset (GeoTIFF / COG / GeoPackage / GeoParquet) — no parse.
+        # Stored asset (GeoTIFF / COG / GeoPackage / GeoParquet) - no parse.
         # Register metadata + keep the raw file; nothing is inserted into the
         # feature store (there is no server-side geometry to tile).
         meta["ingested"] = False

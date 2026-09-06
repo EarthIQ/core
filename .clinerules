@@ -1,4 +1,4 @@
-# EarthIQ Core — Cline Rules
+# EarthIQ Core - Cline Rules
 
 This repository is **EarthIQ Core**, a "pluggable monolith" geo-platform. A core
 FastAPI backend + React/Vite frontend are the always-present shell, and a set of
@@ -15,7 +15,7 @@ to work in this repo. Follow it.
    long-running Compose services (`backend`, `frontend`) plus their support
    services (`db`, `redis`, `rustfs`). All code changes are verified by
    restarting / re-running the Compose services, not by local interpreter
-   shells. (Local `pytest` for module backend tests _is_ allowed — see §6 —
+   shells. (Local `pytest` for module backend tests _is_ allowed - see §6 -
    because it runs hermetically against in-memory SQLite with no real DB and no
    `venv`; it must not spin up a venv.)
 2. **Modules are accessed through the services, never standalone.** To exercise
@@ -51,7 +51,7 @@ to work in this repo. Follow it.
 
 ```
 core/                                  # repository root (CWD)
-├── .clinerules                        # THIS FILE — AI/agent working rules
+├── .clinerules                        # THIS FILE - AI/agent working rules
 ├── README.md
 ├── LICENSE.txt
 ├── modules.registry.yaml              # CATALOG of available modules (name, version, repo)
@@ -90,7 +90,7 @@ core/                                  # repository root (CWD)
 │   │           ├── lib/               # auth, theme, modules (useModules)
 │   │           └── styles/globals.css # DESIGN TOKENS + utility classes (SINGLE STYLE SOURCE)
 │   └── packages/                      # shared workspace packages (design system + libs)
-│       ├── ui/                        # @packages/ui  — DESIGN SYSTEM (components, hooks, contexts, utils)
+│       ├── ui/                        # @packages/ui  - DESIGN SYSTEM (components, hooks, contexts, utils)
 │       ├── charts/                    # @packages/charts
 │       ├── cookie-consent/            # @packages/cookie-consent
 │       ├── map/                       # @packages/map (MapLibre helpers)
@@ -183,7 +183,7 @@ with the service names; real env vars win over the `.env` file.
 
 ```bash
 # Generate / regenerate the root docker-compose.yaml (after any module or
-# module.yaml change) — dev mode:
+# module.yaml change) - dev mode:
 APP_ENV=dev python -m setup_cli.cli sync          # or: setup sync (if installed)
 
 # Full bring-up (build + start detached):
@@ -210,10 +210,10 @@ URL (http://localhost:3000).
 - OpenAPI docs: `http://localhost:8000/api/docs`
 - Auth flow: `POST /api/auth/register` → `POST /api/auth/token` → `GET /api/auth/me`
   (Bearer `access_token` on subsequent calls; password min policy enforced).
-- Core modules API: `GET /api/modules` (list + enabled flag) — the frontend
+- Core modules API: `GET /api/modules` (list + enabled flag) - the frontend
   shell uses this to decide which module routes to mount.
 - Example module API: `GET/POST /api/notifications` (notification-module),
-  `GET /api/resources` (resources-module), etc. — mounted under the module's
+  `GET /api/resources` (resources-module), etc. - mounted under the module's
   `backend.prefix`.
 - Frontend: `http://localhost:3000` (dev) / `http://localhost:80` (prod).
 
@@ -233,7 +233,7 @@ URL (http://localhost:3000).
 
 ## 4. Module contract
 
-### `module.yaml` (per module) — the manifest the loader + CLI read
+### `module.yaml` (per module) - the manifest the loader + CLI read
 
 ```yaml
 name: notification-module
@@ -262,7 +262,7 @@ depends_on: []
   `schemas.py`, `models.py`, and a thin `db.py` that **re-exports core
   `Base` / `AsyncSessionLocal` / `get_db` from `app.core.db`** (do not build
   your own engine). The module builds on the core runtime (FastAPI /
-  SQLAlchemy / Pydantic) — it is mounted into the _same_ process, so
+  SQLAlchemy / Pydantic) - it is mounted into the _same_ process, so
   `app.*` is always importable at runtime.
 - `router.py`: create `router = APIRouter()`; declare endpoints with
   `response_model=` and `tags=[<module>]`. Reuse the core auth dependency
@@ -281,11 +281,11 @@ depends_on: []
 ### Module frontend conventions
 
 - `frontend/src/index.ts` MUST export exactly:
-  - `Page` (a default-exported React component) — the module's root page
-  - `routePath: string` — e.g. `"/resources"` (no trailing slash)
+  - `Page` (a default-exported React component) - the module's root page
+  - `routePath: string` - e.g. `"/resources"` (no trailing slash)
   - `navItem: { label: string; to: string; icon?: string }`
   - (optionally) an API client, types, and sub-components the shell may import.
-  - (optionally) `tools: ModuleTool[] | Promise<ModuleTool[]>` — **Map Toolbox
+  - (optionally) `tools: ModuleTool[] | Promise<ModuleTool[]>` - **Map Toolbox
     contract**: tools the module exposes in the core Map → Toolbox panel. The
     shell auto-discovers this export (no core changes, no module names in core).
     Each entry must have non-empty `id`/`label`/`category` strings, optional
@@ -364,7 +364,7 @@ When you need something not listed, add it to `frontend/packages/ui` (new
 `components/index.ts` and the package `src/index.ts`) rather than forking it in
 `apps/web` or a module.
 
-### 5.4 Styling — `src/styles/globals.css` (RULE)
+### 5.4 Styling - `src/styles/globals.css` (RULE)
 
 The **single source of design tokens** is
 `frontend/apps/web/src/styles/globals.css`. It defines:
@@ -394,7 +394,7 @@ The **single source of design tokens** is
   `animate-slide-up`, `animate-spin`, `animate-pulse`, `animate-shake`, ...).
 - **Dark mode** is a `.dark` class on the root (driven by the UI
   `ThemeProvider`); every token has a dark override under `:root.dark`. Don't
-  write separate dark CSS — just use the tokens.
+  write separate dark CSS - just use the tokens.
 - Tailwind v4 is imported (`@import "tailwindcss"`) and `@source
 "../../../../packages"` is set so package code is scanned; use utilities for
   layout/spacing, but prefer the token variables and the classes above for
@@ -412,7 +412,7 @@ The **single source of design tokens** is
 
 ## 6. Testing
 
-- **Backend (core + every module) uses hermetic pytest** — no venv, no real DB,
+- **Backend (core + every module) uses hermetic pytest** - no venv, no real DB,
   no network:
   - In-memory SQLite via `sqlite+aiosqlite` + `StaticPool` (shared single
     in-memory DB), `PRAGMA foreign_keys=ON`.
@@ -433,10 +433,10 @@ The **single source of design tokens** is
   cd backend && python -m pytest -ra
   ```
 - Integration tests that need a real PostGIS DB are marked `@pytest.mark.
-integration` and are run against the `db` Compose service — they are the only
+integration` and are run against the `db` Compose service - they are the only
   tests that touch real infra.
 - For UI changes, verify through the running `frontend` Compose service
-  (http://localhost:3000) — typically with the browser tool — rather than a
+  (http://localhost:3000) - typically with the browser tool - rather than a
   separate local dev server.
 
 ---

@@ -112,7 +112,7 @@ export function useMapAnimationEngine({
     };
   }, [map]);
 
-  // ── Add keyframe — auto adds `durationToNext` seconds ──
+  // ── Add keyframe - auto adds `durationToNext` seconds ──
   const addKeyframe = useCallback(
     (label?: string, durationToNext = 5) => {
       const state = captureMapState();

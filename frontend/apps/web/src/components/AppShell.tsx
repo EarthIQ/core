@@ -208,7 +208,7 @@ function UserMenuPopover({
         </button>
       </div>
 
-      {/* Footer — Sign Out */}
+      {/* Footer - Sign Out */}
       <div className="border-t border-border-secondary py-1.5">
         <button
           className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-error hover:bg-error-subtle transition-colors duration-100 cursor-pointer"
@@ -288,7 +288,7 @@ function NotificationBell() {
           <div className="max-h-80 overflow-y-auto">
             {recent.length === 0 ? (
               <div className="px-4 py-8 text-center text-xs text-text-tertiary">
-                No notifications yet — you're all caught up.
+                No notifications yet - you're all caught up.
               </div>
             ) : (
               recent.map((n) => (
@@ -373,7 +373,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return compName === "dashboard" || canView(compName);
   });
 
-  // Full-bleed "builder views" — the map builder (`/map`) and every `/builder/*`
+  // Full-bleed "builder views" - the map builder (`/map`) and every `/builder/*`
   // page hide the shell sidebar + topbar. Each renders its own chrome, similar
   // to the standalone published-map experience.
   const isStandaloneView =
@@ -404,7 +404,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [isUserMenuOpen]);
 
   // Search shortcuts: "/" focuses the search box (when not already typing in
-  // a field), Escape clears it and blurs — matches the visible "/" kbd hint.
+  // a field), Escape clears it and blurs - matches the visible "/" kbd hint.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const el = e.target as HTMLElement | null;
@@ -590,7 +590,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {/* Left */}
             <div className="flex items-center"></div>
 
-            {/* Center — Search */}
+            {/* Center - Search */}
             <div className="flex-1 min-w-0 flex justify-center px-2">
               <div className="relative w-full max-w-md group">
                 <Search

@@ -1,7 +1,7 @@
 /**
  * Project Builder Registry
  *
- * EarthIQ projects expose several "builders" — rich, project-scoped editors and
+ * EarthIQ projects expose several "builders" - rich, project-scoped editors and
  * authoring surfaces. The **Map** builder is the classic map editor that already
  * lives at `/map`. The rest (Story Map, Presentation, Report, Forms) are new
  * buildable surfaces that share the same project context (read via `?projectId=`).
@@ -14,7 +14,7 @@
  *   1. Create the page component (mirror the existing pages in `pages/builders/`).
  *   2. Add one entry to `BUILDERS` below with a unique `id`, `slug`, `path` and
  *      `page`.
- *   3. Done — the picker, router and scaffolding pick it up automatically.
+ *   3. Done - the picker, router and scaffolding pick it up automatically.
  *
  * Nothing in the shell hard-codes a builder name except this file.
  */
@@ -40,7 +40,7 @@ export type BuilderIcon = ComponentType<{ size?: number; className?: string }>;
 
 /**
  * Any page a builder mounts must read `projectId` from the URL query params
- * itself — identical to how `MapPage` reads `?projectId=` from `useSearchParams`.
+ * itself - identical to how `MapPage` reads `?projectId=` from `useSearchParams`.
  */
 export type BuilderPage = ComponentType;
 
@@ -56,7 +56,7 @@ export interface ProjectBuilder {
   /** Icon used in the picker row + page header. */
   icon: BuilderIcon;
   /**
-   * Route the builder is mounted at — WITHOUT a leading slash
+   * Route the builder is mounted at - WITHOUT a leading slash
    * (e.g. "map" or "builder/story-map"). Matches how `App.tsx` declares routes.
    */
   path: string;
@@ -68,7 +68,7 @@ export interface ProjectBuilder {
   capability?: string;
   /**
    * Extra query params appended when this builder is opened from the picker.
-   * Lets a builder land directly on a specific view — e.g. the Map builder
+   * Lets a builder land directly on a specific view - e.g. the Map builder
    * opens with the published maps panel (`{ panel: "published" }`).
    */
   openParams?: Record<string, string>;
@@ -82,7 +82,7 @@ export interface ProjectBuilder {
 /**
  * The built-in project builders.
  *
- * NOTE: `MapPage` is the existing map builder — it is NOT a placeholder. The
+ * NOTE: `MapPage` is the existing map builder - it is NOT a placeholder. The
  * remaining four ship with a scaffold shell so they can be developed further
  * (each already has its own page file under `pages/builders/`).
  */

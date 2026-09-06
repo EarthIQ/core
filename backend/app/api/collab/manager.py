@@ -29,7 +29,7 @@ class ConnectionManager:
     """
     In-memory WebSocket room manager.
     Each project gets its own room keyed by project_id.
-    Thread-safety: asyncio single-threaded — no locks needed.
+    Thread-safety: asyncio single-threaded - no locks needed.
     """
 
     def __init__(self):

@@ -131,7 +131,7 @@ export function featureCountLabel(ds: DatasetItem): string {
   if (ds.type === "raster" || ds.type === "remote-sensing") {
     return "Raster Asset";
   }
-  if (ds.feature_count === null || ds.feature_count === undefined) return "—";
+  if (ds.feature_count === null || ds.feature_count === undefined) return "-";
   return `${ds.feature_count.toLocaleString()} features`;
 }
 
@@ -146,7 +146,7 @@ export function isStoredAsset(ds: DatasetItem): boolean {
 }
 
 export function formatDate(iso: string): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   return iso.slice(0, 10);
 }
 

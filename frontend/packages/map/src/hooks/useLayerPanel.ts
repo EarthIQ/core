@@ -47,7 +47,7 @@ function extractLayerColor(
     // Handle simple string colors
     if (typeof value === "string") return value;
 
-    // Handle arrays (expressions) — try to extract the first color-like value
+    // Handle arrays (expressions) - try to extract the first color-like value
     if (Array.isArray(value)) {
       const colorCandidate = value.find(
         (v) =>

@@ -1,5 +1,5 @@
 /**
- * Settings — Profile section (core).
+ * Settings - Profile section (core).
  *
  * Edit the signed-in user's public profile (GET/PUT ``/api/v1/profile/me``) and
  * change the password (POST ``/api/v1/profile/me/password``).

@@ -1,5 +1,5 @@
 /**
- * PlaceSearch — location search for the map builder.
+ * PlaceSearch - location search for the map builder.
  *
  * Geocodes free-text queries ("Kathmandu", "Eiffel Tower") through the core
  * backend's OSM Nominatim proxy (`GET /api/v1/geocode`, see `lib/geocode.ts`)

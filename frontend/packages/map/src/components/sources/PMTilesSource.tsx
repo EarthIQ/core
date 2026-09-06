@@ -368,7 +368,7 @@ function toFeature(f?: maplibregl.MapGeoJSONFeature): Feature {
 }
 
 // ============================================================================
-// LAYER MANAGER — handles a single PMTilesLayerConfig on the map
+// LAYER MANAGER - handles a single PMTilesLayerConfig on the map
 // ============================================================================
 
 interface LayerManagerOptions {
@@ -627,10 +627,10 @@ function createLayerManager({
 // ============================================================================
 
 /**
- * PMTilesSource — Declaratively render PMTiles vector tile layers on a MapLibre map.
+ * PMTilesSource - Declaratively render PMTiles vector tile layers on a MapLibre map.
  *
  * Handles protocol registration, source/layer lifecycle, interactivity
- * (hover & selection feature-state), and reactive prop updates — mirroring
+ * (hover & selection feature-state), and reactive prop updates - mirroring
  * the GeoJSONLayer component API.
  */
 export const PMTilesSource: React.FC<PMTilesSourceProps> = ({

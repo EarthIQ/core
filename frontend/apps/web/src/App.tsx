@@ -1,5 +1,5 @@
 /**
- * EarthIQ Core — App Shell
+ * EarthIQ Core - App Shell
  *
  * Module routes are 100% dynamic:
  *  1. /api/v1/modules tells us which modules are enabled at runtime.
@@ -31,7 +31,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import { BUILDERS } from "@/lib/builders";
 
-// AUTO-GENERATED — never import module names directly here
+// AUTO-GENERATED - never import module names directly here
 import { moduleRegistry, type ModuleBundle } from "./module-registry.generated";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -73,14 +73,14 @@ interface ActiveModule {
   Page: React.ComponentType;
 }
 
-// Module-level cache — survives re-renders but is cleared on page refresh.
+// Module-level cache - survives re-renders but is cleared on page refresh.
 // Keyed separately from the "is loading" state so core routes are never blocked.
 let _resolvedModulesCache: ActiveModule[] | null = null;
 
 /**
  * Resolves enabled module bundles to obtain their self-declared routePaths.
- * Returns `resolving: true` only during the async bundle import phase —
- * NOT while /api/v1/modules is loading — so core routes always render immediately.
+ * Returns `resolving: true` only during the async bundle import phase -
+ * NOT while /api/v1/modules is loading - so core routes always render immediately.
  */
 function useActiveModules() {
   const { modules, isLoading: modulesLoading } = useModules();
@@ -103,7 +103,7 @@ function useActiveModules() {
       (m) => m.enabled && m.name in moduleRegistry,
     );
     if (!enabled.length) {
-      // No modules registered — cache the empty result and stop.
+      // No modules registered - cache the empty result and stop.
       _resolvedModulesCache = [];
       setActiveModules([]);
       return;
@@ -144,7 +144,7 @@ function ProtectedRoutes() {
       <Route path="dashboard" element={<DashboardPage />} />
       <Route path="admin" element={<AdminUsersPage />} />
       <Route path="projects" element={<ProjectsPage />} />
-      {/* Project builders — routes are declared data-driven from the
+      {/* Project builders - routes are declared data-driven from the
           builder registry (`lib/builders.tsx`), so new builders are wired
           automatically. Each builder page reads `?projectId=` itself. */}
       {BUILDERS.map((b) => (
@@ -156,20 +156,20 @@ function ProtectedRoutes() {
       <Route path="invite/accept" element={<InviteAcceptPage />} />
       <Route path="access/grant" element={<AccessGrantPage />} />
 
-      {/* Module routes — available once bundles finish resolving */}
+      {/* Module routes - available once bundles finish resolving */}
       {!resolving &&
         activeModules.map((m) => (
           <Route key={m.name} path={`${m.routePath}/*`} element={<m.Page />} />
         ))}
 
-      {/* 404 — only shown after module resolution is complete */}
+      {/* 404 - only shown after module resolution is complete */}
       {!resolving && (
         <Route
           path="*"
           element={
             <div style={{ padding: "4rem 2rem", textAlign: "center" }}>
               <h2 style={{ color: "var(--eq-text-primary)" }}>
-                404 — Not Found
+                404 - Not Found
               </h2>
               <p
                 style={{

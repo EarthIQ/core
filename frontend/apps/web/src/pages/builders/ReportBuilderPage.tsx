@@ -24,7 +24,7 @@ const DEFAULT_SECTIONS: ReportSection[] = [
 ];
 
 /**
- * Report builder — assemble project maps and data into a PDF-ready report.
+ * Report builder - assemble project maps and data into a PDF-ready report.
  *
  * Initial structure: a section list on the left and a document preview on the
  * right. The "Export to PDF" action is wired up but disabled until the report

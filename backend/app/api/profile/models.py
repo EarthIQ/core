@@ -1,10 +1,10 @@
-"""Profile / Organization / Preferences — ORM models (core).
+"""Profile / Organization / Preferences - ORM models (core).
 
 Tables
 ------
-organizations        — a workspace / team the user belongs to (the "org profile")
-user_organizations   — many-to-many membership with a per-user role
-user_preferences     — server-persisted, customizable UI preferences per user
+organizations        - a workspace / team the user belongs to (the "org profile")
+user_organizations   - many-to-many membership with a per-user role
+user_preferences     - server-persisted, customizable UI preferences per user
 
 These share the core ``Base`` so the core Alembic env + ``create_all`` pick them
 up automatically. The ``User`` model (``app.api.auth.models``) already carries

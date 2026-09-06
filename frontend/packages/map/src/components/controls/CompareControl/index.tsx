@@ -267,7 +267,7 @@ export function CompareControl({
   }, [map, isSideBySide, rightMapInstance]);
 
   // ══════════════════════════════════════════════════════════════════
-  // SWIPE DRAG — re-runs when activeMode changes OR handle mounts
+  // SWIPE DRAG - re-runs when activeMode changes OR handle mounts
   // ══════════════════════════════════════════════════════════════════
   useEffect(() => {
     const handle = handleRef.current;

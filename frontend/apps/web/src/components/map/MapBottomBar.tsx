@@ -170,7 +170,7 @@ export function MapBottomBar({
         onChange={onTerrainChange}
       />
 
-      {/* Bookmark — pinned to the right end of the bar */}
+      {/* Bookmark - pinned to the right end of the bar */}
       {onToggleBookmark && (
         <div className="ml-auto">
           <Tooltip content="Bookmark" placement="top">

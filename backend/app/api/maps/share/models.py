@@ -44,7 +44,7 @@ class AccessRequest(Base):
     message: Mapped[str] = mapped_column(Text, default="", nullable=False)
     # pending | granted | denied
     status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)
-    # Role the requester would like (informational) — viewer | commenter | editor
+    # Role the requester would like (informational) - viewer | commenter | editor
     requested_role: Mapped[str] = mapped_column(String(20), default="viewer", nullable=False)
     # Role actually granted when the owner approved
     granted_role: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)

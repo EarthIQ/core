@@ -31,7 +31,7 @@ interface MapNavbarProps {
   /** Active collaborators (excluding self) */
   collaborators?: CollaboratorState[];
   isCollabConnected?: boolean;
-  /** Live maplibre instance ref — powers the location search (fly-to). */
+  /** Live maplibre instance ref - powers the location search (fly-to). */
   mapRef?: React.MutableRefObject<any>;
   /** True once the map instance is ready. */
   mapReady?: boolean;
@@ -53,7 +53,7 @@ export function MapNavbar({
 }: MapNavbarProps) {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  // Source of truth for scoping builder navigation — always carry the project
+  // Source of truth for scoping builder navigation - always carry the project
   // id currently in the URL so opening any builder keeps this project's context.
   const pickerProjectId =
     searchParams.get("projectId") ?? projectId ?? mapId ?? "";
@@ -168,7 +168,7 @@ export function MapNavbar({
           </div>
         </div>
 
-        {/* Center: location search (Nominatim — flies the map + drops a marker) */}
+        {/* Center: location search (Nominatim - flies the map + drops a marker) */}
         <div className="flex-1 max-w-md mx-4">
           {mapRef ? (
             <PlaceSearch mapRef={mapRef} mapReady={mapReady} />
@@ -179,7 +179,7 @@ export function MapNavbar({
 
         {/* Right: collaborators + share */}
         <div className="flex items-center gap-2">
-          {/* Collaborator avatars — Google Docs style */}
+          {/* Collaborator avatars - Google Docs style */}
           {collaborators.length > 0 && (
             <div className="flex items-center">
               {/* Show up to 4 avatars, stacked with overlap */}
@@ -229,10 +229,10 @@ export function MapNavbar({
 
           <span className="w-px h-5 bg-border-primary" />
 
-          {/* General builder picker — open any project builder (Map, Story Map,
+          {/* General builder picker - open any project builder (Map, Story Map,
               Presentation, Report, Forms) for this project. */}
           <Tooltip
-            content="Builders — open Map, Story Map, Presentations…"
+            content="Builders - open Map, Story Map, Presentations…"
             placement="bottom"
           >
             <BuilderPicker
@@ -263,7 +263,7 @@ export function MapNavbar({
             </Button>
           </Tooltip>
 
-          {/* Comments history — open / resolved threads on the map */}
+          {/* Comments history - open / resolved threads on the map */}
           <Tooltip
             content={commentsOpen ? "Close comments" : "Comments history"}
             placement="bottom"
@@ -295,7 +295,7 @@ export function MapNavbar({
             </button>
           </Tooltip>
 
-          {/* Self avatar — right end of the bar */}
+          {/* Self avatar - right end of the bar */}
           <Tooltip content={user?.email || "User Profile"} placement="bottom">
             <div className="w-8 h-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0 border border-primary/20 cursor-pointer">
               {userInitial}

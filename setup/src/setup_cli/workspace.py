@@ -6,13 +6,13 @@ BACKEND_PYPROJECT = ROOT / "backend" / "pyproject.toml"
 WEB_PACKAGE_JSON = ROOT / "frontend" / "apps" / "web" / "package.json"
 
 
-ALEMBIC_INI = ROOT / "backend" / "alembic.ini"           # gitignored — generated
+ALEMBIC_INI = ROOT / "backend" / "alembic.ini"           # gitignored - generated
 ALEMBIC_INI_TPL = ROOT / "backend" / "alembic.ini.tpl"  # committed template
 
 
 def update_backend_workspace(lock: dict) -> None:
     """
-    Generate backend/alembic.versions.ini — a generated ini file that sets
+    Generate backend/alembic.versions.ini - a generated ini file that sets
     version_locations to include every installed module's alembic/versions/ directory.
 
     Alembic merges this via the --config flag or by configuring it in env.py.
@@ -42,7 +42,7 @@ def update_backend_workspace(lock: dict) -> None:
     # Space-separated, backend/-relative paths (alembic's cwd). This works both
     # in the container (/app/backend -> /app/modules/...) and on the host
     # (core/backend -> core/modules/...). Requires `path_separator = space` in
-    # the ini (set in alembic.ini.tpl) — otherwise Alembic treats the whole
+    # the ini (set in alembic.ini.tpl) - otherwise Alembic treats the whole
     # string as a single entry.
     all_locations = " ".join([core_versions] + module_version_paths)
 

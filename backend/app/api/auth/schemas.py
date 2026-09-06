@@ -56,7 +56,7 @@ class UserRead(BaseModel):
 
 
 class UserMeRead(UserRead):
-    """Extended schema for the /me endpoint — includes computed effective permissions."""
+    """Extended schema for the /me endpoint - includes computed effective permissions."""
     effective_permissions: list[str] = Field(default_factory=list)
 
 

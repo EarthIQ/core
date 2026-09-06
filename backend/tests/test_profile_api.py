@@ -1,4 +1,4 @@
-"""API integration tests — user profile, organizations, preferences over HTTP."""
+"""API integration tests - user profile, organizations, preferences over HTTP."""
 from __future__ import annotations
 
 from httpx import AsyncClient

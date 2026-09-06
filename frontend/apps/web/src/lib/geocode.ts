@@ -1,5 +1,5 @@
 /**
- * Geocoding — OSM Nominatim via the core backend proxy (`GET /api/v1/geocode`).
+ * Geocoding - OSM Nominatim via the core backend proxy (`GET /api/v1/geocode`).
  *
  * The public Nominatim API sends no CORS headers and requires a valid
  * server-side User-Agent, so the browser must NOT call it directly; the
@@ -15,7 +15,7 @@ export interface PlaceResult {
   place_id: number;
   /** Primary display name (falls back to the first part of display_name). */
   name: string;
-  /** Remaining context — the rest of the display name. */
+  /** Remaining context - the rest of the display name. */
   detail: string;
   lat: number;
   lon: number;

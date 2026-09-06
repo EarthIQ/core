@@ -7,7 +7,7 @@ interface Props {
 }
 
 /**
- * "Supported Formats" card — a reference panel listing every format the
+ * "Supported Formats" card - a reference panel listing every format the
  * platform accepts, what extension each corresponds to, and whether the
  * platform ingests it as a queryable layer or stores it as a downloadable
  * asset.

@@ -2,7 +2,7 @@
 Unit tests for the pure ingestion/parsing helpers in the data service.
 
 These tests exercise the format parsers (GeoJSON, CSV, coordinate detection,
-scalar coercion) WITHOUT requiring a PostGIS database — they only touch the
+scalar coercion) WITHOUT requiring a PostGIS database - they only touch the
 Python-side logic. Run with:
 
     cd backend && uv run pytest tests/test_data_parsers.py -v

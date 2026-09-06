@@ -1,5 +1,5 @@
 """
-L2 — Unit tests for the collaboration ``ConnectionManager``.
+L2 - Unit tests for the collaboration ``ConnectionManager``.
 
 The manager is pure in-memory (no DB), so we drive it directly with a
 ``FakeWebSocket`` that records outgoing frames. This verifies the real-time
@@ -16,7 +16,7 @@ from app.api.collab.manager import ConnectionManager
 
 
 class FakeWebSocket:
-    """Minimal stand-in for ``fastapi.WebSocket`` — records sent text frames."""
+    """Minimal stand-in for ``fastapi.WebSocket`` - records sent text frames."""
 
     def __init__(self, broken: bool = False):
         self.accepted = False
@@ -139,7 +139,7 @@ async def test_message_from_unknown_user_is_ignored(manager: ConnectionManager):
 
 
 async def test_broadcast_cleans_up_dead_connections(manager: ConnectionManager):
-    # A is healthy, B drops *after* connecting — a presence from A should evict B
+    # A is healthy, B drops *after* connecting - a presence from A should evict B
     a = FakeWebSocket()
     b = FakeWebSocket()
     await manager.connect(PROJECT, "u-a", "a@x.com", "A", a)

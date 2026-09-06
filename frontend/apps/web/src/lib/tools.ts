@@ -1,5 +1,5 @@
 /**
- * EarthIQ Core — Map Toolbox contract + module discovery
+ * EarthIQ Core - Map Toolbox contract + module discovery
  *
  * This file is the single source of truth for the **optional** tool contract
  * that modules may follow to surface tools in the core Map → Toolbox panel.
@@ -46,7 +46,7 @@ export interface ToolInput {
   required?: boolean;
   /** Initial value (coerced per type by the panel). */
   default?: unknown;
-  /** Allowed values — required for `type: "select"`. */
+  /** Allowed values - required for `type: "select"`. */
   options?: string[];
 }
 
@@ -93,7 +93,7 @@ export interface ResolvedTool extends ModuleTool {
 }
 
 /* ──────────────────────────────────────────────────────────────────────── */
-/*  Validation — "the specific condition" for a tool to be accepted          */
+/*  Validation - "the specific condition" for a tool to be accepted          */
 /* ──────────────────────────────────────────────────────────────────────── */
 
 const INPUT_TYPES: ToolInputType[] = [
@@ -144,7 +144,7 @@ export function isModuleTool(value: unknown): value is ModuleTool {
 
 
 /* ──────────────────────────────────────────────────────────────────────── */
-/*  Discovery — find tools across all enabled modules (no names hardcoded)   */
+/*  Discovery - find tools across all enabled modules (no names hardcoded)   */
 /* ──────────────────────────────────────────────────────────────────────── */
 
 let _toolsCache: ResolvedTool[] | null = null;
@@ -171,7 +171,7 @@ async function collectModuleTools(): Promise<ResolvedTool[]> {
         continue;
       }
 
-      // Modules without a `tools` export are skipped — the core never needs
+      // Modules without a `tools` export are skipped - the core never needs
       // to know about individual modules.
       if (!bundle || bundle.tools === undefined || bundle.tools === null) {
         continue;

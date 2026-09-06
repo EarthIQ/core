@@ -12,10 +12,10 @@ from app.api.data.ingest.common import _geometry_to_geojson
 def parse_shapefile_bytes(file_bytes: bytes) -> Tuple[list[dict[str, Any]], dict[str, str]]:
     """Parse a zipped Shapefile into GeoJSON-style features + a CRS hint.
 
-    Uses pure-python ``pyshp`` (imported as ``shapefile``) — no GDAL required.
+    Uses pure-python ``pyshp`` (imported as ``shapefile``) - no GDAL required.
     Returns ``(features, info)`` where ``info`` may contain a detected CRS.
     """
-    import shapefile  # noqa: F401 — imported here to keep the base image light
+    import shapefile  # noqa: F401 - imported here to keep the base image light
 
     info: dict[str, str] = {}
 

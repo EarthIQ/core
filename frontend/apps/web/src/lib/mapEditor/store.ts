@@ -204,7 +204,7 @@ interface MapEditorState extends Snapshot {
   removeBookmark: (id: string) => void;
   renameBookmark: (id: string, name: string) => void;
 
-  // comments (history-tracked) — threaded, pinned discussions
+  // comments (history-tracked) - threaded, pinned discussions
   addThread: (
     lngLat: [number, number],
     body: string,

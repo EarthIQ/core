@@ -186,7 +186,7 @@ export const NonSticky: Story = {
       <div className="p-8">
         <h1 className="text-2xl font-bold text-white">Non-Sticky Navbar</h1>
         <p className="text-white/60 mt-2">
-          Scroll down — the navbar will scroll away with the content.
+          Scroll down - the navbar will scroll away with the content.
         </p>
         <div className="mt-8 space-y-4">
           {Array.from({ length: 20 }, (_, i) => (

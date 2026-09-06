@@ -166,7 +166,7 @@ export default function PreviewModal({
     };
   }, [dataset.id, dataset.attributes]);
 
-  // Load the geometry profile (non-fatal — used for the facts tile + Ask AI).
+  // Load the geometry profile (non-fatal - used for the facts tile + Ask AI).
   useEffect(() => {
     let cancelled = false;
     if (dataset.type === "raster" || dataset.type === "remote-sensing") return;
@@ -204,7 +204,7 @@ export default function PreviewModal({
         .join(" · ")
     : dataset.type === "raster" || dataset.type === "remote-sensing"
       ? "Raster"
-      : "—";
+      : "-";
 
   function copyRaw() {
     const text = JSON.stringify(data?.asset_meta ?? dataset.meta ?? {}, null, 2);
@@ -229,7 +229,7 @@ export default function PreviewModal({
       </div>
       <div className="max-w-md text-xs text-subtle">
         {isStoredAsset(dataset)
-          ? "It is registered as a downloadable asset — use Download to retrieve the original file."
+          ? "It is registered as a downloadable asset - use Download to retrieve the original file."
           : "You can still ask the AI about it, or inspect the raw metadata."}
       </div>
     </div>
@@ -263,7 +263,7 @@ export default function PreviewModal({
                     title={String(r.values[c.field] ?? "")}
                   >
                     {r.values[c.field] === undefined || r.values[c.field] === null
-                      ? "—"
+                      ? "-"
                       : String(r.values[c.field])}
                   </td>
                 ))}
@@ -335,7 +335,7 @@ export default function PreviewModal({
                     className="max-w-[16rem] truncate px-3 py-2 font-mono text-xs text-subtle"
                     title={a.sample}
                   >
-                    {a.sample ?? "—"}
+                    {a.sample ?? "-"}
                   </td>
                 </tr>
               ))}

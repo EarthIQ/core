@@ -46,7 +46,7 @@ services:
       start_period: 5s
 
   # One-shot migration runner: Alembic is the single source of truth for the
-  # schema. Runs `alembic upgrade heads` (all heads — core + module branches)
+  # schema. Runs `alembic upgrade heads` (all heads - core + module branches)
   # once the database is healthy; the backend only starts after this service
   # succeeds. When new migrations land, re-run explicitly:
   #   docker compose run --rm migrate

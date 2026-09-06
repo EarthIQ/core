@@ -66,7 +66,7 @@ async def ensure_bucket() -> None:
 async def head_bucket() -> bool:
     """
     Return ``True`` when the configured bucket is reachable, ``False`` otherwise.
-    Used by the readiness health probe (T-10) — never raises for a missing bucket.
+    Used by the readiness health probe (T-10) - never raises for a missing bucket.
     """
     settings = get_settings()
     async with _client() as s3:

@@ -7,7 +7,7 @@ middleware that applies it to a configurable set of *sensitive* path prefixes
 
 This is a pragmatic, self-hostable default (no Redis dependency). It is
 single-process by design and is meant to blunt bursty abuse / runaway clients
-on the heaviest endpoints — not to replace an edge load-balancer rate limiter.
+on the heaviest endpoints - not to replace an edge load-balancer rate limiter.
 
 Ticket: T-05 (rate limit upload + AI endpoints).
 """

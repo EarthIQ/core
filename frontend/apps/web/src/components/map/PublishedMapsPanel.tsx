@@ -77,7 +77,7 @@ export function PublishedMapsPanel({
 
   return (
     <>
-      {/* Backdrop — click outside to close */}
+      {/* Backdrop - click outside to close */}
       {isOpen && (
         <div
           className="fixed inset-0 z-[19] pointer-events-auto"

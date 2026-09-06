@@ -7,7 +7,7 @@ import { shareApi, type InviteAcceptResult } from "@/components/map/share/shareA
  * Landing page for invite email links: /invite/accept?token=...
  *
  * Requires login (mounted inside the protected shell). Accepts the one-time
- * token — which works for BOTH map and project invitations — then offers to
+ * token - which works for BOTH map and project invitations - then offers to
  * open the accepted entity.
  */
 export default function InviteAcceptPage() {

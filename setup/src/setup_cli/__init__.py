@@ -1,4 +1,4 @@
-"""setup_cli — CLI for managing pluggable modules in the core monolith."""
+"""setup_cli - CLI for managing pluggable modules in the core monolith."""
 
 from importlib.metadata import version, PackageNotFoundError
 

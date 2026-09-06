@@ -26,7 +26,7 @@ router = APIRouter(tags=["share"])
 @router.get("/people", response_model=List[s.PeopleSearchResult], summary="Search users for share autocomplete")
 async def search_people(
     q: str = Query("", description="Search term (email or name)"),
-    entity_id: Optional[str] = Query(None, description="Map or project id — exclude users already on this entity"),
+    entity_id: Optional[str] = Query(None, description="Map or project id - exclude users already on this entity"),
     map_id: Optional[str] = Query(None, description="Legacy alias for entity_id"),
     db: AsyncSession = Depends(get_db),
     _actor: User = Depends(get_current_user),
@@ -49,7 +49,7 @@ async def accept_invite(
     return await svc.accept_invite(db, token, actor)
 
 
-# Legacy alias — same handler as above
+# Legacy alias - same handler as above
 @router.get(
     "/maps/invite/accept",
     response_model=s.InviteAcceptRead,

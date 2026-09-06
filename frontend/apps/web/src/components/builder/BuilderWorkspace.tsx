@@ -4,7 +4,7 @@ import { cn } from "@packages/ui";
 import type { BuilderIcon } from "@/lib/builders";
 
 interface BuilderWorkspaceProps {
-  /** Left rail — the builder's own list (scenes/slides/sections/forms). */
+  /** Left rail - the builder's own list (scenes/slides/sections/forms). */
   sidebar: ReactNode;
   /** Main editor canvas. */
   main: ReactNode;
@@ -92,7 +92,7 @@ interface SidebarItemProps {
   onDelete?: () => void;
 }
 
-/** One row in a builder sidebar list — click to open, trash to remove. */
+/** One row in a builder sidebar list - click to open, trash to remove. */
 export function SidebarItem({
   icon: Icon,
   title,

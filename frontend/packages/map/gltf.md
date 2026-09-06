@@ -67,7 +67,7 @@ export interface ModelDefinition {
   /**
    * Base rotation in the specified unit applied before per-feature rotation.
    * Useful for correcting model orientation (e.g., GLTF Y-up to map Z-up).
-   * @default [90, 0, 0] (degrees) — standard Y-up to Z-up correction
+   * @default [90, 0, 0] (degrees) - standard Y-up to Z-up correction
    */
   baseRotation?: [number, number, number];
   /**
@@ -1079,7 +1079,7 @@ export const ModelLayer = ({
       }
       layerRef.current = null;
     };
-  }, [map, mapLoaded, layerId]); // Intentionally exclude lighting/performance — they require layer recreation
+  }, [map, mapLoaded, layerId]); // Intentionally exclude lighting/performance - they require layer recreation
 
   // ── Push loaded models into the layer ────────────────────────────────
 
@@ -1143,7 +1143,7 @@ export type {
 
 ## Usage Examples
 
-### Basic — Single Model Type
+### Basic - Single Model Type
 
 ```tsx
 import {
@@ -1200,7 +1200,7 @@ export const App = () => (
 );
 ```
 
-### Multiple Model Types — Mixed Scene
+### Multiple Model Types - Mixed Scene
 
 ```tsx
 const MODELS: ModelDefinition[] = [
@@ -1280,7 +1280,7 @@ const parkScene: ModelFeatureCollection = {
 />;
 ```
 
-### Dynamic Updates — Adding/Removing Features
+### Dynamic Updates - Adding/Removing Features
 
 ```tsx
 const [features, setFeatures] = useState<ModelFeature[]>([]);

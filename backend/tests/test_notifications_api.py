@@ -1,4 +1,4 @@
-"""API integration tests — auth gating + full notification lifecycle over HTTP."""
+"""API integration tests - auth gating + full notification lifecycle over HTTP."""
 from __future__ import annotations
 
 from httpx import AsyncClient

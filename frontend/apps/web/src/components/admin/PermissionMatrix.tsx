@@ -102,7 +102,7 @@ export function PermissionMatrix({
                   if (!permId) {
                     return (
                       <td key={act.key} className="py-2 px-2 text-center text-text-quaternary">
-                        —
+                        -
                       </td>
                     );
                   }

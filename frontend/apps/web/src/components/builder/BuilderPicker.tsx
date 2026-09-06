@@ -9,7 +9,7 @@ import {
 } from "@/lib/builders";
 
 interface BuilderPickerProps {
-  /** Project the builders belong to — used to scope navigation URLs. */
+  /** Project the builders belong to - used to scope navigation URLs. */
   projectId: string;
   /** Id of the currently open builder (e.g. "map", "story-map") for highlighting. */
   hostId: string;

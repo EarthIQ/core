@@ -1,5 +1,5 @@
 """
-Notifications — Pydantic Schemas (core).
+Notifications - Pydantic Schemas (core).
 
 These mirror the ORM models in ``models.py`` and define the request/response
 contracts for the REST router.
@@ -27,7 +27,7 @@ DEFAULT_CATEGORY_PREFS: dict[str, bool] = {c: True for c in CATEGORIES}
 class NotificationRead(BaseModel):
     """A single notification as shown to one user."""
 
-    id: str                       # recipient id (per-user row) — used for read/unread actions
+    id: str                       # recipient id (per-user row) - used for read/unread actions
     message_id: str
     category: str
     kind: str

@@ -133,7 +133,7 @@ function ToolDropdown({
 }
 
 /* ──────────────────────────────────────────────────────────────────────── */
-/*  Tool group button — main icon + chevron, opens dropdown                  */
+/*  Tool group button - main icon + chevron, opens dropdown                  */
 /* ──────────────────────────────────────────────────────────────────────── */
 function ToolGroupButton({
   group,
@@ -301,7 +301,7 @@ export function MapActionBar({
         );
       })}
 
-      {/* Toolbox — opens the right-side panel of module tools */}
+      {/* Toolbox - opens the right-side panel of module tools */}
       <Tooltip content="Toolbox" placement="top">
         <button
           type="button"

@@ -1,5 +1,5 @@
 """
-Notifications — Real-time hub (core).
+Notifications - Real-time hub (core).
 
 An in-memory, per-user WebSocket registry (mirrors the core ``collab`` manager).
 When a notification is created, the router calls :meth:`NotificationHub.push`

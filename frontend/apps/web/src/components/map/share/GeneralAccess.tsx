@@ -12,7 +12,7 @@ export function GeneralAccessSection({
   general: GA;
   canManage: boolean;
   onChange: (g: GA) => void;
-  /** Noun for the shared entity ("map" | "project") — used in helper text. */
+  /** Noun for the shared entity ("map" | "project") - used in helper text. */
   label?: string;
 }) {
   const [open, setOpen] = useState(false);

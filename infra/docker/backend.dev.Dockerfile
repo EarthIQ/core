@@ -33,7 +33,7 @@ COPY backend/pyproject.toml backend/uv.lock* ./
 
 # Copy module backends so their declared runtime dependencies get installed.
 # At runtime the compose file bind-mounts ./modules over /app/modules, so the
-# mounted sources always win — this copy only exists to resolve module deps.
+# mounted sources always win - this copy only exists to resolve module deps.
 COPY modules/ /app/modules/
 
 # Install dependencies using UV (installs into system site-packages):

@@ -22,7 +22,7 @@ const SLIDE_BLOCKS = [
 ];
 
 /**
- * Map Presentation builder — PowerPoint-style slide decks, but for maps.
+ * Map Presentation builder - PowerPoint-style slide decks, but for maps.
  *
  * Initial structure: a slide list on the left (add / select) and a slide
  * canvas with a block toolbar on the right. Block types are rendered as

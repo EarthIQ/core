@@ -1,10 +1,10 @@
 """
-L3 — API integration tests for the map/project "access request" flow:
+L3 - API integration tests for the map/project "access request" flow:
 requester posts a request → owner opens the token link → owner grants/denies.
 
 Regression coverage for a real bug: the router called
 ``svc.grant_access(db, token, body.role, actor)`` while the service signature
-is ``grant_access(db, token, actor: User, role: str)`` — the role string was
+is ``grant_access(db, token, actor: User, role: str)`` - the role string was
 treated as the actor and blew up with
 ``AttributeError: 'str' object has no attribute 'is_superuser'`` (HTTP 500)
 on ``POST /api/v1/access/request/grant``.
@@ -33,11 +33,11 @@ from app.api.maps.share.router import (
     router as share_util_router,
     entity_share_router,
 )
-import app.api.auth.models  # noqa: F401 — users, groups, permissions
-import app.api.profile.models  # noqa: F401 — organizations (FK target of users)
-import app.api.maps.models  # noqa: F401 — maps, map access tables
-import app.api.projects.models  # noqa: F401 — projects, project access tables
-import app.api.maps.share.models  # noqa: F401 — access_requests
+import app.api.auth.models  # noqa: F401 - users, groups, permissions
+import app.api.profile.models  # noqa: F401 - organizations (FK target of users)
+import app.api.maps.models  # noqa: F401 - maps, map access tables
+import app.api.projects.models  # noqa: F401 - projects, project access tables
+import app.api.maps.share.models  # noqa: F401 - access_requests
 
 # Tables this flow touches (FK targets included so SQLite FK enforcement is clean).
 _TEST_TABLE_NAMES = [
@@ -206,7 +206,7 @@ async def test_owner_can_grant_access_request(share_client: AsyncClient, share_e
     assert resp.status_code == 200, resp.text
     assert resp.json()["status"] == "pending"
 
-    # 3. Owner grants with a chosen role — regression: this was
+    # 3. Owner grants with a chosen role - regression: this was
     #    AttributeError: 'str' object has no attribute 'is_superuser' (500).
     resp = await share_client.post(
         "/api/v1/access/request/grant",

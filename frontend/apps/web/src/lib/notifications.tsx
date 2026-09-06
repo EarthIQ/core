@@ -1,5 +1,5 @@
 /**
- * Notifications — live in-app notification hub (core).
+ * Notifications - live in-app notification hub (core).
  *
  * Backed by the core notifications API:
  *   • REST  ``/api/v1/notifications*`` (list, counts, read state, preferences)
@@ -28,7 +28,7 @@ import { useAuth } from "./auth";
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 export interface AppNotification {
-  id: string; // recipient id (per-user row) — use for read/unread/delete
+  id: string; // recipient id (per-user row) - use for read/unread/delete
   message_id: string;
   category: string;
   kind: "info" | "success" | "warning" | "error" | string;
@@ -148,7 +148,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [prefs, setPrefs] = useState<NotificationPrefs | null>(null);
   const [toasts, setToasts] = useState<NotificationToast[]>([]);
 
-  const deadRef = useRef(false); // true when session died (401) — stop reconnecting
+  const deadRef = useRef(false); // true when session died (401) - stop reconnecting
   const prefsRef = useRef<NotificationPrefs | null>(null);
   prefsRef.current = prefs;
 
@@ -429,7 +429,7 @@ function beep(): void {
     osc.stop(ctx.currentTime + 0.28);
     osc.onended = () => ctx.close();
   } catch {
-    /* audio unavailable — ignore */
+    /* audio unavailable - ignore */
   }
 }
 

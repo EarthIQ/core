@@ -275,7 +275,7 @@ export const DrawControl = forwardRef<DrawControlRef, DrawControlProps>(
           wrapperRef.current &&
           !wrapperRef.current.contains(event.target as Node)
         ) {
-          // Don't close when a drawing mode is active — the user
+          // Don't close when a drawing mode is active - the user
           // needs to click on the map to draw.
           if (state.activeMode !== null) return;
           closePanel();

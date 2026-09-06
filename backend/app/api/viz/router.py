@@ -59,7 +59,7 @@ def get_basemaps() -> List[BasemapStyle]:
     """Return the active basemap catalogue.
 
     Resolution order:
-      1. ``settings.basemaps_config`` (JSON list) if present and valid — full override.
+      1. ``settings.basemaps_config`` (JSON list) if present and valid - full override.
       2. the built-in :data:`_DEFAULT_BASEMAPS`, plus a MapTiler entry when a key is set.
     """
     settings = get_settings()
@@ -74,7 +74,7 @@ def get_basemaps() -> List[BasemapStyle]:
                 if basemaps:
                     return basemaps
         except (json.JSONDecodeError, ValueError):
-            # Invalid override JSON — fall back to defaults rather than 500.
+            # Invalid override JSON - fall back to defaults rather than 500.
             pass
 
     basemaps = list(_DEFAULT_BASEMAPS)

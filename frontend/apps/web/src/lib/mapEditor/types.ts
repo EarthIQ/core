@@ -8,10 +8,10 @@ export interface ActiveTool {
   variantId: string;
 }
 
-/** Point annotations — rendered as rich DOM overlays. */
+/** Point annotations - rendered as rich DOM overlays. */
 export type PointKind = "marker" | "text" | "note" | "image" | "link" | "video";
 
-/** Shape annotations — rendered as MapLibre vector layers. */
+/** Shape annotations - rendered as MapLibre vector layers. */
 export type ShapeKind = "circle" | "rectangle" | "line" | "highlight" | "shape";
 
 export type AnnotationKind = PointKind | ShapeKind;
@@ -85,9 +85,9 @@ export interface DrawnFeature {
 
 /**
  * An active shape draw-session in the map editor:
- * - `create` — new shapes are being drawn; on Save they are uploaded as a
+ * - `create` - new shapes are being drawn; on Save they are uploaded as a
  *   new dataset and the pending panel layer becomes a real vector layer.
- * - `edit`   — an existing saved vector layer is being edited (add / modify /
+ * - `edit`   - an existing saved vector layer is being edited (add / modify /
  *   delete features); on Save the features are written back to its dataset.
  *
  * While a session is active the action bar shows Save + Undo/Redo.

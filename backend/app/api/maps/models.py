@@ -116,7 +116,7 @@ class MapGroupAccess(Base):
 
 
 class MapUserAccess(Base):
-    """Per-user access entries for a Map — owner/editor/commenter/viewer roles.
+    """Per-user access entries for a Map - owner/editor/commenter/viewer roles.
 
     This is the source of truth for the Share Dialog. An invite is ``pending``
     until the invited person accepts it via the email link.

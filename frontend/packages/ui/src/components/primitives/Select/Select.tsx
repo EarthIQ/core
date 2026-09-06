@@ -135,7 +135,7 @@ function SearchInput({
       </span>
 
       {/*
-        pl-8  = 2rem  — clears the 1rem icon + 0.625rem left-2.5 gap
+        pl-8  = 2rem  - clears the 1rem icon + 0.625rem left-2.5 gap
         pr-8  = room for the clear button on the right
       */}
       <input
@@ -586,7 +586,7 @@ export function Select(props: SelectProps) {
               transition={{ duration: 0.15, ease: "easeOut" }}
               className="w-full"
             >
-              {/* Search input — sticky at the top of the dropdown */}
+              {/* Search input - sticky at the top of the dropdown */}
               {searchable && (
                 <SearchInput
                   value={searchQuery}

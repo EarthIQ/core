@@ -1,5 +1,5 @@
 """
-L3 — API integration tests for the auth router (register / login / RBAC).
+L3 - API integration tests for the auth router (register / login / RBAC).
 
 These exercise the real FastAPI endpoints over an ASGI transport backed by an
 in-memory SQLite database. They cover the full user lifecycle and the

@@ -87,15 +87,15 @@ function ScrollableTabList({ children, className }: ScrollableTabListProps) {
       className={cn(
         // Allow horizontal scrolling when tabs overflow
         "overflow-x-auto",
-        // Hide scrollbar — Webkit (Chrome, Safari)
+        // Hide scrollbar - Webkit (Chrome, Safari)
         "[&::-webkit-scrollbar]:hidden",
-        // Hide scrollbar — Firefox
+        // Hide scrollbar - Firefox
         "scrollbar-none",
         // Prevent layout shift from scrollbar appearing
         "-mb-px",
         className
       )}
-      // Hide scrollbar — IE/Edge legacy
+      // Hide scrollbar - IE/Edge legacy
       style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}
     >
       {children}

@@ -169,7 +169,7 @@ export function useCollaboration(
   // ── Map event listeners: send cursor + viewport on move ─────────────────────
   // Depends on `mapReady`: `mapRef.current` is only populated once the map has
   // finished loading. Without it, the WebSocket can open *before* the map is
-  // ready — the guard below would early-return on a null ref and, because every
+  // ready - the guard below would early-return on a null ref and, because every
   // other dep is referentially stable, the effect would never re-run, so the
   // local cursor would never be broadcast (and thus never appear for peers).
   useEffect(() => {

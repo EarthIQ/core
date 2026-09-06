@@ -39,7 +39,7 @@ interface RawInviteAccept extends RawAccessEntry {
   title: string;
 }
 
-/** Invite-accept result — includes the entity so the UI can navigate to it. */
+/** Invite-accept result - includes the entity so the UI can navigate to it. */
 export interface InviteAcceptResult extends AccessEntry {
   entityType: ShareEntityType;
   entityId: string;

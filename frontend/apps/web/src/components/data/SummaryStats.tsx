@@ -25,20 +25,20 @@ export default function SummaryStats({ datasets, loading }: Props) {
   const stats = [
     {
       icon: Database,
-      value: loading ? "—" : datasets.length,
+      value: loading ? "-" : datasets.length,
       label: "Total Datasets",
       color: "bg-primary/10 text-primary border-primary/20",
     },
     {
       icon: Layers,
-      value: loading ? "—" : datasets.filter((d) => isVectorized(d)).length,
+      value: loading ? "-" : datasets.filter((d) => isVectorized(d)).length,
       label: "Tiled Layers",
       color: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
     },
     {
       icon: Satellite,
       value: loading
-        ? "—"
+        ? "-"
         : datasets.filter(
             (d) =>
               d.format === "GeoTIFF" ||
@@ -52,20 +52,20 @@ export default function SummaryStats({ datasets, loading }: Props) {
     {
       icon: Table2,
       value: loading
-        ? "—"
+        ? "-"
         : datasets.filter((d) => d.type === "tabular").length,
       label: "Tabular Files",
       color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
     },
     {
       icon: FolderArchive,
-      value: loading ? "—" : datasets.filter((d) => isStoredAsset(d)).length,
+      value: loading ? "-" : datasets.filter((d) => isStoredAsset(d)).length,
       label: "Stored Assets",
       color: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
     },
     {
       icon: HardDrive,
-      value: loading ? "—" : formatBytes(totalStorageBytes),
+      value: loading ? "-" : formatBytes(totalStorageBytes),
       label: "Catalog Storage",
       color: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
     },

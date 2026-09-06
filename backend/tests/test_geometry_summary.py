@@ -19,7 +19,7 @@ from app.api.data import crud as data_crud
 
 @pytest_asyncio.fixture
 async def sqlite_session() -> AsyncSession:
-    """A plain SQLite session — deliberately **without** the geo_features table."""
+    """A plain SQLite session - deliberately **without** the geo_features table."""
     engine = create_async_engine(
         "sqlite+aiosqlite://",
         echo=False,

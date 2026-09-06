@@ -1,5 +1,5 @@
 /**
- * Settings — Notifications section (core).
+ * Settings - Notifications section (core).
  *
  * Per-user delivery preferences for in-app notifications
  * (GET/PUT ``/api/v1/notifications/preferences``). Toggles apply instantly and

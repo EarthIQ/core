@@ -274,7 +274,7 @@ export function PermissionsTab({
 
                       {/* Description */}
                       <td className="max-w-md truncate px-6 py-4 text-xs text-text-secondary">
-                        {permission.description || <span className="text-text-tertiary">—</span>}
+                        {permission.description || <span className="text-text-tertiary">-</span>}
                       </td>
 
                       {/* Actions */}

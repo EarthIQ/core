@@ -133,7 +133,7 @@ export function useDatasetActions(opts: {
             : `${ids.length} datasets deleted.`,
         );
       } catch {
-        addToast("error", "Some deletions failed — refreshing list.");
+        addToast("error", "Some deletions failed - refreshing list.");
         refresh();
       }
     },

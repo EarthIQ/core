@@ -60,7 +60,7 @@ export function AccessRequestCard({
             The {label} <span className="font-semibold text-text-primary">{name}</span>{" "}
           </>
         ) : null}
-        is private. You can request access — the owner will be notified by email
+        is private. You can request access - the owner will be notified by email
         and can approve your request.
       </p>
 

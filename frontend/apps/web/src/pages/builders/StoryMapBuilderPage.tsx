@@ -17,10 +17,10 @@ interface StoryScene {
 }
 
 /**
- * Story Map builder — narrative journeys that walk through your maps.
+ * Story Map builder - narrative journeys that walk through your maps.
  *
  * Initial structure: a scene list on the left (add / select / remove) and an
- * editor canvas on the right. The canvas currently shows a placeholder —
+ * editor canvas on the right. The canvas currently shows a placeholder -
  * swap it for the real scene editor (embedded map views + text + media) when
  * the builder is developed further.
  */
@@ -85,7 +85,7 @@ export default function StoryMapBuilderPage() {
             title={activeScene?.title ?? "Story Map"}
             description={
               activeScene
-                ? "This is where scene content will be edited — embed map views, add text blocks, images and media, then connect scenes into a guided narrative."
+                ? "This is where scene content will be edited - embed map views, add text blocks, images and media, then connect scenes into a guided narrative."
                 : "Add a scene to start building your story map."
             }
             actions={

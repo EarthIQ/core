@@ -216,7 +216,7 @@ export const RasterTileSource: React.FC<RasterTileSourceProps> = ({
     maxzoom,
     tileSize,
     attribution,
-    // onLoad / onError deliberately excluded — accessed via refs
+    // onLoad / onError deliberately excluded - accessed via refs
   ]);
 
   return <>{sourceAdded ? children : null}</>;

@@ -112,7 +112,7 @@ async def download_file(
     summary="Delete an object from storage",
 )
 async def delete_file(key: str):
-    """Delete the object identified by *key*.  Idempotent — returns 200 even if the key did not exist."""
+    """Delete the object identified by *key*.  Idempotent - returns 200 even if the key did not exist."""
     try:
         await storage.delete_file(key)
     except ClientError as exc:

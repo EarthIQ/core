@@ -549,7 +549,7 @@ export default function ProjectsPage() {
             Projects
           </h1>
           <p className="text-sm text-text-secondary mt-1">
-            Your geospatial workspaces — the ones you own and the ones shared
+            Your geospatial workspaces - the ones you own and the ones shared
             with you.
           </p>
         </div>

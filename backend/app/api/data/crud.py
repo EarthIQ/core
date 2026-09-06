@@ -270,10 +270,10 @@ async def get_geometry_summary(
     """Compute the geometry-type profile of a dataset's features.
 
     Returns a dict (shaped like ``GeometrySummary``) with:
-      - ``kind``     — ``"vector"`` or ``"raster"``
-      - ``dominant`` — ``"point"`` | ``"line"`` | ``"polygon"`` | None
-      - ``counts``   — per-kind feature counts
-      - ``total``    — total features with a geometry
+      - ``kind``     - ``"vector"`` or ``"raster"``
+      - ``dominant`` - ``"point"`` | ``"line"`` | ``"polygon"`` | None
+      - ``counts``   - per-kind feature counts
+      - ``total``    - total features with a geometry
 
     Degrades gracefully on non-PostGIS engines (e.g. in-memory SQLite) by
     returning an empty profile instead of raising.

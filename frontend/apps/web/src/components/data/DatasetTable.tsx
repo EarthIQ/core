@@ -390,7 +390,7 @@ export default function DatasetTable({
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       <div className="inline-flex items-center gap-1.5 text-xs text-text-secondary">
                         <Clock size={12} className="text-text-tertiary" />
-                        <span>{d.updated_at ? d.updated_at.slice(0, 10) : "—"}</span>
+                        <span>{d.updated_at ? d.updated_at.slice(0, 10) : "-"}</span>
                       </div>
                     </td>
 

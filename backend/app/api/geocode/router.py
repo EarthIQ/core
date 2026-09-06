@@ -57,7 +57,7 @@ async def search_places(
     """OSM Nominatim geocoding proxy.
 
     The public Nominatim API sends no CORS headers and requires a valid
-    server-side User-Agent, so the browser never calls it directly — this
+    server-side User-Agent, so the browser never calls it directly - this
     endpoint is the single gateway (and keeps requests rate-friendly).
     """
     params = {
@@ -83,7 +83,7 @@ async def search_places(
     if res.status_code == 429:
         raise HTTPException(
             status_code=429,
-            detail="Geocoding rate limit reached — try again shortly",
+            detail="Geocoding rate limit reached - try again shortly",
         )
     if res.status_code != 200:
         raise HTTPException(

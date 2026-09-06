@@ -5,7 +5,7 @@ round-trip through project create/update/read.
 Previously ``MapLayerItem`` required ``type: Literal["vector", "raster"]``,
 so any ``PUT /api/v1/projects/{id}`` payload containing a folder entry
 (``{id, name, parentId, order, kind: "folder", collapsed}``) failed
-Pydantic validation with a 422 — the frontend swallowed that error and the
+Pydantic validation with a 422 - the frontend swallowed that error and the
 whole layer tree (folders AND layers) was silently lost.
 
 Hermetic: in-memory SQLite + ASGITransport, no external services.
@@ -26,10 +26,10 @@ from app.core.db import Base, get_db
 from app.api.auth.router import router as auth_router
 from app.api.projects.router import router as projects_router
 
-import app.api.auth.models  # noqa: F401 — registers users/groups/permissions
-import app.api.profile.models  # noqa: F401 — organizations (User selectin rel.)
-import app.api.projects.models  # noqa: F401 — registers projects tables
-import app.api.maps.models  # noqa: F401 — registers maps tables (related)
+import app.api.auth.models  # noqa: F401 - registers users/groups/permissions
+import app.api.profile.models  # noqa: F401 - organizations (User selectin rel.)
+import app.api.projects.models  # noqa: F401 - registers projects tables
+import app.api.maps.models  # noqa: F401 - registers maps tables (related)
 
 _TEST_TABLE_NAMES = [
     # auth
@@ -188,7 +188,7 @@ async def test_update_project_folder_structure_roundtrip(client: AsyncClient):
     assert items["layer_1"]["parentId"] == "folder_1"
     assert body["zoom"] == 5.5
 
-    # Read it back through GET — the read model must validate the stored
+    # Read it back through GET - the read model must validate the stored
     # folder entry as well.
     resp = await client.get(f"/api/v1/projects/{project_id}", headers=headers)
     assert resp.status_code == 200, resp.text

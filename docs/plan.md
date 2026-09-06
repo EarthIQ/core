@@ -1,4 +1,4 @@
-# EarthIQ Core — 2026 Geospatial Strategy & Build Roadmap
+# EarthIQ Core - 2026 Geospatial Strategy & Build Roadmap
 
 > A durable, implementation-ready plan that turns the industry's 2026 geospatial
 > trends into concrete work for **this repo**. Written for engineers **and** AI
@@ -6,11 +6,11 @@
 
 | Field    | Value |
 | -------- | ----- |
-| Status   | Draft v0.1 (living document — append, don't rewrite) |
+| Status   | Draft v0.1 (living document - append, don't rewrite) |
 | Scope    | `core/` (backend, frontend, modules, setup, infra) |
 | Author   | EarthIQ Core team (assisted) |
 | Companion | `docs/test_plan.md`, `.clinerules`, `README.md` |
-| Trend source | [BioMedware — *5 Geospatial Trends and Use Cases Shaping the Industry* (Jul 2026)](https://biomedware.com/5-geospatial-trends/) |
+| Trend source | [BioMedware - *5 Geospatial Trends and Use Cases Shaping the Industry* (Jul 2026)](https://biomedware.com/5-geospatial-trends/) |
 
 ---
 
@@ -38,7 +38,7 @@
 
 **Audience.** Platform engineers, module authors, and AI coding agents working in
 `core/`. If you are an agent, §6 is your task list: each item has an ID, affected
-files, and acceptance criteria — pick one, implement it, and run the Definition of
+files, and acceptance criteria - pick one, implement it, and run the Definition of
 Done in `.clinerules`.
 
 **How to keep it honest.**
@@ -65,7 +65,7 @@ time-consuming step, and only **~17%** of agencies report their spatial data ful
 integrated across systems. The #1 practical drag is **tool fragmentation** (teams
 juggle **3–8** tools).
 
-**EarthIQ Core's position (honest).** We are a *strong, coherent shell* — a
+**EarthIQ Core's position (honest).** We are a *strong, coherent shell* - a
 pluggable monolith (core + swappable modules) that directly attacks the
 fragmentation problem, backed by PostGIS + MVT vector tiling, an S3 object store,
 a module contract, a `setup` CLI, and hermetic tests. **But** against the 5
@@ -74,11 +74,11 @@ four high-value frontiers:
 
 | Trend (2026) | EarthIQ Core today | Gap |
 | ------------ | ------------------ | ---- |
-| 1. GeoAI & vision foundation models | LLM **chat** harness only (`ai-module`) | **Large** — no ML on imagery, no inference pipeline |
-| 2. Cloud-native spatial analytics | Vector→MVT works; **rasters are stored, not computed** | **Large** — no raster compute, no STAC/OGC, no job engine |
-| 3. Real-time streaming | Real-time **collab** only (in-memory) | **Medium** — no data streaming; Redis idle; no scale-out |
-| 4. 3D reality capture / Gaussian Splatting | 2D MapLibre + a **terrain toggle** only | **Large** — no 3D Tiles, point clouds, splatting |
-| 5. Digital twins | Projects/maps/share (static) | **Large** — no live asset/telemetry model |
+| 1. GeoAI & vision foundation models | LLM **chat** harness only (`ai-module`) | **Large** - no ML on imagery, no inference pipeline |
+| 2. Cloud-native spatial analytics | Vector→MVT works; **rasters are stored, not computed** | **Large** - no raster compute, no STAC/OGC, no job engine |
+| 3. Real-time streaming | Real-time **collab** only (in-memory) | **Medium** - no data streaming; Redis idle; no scale-out |
+| 4. 3D reality capture / Gaussian Splatting | 2D MapLibre + a **terrain toggle** only | **Large** - no 3D Tiles, point clouds, splatting |
+| 5. Digital twins | Projects/maps/share (static) | **Large** - no live asset/telemetry model |
 
 Cross-cutting platform gaps that limit *all* of the above: **no CI/CD**, **no
 background-job engine** (heavy ingest runs in-request), **no data provenance/audit
@@ -92,10 +92,10 @@ mismatch**, and **raster is a dead-end** in the data model.
 2. **Make AI *spatial*, not just conversational.** A provider-agnostic inference
    pipeline (segmentation/classification/change-detection) that runs *on our
    imagery and datasets*, exposed through the existing module + Map Toolbox
-   contracts — so it's a pluggable capability, not a hard-coded feature.
+   contracts - so it's a pluggable capability, not a hard-coded feature.
 3. **Close the real-time + 3D loop.** Redis-backed, scale-out streaming ingest and
    a 3D/digital-twin layer (3D Tiles, asset/telemetry model) that turns "maps"
-   into a *live, queryable, decision-support* platform — exactly the role shift the
+   into a *live, queryable, decision-support* platform - exactly the role shift the
    article predicts.
 
 **Sequencing.** We fix *trust & foundations* first (CI, the latent bugs, job
@@ -120,7 +120,7 @@ trend below is an expression of that shift. **Implication:** EarthIQ should opti
 for *decision-support surfaces* (analysis results, alerts, simulations, answers), not
 just *data storage and 2D map rendering*.
 
-### Trend 1 — GeoAI & vision foundation models
+### Trend 1 - GeoAI & vision foundation models
 - **What:** ML trained on spatial/imagery data (feature extraction, anomaly detection,
   predictive modeling); the new twist is **general-purpose vision foundation models
   fine-tuned per mission** (land-use, environmental monitoring, disaster damage).
@@ -133,17 +133,17 @@ just *data storage and 2D map rendering*.
   pipeline on our rasters/vectors** (segmentation, change detection, classification,
   anomaly) + **RAG over our datasets**, exposed as a pluggable capability.
 - **Target:** provider-agnostic inference workers (ONNX/Ollama/vLLM), a model
-  registry, batch + on-demand endpoints, and "ask the map" grounded in *our* data —
+  registry, batch + on-demand endpoints, and "ask the map" grounded in *our* data -
   all through the existing `module.yaml` + Map Toolbox (`lib/tools.ts`) contracts.
 
-### Trend 2 — Cloud-native spatial analytics
+### Trend 2 - Cloud-native spatial analytics
 - **What:** analysis happens **inside** cloud warehouses/lakehouses rather than
   copying/syncing data across systems; unlocks **petabyte-scale, near-daily**
   satellite questions (continental/global) that were impractical to move/store.
 - **Why it matters:** removes the move/store/process bottleneck; changes what is
   *feasible to study* at scale.
 - **Implication for us:** we already have the *cloud-native substrate* (S3/RustFS +
-  PostGIS + MVT). The gap is that **rasters are a dead-end** — `GeoTIFF/COG/
+  PostGIS + MVT). The gap is that **rasters are a dead-end** - `GeoTIFF/COG/
   GeoPackage/GeoParquet` are registered as *stored assets, not parsed*
   (`data/service.py`, `STORED_ASSET_FORMATS`), because we avoid GDAL. We also lack
   open interop (STAC / OGC API) and a batch job engine.
@@ -152,14 +152,14 @@ just *data storage and 2D map rendering*.
   **STAC catalog + OGC API Records**, **OGC API Features/Tiles** over PostGIS, and a
   **background job engine** so big work doesn't block requests.
 
-### Trend 3 — Real-time streaming data
+### Trend 3 - Real-time streaming data
 - **What:** replacement of **static file delivery** with **real-time streaming**;
   "real-time streaming is becoming the default"; archival imagery is increasingly
   treated as a **live dataset** (query history in real time).
-- **Why it matters:** freshness is a first-class product dimension — monitoring,
+- **Why it matters:** freshness is a first-class product dimension - monitoring,
   dashboards, and alerts depend on it.
 - **Implication for us:** our real-time layer is **collaboration only**
-  (`collab/manager.py`, `notifications/hub.py`) and both are **in-memory singletons —
+  (`collab/manager.py`, `notifications/hub.py`) and both are **in-memory singletons -
   not Redis-backed**, so they can't scale past one process and state is lost on
   restart. **Redis is in `docker-compose.yaml` but unused** by the backend. We have
   **no data streaming** (sensor/IoT/telemetry ingest, live layer updates, time-series
@@ -169,7 +169,7 @@ just *data storage and 2D map rendering*.
   time-series upserts); **live layers** that update over the socket; and a
   **replay/history** story so the past is queryable like the present.
 
-### Trend 4 — 3D reality capture (incl. Gaussian Splatting)
+### Trend 4 - 3D reality capture (incl. Gaussian Splatting)
 - **What:** maturation of **3D reality capture**; **3D Gaussian Splatting** is called
   out by name as a key rendering/capture technique.
 - **Why it matters:** richer, physically-grounded context for urban, asset, and
@@ -179,13 +179,13 @@ just *data storage and 2D map rendering*.
   no building extrusion, no point clouds, no splatting**.
 - **Target:** a 3D layer stack (MapLibre 3D terrain + **3D Tiles**), building
   extrusion, then **point cloud** and finally **Gaussian Splatting** viewers as
-  pluggable modules — each gated on the ingest story (Trend 2).
+  pluggable modules - each gated on the ingest story (Trend 2).
 
-### Trend 5 — Digital twins (asset management & compliance)
+### Trend 5 - Digital twins (asset management & compliance)
 - **What:** **digital twins** tied to **asset management and compliance**; capture →
   interpretation → action converge into interoperable systems with fewer handoffs.
 - **Why it matters:** a twin is a *live, authoritative model of a real asset/place*
-  you can query, simulate, and hold accountable (compliance) — the end-state of
+  you can query, simulate, and hold accountable (compliance) - the end-state of
   "decision support".
 - **Implication for us:** today "twin-like" = **projects + maps + share** (static
   documents). We have **no asset registry, no telemetry binding, no state model, no
@@ -229,8 +229,8 @@ capabilities.*
 | 3 | PostGIS vector store + **MVT tiling** | 2 | **In place** | `data/router.py:435` `/tiles/{id}/{z}/{x}/{y}.mvt` (`ST_AsMVT`) |
 | 4 | S3 object store (RustFS) | 2 | **In place** | `core/storage.py` |
 | 5 | Auth / RBAC / groups / sharing / access-request | 5, governance | **In place** | `auth/*`, `maps/share/*`, `profile/*` |
-| 6 | Real-time **collaboration** (presence/cursors) | 3 | **Partial** | `collab/manager.py` — in-memory, single-process, no Redis |
-| 7 | Real-time **notifications** | 3 | **Partial** | `notifications/hub.py` — in-memory, single-process |
+| 6 | Real-time **collaboration** (presence/cursors) | 3 | **Partial** | `collab/manager.py` - in-memory, single-process, no Redis |
+| 7 | Real-time **notifications** | 3 | **Partial** | `notifications/hub.py` - in-memory, single-process |
 | 8 | **Raster** ingest & compute | 2, 4 | **Absent** (dead-end) | `data/schemas.py` `STORED_ASSET_FORMATS` = stored, not parsed; no GDAL/rasterio in `pyproject.toml` |
 | 9 | **GeoAI** (ML on imagery/vectors, RAG) | 1 | **Absent** | `ai-module` is a text LLM harness only (`/api/ai/chat`) |
 | 10 | Open interop: **STAC / OGC API Features/Tiles/Records** | 2 | **Absent** | no OGC/STAC endpoints found in backend |
@@ -244,7 +244,7 @@ capabilities.*
 ### Concrete problems found (the "cope with problems" list)
 Grouped by severity. Each becomes a ticket in §6.
 
-**P0 — latent bugs / production risks (fix first)**
+**P0 - latent bugs / production risks (fix first)**
 - **P1. Presigned-URL host mismatch.** `core/storage.py:presign_url` builds URLs from
   `settings.storage_endpoint`; in Compose the backend sets that to `http://rustfs:9000`,
   which the **browser cannot resolve**. Likely breaks `/api/storage/download/*`
@@ -259,7 +259,7 @@ Grouped by severity. Each becomes a ticket in §6.
   but parsing/PostGIS insert run synchronously → timeouts/OOM on large or many-file
   uploads. Needs a job engine.
 
-**P1 — capability gaps vs. the 2026 trends**
+**P1 - capability gaps vs. the 2026 trends**
 - **P5. Raster dead-end.** Rasters are downloadable but not analyzable/tilable;
   blocks GeoAI, 3D, and most "cloud-native analytics".
 - **P6. No open interop.** No STAC/OGC API surface; CRS handling is naive
@@ -269,7 +269,7 @@ Grouped by severity. Each becomes a ticket in §6.
 - **P8. No real-time data story.** Only presence; no telemetry/time-series ingest.
 - **P9. No 3D/twin.** 2D + terrain only.
 
-**P2 — maintainability / hygiene**
+**P2 - maintainability / hygiene**
 - **P10. `data/service.py` is a ~1000-line god-file** (ingest dispatcher + many
   helpers + SQL). Extract per-format strategies + a `raster/` subpackage.
 - **P11. Basemaps hardcoded** in `viz/router.py`; `MAPTILER_KEY` in `.env` is unused.
@@ -289,7 +289,7 @@ Grouped by severity. Each becomes a ticket in §6.
 > them. Each pillar lists **goal → workstreams → effort** (S < 1 wk, M 1–3 wk,
 > L 1–3 mo, XL 3–6 mo) → **exit criteria**.
 
-### Pillar A — Interoperability & cloud-native spatial analytics  *(Trend 2; fixes P4, P5, P6, P10, P14)*
+### Pillar A - Interoperability & cloud-native spatial analytics  *(Trend 2; fixes P4, P5, P6, P10, P14)*
 **Goal:** be the *interop hub*: any producer feeds us, any consumer reads us, and
 rasters are first-class and computable.
 - **A1. Background job engine** (M). Add a worker (Celery/Arq + Redis) so ingest,
@@ -310,13 +310,13 @@ rasters are first-class and computable.
 - **Exit:** upload a GeoTIFF → it appears in STAC, tiles render, and is queryable via
   OGC API Features/Tiles; a 1 GB GeoPackage ingests without a request timeout.
 
-### Pillar B — GeoAI (spatial, not just conversational)  *(Trend 1; builds on A2)*
+### Pillar B - GeoAI (spatial, not just conversational)  *(Trend 1; builds on A2)*
 **Goal:** an inference pipeline that runs **on our imagery and datasets**, delivered
 through the existing module + Map Toolbox contracts (so it stays pluggable).
 - **B1. Inference runtime** (L). Provider-agnostic runner (ONNX Runtime / Ollama /
   vLLM) in a separate worker; model registry (version, task, I/O, license, provenance).
 - **B2. Core tasks first** (L). Segmentation / land-cover **classification**,
-  **change detection** (time-series COGs), and **anomaly detection** — the exact
+  **change detection** (time-series COGs), and **anomaly detection** - the exact
   missions the article names.
 - **B3. RAG over our data** (M). Ground the existing LLM harness in *our*
   `GeoDataset` metadata + queryable features, so "ask the map" answers are traceable
@@ -327,8 +327,8 @@ through the existing module + Map Toolbox contracts (so it stays pluggable).
 - **Exit:** "classify this COG" + "detect change between these two dates" produce
   GeoJSON/predictions, rendered on the map, with a cited model + input dataset.
 
-### Pillar C — Real-time & streaming  *(Trend 3; fixes P3, P8)*
-**Goal:** make freshness a first-class dimension — live presence **and** live data,
+### Pillar C - Real-time & streaming  *(Trend 3; fixes P3, P8)*
+**Goal:** make freshness a first-class dimension - live presence **and** live data,
 scale-out, with replay.
 - **C1. Redis-backed real-time** (M). Move `collab/manager.py` + `notifications/hub.py`
   to Redis pub/sub (or **Redis Streams**) so N backend replicas share presence and
@@ -343,7 +343,7 @@ scale-out, with replay.
 - **Exit:** a sensor stream updates a live layer in < 1 s across two backend replicas,
   and the same series is queryable for past timestamps.
 
-### Pillar D — 3D & digital twins  *(Trends 4 + 5; capstone on A, B, C)*
+### Pillar D - 3D & digital twins  *(Trends 4 + 5; capstone on A, B, C)*
 **Goal:** turn "maps" into a *live, queryable, decision-support* model of the world.
 - **D1. 3D layer stack** (L). MapLibre 3D terrain (already partially there) +
   **3D Tiles (Cesium/MapLibre extension)** + building extrusion; as a pluggable module.
@@ -358,7 +358,7 @@ scale-out, with replay.
 - **Exit:** a real asset has a live 2D/3D twin showing telemetry, AI predictions, and
   compliance status, all traceable to sources.
 
-### Pillar E — Platform engineering & governance (the enabler)  *(fixes P1, P2, P11–P14)*
+### Pillar E - Platform engineering & governance (the enabler)  *(fixes P1, P2, P11–P14)*
 **Goal:** make the platform *trustworthy* enough to host trends 1–5 at scale.
 - **E1. CI/CD** (S–M). GitHub Actions: lint + `pytest` (L1–L3) + coverage gate,
   docker stage for L4/integration, frontend `build`/lint, `setup sync` check.
@@ -380,9 +380,9 @@ scale-out, with replay.
 ## 5. Phased roadmap
 
 > Sequenced so each phase *unblocks* the next and produces shippable value. Entry/exit
-> criteria make phases auditable. Rough, not a Gantt — size with real estimates.
+> criteria make phases auditable. Rough, not a Gantt - size with real estimates.
 
-### Phase 0 — Trust & foundations  *(now · ~2–4 wks · Pillar E, P1)*
+### Phase 0 - Trust & foundations  *(now · ~2–4 wks · Pillar E, P1)*
 - **Do:** E1 CI/CD · E2 presigned-URL fix · E4 secrets guardrail + rate limits · E6
   module-version sync + basemaps data-driven · split `data/service.py` (A5, partial).
 - **Entry:** any state. **Exit:** green CI on main; downloads work from a browser;
@@ -390,19 +390,19 @@ scale-out, with replay.
 - **Why first:** removes the highest-risk latent bugs and makes every later phase
   verifiable. *Cheap, high-leverage, low-blast-radius.*
 
-### Phase 1 — Interoperability + raster  *(next · ~1–3 mo · Pillar A)*
+### Phase 1 - Interoperability + raster  *(next · ~1–3 mo · Pillar A)*
 - **Do:** A1 job engine → A2 raster/COG/tiles → A4 CRS/format → A3 STAC/OGC API.
 - **Entry:** Phase 0 exit. **Exit:** Pillar A "Exit" met (GeoTIFF → STAC → tiles →
   OGC query; 1 GB GeoPackage ingests async).
-- **Why:** fastest *compounding* win — it is the moat and it unblocks GeoAI + 3D.
+- **Why:** fastest *compounding* win - it is the moat and it unblocks GeoAI + 3D.
 
-### Phase 2 — Real-time & streaming  *(next, parallelizable with Phase 1 · Pillar C)*
+### Phase 2 - Real-time & streaming  *(next, parallelizable with Phase 1 · Pillar C)*
 - **Do:** C1 Redis-backed presence → C2 stream ingest → C3 live layers → C4 replay.
 - **Entry:** Phase 0 exit (needs CI + a second-replica story). **Exit:** Pillar C "Exit"
   met (< 1 s live update across 2 replicas + timestamp queries).
 - **Why:** cheap to start (C1 reuses idle Redis), high perceived value (live maps).
 
-### Phase 3 — GeoAI  *(then · ~2–6 mo · Pillar B, needs Phase 1 raster)*
+### Phase 3 - GeoAI  *(then · ~2–6 mo · Pillar B, needs Phase 1 raster)*
 - **Do:** B3 RAG (quick win, no raster needed) → B1 runtime → B2 tasks → B4 tools →
   B5 governance.
 - **Entry:** A2 (COG) + E3 provenance. **Exit:** Pillar B "Exit" met (classify +
@@ -410,18 +410,18 @@ scale-out, with replay.
 - **Why:** the #1 trend; deferred until we can *feed it real imagery* and *prove*
   provenance.
 
-### Phase 4 — 3D & digital twins  *(later · ~3–6+ mo · Pillar D, the capstone)*
+### Phase 4 - 3D & digital twins  *(later · ~3–6+ mo · Pillar D, the capstone)*
 - **Do:** D1 3D stack → D3 twin model → D4 compliance/simulation → D2 splatting.
 - **Entry:** Phases 1–3 (data + streaming + AI). **Exit:** Pillar D "Exit" met (a live
   asset twin with telemetry, predictions, compliance, all traceable).
-- **Why:** highest ceiling, highest cost — must ride on A/B/C. Don't build on sand.
+- **Why:** highest ceiling, highest cost - must ride on A/B/C. Don't build on sand.
 
 ### Dependencies (the "fewer handoffs" principle)
 ```
 Phase 0 (CI, fixes) ─┬─► Phase 1 (interop+raster) ─┬─► Phase 3 (GeoAI) ─┐
                      └─► Phase 2 (real-time)  ──────┴──► Phase 4 (3D+twin) ◄─┘
 ```
-Parallelism: Phase 1 and Phase 2 are independent after Phase 0 — run both if staffing
+Parallelism: Phase 1 and Phase 2 are independent after Phase 0 - run both if staffing
 allows. Phase 4 only starts when 1 + 3 (and ideally 2) are solid.
 
 ---
@@ -429,10 +429,10 @@ allows. Phase 4 only starts when 1 + 3 (and ideally 2) are solid.
 ## 6. Implementation backlog (ticket-ready)
 
 > Copy each row into a tracker. **ID · Title · Pillar · Est · Key files · Acceptance
-> criteria.** "Key files" are starting points — verify against `.clinerules` (never
+> criteria.** "Key files" are starting points - verify against `.clinerules` (never
 > hand-edit generated files; reuse `@packages/ui`; verify via Compose or hermetic pytest).
 
-### Phase 0 — foundations
+### Phase 0 - foundations
 | ID | Title | Pillar | Est | Key files | Acceptance criteria |
 |----|-------|--------|-----|-----------|--------------------|
 | T-01 | GitHub Actions CI (lint+pytest+build) | E1 | M | new `.github/workflows/ci.yml` | main is red if lint/tests fail; L1–L3 run; artifact `coverage.xml` |
@@ -446,7 +446,7 @@ allows. Phase 4 only starts when 1 + 3 (and ideally 2) are solid.
 | T-09 | Decompose `data/service.py` | A5 | M | `api/data/service.py` → `ingest/`, `raster/` | public API unchanged; existing tests green; no file > ~400 lines |
 | T-10 | Health expands to db/storage/redis | E5 | S | `main.py` `/api/health` | reports component status; 200 only when deps healthy |
 
-### Phase 1 — interoperability + raster
+### Phase 1 - interoperability + raster
 | ID | Title | Pillar | Est | Key files | Acceptance criteria |
 |----|-------|--------|-----|-----------|--------------------|
 | T-11 | Background job engine (Redis + worker) | A1 | M | new `backend/worker/*`, `core/jobs.py`, compose | long job returns job id; status poll; survives request close |
@@ -460,7 +460,7 @@ allows. Phase 4 only starts when 1 + 3 (and ideally 2) are solid.
 | T-19 | GDAL in backend image (rasterio/rio-tilers) | A2/A4 | M | `infra/docker/backend.*.Dockerfile`, `pyproject.toml` | `gdalinfo`/`rasterio` import OK in container; wheel builds clean |
 | T-20 | `type=time-series` dataset + time index | A2/C2 | M | `data/models.py`, `alembic` | time-indexed features queryable by `datetime` range |
 
-### Phase 2 — real-time & streaming
+### Phase 2 - real-time & streaming
 | ID | Title | Pillar | Est | Key files | Acceptance criteria |
 |----|-------|--------|-----|-----------|--------------------|
 | T-21 | Redis pub/sub transport | C1 | M | `collab/manager.py`, `notifications/hub.py`, `core/redis.py` | presence + pushes shared across 2 backend replicas (test) |
@@ -469,7 +469,7 @@ allows. Phase 4 only starts when 1 + 3 (and ideally 2) are solid.
 | T-24 | Live layer type (frontend) | C3 | M | `components/map/*`, `lib/useCollaboration.ts` | live layer patches features in place; no full reload; backoff on disconnect |
 | T-25 | Replay/time scrubber | C4 | M | `api/data` time query, map UI | scrub to a past timestamp; layer reflects that instant |
 
-### Phase 3 — GeoAI
+### Phase 3 - GeoAI
 | ID | Title | Pillar | Est | Key files | Acceptance criteria |
 |----|-------|--------|-----|-----------|--------------------|
 | T-26 | RAG over datasets (grounded answers) | B3 | M | `ai-module` `context.py`, `app.api.data` | answers cite a dataset id + feature; hallucination reduced |
@@ -480,7 +480,7 @@ allows. Phase 4 only starts when 1 + 3 (and ideally 2) are solid.
 | T-31 | Anomaly detection | B2 | L | inference job | flag anomalous features/tiles with reasons |
 | T-32 | GeoAI ops as Map Toolbox tools | B4 | S | `lib/tools.ts`, `ai` `tools.py` | run classify/change from Toolbox with live map context |
 
-### Phase 4 — 3D & digital twins
+### Phase 4 - 3D & digital twins
 | ID | Title | Pillar | Est | Key files | Acceptance criteria |
 |----|-------|--------|-----|-----------|--------------------|
 | T-33 | 3D Tiles layer + building extrusion | D1 | L | new `3d` module (`module.yaml`), map | 3D Tiles layer renders alongside 2D; toggles cleanly |
@@ -504,7 +504,7 @@ allows. Phase 4 only starts when 1 + 3 (and ideally 2) are solid.
 
 > Goal: a clean, layered, **standards-exposing** platform where every module
 > composes onto shared **data**, **real-time**, and **AI** capabilities. Nothing
-> here changes the module contract — new capabilities are *core services* that
+> here changes the module contract - new capabilities are *core services* that
 > modules call, plus *optional modules* (3D, twin, splat) that add UI.
 
 ```
@@ -539,7 +539,7 @@ allows. Phase 4 only starts when 1 + 3 (and ideally 2) are solid.
 1. **One data plane.** Vectors (PostGIS) + rasters (COG in S3) + time-series +
    metadata/STAC all live in shared storage; modules never copy data around.
 2. **Standards at the edge.** OGC/STAC endpoints are *thin adapters* over the data
-   plane — adding a standard ≠ adding a data model.
+   plane - adding a standard ≠ adding a data model.
 3. **Everything async where it's heavy.** Jobs for ingest/analysis/inference/tiles.
 4. **Real-time via Redis.** Presence, notifications, and data events share one bus.
 5. **Provenance is structural.** Every derived artifact (tile, prediction, twin
@@ -575,7 +575,7 @@ allows. Phase 4 only starts when 1 + 3 (and ideally 2) are solid.
 **Rationale for COG + STAC as the spine.** They are the two formats the industry
 converging on, they make "archival imagery = a live, queryable dataset" (the
 article's #3 durable direction) trivial, and they let us be an *interop hub* with
-thin adapters — the compounding moat.
+thin adapters - the compounding moat.
 
 ---
 
@@ -585,7 +585,7 @@ thin adapters — the compounding moat.
 > standards + reliability layers the new pillars require. Keep hermetic (in-memory
 > SQLite / fakes) as the default; real infra only in a gated docker stage.
 
-- **L1 unit / L2 in-process / L3 API (ASGI) / L4 real-infra** — keep, enforce in CI.
+- **L1 unit / L2 in-process / L3 API (ASGI) / L4 real-infra** - keep, enforce in CI.
 - **Conformance (new, the moat).** OGC API **Features** & **Tiles** + **STAC**
   conformance test suites (or CITE) in the L4 stage. *If it's a standard, prove it.*
 - **Raster golden tests.** Fixed sample COG → expected tile bytes/metadata; pin
@@ -600,7 +600,7 @@ thin adapters — the compounding moat.
 - **Load/soak.** Concurrent uploads (job queue), sustained stream ingest, tile
   throughput (target: p95 tile < 200 ms for vector, < 400 ms for raster).
 - **Contract tests.** Frontend ↔ backend OpenAPI types; module `tools` contract
-  validator already in `lib/tools.ts` — add a test that asserts valid exports.
+  validator already in `lib/tools.ts` - add a test that asserts valid exports.
 - **Coverage & gates.** ≥ 80% line per module (core + each module); PR-blocking.
 
 ---
@@ -617,7 +617,7 @@ thin adapters — the compounding moat.
   dataset(s) → transform → output; AI outputs record model + version + inputs; twin
   state records its telemetry + rules. A "lineage" view per asset/dataset.
 - **Access & RBAC.** Complete the permission matrix (ensure *every* endpoint enforces
-  it — audit); keep the `ai:use`-style capability gates as the pattern for new
+  it - audit); keep the `ai:use`-style capability gates as the pattern for new
   capabilities (inference, streaming write, twin admin).
 - **Privacy & PII.** Review geolocation + identity coupling; field-level redaction in
   exports; consent/retention defaults; a privacy checklist per release.
@@ -654,7 +654,7 @@ thin adapters — the compounding moat.
 - **Adoption / interop:** # of external producers/consumers via STAC/OGC; # of
   datasets ingested; # of module↔core compositions (should be zero bespoke glue).
 - **Value:** # of decision-support surfaces (live dashboards, alerts, twin states);
-  time-to-insight (upload → usable analysis) — target: minutes, not sessions.
+  time-to-insight (upload → usable analysis) - target: minutes, not sessions.
 - **Reliability:** p95 tile latency (vec < 200 ms, raster < 400 ms); stream update
   < 1 s; job success rate > 99%; uptime.
 - **Quality:** coverage ≥ 80% per module; conformance suites green; e2e pass rate.
@@ -666,26 +666,26 @@ thin adapters — the compounding moat.
 
 ## 13. Open decisions (need a call)
 
-1. **Job engine:** Arq vs Celery (both on Redis) — pick one (A1).
+1. **Job engine:** Arq vs Celery (both on Redis) - pick one (A1).
 2. **Time-series:** native PostGIS `datetime` index vs **TimescaleDB** extension now
    vs later (C2/T-23).
-3. **Raster analytics:** rasterio/rio-tilers vs PostGIS-RASTER vs DuckDB — and at
+3. **Raster analytics:** rasterio/rio-tilers vs PostGIS-RASTER vs DuckDB - and at
    what scale (A2/T-14).
 4. **GeoAI hosting:** self-host ONNX/Ollama vs allow cloud VLMs behind the harness
    (B1, and the privacy posture in §10).
-5. **3D approach:** MapLibre 3D + Cesium 3D Tiles vs full CesiumJS — and whether
+5. **3D approach:** MapLibre 3D + Cesium 3D Tiles vs full CesiumJS - and whether
    splatting is Phase 4 or a separate "later" (D1/D2).
 6. **Public storage URL** strategy for presigned downloads (T-03): public base URL
    vs same-origin proxy vs object storage CDN.
 7. **Public release posture:** open-source the standards surface (good for adoption)
-   vs keep it private — affects the "help people in the long run" goal.
+   vs keep it private - affects the "help people in the long run" goal.
 
 ---
 
 ## 14. References
 
 - **Trend source:** BioMedware, *5 Geospatial Trends and Use Cases Shaping the
-  Industry* (Jul 2026), G. Jacquez — https://biomedware.com/5-geospatial-trends/
+  Industry* (Jul 2026), G. Jacquez - https://biomedware.com/5-geospatial-trends/
 - **Market data cited therein:** The Business Research Company, *Geospatial Analytics
   Global Market Report* (~$123B 2026 → >$243B 2030, ~19% CAGR).
 - **Standards (targets):** OGC API Features · OGC API Tiles · OGC API Records /
@@ -703,13 +703,13 @@ thin adapters — the compounding moat.
    to de-risk the two highest-value pillars.
 3. Decide items **1, 6, 7** in §13 so Phase 1 can proceed without rework.
 
-*Living document — add a dated addendum below instead of rewriting history.*
+*Living document - add a dated addendum below instead of rewriting history.*
 
 <!-- ADDENDUMS (append dated notes here) -->
 
 ---
 
-## Addendum — 2026-09-04 · Phase 0 foundations (non-CI, non-AI) — IMPLEMENTED
+## Addendum - 2026-09-04 · Phase 0 foundations (non-CI, non-AI) - IMPLEMENTED
 
 Per request, **CI (T-01/T-02) and the GeoAI pillar (Phase 3 / B*) were deferred**.
 The remaining Phase 0 "trust & foundations" tickets were implemented, with the
@@ -724,8 +724,8 @@ public API kept stable and the module contract untouched.
 | T-07 | ✅ | Basemaps are now data-driven: `BASEMAPS_CONFIG` (JSON list) overrides, optional MapTiler entry appended when `MAPTILER_KEY` set, built-in defaults otherwise. Invalid JSON falls back gracefully. | `app/api/viz/router.py` |
 | T-09 | ✅ | `data/service.py` (~1000-line god-file) decomposed into `data/ingest/{common,geojson,shapefile,kml,georss,csv,dispatcher}.py` + `data/crud.py`. `service.py` is now a thin re-export shim → **public API unchanged**, all existing callers/tests pass. | `app/api/data/*` |
 | T-10 | ✅ | Health expanded to component status: `GET /api/health` (liveness, 200) + `GET /api/health/ready` (readiness, 503 on degradation) probing **database / storage / redis** (best-effort, never crashes). | `app/core/health.py`, `main.py` |
-| T-08 | ⏭️ | Module registry/lock version sync + `setup sync` CI check — **skipped** (CI-deferred). | — |
-| T-01/T-02 | ⏭️ | CI + coverage gate — **skipped** (CI-deferred per request). | — |
+| T-08 | ⏭️ | Module registry/lock version sync + `setup sync` CI check - **skipped** (CI-deferred). | - |
+| T-01/T-02 | ⏭️ | CI + coverage gate - **skipped** (CI-deferred per request). | - |
 
 **Also fixed (pre-existing, unrelated to Phase 0 scope):** the ai-module test
 harness failed to import `app.api.profile.models`, so `users.primary_organization_id`
@@ -739,11 +739,11 @@ import in `modules/ai-module/backend/tests/conftest.py`.
 
 **Deliberately NOT done (deferred):** CI/CD, GeoAI inference (Pillar B), raster/STAC/OGC
 (Phase 1), real-time streaming (Phase 2), 3D/twin (Phase 4). Open decision **§13-1
-(job engine)** and **§13-6 (public storage URL strategy)** remain open — the T-03
+(job engine)** and **§13-6 (public storage URL strategy)** remain open - the T-03
 implementation supports *either* a public base URL **or** (next) a same-origin proxy.
 
 **Note on verification method:** tests were run via `uv run` in a throwaway
 `/tmp` env (`UV_PROJECT_ENVIRONMENT`), **not** a project `venv` and **not** the
-Compose stack — consistent with `.clinerules` §6 (hermetic pytest allowed). A full
+Compose stack - consistent with `.clinerules` §6 (hermetic pytest allowed). A full
 `docker compose up --build` browser verification of the presigned-URL/download
 flow is recommended before merge (see T-03 acceptance criterion).

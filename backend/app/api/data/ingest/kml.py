@@ -24,7 +24,7 @@ def parse_kml_bytes(file_bytes: bytes) -> list[dict[str, Any]]:
 
     def _parse_geometry(geom_el: ET.Element) -> dict[str, Any] | None:
         gtype = _local(geom_el.tag)
-        # KML orders coordinates as lon,lat,alt — geojson wants [lon, lat]
+        # KML orders coordinates as lon,lat,alt - geojson wants [lon, lat]
         coords_el = geom_el.find("./*")
         if coords_el is None or _local(coords_el.tag) != "coordinates":
             return None

@@ -10,7 +10,7 @@ T-09.
 
 This module now **only** re-exports the previous public (and test-used) names so
 that existing imports such as ``from app.api.data import service as svc`` keep
-working unchanged. Do NOT add new logic here — add it to the ``ingest`` or
+working unchanged. Do NOT add new logic here - add it to the ``ingest`` or
 ``crud`` modules.
 """
 from __future__ import annotations

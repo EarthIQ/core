@@ -35,7 +35,7 @@ import app.api.viz.router as viz_router
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# T-04 — production secret guardrail
+# T-04 - production secret guardrail
 # ────────────────────────────────────────────────────────────────────────────
 
 def _settings(**overrides) -> Settings:
@@ -93,7 +93,7 @@ def test_is_production_variants():
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# T-05 — rate limiting
+# T-05 - rate limiting
 # ────────────────────────────────────────────────────────────────────────────
 
 def test_sliding_window_limiter_basic():
@@ -150,7 +150,7 @@ async def test_rate_limit_does_not_affect_other_paths(rate_client):
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# T-06 — uniform error envelope
+# T-06 - uniform error envelope
 # ────────────────────────────────────────────────────────────────────────────
 
 def _error_app() -> FastAPI:
@@ -208,7 +208,7 @@ async def test_error_envelope_internal():
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# T-03 — presigned-URL host rewrite
+# T-03 - presigned-URL host rewrite
 # ────────────────────────────────────────────────────────────────────────────
 
 def test_apply_public_base_rewrites_host(monkeypatch):
@@ -241,7 +241,7 @@ def test_apply_public_base_noop_when_unset(monkeypatch):
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# T-07 — basemaps data-driven
+# T-07 - basemaps data-driven
 # ────────────────────────────────────────────────────────────────────────────
 
 def test_basemaps_override(monkeypatch):
@@ -269,7 +269,7 @@ def test_basemaps_invalid_json_falls_back(monkeypatch):
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# T-10 — component health (db / redis / storage)
+# T-10 - component health (db / redis / storage)
 # ────────────────────────────────────────────────────────────────────────────
 
 def test_parse_redis_url():
@@ -384,7 +384,7 @@ async def test_ready_503_when_degraded(health_client, monkeypatch):
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# T-06 — versioned /api/v1 API root (single prefix, no bare /api feature routes)
+# T-06 - versioned /api/v1 API root (single prefix, no bare /api feature routes)
 # ────────────────────────────────────────────────────────────────────────────
 
 async def test_versioned_prefix_serves_routes():

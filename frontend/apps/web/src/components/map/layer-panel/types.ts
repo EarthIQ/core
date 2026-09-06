@@ -21,7 +21,7 @@ export interface LayerTreeNode extends BaseTreeNode {
   layerType: LayerKind;
   visible: boolean;
   tileUrl?: string;
-  /** Source dataset id (catalog layer) — used to fetch the geometry summary. */
+  /** Source dataset id (catalog layer) - used to fetch the geometry summary. */
   datasetId?: string;
   /** Dominant geometry kind for vector layers (point / line / polygon). */
   geometryType?: GeometryType;

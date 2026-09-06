@@ -1,4 +1,4 @@
-"""Share service — business logic for the map/project share system.
+"""Share service - business logic for the map/project share system.
 
 Roles hierarchy (highest → lowest):
   owner > editor > commenter > viewer
@@ -215,7 +215,7 @@ async def search_people(db: AsyncSession, query: str, entity_id: Optional[str] =
             item = (await _resolve_entity(db, entity_id))[0]
             existing_emails = {e.email for e in item.user_access}
         except HTTPException:
-            pass  # unknown entity — return all matches
+            pass  # unknown entity - return all matches
 
     return [
         PeopleSearchResult(
@@ -237,7 +237,7 @@ async def invite(
     """Invite one or more email addresses to a map or project."""
     item, access_model, fk_name = await _require_manage(db, entity_id, actor)
 
-    # Owner cannot be assigned via invite — use transfer_ownership
+    # Owner cannot be assigned via invite - use transfer_ownership
     if body.role == "owner":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -324,7 +324,7 @@ async def update_role(
     if entry.role == "owner":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot change the owner's role directly — use Transfer Ownership",
+            detail="Cannot change the owner's role directly - use Transfer Ownership",
         )
     if new_role == "owner":
         raise HTTPException(

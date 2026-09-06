@@ -35,7 +35,7 @@ const FIELD_TYPES = [
 ];
 
 /**
- * Forms builder — design dynamic forms that collect data on this project.
+ * Forms builder - design dynamic forms that collect data on this project.
  *
  * Initial structure: a form list on the left and a field-type palette + form
  * canvas on the right. Field types are shown as selectable chips; the real

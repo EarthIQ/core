@@ -271,7 +271,7 @@ export function GroupsTab({
 
                     {/* Description */}
                     <td className="max-w-xs truncate px-6 py-4 text-xs text-text-secondary">
-                      {group.description || <span className="text-text-tertiary">—</span>}
+                      {group.description || <span className="text-text-tertiary">-</span>}
                     </td>
 
                     {/* Permissions Count */}

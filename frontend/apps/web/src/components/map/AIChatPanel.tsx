@@ -82,7 +82,7 @@ export default function AIChatPanel({
       id: "welcome",
       sender: "ai",
       text:
-        "Hi! Ask me to navigate, zoom, switch basemaps, or show/hide layers — " +
+        "Hi! Ask me to navigate, zoom, switch basemaps, or show/hide layers - " +
         "or just ask a question about your data. I'll get it done.",
       tone: "info",
       timestamp: new Date(),
@@ -194,7 +194,7 @@ export default function AIChatPanel({
             err instanceof Error && err.message ? err.message : "Tool failed.";
           pushMessage(
             "ai",
-            `Couldn't run that tool — ${msg}`,
+            `Couldn't run that tool - ${msg}`,
             "error",
             tc.name,
           );
@@ -209,7 +209,7 @@ export default function AIChatPanel({
         err instanceof Error && err.message
           ? err.message
           : "The AI service is unavailable right now.";
-      pushMessage("ai", `I couldn't do that — ${msg}`, "error");
+      pushMessage("ai", `I couldn't do that - ${msg}`, "error");
     } finally {
       setBusy(false);
     }

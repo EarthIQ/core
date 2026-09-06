@@ -13,7 +13,7 @@ export default function DataPageHeader({ onAddData }: Props) {
           <span className="text-primary">📊</span> Data Hub
         </h1>
         <p className="mt-1.5 text-sm text-text-secondary max-w-2xl">
-          Upload, manage, and inspect every common geospatial format — GeoJSON,
+          Upload, manage, and inspect every common geospatial format - GeoJSON,
           Shapefile, KML, GeoRSS, GeoTIFF/COG, GeoPackage, GeoParquet, and CSV.
         </p>
       </div>

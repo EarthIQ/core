@@ -105,7 +105,7 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
             margin={{
               top: title ? 20 : 10,
               right: 30,
-              // ✅ Set left to 0 — YAxis width prop handles its own space
+              // ✅ Set left to 0 - YAxis width prop handles its own space
               left: 0,
               bottom: xAxis?.label ? 30 : 10,
             }}

@@ -2,7 +2,7 @@ import React from "react";
 import { useModules } from "@/lib/modules";
 
 interface Props {
-  /** Module name to gate on — must match entry in modules.lock.yaml */
+  /** Module name to gate on - must match entry in modules.lock.yaml */
   name: string;
   fallback?: React.ReactNode;
   children: React.ReactNode;

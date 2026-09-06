@@ -155,7 +155,7 @@ export function ImportDataPortal({
     const toLayers: NewLayerInput[] = [];
 
     // Geometry profiles (dominant point/line/polygon) for the selected
-    // catalog vector datasets — best effort; import proceeds without them.
+    // catalog vector datasets - best effort; import proceeds without them.
     const isRasterType = (d: GeoDatasetOut) =>
       d.type === "raster" || d.type === "remote-sensing";
     const vectorDatasetIds = datasets

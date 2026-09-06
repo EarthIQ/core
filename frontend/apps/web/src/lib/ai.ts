@@ -5,7 +5,7 @@ import { api } from "./api";
  *
  * The harness is provider-agnostic (OpenAI-compatible, Anthropic, Ollama) and
  * lets any "section" of the app run an LLM with its own system prompt + context,
- * and — when it wants to act — invoke *tools* (``zoom_to_place``,
+ * and - when it wants to act - invoke *tools* (``zoom_to_place``,
  * ``set_basemap``, …). See ``modules/ai-module`` for the server side.
  *
  * Tool-calling model
@@ -110,7 +110,7 @@ export async function getAIConfig(): Promise<AIConfig> {
   return api.get<AIConfig>("/api/v1/ai/config");
 }
 
-/** List the tools the AI can invoke (metadata only — no executors). */
+/** List the tools the AI can invoke (metadata only - no executors). */
 export async function listAITools(): Promise<AITool[]> {
   return api.get<AITool[]>("/api/v1/ai/tools");
 }
@@ -189,7 +189,7 @@ const PLACE_GEO_PROMPT =
   "- Use well-known approximate coordinates; if ambiguous, pick the most prominent " +
   "one and note it in 'reason'.\n" +
   "- If you cannot resolve it confidently, set 'found' to false with 'center': [0, 20].\n" +
-  "- Output ONLY the JSON object — no prose, no markdown fences.";
+  "- Output ONLY the JSON object - no prose, no markdown fences.";
 
 /** The exact shape the geocoder is asked to return. */
 export interface PlaceResolution {
@@ -279,7 +279,7 @@ export async function dispatchToolCall(
         const label = resolved.place || place;
         return (
           `Flying to ${label} (≈ zoom ${resolved.zoom.toFixed(0)}).` +
-          (resolved.reason ? ` — ${resolved.reason}` : "")
+          (resolved.reason ? ` - ${resolved.reason}` : "")
         );
       }
       return `I couldn't confidently find “${place}”. Try a more specific city, landmark or a pair of coordinates.`;
@@ -296,7 +296,7 @@ export async function dispatchToolCall(
         map.fitBounds?.([sw, ne], { padding: Number(a.padding_px ?? 80) });
         return `Zoomed to fit the requested extent.`;
       }
-      return "That extent wasn't specific enough to fit — try a named region.";
+      return "That extent wasn't specific enough to fit - try a named region.";
     }
 
     case "zoom_by": {

@@ -1,6 +1,6 @@
-"""Profile / Organization / Preferences — Service layer (core).
+"""Profile / Organization / Preferences - Service layer (core).
 
-Pure business logic operating on an ``AsyncSession``. Does **not** commit — the
+Pure business logic operating on an ``AsyncSession``. Does **not** commit - the
 caller (the ``get_db`` dependency / router) owns the transaction.
 """
 from __future__ import annotations
@@ -337,7 +337,7 @@ async def set_primary_organization(db: AsyncSession, user: User, org_id: Optiona
     if org_id is None:
         user.primary_organization_id = None
         await db.flush()
-        # Return the (now none) primary — pick first membership.
+        # Return the (now none) primary - pick first membership.
         my = await list_my_organizations(db, user)
         if not my:
             raise HTTPException(status_code=400, detail="You have no organizations")

@@ -1,5 +1,5 @@
 /**
- * Settings — Appearance section (core).
+ * Settings - Appearance section (core).
  *
  * Live, server-synced customization: theme mode, accent color, font scale,
  * compact mode, map units and default basemap. Every control applies to the

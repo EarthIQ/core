@@ -1,4 +1,4 @@
-# EarthIQ Core — Test Case Plan
+# EarthIQ Core - Test Case Plan
 
 > Scope: **Backend** (`backend/app`) and key **Frontend** shared packages.
 > Convention (already in place): tests are layered **L1 → L4**.
@@ -18,8 +18,8 @@
 
 Before module tests, strengthen the harness:
 
-1. **`pytest.ini_options`** — add markers `unit`, `api`, `integration`, `slow`, `network`. Gate CI on `unit + api` by default; `integration` runs in a docker stage.
-2. **`conftest.py`** —
+1. **`pytest.ini_options`** - add markers `unit`, `api`, `integration`, `slow`, `network`. Gate CI on `unit + api` by default; `integration` runs in a docker stage.
+2. **`conftest.py`** -
    - Add fixtures: `owner_headers`, `editor_headers`, `viewer_headers`, `anonymous`, `group_admin_headers`, `group_member_headers`.
    - Add a `superuser_client` fixture (JWT with `is_superuser=True`).
    - Add `fake_s3` (`pytest-mock` over `app.core.storage`) and `fake_smtp` (capture outbound mail).
@@ -27,15 +27,15 @@ Before module tests, strengthen the harness:
 3. **`test_data/`** directory of canonical fixtures:
    - `sample_point.geojson`, `sample_linestring.geojson`, `sample_polygon.geojson`, `sample_mixed.geojson`, `invalid.geojson`, `huge.geojson` (for size limits).
    - `sample_users.json`, `sample_groups.json`, `sample_project.json`, `sample_map.json`.
-4. **Coverage** — add `pytest-cov` and a `coverage.xml` upload to CI. Target **≥ 80% line coverage** per module.
-5. **Test isolation** — every L3 test must pass with **parallel `pytest-xdist`** (verify no cross-test state via `Base.metadata.sorted_tables` wipe).
-6. **Determinism** — pin `time.time` / `freezegun` where timestamps are asserted.
+4. **Coverage** - add `pytest-cov` and a `coverage.xml` upload to CI. Target **≥ 80% line coverage** per module.
+5. **Test isolation** - every L3 test must pass with **parallel `pytest-xdist`** (verify no cross-test state via `Base.metadata.sorted_tables` wipe).
+6. **Determinism** - pin `time.time` / `freezegun` where timestamps are asserted.
 
 ---
 
 ## 1. `app.core` (foundation)
 
-### 1.1 `app.core.security` — **L1** (already 113 lines, mostly covered)
+### 1.1 `app.core.security` - **L1** (already 113 lines, mostly covered)
 
 | ID     | Case                                  | Expected                                     |
 | ------ | ------------------------------------- | -------------------------------------------- |
@@ -56,7 +56,7 @@ Before module tests, strengthen the harness:
 | SEC-15 | Token missing `sub`                   | `KeyError` or `JWTError` (decided behaviour) |
 | SEC-16 | `alg: none` attack                    | rejected                                     |
 
-### 1.2 `app.core.config` — **L1**
+### 1.2 `app.core.config` - **L1**
 
 | ID     | Case                                | Expected                           |
 | ------ | ----------------------------------- | ---------------------------------- |
@@ -66,7 +66,7 @@ Before module tests, strengthen the harness:
 | CFG-04 | Invalid enum-ish field              | pydantic raises                    |
 | CFG-05 | `.env` file loaded when present     | values applied                     |
 
-### 1.3 `app.core.db` — **L1/L2**
+### 1.3 `app.core.db` - **L1/L2**
 
 | ID    | Case                                              | Expected                         |
 | ----- | ------------------------------------------------- | -------------------------------- |
@@ -75,7 +75,7 @@ Before module tests, strengthen the harness:
 | DB-03 | `Base.metadata.sorted_tables` includes all models | all 4 migrations' tables present |
 | DB-04 | FK enforcement (SQLite pragma)                    | orphan delete rejected           |
 
-### 1.4 `app.core.storage` — **L2 (fake S3) + L4 (real RustFS)**
+### 1.4 `app.core.storage` - **L2 (fake S3) + L4 (real RustFS)**
 
 | ID     | Case                                                  | Expected                          |
 | ------ | ----------------------------------------------------- | --------------------------------- |
@@ -96,9 +96,9 @@ Before module tests, strengthen the harness:
 
 ---
 
-## 2. `app.api.auth` — **L3 (mostly covered) + L1 schemas**
+## 2. `app.api.auth` - **L3 (mostly covered) + L1 schemas**
 
-### 2.1 Schemas — **L1**
+### 2.1 Schemas - **L1**
 
 | ID     | Case                                                       |
 | ------ | ---------------------------------------------------------- |
@@ -109,9 +109,9 @@ Before module tests, strengthen the harness:
 | AUA-05 | `GroupIn.permissions` dedupes IDs                          |
 | AUA-06 | `TokenIn` normalises email to lowercase                    |
 
-### 2.2 Service — **L2 (DB fake) — optional**, since L3 covers them.
+### 2.2 Service - **L2 (DB fake) - optional**, since L3 covers them.
 
-### 2.3 Router / API — **L3** (extend `test_auth_api.py`)
+### 2.3 Router / API - **L3** (extend `test_auth_api.py`)
 
 | ID     | Case                                                                              |
 | ------ | --------------------------------------------------------------------------------- |
@@ -134,18 +134,18 @@ Before module tests, strengthen the harness:
 | AUB-17 | **NEW**: `DELETE /users/{id}` refuses to delete last superuser                    |
 | AUB-18 | `PUT /users/{id}` toggle `is_superuser`                                           |
 | AUB-19 | `POST /groups` + `PUT /groups/{id}` round-trip (existing partial)                 |
-| AUB-20 | `DELETE /groups/{id}` — members lose permissions immediately                      |
+| AUB-20 | `DELETE /groups/{id}` - members lose permissions immediately                      |
 | AUB-21 | `PUT /users/{id}/groups` assign/unassign                                          |
 | AUB-22 | **NEW**: `PUT /users/{id}/groups` refuses unknown group → 404                     |
-| AUB-23 | **NEW**: Concurrency — two `POST /register` same email → exactly one 201, one 409 |
+| AUB-23 | **NEW**: Concurrency - two `POST /register` same email → exactly one 201, one 409 |
 | AUB-24 | **NEW**: Token with expired `exp` rejected at `/me`                               |
 | AUB-25 | **NEW**: Token signed with different `jwt_secret` rejected                        |
 
 ---
 
-## 3. `app.api.maps` — **L3 (primary) + L4 (PostGIS)**
+## 3. `app.api.maps` - **L3 (primary) + L4 (PostGIS)**
 
-### 3.1 Permission matrix (`compute_user_permission`) — **L1**
+### 3.1 Permission matrix (`compute_user_permission`) - **L1**
 
 Build a table-driven test (parametrised over `(user_state, map_state, expected)`):
 
@@ -162,11 +162,11 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 | MPA-09 | Member of group w/ `admin`             | private                                                      | `admin`               |
 | MPA-10 | `user_access.role=editor`              | private                                                      | `write`               |
 | MPA-11 | `user_access.role=pending`             | private                                                      | **ignored**           |
-| MPA-12 | Combined public + group `write`        | —                                                            | `write`               |
-| MPA-13 | Combined `user_access=viewer` + public | —                                                            | `read` (highest wins) |
-| MPA-14 | Group `read` + `user_access=editor`    | —                                                            | `write`               |
+| MPA-12 | Combined public + group `write`        | -                                                            | `write`               |
+| MPA-13 | Combined `user_access=viewer` + public | -                                                            | `read` (highest wins) |
+| MPA-14 | Group `read` + `user_access=editor`    | -                                                            | `write`               |
 
-### 3.2 Router — **L3**
+### 3.2 Router - **L3**
 
 | ID     | Case                                                                                       |
 | ------ | ------------------------------------------------------------------------------------------ |
@@ -187,12 +187,12 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 | MPB-15 | `POST /maps/{id}/share` upserts groups (add, change, remove)                               |
 | MPB-16 | **NEW**: `PUT /maps/{id}` cannot change `owner_id`                                         |
 | MPB-17 | **NEW**: `GET /maps/{id}` with `share_link_enabled` returns `share_token` only to managers |
-| MPB-18 | **NEW**: Validation — `center_lng` outside ±180 → 422                                      |
-| MPB-19 | **NEW**: Validation — `zoom` outside [0, 22] → 422                                         |
+| MPB-18 | **NEW**: Validation - `center_lng` outside ±180 → 422                                      |
+| MPB-19 | **NEW**: Validation - `zoom` outside [0, 22] → 422                                         |
 | MPB-20 | **NEW**: `layers_config` non-list → 422                                                    |
 | MPB-21 | **NEW**: `layers_config` items with unknown keys → 422                                     |
 
-### 3.3 Share sub-module — **L3 + L2 for email**
+### 3.3 Share sub-module - **L3 + L2 for email**
 
 | ID     | Case                                                                                         |
 | ------ | -------------------------------------------------------------------------------------------- |
@@ -222,12 +222,12 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 | SHR-24 | `GET /maps/invite/accept?token=...` unknown token → 404                                      |
 | SHR-25 | `GET /maps/invite/accept?token=...` already consumed → 404                                   |
 | SHR-26 | `GET /maps/{id}/share` anonymous + `share_link_enabled` → 200 (viewer view)                  |
-| SHR-27 | **NEW**: Email template renders (Jinja2) — snapshot test                                     |
+| SHR-27 | **NEW**: Email template renders (Jinja2) - snapshot test                                     |
 | SHR-28 | **NEW**: `send_invite_email` SMTP failure → logged, request still succeeds                   |
 | SHR-29 | **NEW**: Token entropy ≥ 256 bits                                                            |
 | SHR-30 | **NEW**: Rate limit `POST .../invite` (e.g. 10/min per map)                                  |
 
-### 3.4 `ConnectionManager` — **L2** (already covered — extend)
+### 3.4 `ConnectionManager` - **L2** (already covered - extend)
 
 | ID     | Case                                                               |
 | ------ | ------------------------------------------------------------------ |
@@ -240,15 +240,15 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 | COL-07 | Unknown user msg ignored (existing)                                |
 | COL-08 | Broken socket evicted during broadcast (existing)                  |
 | COL-09 | **NEW**: Concurrent connects (N users) → each sees N-1 in snapshot |
-| COL-10 | **NEW**: Heartbeat / liveness — manager evicts idle sockets        |
-| COL-11 | **NEW**: Room namespacing — different projects isolated            |
+| COL-10 | **NEW**: Heartbeat / liveness - manager evicts idle sockets        |
+| COL-11 | **NEW**: Room namespacing - different projects isolated            |
 | COL-12 | **NEW**: Reconnect same user → room state preserved                |
 | COL-13 | **NEW**: Message size cap (e.g. 64 KB)                             |
 | COL-14 | **NEW**: Presence payload validation (bad shape dropped)           |
 
 ---
 
-## 4. `app.api.projects` — **L3**
+## 4. `app.api.projects` - **L3**
 
 | ID     | Case                                                                 |
 | ------ | -------------------------------------------------------------------- |
@@ -266,13 +266,13 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 | PRJ-12 | `POST /projects/{id}/maps` with `group_access` persists              |
 | PRJ-13 | **NEW**: `POST /projects/{id}/maps` unknown project → 404            |
 | PRJ-14 | **NEW**: `PUT /projects/{id}` `title` empty → 422                    |
-| PRJ-15 | **NEW**: Pagination — `limit`/`offset` on list                       |
+| PRJ-15 | **NEW**: Pagination - `limit`/`offset` on list                       |
 
 ---
 
-## 5. `app.api.data` — **L3 (catalogue) + L4 (PostGIS ingest/MVT)**
+## 5. `app.api.data` - **L3 (catalogue) + L4 (PostGIS ingest/MVT)**
 
-### 5.1 Layer catalogue (in-memory stub) — **L1/L3**
+### 5.1 Layer catalogue (in-memory stub) - **L1/L3**
 
 | ID     | Case                                                       |
 | ------ | ---------------------------------------------------------- |
@@ -283,7 +283,7 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 | DAT-05 | `GET /data/raster/{id}` valid → RasterLayerMeta + tile_url |
 | DAT-06 | `GET /data/raster/{id}` unknown → 404                      |
 
-### 5.2 Dataset catalogue — **L3**
+### 5.2 Dataset catalogue - **L3**
 
 | ID     | Case                                          |
 | ------ | --------------------------------------------- |
@@ -293,7 +293,7 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 | DTD-04 | `GET /datasets?limit=1&offset=1` pagination   |
 | DTD-05 | `DELETE /datasets/{id}` unknown → 404         |
 
-### 5.3 Ingest — **L4 (PostGIS)**
+### 5.3 Ingest - **L4 (PostGIS)**
 
 | ID     | Case                                                              |
 | ------ | ----------------------------------------------------------------- |
@@ -304,13 +304,13 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 | DTI-05 | Upload > 500 MB → 413 (use mocked `UploadFile`)                   |
 | DTI-06 | Upload bad content type (`image/png`) → 415                       |
 | DTI-07 | Upload with `text/csv` (allowed prefix) → accepted                |
-| DTI-08 | Tags parsing — comma, spaces, empty → default `["uploaded"]`      |
+| DTI-08 | Tags parsing - comma, spaces, empty → default `["uploaded"]`      |
 | DTI-09 | **NEW**: Multi-CRS dataset (EPSG:3857) → correctly stored in 4326 |
 | DTI-10 | **NEW**: `attributes` extracted from first feature's properties   |
-| DTI-11 | **NEW**: Concurrency — two uploads, no id collision               |
+| DTI-11 | **NEW**: Concurrency - two uploads, no id collision               |
 | DTI-12 | **NEW**: Dataset deletion removes all features (FK cascade)       |
 
-### 5.4 MVT tiles — **L4 (PostGIS)**
+### 5.4 MVT tiles - **L4 (PostGIS)**
 
 | ID     | Case                                                                         |
 | ------ | ---------------------------------------------------------------------------- |
@@ -325,7 +325,7 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 
 ---
 
-## 6. `app.api.storage` — **L2 (mock boto3) + L4 (RustFS)**
+## 6. `app.api.storage` - **L2 (mock boto3) + L4 (RustFS)**
 
 | ID     | Case                                                               |
 | ------ | ------------------------------------------------------------------ |
@@ -349,18 +349,18 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 
 ---
 
-## 7. `app.api.viz` — **L1**
+## 7. `app.api.viz` - **L1**
 
 | ID     | Case                                                                           |
 | ------ | ------------------------------------------------------------------------------ |
 | VIZ-01 | `GET /viz/basemaps` returns ≥ 3 entries with `id`, `name`, `style_url`         |
 | VIZ-02 | `GET /viz/config` returns `default_basemap` in list                            |
-| VIZ-03 | **NEW**: Schema validation — no `preview_url` field on some entries (optional) |
-| VIZ-04 | **NEW**: Stability test — IDs do not change across restarts                    |
+| VIZ-03 | **NEW**: Schema validation - no `preview_url` field on some entries (optional) |
+| VIZ-04 | **NEW**: Stability test - IDs do not change across restarts                    |
 
 ---
 
-## 8. `app.api.modules` — **L1 (file I/O mocked)**
+## 8. `app.api.modules` - **L1 (file I/O mocked)**
 
 | ID     | Case                                                                    |
 | ------ | ----------------------------------------------------------------------- |
@@ -371,13 +371,13 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 | MOD-05 | `GET /modules/registry` returns all registry entries                    |
 | MOD-06 | `GET /modules/{name}` installed → 200                                   |
 | MOD-07 | `GET /modules/{name}` not installed → 404                               |
-| MOD-08 | **NEW**: `_build_module_info` caps parsing — `capabilities` extras list |
+| MOD-08 | **NEW**: `_build_module_info` caps parsing - `capabilities` extras list |
 | MOD-09 | **NEW**: Registry read with missing file → `{}`                         |
 | MOD-10 | **NEW**: Path traversal in `module.yaml` path rejected                  |
 
 ---
 
-## 9. `app.module_loader` + `app.main` — **L2**
+## 9. `app.module_loader` + `app.main` - **L2**
 
 | ID     | Case                                                                                   |
 | ------ | -------------------------------------------------------------------------------------- |
@@ -393,7 +393,7 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 
 ---
 
-## 10. Migrations (Alembic) — **L4**
+## 10. Migrations (Alembic) - **L4**
 
 | ID     | Case                                                         |
 | ------ | ------------------------------------------------------------ |
@@ -409,11 +409,11 @@ Build a table-driven test (parametrised over `(user_state, map_state, expected)`
 
 Use **Vitest + Testing Library** (already wired in `packages/map`).
 
-### 11.1 `packages/map/src/utils/formats.ts` — **L1** (already present)
+### 11.1 `packages/map/src/utils/formats.ts` - **L1** (already present)
 
-Add: `formatLatLng`, `formatZoom`, `formatBasemapId` — table-driven over valid/invalid inputs.
+Add: `formatLatLng`, `formatZoom`, `formatBasemapId` - table-driven over valid/invalid inputs.
 
-### 11.2 `packages/ui` — **L1 / L2**
+### 11.2 `packages/ui` - **L1 / L2**
 
 | ID    | Case                                                           |
 | ----- | -------------------------------------------------------------- |
@@ -421,10 +421,10 @@ Add: `formatLatLng`, `formatZoom`, `formatBasemapId` — table-driven over valid
 | UI-02 | Modal focus-trap: Tab cycles inside modal                      |
 | UI-03 | Modal Escape closes                                            |
 | UI-04 | Toast auto-dismiss on timeout                                  |
-| UI-05 | **NEW**: A11y — all interactive elements have accessible names |
+| UI-05 | **NEW**: A11y - all interactive elements have accessible names |
 | UI-06 | **NEW**: Dark/light theme tokens swap correctly                |
 
-### 11.3 `packages/accessibility` — **L1**
+### 11.3 `packages/accessibility` - **L1**
 
 | ID      | Case                                                 |
 | ------- | ---------------------------------------------------- |
@@ -432,7 +432,7 @@ Add: `formatLatLng`, `formatZoom`, `formatBasemapId` — table-driven over valid
 | A11Y-02 | `useReducedMotion` respects `prefers-reduced-motion` |
 | A11Y-03 | **NEW**: `ContrastChecker` flags below-AA pairs      |
 
-### 11.4 `apps/web` — **E2E (Playwright)**
+### 11.4 `apps/web` - **E2E (Playwright)**
 
 | ID     | Case                                                     |
 | ------ | -------------------------------------------------------- |
@@ -456,7 +456,7 @@ Add: `formatLatLng`, `formatZoom`, `formatBasemapId` — table-driven over valid
 | SEC-G03 | SQL-injection in `?search=`                               | `sqlmap` smoke         |
 | SEC-G04 | Path traversal `/storage/../../etc/passwd`                | manual + test          |
 | SEC-G05 | CORS bypass                                               | `curl` matrix          |
-| SEC-G06 | Session fixation (no cookies used — verify)               | manual                 |
+| SEC-G06 | Session fixation (no cookies used - verify)               | manual                 |
 | SEC-G07 | XSS in `title` / `description` (HTML escaped)             | jsdom render           |
 | SEC-G08 | **NEW**: Header `X-Content-Type-Options: nosniff` present | integration            |
 | SEC-G09 | **NEW**: `Cache-Control: no-store` on `/me`               | integration            |
@@ -538,12 +538,12 @@ backend/tests/
 
 ---
 
-## 17. Module Lifecycle (CLI / `setup_cli`) — **L1 + L2**
+## 17. Module Lifecycle (CLI / `setup_cli`) - **L1 + L2**
 
 > Tests the full module lifecycle: install → wire → sync → remove.
 > All tests use a **temp directory** as `ROOT` (monkeypatch `setup_cli.registry.ROOT`).
 
-### 17.1 `setup_cli.registry` — **L1**
+### 17.1 `setup_cli.registry` - **L1**
 
 | ID     | Case                                                           |
 | ------ | -------------------------------------------------------------- |
@@ -556,7 +556,7 @@ backend/tests/
 | REG-07 | `load_module_meta()` valid → parsed dict                       |
 | REG-08 | `load_module_meta()` missing file → raises (FileNotFoundError) |
 
-### 17.2 `setup_cli.installer` — **L2 (subprocess mocked)**
+### 17.2 `setup_cli.installer` - **L2 (subprocess mocked)**
 
 | ID      | Case                                                                  |
 | ------- | --------------------------------------------------------------------- |
@@ -573,7 +573,7 @@ backend/tests/
 | INST-11 | `remove_module()` directory root-owned → docker fallback invoked      |
 | INST-12 | `remove_module()` docker fallback fails → `shutil.rmtree` with chmod  |
 
-### 17.3 `setup_cli.workspace` — **L2 (file I/O)**
+### 17.3 `setup_cli.workspace` - **L2 (file I/O)**
 
 | ID    | Case                                                                         |
 | ----- | ---------------------------------------------------------------------------- |
@@ -587,7 +587,7 @@ backend/tests/
 | WS-08 | `update_frontend_workspace()` module without `frontend` → skipped            |
 | WS-09 | `update_frontend_workspace()` custom `entry` path → correct rel path         |
 
-### 17.4 `setup_cli.codegen` — **L1 (file I/O)**
+### 17.4 `setup_cli.codegen` - **L1 (file I/O)**
 
 | ID    | Case                                                            |
 | ----- | --------------------------------------------------------------- |
@@ -598,7 +598,7 @@ backend/tests/
 | CG-05 | Old `modules.generated.ts` tombstone written if it exists       |
 | CG-06 | **NEW**: Generated file passes ESLint (no unused vars, etc.)    |
 
-### 17.5 `setup_cli.compose` — **L2 (file I/O)**
+### 17.5 `setup_cli.compose` - **L2 (file I/O)**
 
 | ID     | Case                                                                |
 | ------ | ------------------------------------------------------------------- |
@@ -610,7 +610,7 @@ backend/tests/
 | CMP-06 | **NEW**: Output is valid YAML (parse back successfully)             |
 | CMP-07 | **NEW**: Service name collision (2 modules same svc) → both present |
 
-### 17.6 `setup_cli.cli` — **L2 (subprocess + file I/O mocked)**
+### 17.6 `setup_cli.cli` - **L2 (subprocess + file I/O mocked)**
 
 | ID     | Case                                                               |
 | ------ | ------------------------------------------------------------------ |
@@ -623,7 +623,7 @@ backend/tests/
 
 ---
 
-## 18. Module Runtime Integration — **L2/L3**
+## 18. Module Runtime Integration - **L2/L3**
 
 > Verifies that a real (stub) module's backend router is correctly mounted and functional
 > when loaded via `module_loader.load_modules()`.
@@ -636,14 +636,14 @@ backend/tests/
 | MRT-04 | Two modules with overlapping route prefix → no crash, last wins (or error)             |
 | MRT-05 | Module with `backend.models_attr` that imports a broken module → logged, app continues |
 | MRT-06 | Module with `router_attr` pointing to non-existent attribute → skipped                 |
-| MRT-07 | **NEW**: Module health check — `GET /api/{mod}/health` responds                        |
+| MRT-07 | **NEW**: Module health check - `GET /api/{mod}/health` responds                        |
 | MRT-08 | **NEW**: Module version mismatch (lock `ref` ≠ `module.yaml` version) → warning logged |
-| MRT-09 | **NEW**: Hot-swap simulation — unload + reload module (no memory leak)                 |
+| MRT-09 | **NEW**: Hot-swap simulation - unload + reload module (no memory leak)                 |
 | MRT-10 | **NEW**: Module with circular import → clean error, app unaffected                     |
 
 ---
 
-## 19. Frontend Module Registry — **L1 (vitest)**
+## 19. Frontend Module Registry - **L1 (vitest)**
 
 > Tests the generated `module-registry.generated.ts` and the runtime gating logic in `App.tsx`.
 
@@ -652,12 +652,12 @@ backend/tests/
 | FMR-01 | `moduleRegistry` keys match `modules.lock.yaml` selected names                          |
 | FMR-02 | Each lazy import resolves to a module with `Page`, `routePath`, `navItem`               |
 | FMR-03 | Empty registry → `moduleRegistry = {}` (no dangling imports)                            |
-| FMR-04 | **NEW**: Runtime gate — `/api/modules` says module disabled → route NOT mounted         |
-| FMR-05 | **NEW**: Runtime gate — module in registry but NOT in lock → NOT mounted                |
+| FMR-04 | **NEW**: Runtime gate - `/api/modules` says module disabled → route NOT mounted         |
+| FMR-05 | **NEW**: Runtime gate - module in registry but NOT in lock → NOT mounted                |
 | FMR-06 | **NEW**: Nav bar shows only enabled modules' `navItem` entries                          |
 | FMR-07 | **NEW**: Module `Page` component renders without crashing (smoke)                       |
 | FMR-08 | **NEW**: Module lazy-load failure (import throws) → error boundary shown, app continues |
-| FMR-09 | **NEW**: TypeScript — `ModuleBundle` interface enforced by type-check                   |
+| FMR-09 | **NEW**: TypeScript - `ModuleBundle` interface enforced by type-check                   |
 
 ---
 

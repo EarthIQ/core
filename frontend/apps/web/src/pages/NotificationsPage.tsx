@@ -1,5 +1,5 @@
 /**
- * Notification Center (core) — /notifications.
+ * Notification Center (core) - /notifications.
  *
  * Full list of the user's notifications with:
  *   • live unread count + connection status (WebSocket)

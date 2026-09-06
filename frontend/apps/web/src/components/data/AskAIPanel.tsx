@@ -44,7 +44,7 @@ function nextId() {
 }
 
 const SYSTEM_PROMPT = [
-  "You are EarthIQ's dataset assistant — an expert in geospatial data, GIS, and spatial analysis.",
+  "You are EarthIQ's dataset assistant - an expert in geospatial data, GIS, and spatial analysis.",
   "You are answering questions about ONE specific dataset, using the provided dataset facts, attribute schema, sample rows, and geometry profile as your source of truth.",
   "",
   "Guidelines:",
@@ -157,7 +157,7 @@ export default function AskAIPanel({
     getAIConfig()
       .then((cfg) => !cancelled && setConfig(cfg))
       .catch(() => {
-        /* non-fatal — the harness may still work */
+        /* non-fatal - the harness may still work */
       });
     getGeometrySummary(dataset.id)
       .then((g) => !cancelled && setGeometry(g))
@@ -245,7 +245,7 @@ export default function AskAIPanel({
         if (status === 404) msg = "The AI service isn't available in this deployment.";
         else if (status === 503)
           msg = "AI is not configured yet. Add a provider API key (Admin → AI) to enable this.";
-        else if (status === 401) msg = "Your session expired — sign in again to use AI.";
+        else if (status === 401) msg = "Your session expired - sign in again to use AI.";
         else if (status === 403)
           msg = "You don't have permission to use AI (needs the 'ai:use' permission).";
         setSendError(msg);
@@ -342,7 +342,7 @@ export default function AskAIPanel({
               Ask anything about this dataset
             </h4>
             <p className="mb-4 max-w-sm text-xs text-subtle">
-              Grounded in <strong className="text-muted">{dataset.name}</strong> — its{" "}
+              Grounded in <strong className="text-muted">{dataset.name}</strong> - its{" "}
               {dataset.format} features, {attributeCount} attribute
               {attributeCount === 1 ? "" : "s"}, and{" "}
               {isRaster ? "raster" : geometry?.dominant ?? "vector"} geometry.
@@ -434,7 +434,7 @@ export default function AskAIPanel({
           <span>
             {config?.configured
               ? `Powered by ${config.provider} · ${config.model}`
-              : "AI harness — provider not yet configured"}
+              : "AI harness - provider not yet configured"}
           </span>
           <span className="flex items-center gap-1">
             <Sparkles size={10} /> Grounded in this dataset

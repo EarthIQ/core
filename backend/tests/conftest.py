@@ -31,9 +31,9 @@ from app.core.db import Base, get_db
 from app.api.auth.router import router as auth_router
 from app.api.notifications.router import router as notifications_router
 from app.api.profile.router import router as profile_router
-import app.api.auth.models  # noqa: F401 — registers users, groups, permissions
-import app.api.notifications.models  # noqa: F401 — registers notification tables
-import app.api.profile.models  # noqa: F401 — registers organizations, memberships, prefs
+import app.api.auth.models  # noqa: F401 - registers users, groups, permissions
+import app.api.notifications.models  # noqa: F401 - registers notification tables
+import app.api.profile.models  # noqa: F401 - registers organizations, memberships, prefs
 
 
 # Tables the hermetic test app actually uses. We deliberately do **not** create

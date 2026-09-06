@@ -1,4 +1,4 @@
-# EarthIQ Core — Pluggable Monolith Framework
+# EarthIQ Core - Pluggable Monolith Framework
 
 EarthIQ Core is a pluggable-monolith geospatial platform powered by FastAPI (Backend), React/Vite (Frontend shell), PostGIS, Redis, and RustFS (S3-compatible Object Storage). Modules can be dynamically added or removed via the `setup` CLI tool.
 

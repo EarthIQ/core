@@ -318,7 +318,7 @@ export function UsersTab({
                         </div>
                         <div>
                           <div className="font-medium text-text-primary">
-                            {userItem.full_name || "—"}
+                            {userItem.full_name || "-"}
                           </div>
                           <div className="text-xs text-text-tertiary sm:hidden">
                             {userItem.email}

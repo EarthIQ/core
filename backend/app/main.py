@@ -30,13 +30,13 @@ from app.api.maps.share.router import router as share_util_router
 from app.api.maps.share.router import entity_share_router
 
 # ── Ensure all ORM models are registered with Base.metadata ──────────────────
-import app.api.auth.models  # noqa: F401 — registers User, Group, Permission
-import app.api.data.models  # noqa: F401 — registers GeoDataset, GeoFeature
+import app.api.auth.models  # noqa: F401 - registers User, Group, Permission
+import app.api.data.models  # noqa: F401 - registers GeoDataset, GeoFeature
 import app.api.projects.models  # noqa: F401
-import app.api.maps.models  # noqa: F401 — registers MapModel, MapGroupAccess, MapUserAccess
-import app.api.maps.share.models  # noqa: F401 — registers AccessRequest
-import app.api.notifications.models  # noqa: F401 — registers notification tables
-import app.api.profile.models  # noqa: F401 — registers organizations, memberships, prefs
+import app.api.maps.models  # noqa: F401 - registers MapModel, MapGroupAccess, MapUserAccess
+import app.api.maps.share.models  # noqa: F401 - registers AccessRequest
+import app.api.notifications.models  # noqa: F401 - registers notification tables
+import app.api.profile.models  # noqa: F401 - registers organizations, memberships, prefs
 
 
 @asynccontextmanager
@@ -123,8 +123,8 @@ async def health_readiness():
 
 # ── Core routers ──────────────────────────────────────────────────────────────
 # All core + module routes are served under a single versioned root,
-# ``/api/v1``. (The previous bare ``/api`` mount was a 1:1 alias — ticket
-# T-06 — and has been retired so ``/api/v1`` is the one and only API prefix.)
+# ``/api/v1``. (The previous bare ``/api`` mount was a 1:1 alias - ticket
+# T-06 - and has been retired so ``/api/v1`` is the one and only API prefix.)
 _CORE_ROUTERS = [
     (auth_router, "/auth"),
     (data_router, "/data"),

@@ -1,5 +1,5 @@
 """
-L4 — Integration test for the **geometry summary** endpoint against real PostGIS.
+L4 - Integration test for the **geometry summary** endpoint against real PostGIS.
 
 Requires a running PostgreSQL + PostGIS (e.g. the Compose ``db`` service).
 Skipped automatically when the database is unreachable.

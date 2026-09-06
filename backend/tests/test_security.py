@@ -1,5 +1,5 @@
 """
-L1 — Unit tests for ``app.core.security`` (pure functions, no I/O).
+L1 - Unit tests for ``app.core.security`` (pure functions, no I/O).
 
 Covers:
   • Password hashing / verification (SHA-256 → bcrypt, long-password fallback)

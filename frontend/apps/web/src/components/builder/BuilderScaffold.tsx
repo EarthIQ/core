@@ -28,7 +28,7 @@ interface BuilderScaffoldProps {
  *  - the general BuilderPicker, so users can hop between builders
  *  - a placeholder body until each builder’s editor ships
  *
- * Pages build on this scaffold — swap `children` for the real editor when the
+ * Pages build on this scaffold - swap `children` for the real editor when the
  * builder is implemented. This component never knows a builder name directly;
  * it receives its definition via props.
  */
@@ -49,14 +49,14 @@ export function BuilderScaffold({
         if (active) setProjectTitle(p.title);
       })
       .catch(() => {
-        /* project may be unreachable — title stays generic */
+        /* project may be unreachable - title stays generic */
       });
     return () => {
       active = false;
     };
   }, [projectId]);
 
-  /** No project selected — ask the user to open a project first. */
+  /** No project selected - ask the user to open a project first. */
   if (!projectId) {
     return (
       <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center text-center">
@@ -160,7 +160,7 @@ export function BuilderScaffold({
                 <p className="mt-4 text-sm leading-relaxed text-[var(--text-secondary)]">
                   The <strong>{builder.label}</strong> editor for this project
                   is being developed. The page structure, routing and project
-                  scoping are wired up and ready — the builder surface will live
+                  scoping are wired up and ready - the builder surface will live
                   here.
                 </p>
 

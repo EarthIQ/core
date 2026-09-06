@@ -19,7 +19,7 @@ def load_modules(app, prefix: str = "/api/v1") -> None:
     app or :class:`APIRouter`) is accepted.
     """
     if not LOCK_FILE.exists():
-        logger.info("No modules.lock.yaml — running core with zero modules.")
+        logger.info("No modules.lock.yaml - running core with zero modules.")
         return
 
     lock = yaml.safe_load(LOCK_FILE.read_text()) or {}

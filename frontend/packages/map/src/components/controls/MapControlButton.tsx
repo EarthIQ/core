@@ -14,7 +14,7 @@ import { cn } from "@packages/ui";
 // A floating panel that anchors to the left or right edge of a
 // map (or any position-relative ancestor). It stacks its children
 // vertically and provides a translucent, blurred backdrop with a
-// rounded border and drop-shadow — matching the visual language of
+// rounded border and drop-shadow - matching the visual language of
 // common map-control toolbars (zoom, compass, layer pickers, etc.).
 //
 // Usage:
@@ -117,7 +117,7 @@ export function ControlGroup({
 
 interface ControlButtonProps {
   /**
-   * A React node rendered at the centre of the button — typically a
+   * A React node rendered at the centre of the button - typically a
    * 16–20 px SVG icon component.
    */
   icon: ReactNode;
@@ -183,7 +183,7 @@ export function ControlButton({
       className={cn(
         // ── Layout ───────────────────────────────────────────────
         // Centred flex container sized to a fixed 36 × 36 px tap
-        // target — large enough for comfortable touch interaction
+        // target - large enough for comfortable touch interaction
         // while remaining compact in a vertical stack.
         "flex items-center justify-center",
         "h-9 w-10",
@@ -265,7 +265,7 @@ export const useFlyoutContext = () => useContext(FlyoutContext);
 // A ControlButton that, when clicked, opens a flyout panel built from
 // a real <ControlGroup>. The flyout reuses the exact same visual
 // treatment (rounded corners, blur, border, shadow) as the primary
-// toolbar — keeping the design language perfectly consistent.
+// toolbar - keeping the design language perfectly consistent.
 //
 // The flyout panel is positioned absolutely relative to the trigger
 // button and supports both horizontal side placement and vertical
@@ -284,7 +284,7 @@ export const useFlyoutContext = () => useContext(FlyoutContext);
 //     <ControlButton icon={<Mountain />}  label="Terrain"   onClick={…} />
 //   </ControlButtonFlyout>
 //
-// The children are rendered inside a <ControlGroup> — so you use the
+// The children are rendered inside a <ControlGroup> - so you use the
 // same <ControlButton>, <ControlDivider>, and even nested
 // <ControlButtonFlyout> components you already know.
 // ───────────────────────────────────────────────────────────────────────
@@ -305,10 +305,10 @@ interface ControlButtonFlyoutProps {
   /**
    * Vertical alignment of the flyout relative to the trigger.
    *
-   * - `"start"`  — top edges align
-   * - `"center"` — vertical centres align
-   * - `"end"`    — bottom edges align
-   * - `"auto"`   — measures viewport space and picks the best
+   * - `"start"`  - top edges align
+   * - `"center"` - vertical centres align
+   * - `"end"`    - bottom edges align
+   * - `"auto"`   - measures viewport space and picks the best
    *
    * @default "auto"
    */

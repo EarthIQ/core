@@ -90,7 +90,7 @@ export default function MapPage() {
   const { isAvailable } = useModules();
 
   // If the Map builder was opened from the builder picker (?panel=published),
-  // open the published maps panel on arrival — the "Maps" behaviour from
+  // open the published maps panel on arrival - the "Maps" behaviour from
   // before. Re-runs whenever the URL query changes so clicking Map again
   // while already on /map also brings the published maps up.
   useEffect(() => {
@@ -353,7 +353,7 @@ export default function MapPage() {
         patchLayer(layer.id, { visible: false });
         store.setActiveTool({ groupId: "navigate", variantId: "select" });
         setStatusMsg(
-          `Editing "${layer.name}" — drag points to edit, add new shapes, then Save`,
+          `Editing "${layer.name}" - drag points to edit, add new shapes, then Save`,
         );
         window.setTimeout(() => setStatusMsg(null), 4000);
       } catch (err) {
@@ -433,7 +433,7 @@ export default function MapPage() {
   /* Comment placement: while placing (and while the composer card is open),
      the map canvas is made inert to ALL mouse input. This is the bulletproof
      way to guarantee the view never pans / zooms / double-click-zooms when
-     you click to drop a pin or while typing — no matter which MapLibre
+     you click to drop a pin or while typing - no matter which MapLibre
      controls are enabled by other hooks. The pin is dropped from a click on
      the map *container* (which still receives the event now that the canvas
      is inert), so the flow keeps working. Restored automatically on cleanup. */
@@ -449,7 +449,7 @@ export default function MapPage() {
     if (!canvas || !container) return;
 
     // 1) Inert canvas: blocks drag-pan, box-zoom, double-click-zoom, scroll,
-    //    keyboard — every mouse-driven camera change at once.
+    //    keyboard - every mouse-driven camera change at once.
     const prevPointerEvents = canvas.style.pointerEvents;
     canvas.style.pointerEvents = "none";
 
@@ -528,7 +528,7 @@ export default function MapPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
-  // Source ids the layer panel created — stale cleanup only ever touches
+  // Source ids the layer panel created - stale cleanup only ever touches
   // these, so basemap / terrain sources are never removed by accident.
   const panelSources = useRef<Set<string>>(new Set());
 
@@ -850,7 +850,7 @@ export default function MapPage() {
   return (
     <MapProvider>
       <div className="relative w-full h-full overflow-hidden bg-bg-primary">
-        {/* Scale bar (right side) — @packages/map control */}
+        {/* Scale bar (right side) - @packages/map control */}
         <ScaleControl position="top-right" maxWidth={120} unit="metric" />
 
         <MapNavbar
@@ -871,7 +871,7 @@ export default function MapPage() {
         isCollabConnected={isCollabConnected}
       />
 
-      {/* Map canvas — @packages/map <Map> primitive (provides MapContext to
+      {/* Map canvas - @packages/map <Map> primitive (provides MapContext to
           package controls and pushes the instance into the outer provider) */}
       <MapCanvas
         style={BASEMAP_STYLES["opentopomap"]}
@@ -900,10 +900,10 @@ export default function MapPage() {
         }}
       />
 
-      {/* Right-click context menu — copy coordinates / center here (map pkg) */}
+      {/* Right-click context menu - copy coordinates / center here (map pkg) */}
       <ContextMenuControl coordinateFormat="both" items={commentMenuItems} />
 
-      {/* Collaborator cursor overlay — cursors are placed with map.project()
+      {/* Collaborator cursor overlay - cursors are placed with map.project()
           (canvas-relative), so this box must mirror the map canvas box exactly,
           same as the AnnotationOverlays wrapper below. */}
       <div
@@ -1070,7 +1070,7 @@ export default function MapPage() {
       <CommentPins mapRef={mapRef} mapReady={mapReady} />
       <CommentsPanel mapRef={mapRef} mapReady={mapReady} />
 
-      {/* Toolbox — tools exposed by enabled modules (auto-discovered) */}
+      {/* Toolbox - tools exposed by enabled modules (auto-discovered) */}
       <ToolboxPanel
         isOpen={toolboxOpen}
         onClose={() => setToolboxOpen(false)}

@@ -35,7 +35,7 @@ export const INGESTED_FORMATS = new Set<string>([
   "KML",
   "GeoRSS",
 ]);
-// CSV can also be ingested if a coordinate pair is detected — flag comes from meta.
+// CSV can also be ingested if a coordinate pair is detected - flag comes from meta.
 export const STORED_FORMATS = new Set<string>([
   "GeoTIFF",
   "COG",

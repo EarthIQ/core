@@ -16,7 +16,7 @@ const rasterStyle = (
 ): any => ({
   version: 8,
   sources: {
-    // Note: source id must differ from the layer id — MapPage's layer
+    // Note: source id must differ from the layer id - MapPage's layer
     // sync removes any style layer whose id also names an existing source.
     "basemap-source": {
       type: "raster",
@@ -113,7 +113,7 @@ export function useMapLibre(map: any | null, initialBasemap: string) {
     };
   }, [map]);
 
-  /* Basemap switching — the <Map> primitive is created with the initial
+  /* Basemap switching - the <Map> primitive is created with the initial
      style, so skip the very first sync and setStyle afterwards. */
   useEffect(() => {
     if (!map?.setStyle) return;

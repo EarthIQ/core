@@ -1,8 +1,8 @@
 """
-Notifications — Service layer (core).
+Notifications - Service layer (core).
 
 Pure data + business logic. Takes an ``AsyncSession`` and returns domain
-objects / schema instances. It does **not** commit — the caller owns the
+objects / schema instances. It does **not** commit - the caller owns the
 transaction (the core ``get_db`` dependency commits at the end of each request).
 
 The real-time fan-out to connected clients is the *router's* job (see

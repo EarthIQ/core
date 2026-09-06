@@ -2,7 +2,7 @@ import { useId } from "react";
 import { cn } from "@packages/ui";
 
 /**
- * Brand cyan used for the "IQ" accent — kept in sync with the SVG assets in
+ * Brand cyan used for the "IQ" accent - kept in sync with the SVG assets in
  * `public/` (favicon.svg / logo.svg) and the node palette of the mark.
  */
 const BRAND_IQ = "#22D3EE";
@@ -16,7 +16,7 @@ interface LogoMarkProps {
 }
 
 /**
- * EarthIQ brand mark — a globe overlaid with a small neural-network "IQ" core.
+ * EarthIQ brand mark - a globe overlaid with a small neural-network "IQ" core.
  *
  * Self-contained inline SVG (no network request) so it renders identically in
  * the sidebar, header, and any other in-app surface. Gradient / filter IDs are

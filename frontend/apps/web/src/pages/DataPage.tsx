@@ -229,7 +229,7 @@ function DataPageInner() {
 
   const handleAddToProject = useCallback(() => {
     const n = selectedIds.size;
-    addToast("info", `Added ${n} dataset${n === 1 ? "" : "s"} — opening Projects.`);
+    addToast("info", `Added ${n} dataset${n === 1 ? "" : "s"} - opening Projects.`);
     navigate("/projects");
   }, [addToast, selectedIds.size, navigate]);
 
@@ -258,7 +258,7 @@ function DataPageInner() {
             Data Hub
           </h1>
           <p className="mt-1 text-sm text-text-secondary max-w-2xl leading-relaxed">
-            Upload, inspect, and manage your vector and raster datasets — GeoJSON,
+            Upload, inspect, and manage your vector and raster datasets - GeoJSON,
             Shapefile, COG, GeoPackage, GeoParquet, KML, and CSV.
           </p>
         </div>

@@ -1,5 +1,5 @@
 /**
- * Map Toolbox — right-side panel listing the tools that enabled modules
+ * Map Toolbox - right-side panel listing the tools that enabled modules
  * expose via the optional `tools` export (see `lib/tools.ts` for the contract).
  *
  * Flow: list (grouped by category) → click a tool → its inputs form →
@@ -44,7 +44,7 @@ import {
   type ToolRunContext,
 } from "@/lib/tools";
 
-/** Panel width — MapPage uses this to shift the map canvas. */
+/** Panel width - MapPage uses this to shift the map canvas. */
 export const TOOLBOX_PANEL_WIDTH = 360;
 
 /* ──────────────────────────────────────────────────────────────────────── */
@@ -412,7 +412,7 @@ export function ToolboxPanel({
             <div className="p-4 space-y-4">
               {(selectedTool.inputs ?? []).length === 0 && (
                 <div className="text-[11px] text-text-tertiary">
-                  This tool takes no inputs — just run it.
+                  This tool takes no inputs - just run it.
                 </div>
               )}
               {(selectedTool.inputs ?? []).map((input) => (
@@ -483,7 +483,7 @@ export function ToolboxPanel({
                   size="sm"
                   icon={<Wrench size={22} className="text-text-tertiary" />}
                   title="No tools yet"
-                  description="Modules can surface tools here by exporting a valid `tools` array from their frontend entry — the toolbox picks them up automatically, no core changes needed."
+                  description="Modules can surface tools here by exporting a valid `tools` array from their frontend entry - the toolbox picks them up automatically, no core changes needed."
                 />
               </div>
             )}

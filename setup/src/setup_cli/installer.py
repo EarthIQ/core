@@ -12,7 +12,7 @@ def clone_module(name: str, repo: str, ref: str | None = None) -> Path:
     MODULES_DIR.mkdir(exist_ok=True)
 
     if dest.exists():
-        console.print(f"[yellow]'{name}' already cloned — pulling latest...[/]")
+        console.print(f"[yellow]'{name}' already cloned - pulling latest...[/]")
         subprocess.run(["git", "-C", str(dest), "pull"], check=True)
     else:
         console.print(f"[cyan]Cloning '{name}' from {repo}...[/]")
