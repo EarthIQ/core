@@ -7,66 +7,66 @@
   /* =========================================
      Brand Colors
      ========================================= */
-  /* Primary - Blue (#50aad1) converted to OKLCH */
-  --primary: oklch(0.68 0.1 220); /* #50aad1 - Main blue */
-  --primary-dark: oklch(0.58 0.12 220); /* Darker blue for hover */
-  --primary-light: oklch(0.78 0.08 220); /* Lighter blue */
-  --primary-hover: oklch(0.58 0.12 220);
+  /* Primary - Deep Ocean Blue (Earth from space) */
+  --primary: oklch(0.5 0.15 230); /* Deep ocean blue - "Blue Marble" */
+  --primary-dark: oklch(0.4 0.16 230); /* Darker blue for hover */
+  --primary-light: oklch(0.68 0.1 230); /* Lighter blue */
+  --primary-hover: oklch(0.44 0.15 230);
 
-  /* Secondary - Teal/Cyan complement */
-  --secondary: oklch(0.6 0.12 195); /* Teal */
-  --secondary-dark: oklch(0.5 0.12 195);
-  --secondary-light: oklch(0.7 0.1 195);
+  /* Secondary - Natural Teal (ocean shallows, terrain) */
+  --secondary: oklch(0.55 0.14 180); /* Natural teal */
+  --secondary-dark: oklch(0.45 0.14 180);
+  --secondary-light: oklch(0.72 0.1 180);
 
-  /* Accent - Purple/Violet for contrast */
-  --accent: oklch(0.6 0.15 280); /* Purple */
-  --accent-dark: oklch(0.5 0.15 280);
-  --accent-light: oklch(0.7 0.12 280);
+  /* Accent - Warm Amber (atmosphere, sun, earth) */
+  --accent: oklch(0.68 0.16 75); /* Warm amber/gold */
+  --accent-dark: oklch(0.56 0.15 75);
+  --accent-light: oklch(0.8 0.12 75);
 
   /* =========================================
      Background Colors
      ========================================= */
   --bg-primary: oklch(
-    0.985 0.002 220
+    0.985 0.003 230
   ); /* Main background - Near white with blue tint */
   --bg-secondary: oklch(1 0 0); /* Cards, surfaces - White */
-  --bg-tertiary: oklch(0.97 0.005 220); /* Hover states, subtle backgrounds */
+  --bg-tertiary: oklch(0.97 0.005 230); /* Hover states, subtle backgrounds */
   --bg-elevated: oklch(1 0 0); /* Modals, dropdowns */
 
   /* Surface Colors */
   --surface: oklch(1 0 0);
-  --surface-hover: oklch(0.97 0.005 220);
-  --surface-active: oklch(0.93 0.008 220);
+  --surface-hover: oklch(0.97 0.005 230);
+  --surface-active: oklch(0.93 0.008 230);
 
   /* =========================================
      Text Colors
      ========================================= */
   --text-primary: oklch(
-    0.25 0.02 220
+    0.25 0.02 230
   ); /* Main text - Near black with blue tint */
-  --text-secondary: oklch(0.45 0.02 220); /* Secondary text */
-  --text-tertiary: oklch(0.6 0.01 220); /* Muted text */
+  --text-secondary: oklch(0.45 0.02 230); /* Secondary text */
+  --text-tertiary: oklch(0.6 0.01 230); /* Muted text */
   --text-inverse: oklch(1 0 0); /* Text on dark backgrounds */
   --text-on-primary: oklch(1 0 0); /* Text on primary color */
 
   /* =========================================
      Border Colors
      ========================================= */
-  --border-primary: oklch(0.9 0.008 220); /* Main borders */
-  --border-secondary: oklch(0.95 0.004 220); /* Subtle borders */
+  --border-primary: oklch(0.9 0.008 230); /* Main borders */
+  --border-secondary: oklch(0.95 0.004 230); /* Subtle borders */
   --border-focus: var(--primary); /* Focus rings */
-  --border-hover: oklch(0.85 0.01 220);
+  --border-hover: oklch(0.85 0.01 230);
 
   /* =========================================
      Status Colors
      ========================================= */
-  /* Success - Green (keeping green for success semantics) */
-  --success: oklch(0.6 0.18 145);
-  --success-bg: oklch(0.95 0.05 145);
-  --success-text: oklch(0.35 0.15 145);
-  --success-border: oklch(0.8 0.1 145);
+  /* Success - Forest Green (natural, earthy) */
+  --success: oklch(0.55 0.18 150);
+  --success-bg: oklch(0.95 0.05 150);
+  --success-text: oklch(0.35 0.15 150);
+  --success-border: oklch(0.8 0.1 150);
 
-  /* Warning - Amber/Orange */
+  /* Warning - Amber/Orange (harmonizes with accent) */
   --warning: oklch(0.75 0.15 75);
   --warning-bg: oklch(0.97 0.05 75);
   --warning-text: oklch(0.45 0.12 55);
@@ -79,65 +79,65 @@
   --error-border: oklch(0.8 0.1 25);
 
   /* Info - Using primary blue */
-  --info: oklch(0.65 0.12 220);
-  --info-bg: oklch(0.96 0.03 220);
-  --info-text: oklch(0.45 0.12 220);
-  --info-border: oklch(0.8 0.08 220);
+  --info: oklch(0.65 0.12 230);
+  --info-bg: oklch(0.96 0.03 230);
+  --info-text: oklch(0.45 0.12 230);
+  --info-border: oklch(0.8 0.08 230);
 
   /* =========================================
      Interactive Elements
      ========================================= */
-  --toggle-bg-off: oklch(0.85 0.01 220);
+  --toggle-bg-off: oklch(0.85 0.01 230);
   --toggle-bg-on: var(--primary);
   --toggle-knob: oklch(1 0 0);
 
-  --button-disabled-bg: oklch(0.95 0.005 220);
-  --button-disabled-text: oklch(0.7 0.01 220);
+  --button-disabled-bg: oklch(0.95 0.005 230);
+  --button-disabled-text: oklch(0.7 0.01 230);
 
   --input-bg: oklch(1 0 0);
-  --input-border: oklch(0.85 0.008 220);
+  --input-border: oklch(0.85 0.008 230);
   --input-focus-border: var(--primary);
-  --input-placeholder: oklch(0.65 0.01 220);
+  --input-placeholder: oklch(0.65 0.01 230);
 
   /* =========================================
      Shadows
      ========================================= */
-  --shadow-xs: 0 1px 2px 0 oklch(0.25 0.02 220 / 0.04);
+  --shadow-xs: 0 1px 2px 0 oklch(0.25 0.02 230 / 0.04);
   --shadow-sm:
-    0 1px 3px 0 oklch(0.25 0.02 220 / 0.06),
-    0 1px 2px -1px oklch(0.25 0.02 220 / 0.06);
+    0 1px 3px 0 oklch(0.25 0.02 230 / 0.06),
+    0 1px 2px -1px oklch(0.25 0.02 230 / 0.06);
   --shadow-md:
-    0 4px 6px -1px oklch(0.25 0.02 220 / 0.08),
-    0 2px 4px -2px oklch(0.25 0.02 220 / 0.06);
+    0 4px 6px -1px oklch(0.25 0.02 230 / 0.08),
+    0 2px 4px -2px oklch(0.25 0.02 230 / 0.06);
   --shadow-lg:
-    0 10px 15px -3px oklch(0.25 0.02 220 / 0.1),
-    0 4px 6px -4px oklch(0.25 0.02 220 / 0.06);
+    0 10px 15px -3px oklch(0.25 0.02 230 / 0.1),
+    0 4px 6px -4px oklch(0.25 0.02 230 / 0.06);
   --shadow-xl:
-    0 20px 25px -5px oklch(0.25 0.02 220 / 0.12),
-    0 8px 10px -6px oklch(0.25 0.02 220 / 0.06);
-  --shadow-2xl: 0 25px 50px -12px oklch(0.25 0.02 220 / 0.25);
+    0 20px 25px -5px oklch(0.25 0.02 230 / 0.12),
+    0 8px 10px -6px oklch(0.25 0.02 230 / 0.06);
+  --shadow-2xl: 0 25px 50px -12px oklch(0.25 0.02 230 / 0.25);
 
-  --shadow-inner: inset 0 2px 4px 0 oklch(0.25 0.02 220 / 0.06);
-  --shadow-primary: 0 4px 14px 0 oklch(0.68 0.1 220 / 0.35);
+  --shadow-inner: inset 0 2px 4px 0 oklch(0.25 0.02 230 / 0.06);
+  --shadow-primary: 0 4px 14px 0 oklch(0.5 0.15 230 / 0.35);
 
   /* =========================================
      Scrollbar Colors
      ========================================= */
   --scrollbar-track: transparent;
-  --scrollbar-thumb: oklch(0.8 0.02 220);
-  --scrollbar-thumb-hover: oklch(0.65 0.03 220);
+  --scrollbar-thumb: oklch(0.8 0.02 230);
+  --scrollbar-thumb-hover: oklch(0.65 0.03 230);
 
   /* =========================================
      Overlay & Backdrop
      ========================================= */
-  --overlay: oklch(0.2 0.02 220 / 0.5);
-  --overlay-light: oklch(0.2 0.02 220 / 0.3);
+  --overlay: oklch(0.2 0.02 230 / 0.5);
+  --overlay-light: oklch(0.2 0.02 230 / 0.3);
   --backdrop: oklch(1 0 0 / 0.8);
 
   /* =========================================
      Divider
      ========================================= */
-  --divider: oklch(0.92 0.006 220);
+  --divider: oklch(0.92 0.006 230);
 
   /* =========================================
      Ring (Focus)
@@ -181,52 +181,52 @@
    ========================================= */
 :root.dark,
 .dark {
-  /* Background Colors */
-  --bg-primary: oklch(0.13 0.02 240); /* Main background */
-  --bg-secondary: oklch(0.18 0.02 235); /* Cards, surfaces */
-  --bg-tertiary: oklch(0.23 0.02 235); /* Hover states */
-  --bg-elevated: oklch(0.2 0.02 235); /* Modals, dropdowns */
+  /* Background Colors - Deep navy "night sky" */
+  --bg-primary: oklch(0.12 0.03 240); /* Main background - deep navy */
+  --bg-secondary: oklch(0.16 0.03 238); /* Cards, surfaces */
+  --bg-tertiary: oklch(0.21 0.03 238); /* Hover states */
+  --bg-elevated: oklch(0.18 0.03 238); /* Modals, dropdowns */
 
   /* Surface Colors */
-  --surface: oklch(0.18 0.02 235);
-  --surface-hover: oklch(0.23 0.02 235);
-  --surface-active: oklch(0.28 0.02 235);
+  --surface: oklch(0.16 0.03 238);
+  --surface-hover: oklch(0.21 0.03 238);
+  --surface-active: oklch(0.26 0.03 238);
 
   /* Text Colors */
-  --text-primary: oklch(0.95 0.01 220); /* Main text */
-  --text-secondary: oklch(0.7 0.01 220); /* Secondary text */
-  --text-tertiary: oklch(0.5 0.01 220); /* Muted text */
-  --text-inverse: oklch(0.13 0.02 240); /* Text on light backgrounds */
+  --text-primary: oklch(0.95 0.01 230); /* Main text */
+  --text-secondary: oklch(0.7 0.01 230); /* Secondary text */
+  --text-tertiary: oklch(0.5 0.01 230); /* Muted text */
+  --text-inverse: oklch(0.12 0.03 240); /* Text on light backgrounds */
 
-  /* Primary colors - Slightly brighter for dark mode */
-  --primary: oklch(0.72 0.1 220); /* Brighter blue for dark mode */
-  --primary-dark: oklch(0.62 0.12 220);
-  --primary-light: oklch(0.82 0.08 220);
-  --primary-hover: oklch(0.77 0.1 220);
+  /* Primary colors - Brighter for dark mode */
+  --primary: oklch(0.65 0.14 230); /* Brighter deep blue for dark mode */
+  --primary-dark: oklch(0.55 0.15 230);
+  --primary-light: oklch(0.78 0.1 230);
+  --primary-hover: oklch(0.7 0.14 230);
 
-  /* Secondary - Teal */
-  --secondary: oklch(0.65 0.12 195);
-  --secondary-dark: oklch(0.55 0.12 195);
-  --secondary-light: oklch(0.75 0.1 195);
+  /* Secondary - Natural Teal */
+  --secondary: oklch(0.62 0.13 180);
+  --secondary-dark: oklch(0.52 0.13 180);
+  --secondary-light: oklch(0.75 0.1 180);
 
-  /* Accent - Purple */
-  --accent: oklch(0.65 0.15 280);
-  --accent-dark: oklch(0.55 0.15 280);
-  --accent-light: oklch(0.75 0.12 280);
+  /* Accent - Warm Amber */
+  --accent: oklch(0.72 0.15 75);
+  --accent-dark: oklch(0.6 0.15 75);
+  --accent-light: oklch(0.82 0.12 75);
 
   /* Border Colors */
-  --border-primary: oklch(0.3 0.02 235); /* Main borders */
-  --border-secondary: oklch(0.23 0.02 235); /* Subtle borders */
-  --border-hover: oklch(0.4 0.02 235);
+  --border-primary: oklch(0.28 0.03 238); /* Main borders */
+  --border-secondary: oklch(0.22 0.03 238); /* Subtle borders */
+  --border-hover: oklch(0.38 0.03 238);
 
   /* Status Colors - Dark mode variants */
-  --success: oklch(0.65 0.18 145);
-  --success-bg: oklch(0.25 0.08 145);
-  --success-text: oklch(0.75 0.15 145);
-  --success-border: oklch(0.4 0.12 145);
+  --success: oklch(0.6 0.18 150);
+  --success-bg: oklch(0.22 0.07 150);
+  --success-text: oklch(0.72 0.15 150);
+  --success-border: oklch(0.38 0.1 150);
 
   --warning: oklch(0.78 0.14 75);
-  --warning-bg: oklch(0.3 0.08 75);
+  --warning-bg: oklch(0.28 0.07 75);
   --warning-text: oklch(0.85 0.12 75);
   --warning-border: oklch(0.5 0.1 75);
 
@@ -235,21 +235,21 @@
   --error-text: oklch(0.8 0.15 25);
   --error-border: oklch(0.45 0.15 25);
 
-  --info: oklch(0.7 0.1 220);
-  --info-bg: oklch(0.25 0.06 220);
-  --info-text: oklch(0.8 0.1 220);
-  --info-border: oklch(0.45 0.08 220);
+  --info: oklch(0.7 0.1 230);
+  --info-bg: oklch(0.22 0.06 230);
+  --info-text: oklch(0.8 0.1 230);
+  --info-border: oklch(0.45 0.08 230);
 
   /* Interactive Elements */
-  --toggle-bg-off: oklch(0.35 0.02 235);
+  --toggle-bg-off: oklch(0.33 0.03 238);
   --toggle-knob: oklch(1 0 0);
 
-  --button-disabled-bg: oklch(0.25 0.02 235);
-  --button-disabled-text: oklch(0.45 0.01 235);
+  --button-disabled-bg: oklch(0.23 0.03 238);
+  --button-disabled-text: oklch(0.45 0.01 238);
 
-  --input-bg: oklch(0.15 0.02 235);
-  --input-border: oklch(0.3 0.02 235);
-  --input-placeholder: oklch(0.5 0.01 220);
+  --input-bg: oklch(0.14 0.03 238);
+  --input-border: oklch(0.28 0.03 238);
+  --input-placeholder: oklch(0.5 0.01 230);
 
   /* Shadows - Adjusted for dark mode */
   --shadow-xs: 0 1px 2px 0 oklch(0 0 0 / 0.2);
@@ -264,22 +264,22 @@
   --shadow-2xl: 0 25px 50px -12px oklch(0 0 0 / 0.6);
 
   --shadow-inner: inset 0 2px 4px 0 oklch(0 0 0 / 0.3);
-  --shadow-primary: 0 4px 14px 0 oklch(0.72 0.1 220 / 0.3);
+  --shadow-primary: 0 4px 14px 0 oklch(0.65 0.14 230 / 0.3);
 
   /* Scrollbar */
-  --scrollbar-thumb: oklch(0.35 0.02 235);
-  --scrollbar-thumb-hover: oklch(0.45 0.02 235);
+  --scrollbar-thumb: oklch(0.33 0.03 238);
+  --scrollbar-thumb-hover: oklch(0.43 0.03 238);
 
   /* Overlay */
   --overlay: oklch(0 0 0 / 0.7);
   --overlay-light: oklch(0 0 0 / 0.5);
-  --backdrop: oklch(0.13 0.02 240 / 0.9);
+  --backdrop: oklch(0.12 0.03 240 / 0.9);
 
   /* Divider */
-  --divider: oklch(0.28 0.02 235);
+  --divider: oklch(0.26 0.03 238);
 
   /* Ring offset */
-  --ring-offset: oklch(0.13 0.02 240);
+  --ring-offset: oklch(0.12 0.03 240);
 }
 
 /* =========================================
