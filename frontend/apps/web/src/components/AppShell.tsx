@@ -6,6 +6,7 @@ import { useNotifications } from "@/lib/notifications";
 import { useModules } from "@/lib/modules";
 import { usePermissions } from "@/lib/usePermissions";
 import { initials, timeAgo } from "@/lib/format";
+import { Logo, LogoMark } from "./Logo";
 import {
   moduleRegistry,
   type ModuleBundle,
@@ -459,12 +460,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <>
               <NavLink
                 to="/dashboard"
-                className="flex items-center gap-2.5 text-text-primary no-underline hover:text-primary transition-colors duration-150"
+                className="flex items-center no-underline transition-opacity duration-150 hover:opacity-80"
               >
-                <span className="w-2.5 h-2.5 rounded-full bg-primary shadow-lg shadow-primary/30 shrink-0" />
-                <span className="font-bold text-sm tracking-tight">
-                  EarthIQ
-                </span>
+                <Logo size={28} wordmarkClassName="text-sm" />
               </NavLink>
 
               <button
@@ -478,12 +476,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </>
           ) : (
             <button
-              className="btn btn-ghost btn-icon btn-sm text-text-tertiary hover:text-text-primary cursor-pointer"
+              className="flex items-center justify-center cursor-pointer border-none bg-transparent p-0"
               onClick={() => setIsCollapsed(!isCollapsed)}
               title="Expand sidebar"
-              aria-label="Toggle sidebar"
+              aria-label="Expand sidebar"
             >
-              <ChevronIcon collapsed={true} />
+              <LogoMark
+                size={34}
+                className="transition-opacity duration-150 hover:opacity-80"
+              />
             </button>
           )}
         </div>
