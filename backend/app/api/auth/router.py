@@ -121,7 +121,7 @@ async def get_users(
     is_superuser: Optional[bool] = Query(None, description="Filter by superuser status"),
     group_id: Optional[str] = Query(None, description="Filter by group ID"),
     sort_by: str = Query("created_at", description="Sort field (created_at, email, full_name)"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: AsyncSession = Depends(get_db),
@@ -215,7 +215,7 @@ async def delete_user_route(
 async def get_permissions(
     search: Optional[str] = Query(None, description="Search by permission name or description"),
     sort_by: str = Query("name", description="Sort field"),
-    sort_order: str = Query("asc", regex="^(asc|desc)$", description="Sort order"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$", description="Sort order"),
     page: Optional[int] = Query(None, ge=1, description="Page number"),
     page_size: Optional[int] = Query(None, ge=1, le=100, description="Items per page"),
     db: AsyncSession = Depends(get_db),
@@ -290,7 +290,7 @@ async def delete_permission_route(
 async def list_groups_route(
     search: Optional[str] = Query(None, description="Search by group name or description"),
     sort_by: str = Query("name", description="Sort field"),
-    sort_order: str = Query("asc", regex="^(asc|desc)$", description="Sort order"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$", description="Sort order"),
     page: Optional[int] = Query(None, ge=1, description="Page number"),
     page_size: Optional[int] = Query(None, ge=1, le=100, description="Items per page"),
     db: AsyncSession = Depends(get_db),
