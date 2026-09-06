@@ -115,3 +115,17 @@ class NotificationBroadcast(BaseModel):
     user_ids: List[str] = Field(default_factory=list)
     # Skip recipients whose preferences disable this category / in-app delivery.
     respect_preferences: bool = True
+
+
+class MentionCreate(BaseModel):
+    """Peer-to-peer mention: any authenticated user notifies one other user.
+
+    Used e.g. when someone types ``@Alice`` in a map comment - Alice gets a
+    "mention" notification even though the commenter is not an admin.
+    """
+
+    to_user_id: str = Field(..., description="Recipient user id")
+    title: str = Field(default="You were mentioned", min_length=1, max_length=255)
+    body: Optional[str] = None
+    link: Optional[str] = None
+    payload: Optional[dict[str, Any]] = None

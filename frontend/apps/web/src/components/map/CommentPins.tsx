@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Check, Send, Trash2, X } from "lucide-react";
+import { Check, MessageCircle, Send, Trash2, X } from "lucide-react";
 import { useMapEditor } from "@/lib/mapEditor/store";
 import { useAuth } from "@/lib/auth";
+import {
+  sendMention,
+  type PeopleSearchResult,
+} from "@/lib/notifications";
+import { MentionTextarea } from "@/components/map/MentionTextarea";
 import type { CommentThread } from "@/lib/mapEditor/types";
 
 /* ──────────────────────────────────────────────────────────────────────── */
@@ -51,8 +56,112 @@ function Avatar({
   );
 }
 
+/** Display name for a mentioned user (full name preferred, else email). */
+function mentionName(u: PeopleSearchResult): string {
+  return (u.name && u.name.trim()) || u.email || "";
+}
+
+/** Convert picked users into the `{id,name}` shape the store persists. */
+function toMentions(users: PeopleSearchResult[]) {
+  return users
+    .map((u) => ({ id: u.id, name: mentionName(u) }))
+    .filter((m) => m.name.length > 0);
+}
+
+/** Send a mention notification to every picked user still present in the text. */
+function notifyMentioned(
+  users: PeopleSearchResult[],
+  text: string,
+  author: string,
+  authorId: string,
+  projectId: string | undefined,
+  projectName: string | undefined,
+  lngLat: [number, number] | null,
+) {
+  const clip = text.length > 120 ? `${text.slice(0, 117)}…` : text;
+  for (const u of users) {
+    if (u.id === authorId) continue; // never notify yourself
+    const name = mentionName(u);
+    if (!name) continue;
+    if (!text.includes(`@${name}`)) continue; // mention removed after picking
+    sendMention({
+      toUserId: u.id,
+      title: projectName
+        ? `You were mentioned on “${projectName}”`
+        : "You were mentioned in a comment",
+      body: `${author} mentioned you: “${clip}”`,
+      link: projectId ? `/map?projectId=${encodeURIComponent(projectId)}` : null,
+      payload: { project_id: projectId ?? null, lngLat },
+    }).catch(() => {}); // best-effort - the comment itself is already saved
+  }
+}
+
+/** A single highlighted mention pill (used by {@link renderBody}). */
+function MentionPill({ name }: { name: string }) {
+  return (
+    <span
+      className="inline-flex items-center align-middle rounded-full"
+      style={{
+        background: "color-mix(in oklab, var(--primary) 14%, transparent)",
+        color: "var(--primary)",
+        border: "1px solid color-mix(in oklab, var(--primary) 24%, transparent)",
+        padding: "0 6px",
+        margin: "0 1px",
+        fontSize: "12px",
+        lineHeight: "18px",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {name}
+    </span>
+  );
+}
+
+/**
+ * Render a plain-text comment body with `@Name` mentions shown as pills.
+ *
+ * When the message's explicit `mentions` list is available (the usual case),
+ * we match those **exact** names so a multi-word name like "John Doe" is
+ * wrapped whole - no guessing where the name ends. Falls back to a best-effort
+ * single `@Word` pill for legacy messages that predate the mentions field.
+ */
+export function renderBody(
+  text: string,
+  mentions?: { id: string; name: string }[],
+  keyPrefix = "body",
+) {
+  const names = (mentions ?? [])
+    .map((m) => (m.name || "").trim())
+    .filter((n) => n.length > 0)
+    // Prefer longer names so "John" never shadows "John Doe".
+    .sort((a, b) => b.length - a.length);
+
+  if (names.length) {
+    const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(`(@(?:${names.map(esc).join("|")}))`, "g");
+    const parts = text.split(re);
+    return parts.map((p, i) =>
+      names.some((n) => `@${n}` === p) ? (
+        <MentionPill key={`${keyPrefix}-${i}`} name={p.slice(1)} />
+      ) : (
+        p
+      ),
+    );
+  }
+
+  // Fallback: no explicit mention list - best-effort single-word pills.
+  const parts = text.split(/(@[\w][\w'./-]*)(?=\s|$)/g);
+  return parts.map((p, i) =>
+    p.startsWith("@") ? (
+      <MentionPill key={`${keyPrefix}-${i}`} name={p.slice(1)} />
+    ) : (
+      p
+    ),
+  );
+}
+
 /* ──────────────────────────────────────────────────────────────────────── */
-/*  Drop-shaped pin with the author's initials                               */
+/*  Speech-bubble pin (lucide MessageCircle) with the author's initials     */
 /* ──────────────────────────────────────────────────────────────────────── */
 function CommentPin({
   author,
@@ -88,32 +197,46 @@ function CommentPin({
           ? "New comment"
           : `Comment by ${author}${resolved ? " (resolved)" : ""}`
       }
-      className={`pointer-events-auto relative w-[30px] h-[30px] transition-transform duration-150 ${
+      className={`pointer-events-auto relative w-[42px] h-[34px] transition-transform duration-150 ${
         onClick ? "cursor-pointer hover:scale-110" : ""
       } ${ghost ? "opacity-80" : ""}`}
-      style={{
-        outline: active ? "2px solid var(--primary)" : "none",
-        outlineOffset: 3,
-        borderRadius: "50%",
-      }}
     >
-      {/* teardrop body: square with a sharp bottom-left corner, rotated -45°
-          so the tip points straight down at the map point */}
-      <div
-        className="absolute inset-[3px] -rotate-45 rounded-[50%_50%_50%_0] border-2 border-white shadow-lg flex items-center justify-center"
-        style={{ background: color }}
+      {/* speech bubble (lucide MessageCircle): the icon's tail tip sits at
+          ≈(2,21) in its 24×24 viewBox, so at size 26 placed at left 19 /
+          top 11 the tip lands on the hitbox bottom-center (21, ~34) - exactly
+          where the standard pin placement (bottom-center anchor) points the
+          pin at the map location */}
+      <MessageCircle
+        size={26}
+        strokeWidth={2}
+        className="absolute text-white"
+        fill={color}
+        style={{ left: 19, top: 11 }}
+      />
+      {/* initials centered over the bubble body - the MessageCircle path is
+          a circle of r=10 centered at (12,12) in the 24×24 viewBox, which is
+          (13,13) at size 26 → (32,24) in the hitbox with the icon at (19,11) */}
+      <span
+        className="absolute flex items-center justify-center text-[10px] font-bold text-white leading-none select-none"
+        style={{ left: 25, top: 17, width: 14, height: 14 }}
       >
-        <span className="rotate-45 text-[10px] font-bold text-white leading-none select-none">
-          {initials(author)}
-        </span>
-      </div>
-      {resolved && (
-        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success border-2 border-elevated flex items-center justify-center shadow-sm">
-          <Check size={9} strokeWidth={3.5} className="text-white" />
-        </span>
-      )}
-      {active && !resolved && (
-        <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary animate-pulse" />
+        {initials(author)}
+      </span>
+      {/* active thread: a tight ring hugging the bubble only (the resolved
+          state is conveyed by the green fill, so no separate ✓ badge) */}
+      {active && (
+        <span
+          aria-hidden
+          className="absolute pointer-events-none"
+          style={{
+            left: 17,
+            top: 9,
+            width: 30,
+            height: 30,
+            borderRadius: 13,
+            boxShadow: "0 0 0 2px var(--primary)",
+          }}
+        />
       )}
     </div>
   );
@@ -122,13 +245,23 @@ function CommentPin({
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Open-thread card (messages + replies + resolve/reopen/delete)            */
 /* ──────────────────────────────────────────────────────────────────────── */
-function ThreadCard({ thread }: { thread: CommentThread }) {
+function ThreadCard({
+  thread,
+  projectId,
+  projectName,
+}: {
+  thread: CommentThread;
+  projectId?: string;
+  projectName?: string;
+}) {
   const { user } = useAuth();
   const replyToThread = useMapEditor((s) => s.replyToThread);
   const setThreadResolved = useMapEditor((s) => s.setThreadResolved);
   const removeThread = useMapEditor((s) => s.removeThread);
   const setActiveThreadId = useMapEditor((s) => s.setActiveThreadId);
   const [reply, setReply] = useState("");
+  const [mentioned, setMentioned] = useState<PeopleSearchResult[]>([]);
+  const [replyKey, setReplyKey] = useState(0); // bump ⇒ remount (clear) the editor
 
   const me = user?.full_name || user?.email || "You";
   const myId = user?.id ?? "";
@@ -141,8 +274,11 @@ function ThreadCard({ thread }: { thread: CommentThread }) {
   function send() {
     const body = reply.trim();
     if (!body) return;
-    replyToThread(thread.id, body, me, myId);
+    replyToThread(thread.id, body, me, myId, toMentions(mentioned));
+    notifyMentioned(mentioned, body, me, myId, projectId, projectName, thread.lngLat);
     setReply("");
+    setMentioned([]);
+    setReplyKey((k) => k + 1);
   }
 
   return (
@@ -217,7 +353,7 @@ function ThreadCard({ thread }: { thread: CommentThread }) {
                 </span>
               </div>
               <p className="text-[13px] text-text-primary whitespace-pre-wrap break-words leading-snug">
-                {m.body}
+                {renderBody(m.body, m.mentions, `msg-${m.id}`)}
               </p>
             </div>
           </div>
@@ -227,19 +363,21 @@ function ThreadCard({ thread }: { thread: CommentThread }) {
       {/* reply composer */}
       <div className="px-3 py-2.5 border-t border-border-primary">
         <div className="flex items-end gap-2">
-          <textarea
-            value={reply}
-            onChange={(e) => setReply(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                send();
+          <div className="flex-1 min-w-0">
+            <MentionTextarea
+              key={replyKey}
+              placeholder={`Reply to ${opener.author.split(" ")[0]}…`}
+              rows={2}
+              onSubmit={send}
+              onTextChange={setReply}
+              onMention={(u) =>
+                setMentioned((prev) =>
+                  prev.some((p) => p.id === u.id) ? prev : [...prev, u],
+                )
               }
-            }}
-            placeholder={`Reply to ${opener.author.split(" ")[0]}…`}
-            rows={2}
-            className="flex-1 px-3 py-2 text-[13px] rounded-lg bg-input-bg border border-input-border text-text-primary resize-none focus:outline-none focus:border-input-focus-border"
-          />
+              className="w-full px-3 py-2 text-[13px] rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
+            />
+          </div>
           <button
             type="button"
             onClick={send}
@@ -285,26 +423,35 @@ function ThreadCard({ thread }: { thread: CommentThread }) {
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Composer card for a freshly dropped pin (first message)                  */
 /* ──────────────────────────────────────────────────────────────────────── */
-function ComposerCard({ lngLat }: { lngLat: [number, number] }) {
+function ComposerCard({
+  lngLat,
+  projectId,
+  projectName,
+}: {
+  lngLat: [number, number];
+  projectId?: string;
+  projectName?: string;
+}) {
   const { user } = useAuth();
   const addThread = useMapEditor((s) => s.addThread);
   const setPendingCommentLocation = useMapEditor(
     (s) => s.setPendingCommentLocation,
   );
   const [body, setBody] = useState("");
-  const taRef = useRef<HTMLTextAreaElement>(null);
+  const [mentioned, setMentioned] = useState<PeopleSearchResult[]>([]);
+  const [composerKey, setComposerKey] = useState(0); // bump ⇒ clear the editor
 
   const me = user?.full_name || user?.email || "You";
   const myId = user?.id ?? "";
 
-  useEffect(() => {
-    taRef.current?.focus();
-  }, []);
-
   function post() {
     const text = body.trim();
     if (!text) return;
-    addThread(lngLat, text, me, myId);
+    addThread(lngLat, text, me, myId, toMentions(mentioned));
+    notifyMentioned(mentioned, text, me, myId, projectId, projectName, lngLat);
+    setBody("");
+    setMentioned([]);
+    setComposerKey((k) => k + 1);
   }
 
   return (
@@ -327,19 +474,19 @@ function ComposerCard({ lngLat }: { lngLat: [number, number] }) {
         </button>
       </div>
       <div className="px-3 py-2.5">
-        <textarea
-          ref={taRef}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              post();
-            }
-          }}
+        <MentionTextarea
+          key={composerKey}
           placeholder="What would you like to say about this spot?"
           rows={3}
-          className="w-full px-3 py-2 text-[13px] rounded-lg bg-input-bg border border-input-border text-text-primary resize-none focus:outline-none focus:border-input-focus-border"
+          autoFocus
+          onSubmit={post}
+          onTextChange={setBody}
+          onMention={(u) =>
+            setMentioned((prev) =>
+              prev.some((p) => p.id === u.id) ? prev : [...prev, u],
+            )
+          }
+          className="w-full px-3 py-2 text-[13px] rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
         />
       </div>
       <div className="flex items-center justify-end gap-2 px-3 py-2 border-t border-border-primary">
@@ -370,9 +517,13 @@ function ComposerCard({ lngLat }: { lngLat: [number, number] }) {
 export function CommentPins({
   mapRef,
   mapReady,
+  projectId,
+  projectName,
 }: {
   mapRef: React.RefObject<any>;
   mapReady: boolean;
+  projectId?: string;
+  projectName?: string;
 }) {
   const comments = useMapEditor((s) => s.comments);
   const pending = useMapEditor((s) => s.pendingCommentLocation);
@@ -535,13 +686,26 @@ export function CommentPins({
       {(activeThread || pending) && (
         <div
           ref={cardRef}
-          className="absolute top-0 left-0"
+          /* NOTE: the outer container is `pointer-events-none` (an inherited
+             property) - without this explicit `auto`, the whole card,
+             including the textarea and its buttons, would be unclickable. */
+          className="absolute top-0 left-0 pointer-events-auto"
           style={{ width: CARD_W, visibility: "hidden" }}
         >
           {activeThread ? (
-            <ThreadCard thread={activeThread} />
+            <ThreadCard
+              thread={activeThread}
+              projectId={projectId}
+              projectName={projectName}
+            />
           ) : (
-            pending && <ComposerCard lngLat={pending} />
+            pending && (
+              <ComposerCard
+                lngLat={pending}
+                projectId={projectId}
+                projectName={projectName}
+              />
+            )
           )}
         </div>
       )}

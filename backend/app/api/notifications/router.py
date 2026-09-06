@@ -9,6 +9,7 @@ REST endpoints (all authenticated as the *current* user unless noted)
   GET    /summary                → counts + per-category / per-kind breakdown
   GET    /unread-count           → { "unread": <int> }  (lightweight badge source)
   POST   /                       → create + deliver a single notification (admin)
+ |   POST   /mention                → notify one user of a mention (any user)
   POST   /broadcast              → create + deliver to many / all users (admin)
   POST   /{id}/read              → mark one as read
   POST   /{id}/unread            → mark one as unread
@@ -174,6 +175,51 @@ async def broadcast(
         payload = service.recipient_to_read(rec).model_dump(mode="json")
         count = await service.unread_count(db, rec.user_id)
         await hub.push(rec.user_id, payload, unread_count=count)
+    return {"delivered": len(recipients)}
+
+
+@router.post(
+    "/mention",
+    summary="Notify one user that they were mentioned (any authenticated user)",
+    response_model=schemas.BroadcastResponse,
+    tags=["notifications"],
+)
+async def create_mention(
+    body: schemas.MentionCreate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Peer-to-peer mention - NOT admin-gated (unlike ``POST /`` & ``/broadcast``).
+
+    Delivers one ``mention``-category notification to ``to_user_id`` and
+    pushes it to their live WebSocket client. The recipient can still suppress
+    it via the "Mentions" notification preference. Mentions to yourself are a
+    no-op (``delivered: 0``).
+    """
+    if body.to_user_id == user.id:
+        return {"delivered": 0}
+
+    msg = schemas.NotificationBroadcast(
+        title=body.title,
+        body=body.body,
+        category="mention",
+        kind="info",
+        payload=body.payload,
+        source="mention",
+        link=body.link,
+        user_ids=[body.to_user_id],
+        respect_preferences=True,
+    )
+    recipients = await service.create_broadcast(db, msg)
+    await db.commit()
+    pushed = [
+        (rec.user_id, service.recipient_to_read(rec).model_dump(mode="json"))
+        for rec in recipients
+    ]
+    counts = {uid: await service.unread_count(db, uid) for uid, _ in pushed}
+    await db.commit()
+    for uid, payload_json in pushed:
+        await hub.push(uid, payload_json, unread_count=counts.get(uid))
     return {"delivered": len(recipients)}
 
 

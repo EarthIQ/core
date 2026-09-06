@@ -749,7 +749,15 @@ export default function MapPage() {
     } finally {
       savingRef.current = false;
     }
-  }, [projectId, currentProject, basemap, tree.nodes]);
+  }, [
+    projectId,
+    currentProject,
+    basemap,
+    tree.nodes,
+    storeAnnotations,
+    storeBookmarks,
+    storeComments,
+  ]);
 
   // Keep ref in sync so the unmount effect can use latest state
   useEffect(() => {
@@ -1067,7 +1075,12 @@ export default function MapPage() {
 
       {/* Bookmark + Comments panels (self-positioning) + comment pins */}
       <BookmarkPanel mapRef={mapRef} mapReady={mapReady} />
-      <CommentPins mapRef={mapRef} mapReady={mapReady} />
+      <CommentPins
+        mapRef={mapRef}
+        mapReady={mapReady}
+        projectId={projectId ?? undefined}
+        projectName={currentProject?.title}
+      />
       <CommentsPanel mapRef={mapRef} mapReady={mapReady} />
 
       {/* Toolbox - tools exposed by enabled modules (auto-discovered) */}

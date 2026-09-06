@@ -20,6 +20,50 @@ async def test_non_admin_cannot_broadcast(client: AsyncClient, user_a, user_b):
     assert resp.status_code == 403
 
 
+# ── Peer-to-peer mentions (any authenticated user) ─────────────────────────────
+
+async def test_mention_between_regular_users(client: AsyncClient, user_a, user_b):
+    # A NON-admin user can mention another user.
+    resp = await client.post(
+        "/api/v1/notifications/mention",
+        json={
+            "to_user_id": user_b["id"],
+            "title": "You were mentioned in a comment",
+            "body": 'Alice mentioned you: "check zone @Bob"',
+            "link": "/map?projectId=p1",
+            "payload": {"project_id": "p1"},
+        },
+        headers=user_a["headers"],
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["delivered"] == 1
+
+    listing = await client.get("/api/v1/notifications", headers=user_b["headers"])
+    assert listing.status_code == 200
+    items = listing.json()["items"]
+    assert len(items) == 1
+    assert items[0]["category"] == "mention"
+    assert items[0]["link"] == "/map?projectId=p1"
+    assert items[0]["read"] is False
+
+    count = await client.get("/api/v1/notifications/unread-count", headers=user_b["headers"])
+    assert count.json()["unread"] == 1
+
+    # The sender did NOT get a copy.
+    sender = await client.get("/api/v1/notifications", headers=user_a["headers"])
+    assert sender.json()["items"] == []
+
+
+async def test_mention_self_is_noop(client: AsyncClient, user_a):
+    resp = await client.post(
+        "/api/v1/notifications/mention",
+        json={"to_user_id": user_a["id"], "title": "self"},
+        headers=user_a["headers"],
+    )
+    assert resp.status_code == 200
+    assert resp.json()["delivered"] == 0
+
+
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
 async def test_admin_create_and_list(client: AsyncClient, admin, user_a):

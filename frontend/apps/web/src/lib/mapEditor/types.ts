@@ -131,6 +131,12 @@ export interface CommentMessage {
   /** Auth user id of the author ("" for legacy comments). */
   authorId: string;
   createdAt: number;
+  /**
+   * Users mentioned in this message (from the `@` picker). Stored separately
+   * so the read side can render exact multi-word names as pills without
+   * guessing where a name ends in the plain-text `body`.
+   */
+  mentions?: { id: string; name: string }[];
 }
 
 /**

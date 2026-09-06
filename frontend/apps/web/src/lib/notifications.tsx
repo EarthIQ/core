@@ -408,6 +408,46 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// ── Sending + people search (mention support) ─────────────────────────────────
+
+export interface PeopleSearchResult {
+  id: string;
+  email: string;
+  name?: string | null;
+  avatar_url?: string | null;
+}
+
+/** User autocomplete for @-mentions (core ``GET /api/v1/people``). */
+export async function searchPeople(q = ""): Promise<PeopleSearchResult[]> {
+  const params = new URLSearchParams();
+  if (q.trim()) params.set("q", q.trim());
+  const qs = params.toString();
+  return api.get<PeopleSearchResult[]>(`/api/v1/people${qs ? `?${qs}` : ""}`);
+}
+
+export interface MentionInput {
+  toUserId: string;
+  title?: string;
+  body?: string | null;
+  link?: string | null;
+  payload?: Record<string, unknown> | null;
+}
+
+/**
+ * Notify one user of a mention (``POST /api/v1/notifications/mention``).
+ * Peer-to-peer: any authenticated user can mention another; the recipient
+ * sees it in the notification hub (category "mention") + live toast/WS push.
+ */
+export function sendMention(input: MentionInput): Promise<{ delivered: number }> {
+  return api.post<{ delivered: number }>("/api/v1/notifications/mention", {
+    to_user_id: input.toUserId,
+    title: input.title,
+    body: input.body ?? null,
+    link: input.link ?? null,
+    payload: input.payload ?? null,
+  });
+}
+
 // ── Sound ──────────────────────────────────────────────────────────────────────
 
 /** A short, soft "ding" for new notifications. */

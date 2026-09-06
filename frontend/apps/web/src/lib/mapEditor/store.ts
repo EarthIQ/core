@@ -82,6 +82,20 @@ function migrateComments(raw: unknown): CommentThread[] {
           authorId: typeof m.authorId === "string" ? m.authorId : "",
           createdAt:
             typeof m.createdAt === "number" ? m.createdAt : Date.now(),
+          mentions: Array.isArray(m.mentions)
+            ? m.mentions
+                .filter(
+                  (x: unknown) =>
+                    x &&
+                    typeof x === "object" &&
+                    typeof (x as any).name === "string" &&
+                    (x as any).name.trim(),
+                )
+                .map((x: any) => ({
+                  id: typeof x.id === "string" ? x.id : "",
+                  name: x.name,
+                }))
+            : undefined,
         }));
       if (messages.length === 0) continue;
       out.push({
@@ -210,12 +224,14 @@ interface MapEditorState extends Snapshot {
     body: string,
     author: string,
     authorId: string,
+    mentions?: { id: string; name: string }[],
   ) => void;
   replyToThread: (
     threadId: string,
     body: string,
     author: string,
     authorId: string,
+    mentions?: { id: string; name: string }[],
   ) => void;
   setThreadResolved: (
     threadId: string,
@@ -376,7 +392,7 @@ export const useMapEditor = create<MapEditorState>((set) => ({
       bookmarks: s.bookmarks.map((b) => (b.id === id ? { ...b, name } : b)),
     })),
 
-  addThread: (lngLat, body, author, authorId) =>
+  addThread: (lngLat, body, author, authorId, mentions) =>
     set((s) => {
       const now = Date.now();
       const message = {
@@ -385,6 +401,7 @@ export const useMapEditor = create<MapEditorState>((set) => ({
         author,
         authorId,
         createdAt: now,
+        mentions: mentions?.length ? mentions : undefined,
       };
       return {
         ...pushHistory(s),
@@ -405,7 +422,7 @@ export const useMapEditor = create<MapEditorState>((set) => ({
       };
     }),
 
-  replyToThread: (threadId, body, author, authorId) =>
+  replyToThread: (threadId, body, author, authorId, mentions) =>
     set((s) => {
       const now = Date.now();
       return {
@@ -417,7 +434,14 @@ export const useMapEditor = create<MapEditorState>((set) => ({
                 updatedAt: now,
                 messages: [
                   ...c.messages,
-                  { id: uid("msg"), body, author, authorId, createdAt: now },
+                  {
+                    id: uid("msg"),
+                    body,
+                    author,
+                    authorId,
+                    createdAt: now,
+                    mentions: mentions?.length ? mentions : undefined,
+                  },
                 ],
               }
             : c,

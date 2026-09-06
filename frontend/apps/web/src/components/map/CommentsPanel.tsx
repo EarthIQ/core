@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useMapEditor } from "@/lib/mapEditor/store";
 import { useAuth } from "@/lib/auth";
+import { renderBody } from "@/components/map/CommentPins";
 import type { CommentThread } from "@/lib/mapEditor/types";
 
 function initials(name: string) {
@@ -88,7 +89,7 @@ function ThreadRow({
                 {last.author.split(" ")[0]}:{" "}
               </span>
             )}
-            {last.body}
+            {renderBody(last.body, last.mentions, `row-${thread.id}`)}
           </p>
         </div>
       </div>
