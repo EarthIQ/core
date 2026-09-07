@@ -15,7 +15,7 @@ function hashColor(seed: string) {
   return AVATAR_COLORS[h % AVATAR_COLORS.length];
 }
 
-export function Avatar({
+export const Avatar = ({
   name,
   email,
   src,
@@ -25,7 +25,7 @@ export function Avatar({
   email: string;
   src?: string;
   size?: number;
-}) {
+}) => {
   const label = name || email;
   const initials = (name ?? email)
     .split(/[\s.@_-]+/)
@@ -37,9 +37,9 @@ export function Avatar({
   if (src) {
     return (
       <img
-        src={src}
         alt={label}
         className="rounded-full object-cover shrink-0"
+        src={src}
         style={{ width: size, height: size }}
       />
     );
@@ -48,13 +48,13 @@ export function Avatar({
   return (
     <div
       className="rounded-full flex items-center justify-center shrink-0 text-white font-semibold select-none"
+      title={label}
       style={{
         width: size,
         height: size,
         background: hashColor(email),
         fontSize: size * 0.38,
       }}
-      title={label}
     >
       {initials || "?"}
     </div>

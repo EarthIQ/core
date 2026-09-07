@@ -1,5 +1,5 @@
-import { useId } from "react";
 import { cn } from "@packages/ui";
+import { useId } from "react";
 
 /**
  * Brand cyan used for the "IQ" accent - kept in sync with the SVG assets in
@@ -23,34 +23,34 @@ interface LogoMarkProps {
  * namespaced per instance via `useId` so multiple marks can coexist on a page
  * without `<defs>` collisions.
  */
-export function LogoMark({ size = 32, className, title }: LogoMarkProps) {
+export const LogoMark = ({ size = 32, className, title }: LogoMarkProps) => {
   const rawId = useId();
   const id = (suffix: string) => `${rawId}-${suffix}`;
   const url = (suffix: string) => `url(#${id(suffix)})`;
 
   return (
     <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={cn("shrink-0", className)}
-      role="img"
       aria-hidden={title ? undefined : true}
       aria-label={title}
+      className={cn("shrink-0", className)}
+      fill="none"
+      height={size}
+      role="img"
+      viewBox="0 0 64 64"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <radialGradient id={id("bg")} cx="50%" cy="36%" r="78%">
+        <radialGradient cx="50%" cy="36%" id={id("bg")} r="78%">
           <stop offset="0%" stopColor="#13253D" />
           <stop offset="100%" stopColor="#070D18" />
         </radialGradient>
-        <linearGradient id={id("globe")} x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={id("globe")} x1="0%" x2="100%" y1="0%" y2="100%">
           <stop offset="0%" stopColor="#1A3A5E" />
           <stop offset="100%" stopColor="#0B1A2E" />
         </linearGradient>
-        <filter id={id("glow")} x="-70%" y="-70%" width="240%" height="240%">
-          <feGaussianBlur stdDeviation="2.4" result="b" />
+        <filter height="240%" id={id("glow")} width="240%" x="-70%" y="-70%">
+          <feGaussianBlur result="b" stdDeviation="2.4" />
           <feMerge>
             <feMergeNode in="b" />
             <feMergeNode in="SourceGraphic" />
@@ -59,30 +59,30 @@ export function LogoMark({ size = 32, className, title }: LogoMarkProps) {
       </defs>
 
       {/* App-icon background */}
-      <rect x="2" y="2" width="60" height="60" rx="16" fill={url("bg")} stroke="#1E3350" strokeWidth="1" />
-      <circle cx="32" cy="32" r="25" fill="none" stroke="#0891B2" strokeWidth="1.4" strokeDasharray="3 4.5" opacity="0.45" />
+      <rect fill={url("bg")} height="60" rx="16" stroke="#1E3350" strokeWidth="1" width="60" x="2" y="2" />
+      <circle cx="32" cy="32" fill="none" opacity="0.45" r="25" stroke="#0891B2" strokeDasharray="3 4.5" strokeWidth="1.4" />
 
       {/* Globe */}
-      <circle cx="32" cy="32" r="18" fill={url("globe")} stroke="#3E6394" strokeWidth="2" />
-      <g fill="none" stroke="#6E95CB" opacity="0.55">
+      <circle cx="32" cy="32" fill={url("globe")} r="18" stroke="#3E6394" strokeWidth="2" />
+      <g fill="none" opacity="0.55" stroke="#6E95CB">
         <ellipse cx="32" cy="32" rx="18" ry="7" strokeWidth="1.3" />
         <ellipse cx="32" cy="32" rx="8" ry="18" strokeWidth="1.3" />
       </g>
 
       {/* Neural "IQ" core */}
       <g strokeLinecap="round" strokeLinejoin="round">
-        <g fill="none" strokeWidth="1.8" opacity="0.95">
+        <g fill="none" opacity="0.95" strokeWidth="1.8">
           <path d="M21 25 L32 31 L43 25" stroke="#0891B2" />
           <path d="M24 41 L32 31 L40 41" stroke="#059669" />
         </g>
         <g filter={url("glow")}>
-          <circle cx="21" cy="25" r="2.7" fill="#38BDF8" />
-          <circle cx="43" cy="25" r="2.7" fill="#34D399" />
-          <circle cx="24" cy="41" r="2.7" fill="#34D399" />
-          <circle cx="40" cy="41" r="2.7" fill="#38BDF8" />
-          <circle cx="32" cy="31" r="3.6" fill="#7DD3FC" />
+          <circle cx="21" cy="25" fill="#38BDF8" r="2.7" />
+          <circle cx="43" cy="25" fill="#34D399" r="2.7" />
+          <circle cx="24" cy="41" fill="#34D399" r="2.7" />
+          <circle cx="40" cy="41" fill="#38BDF8" r="2.7" />
+          <circle cx="32" cy="31" fill="#7DD3FC" r="3.6" />
         </g>
-        <circle cx="32" cy="31" r="1.5" fill="#F0F9FF" />
+        <circle cx="32" cy="31" fill="#F0F9FF" r="1.5" />
       </g>
     </svg>
   );
@@ -101,17 +101,16 @@ interface LogoProps {
  * Full EarthIQ lockup (mark + wordmark). The wordmark is native HTML text so
  * it inherits the app's web fonts and theme tokens.
  */
-export function Logo({
+export const Logo = ({
   size = 28,
   withWordmark = true,
   className,
   wordmarkClassName,
-}: LogoProps) {
+}: LogoProps) => {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <LogoMark size={size} />
-      {withWordmark && (
-        <span
+      {withWordmark ? <span
           className={cn(
             "tracking-tight whitespace-nowrap font-medium",
             wordmarkClassName,
@@ -121,8 +120,7 @@ export function Logo({
           <span className="font-extrabold" style={{ color: BRAND_IQ }}>
             IQ
           </span>
-        </span>
-      )}
+        </span> : null}
     </span>
   );
 }

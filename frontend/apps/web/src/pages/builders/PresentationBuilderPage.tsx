@@ -1,6 +1,7 @@
+import { AlignLeft, Map, Presentation, Type } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { AlignLeft, Map, Presentation, Type } from "lucide-react";
+
 import { BuilderScaffold } from "@/components/builder/BuilderScaffold";
 import {
   BuilderWorkspace,
@@ -54,28 +55,6 @@ export default function PresentationBuilderPage() {
   return (
     <BuilderScaffold builder={builder} projectId={projectId}>
       <BuilderWorkspace
-        sidebar={
-          <>
-            <SidebarHeader
-              icon={Presentation}
-              title="Slides"
-              addLabel="Add"
-              onAdd={addSlide}
-            />
-            <div className="flex flex-col gap-0.5">
-              {slides.map((slide) => (
-                <SidebarItem
-                  key={slide.id}
-                  icon={Presentation}
-                  title={slide.title}
-                  subtitle="Empty slide"
-                  active={slide.id === activeId}
-                  onClick={() => setActiveId(slide.id)}
-                />
-              ))}
-            </div>
-          </>
-        }
         main={
           <div className="flex flex-col gap-4">
             {/* Slide canvas */}
@@ -106,9 +85,9 @@ export default function PresentationBuilderPage() {
                 return (
                   <button
                     key={block.label}
-                    type="button"
                     disabled
                     className="flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-dashed border-[var(--border-primary)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-tertiary)] opacity-70"
+                    type="button"
                   >
                     <BlockIcon size={13} />
                     {block.label}
@@ -120,6 +99,28 @@ export default function PresentationBuilderPage() {
               })}
             </div>
           </div>
+        }
+        sidebar={
+          <>
+            <SidebarHeader
+              addLabel="Add"
+              icon={Presentation}
+              title="Slides"
+              onAdd={addSlide}
+            />
+            <div className="flex flex-col gap-0.5">
+              {slides.map((slide) => (
+                <SidebarItem
+                  key={slide.id}
+                  active={slide.id === activeId}
+                  icon={Presentation}
+                  subtitle="Empty slide"
+                  title={slide.title}
+                  onClick={() => setActiveId(slide.id)}
+                />
+              ))}
+            </div>
+          </>
         }
       />
     </BuilderScaffold>

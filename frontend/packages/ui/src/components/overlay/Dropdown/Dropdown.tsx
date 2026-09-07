@@ -1,5 +1,3 @@
-import { useState, type ReactNode } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   useFloating,
   offset,
@@ -7,8 +5,11 @@ import {
   shift,
   autoUpdate,
 } from "@floating-ui/react";
-import { cn } from "../../../utils/cn";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, type ReactNode } from "react";
+
 import { useClickOutside } from "../../../hooks/useClickOutside";
+import { cn } from "../../../utils/cn";
 
 interface DropdownItem {
   key: string;
@@ -38,8 +39,8 @@ const DropdownMenuItem = ({
     return (
       <div
         className="mx-2 my-1 border-t"
-        style={{ borderColor: "var(--divider)" }}
         role="separator"
+        style={{ borderColor: "var(--divider)" }}
       />
     );
   }
@@ -48,15 +49,10 @@ const DropdownMenuItem = ({
 
   return (
     <button
-      type="button"
-      role="menuitem"
       disabled={item.disabled}
-      onClick={() => {
-        if (!item.disabled) {
-          item.onClick?.();
-          closeDropdown();
-        }
-      }}
+      role="menuitem"
+      style={{ transitionDuration: "var(--transition-fast)" }}
+      type="button"
       className={cn(
         "flex w-full items-center gap-3",
         "rounded-[var(--radius-md)] px-3 py-2",
@@ -71,7 +67,12 @@ const DropdownMenuItem = ({
           "cursor-pointer text-[var(--error-text)] hover:bg-[var(--error-bg)]",
         item.disabled && "cursor-not-allowed opacity-50"
       )}
-      style={{ transitionDuration: "var(--transition-fast)" }}
+      onClick={() => {
+        if (!item.disabled) {
+          item.onClick?.();
+          closeDropdown();
+        }
+      }}
     >
       {/* fixed icon slot (always present to keep label aligned) */}
       <span
@@ -93,12 +94,12 @@ const DropdownMenuItem = ({
   );
 };
 
-export function Dropdown({
+export const Dropdown = ({
   trigger,
   items,
   placement = "bottom-end",
   className,
-}: DropdownProps) {
+}: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const { x, y, strategy, refs } = useFloating({
@@ -123,6 +124,11 @@ export function Dropdown({
       {/* Keep wrapper as div to avoid nesting <button> if trigger is already a button */}
       <div
         ref={refs.setReference}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+        className="inline-flex cursor-pointer"
+        role="button"
+        tabIndex={0}
         onClick={() => setIsOpen((v) => !v)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -131,26 +137,19 @@ export function Dropdown({
           }
           if (e.key === "Escape") setIsOpen(false);
         }}
-        tabIndex={0}
-        className="inline-flex cursor-pointer"
-        role="button"
-        aria-haspopup="menu"
-        aria-expanded={isOpen}
       >
         {trigger}
       </div>
 
       <AnimatePresence>
-        {isOpen && (
-          <motion.div
+        {isOpen ? <motion.div
             ref={refs.setFloating}
-            role="menu"
+            animate={{ opacity: 1, scale: 1, y: 0 }}
             aria-orientation="vertical"
-            style={{
-              position: strategy,
-              top: y ?? 0,
-              left: x ?? 0,
-            }}
+            exit={{ opacity: 0, scale: 0.98, y: -6 }}
+            initial={{ opacity: 0, scale: 0.98, y: -6 }}
+            role="menu"
+            transition={{ duration: 0.14, ease: "easeOut" }}
             className={cn(
               // UI fixes: padding around items, consistent min width, proper z-index
               "z-[var(--z-dropdown)] min-w-48 p-1",
@@ -160,20 +159,20 @@ export function Dropdown({
               "overflow-hidden",
               className
             )}
-            initial={{ opacity: 0, scale: 0.98, y: -6 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98, y: -6 }}
-            transition={{ duration: 0.14, ease: "easeOut" }}
+            style={{
+              position: strategy,
+              top: y ?? 0,
+              left: x ?? 0,
+            }}
           >
             {items.map((item) => (
               <DropdownMenuItem
                 key={item.key}
-                item={item}
                 closeDropdown={() => setIsOpen(false)}
+                item={item}
               />
             ))}
-          </motion.div>
-        )}
+          </motion.div> : null}
       </AnimatePresence>
     </div>
   );

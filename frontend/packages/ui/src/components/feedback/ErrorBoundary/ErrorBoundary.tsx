@@ -1,4 +1,5 @@
 import React, { Component, type ErrorInfo, type ReactNode } from "react";
+
 import { cn } from "../../../utils/cn";
 import { Button } from "../../primitives/Button/Button";
 
@@ -54,9 +55,9 @@ export class ErrorBoundary extends Component<
       process.env.NODE_ENV === "development";
 
     if (isDev) {
-      // eslint-disable-next-line no-console
+       
       console.error("ErrorBoundary caught an error:", error);
-      // eslint-disable-next-line no-console
+       
       console.error("Component stack:", errorInfo.componentStack);
     }
   }
@@ -91,10 +92,10 @@ export class ErrorBoundary extends Component<
 
     return (
       <DefaultErrorFallback
+        className={className}
         error={error}
         errorInfo={errorInfo}
         resetError={this.resetError}
-        className={className}
       />
     );
   }
@@ -108,12 +109,12 @@ interface DefaultErrorFallbackProps {
   className?: string;
 }
 
-export function DefaultErrorFallback({
+export const DefaultErrorFallback = ({
   error,
   errorInfo,
   resetError,
   className,
-}: DefaultErrorFallbackProps) {
+}: DefaultErrorFallbackProps) => {
   const [showDetails, setShowDetails] = React.useState(false);
 
   const isDev =
@@ -142,17 +143,17 @@ export function DefaultErrorFallback({
             )}
           >
             <svg
+              aria-hidden="true"
               className="h-8 w-8 text-[var(--error)]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              aria-hidden="true"
             >
               <path
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
               />
             </svg>
           </div>
@@ -174,17 +175,17 @@ export function DefaultErrorFallback({
               onClick={resetError}
             >
               <svg
+                aria-hidden="true"
                 className="mr-2 h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
-                aria-hidden="true"
               >
                 <path
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                 />
               </svg>
               Try Again
@@ -197,20 +198,17 @@ export function DefaultErrorFallback({
               Reload Page
             </Button>
 
-            {isDev && (
-              <Button
+            {isDev ? <Button
+                aria-expanded={showDetails}
                 variant="outline"
                 onClick={() => setShowDetails((v) => !v)}
-                aria-expanded={showDetails}
               >
                 {showDetails ? "Hide" : "Show"} Details
-              </Button>
-            )}
+              </Button> : null}
           </div>
 
           {/* Error Details (Development only) */}
-          {isDev && showDetails && (
-            <div className="mt-6 w-full">
+          {isDev && showDetails ? <div className="mt-6 w-full">
               <div
                 className={cn(
                   "max-h-64 overflow-auto rounded-xl p-4 text-left",
@@ -221,25 +219,20 @@ export function DefaultErrorFallback({
                   {error.name}: {error.message}
                 </p>
 
-                {error.stack && (
-                  <pre className="font-mono text-xs whitespace-pre-wrap text-[var(--text-secondary)]">
+                {error.stack ? <pre className="font-mono text-xs whitespace-pre-wrap text-[var(--text-secondary)]">
                     {error.stack}
-                  </pre>
-                )}
+                  </pre> : null}
 
-                {errorInfo?.componentStack && (
-                  <>
+                {errorInfo?.componentStack ? <>
                     <p className="mt-4 mb-2 font-mono text-xs text-[var(--text-primary)]">
                       Component Stack:
                     </p>
                     <pre className="font-mono text-xs whitespace-pre-wrap text-[var(--text-secondary)]">
                       {errorInfo.componentStack}
                     </pre>
-                  </>
-                )}
+                  </> : null}
               </div>
-            </div>
-          )}
+            </div> : null}
         </div>
       </div>
     </div>

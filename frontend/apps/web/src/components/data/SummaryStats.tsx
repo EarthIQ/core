@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import {
   Database,
   FolderArchive,
@@ -7,8 +6,12 @@ import {
   Satellite,
   Table2,
 } from "lucide-react";
-import { formatBytes } from "../../lib/datasets";
+import { useMemo } from "react";
+
+import { formatBytes } from "@/lib/datasets";
+
 import { isStoredAsset, isVectorized } from "./helpers";
+
 import type { DatasetItem } from "./types";
 
 interface Props {

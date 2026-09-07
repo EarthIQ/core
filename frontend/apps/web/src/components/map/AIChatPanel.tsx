@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Button } from "@packages/ui";
 import {
   Send,
   X,
@@ -9,7 +9,9 @@ import {
   Wrench,
   MapPin,
 } from "lucide-react";
-import { Button } from "@packages/ui";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+
+import { BASEMAP_STYLES } from "@/hooks/useMapLibre";
 import {
   aiChat,
   dispatchToolCall,
@@ -19,7 +21,6 @@ import {
   type MapHandle,
   type ToolDispatchContext,
 } from "@/lib/ai";
-import { BASEMAP_STYLES } from "@/hooks/useMapLibre";
 
 /* ── Message types ─────────────────────────────────────────────────────────── */
 
@@ -71,7 +72,7 @@ export default function AIChatPanel({
   isOpen,
   onClose,
   mapRef,
-  mapReady,
+  _mapReady,
   basemap,
   setBasemap,
   setLayerVisible,
@@ -229,7 +230,7 @@ export default function AIChatPanel({
       <div className="flex items-center justify-between px-4 h-14 border-b border-border-secondary bg-surface-hover/30 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-            <Sparkles size={16} className="animate-pulse" />
+            <Sparkles className="animate-pulse" size={16} />
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-bold text-text-primary">
@@ -241,12 +242,12 @@ export default function AIChatPanel({
           </div>
         </div>
         <Button
-          variant="ghost"
-          size="xs"
           iconOnly
-          onClick={onClose}
           aria-label="Close AI panel"
           className="text-text-secondary hover:text-text-primary"
+          size="xs"
+          variant="ghost"
+          onClick={onClose}
         >
           <X size={16} />
         </Button>
@@ -287,21 +288,17 @@ export default function AIChatPanel({
                       : "bg-surface-hover/80 text-text-secondary border border-border-secondary rounded-tl-none"
               }`}
             >
-              {msg.toolName && (
-                <span className="flex items-center gap-1 mb-1 text-[10px] font-semibold text-primary uppercase tracking-wider">
+              {msg.toolName ? <span className="flex items-center gap-1 mb-1 text-[10px] font-semibold text-primary uppercase tracking-wider">
                   <MapPin size={10} /> {msg.toolName}
-                </span>
-              )}
+                </span> : null}
               {msg.text}
             </div>
           </div>
         ))}
-        {busy && (
-          <div className="flex items-center gap-2 text-[11px] text-text-quaternary self-start">
-            <Loader2 size={13} className="animate-spin" />
+        {busy ? <div className="flex items-center gap-2 text-[11px] text-text-quaternary self-start">
+            <Loader2 className="animate-spin" size={13} />
             Thinking…
-          </div>
-        )}
+          </div> : null}
         <div ref={messagesEndRef} />
       </div>
 
@@ -315,8 +312,8 @@ export default function AIChatPanel({
             {SUGGESTIONS.map((s) => (
               <button
                 key={s}
-                onClick={() => handleSubmit(s)}
                 className="text-left text-[11px] text-text-secondary hover:text-primary hover:border-primary/40 px-3 py-2 rounded-lg border border-border-primary bg-surface-hover/20 transition-all cursor-pointer truncate"
+                onClick={() => handleSubmit(s)}
               >
                 {s}
               </button>
@@ -328,28 +325,28 @@ export default function AIChatPanel({
       {/* Input */}
       <div className="p-4 border-t border-border-secondary bg-surface shrink-0">
         <form
+          className="relative flex items-center bg-surface-hover/40 border border-border-secondary rounded-xl p-1.5 focus-within:border-primary/50 transition-colors"
           onSubmit={(e) => {
             e.preventDefault();
             handleSubmit(inputValue);
           }}
-          className="relative flex items-center bg-surface-hover/40 border border-border-secondary rounded-xl p-1.5 focus-within:border-primary/50 transition-colors"
         >
           <input
-            type="text"
-            placeholder="Ask AI to navigate, switch basemaps, or explain the data…"
             className="input input-sm border-none bg-transparent w-full p-2 text-xs focus:ring-0 focus:outline-none placeholder:text-text-quaternary"
+            disabled={busy}
+            placeholder="Ask AI to navigate, switch basemaps, or explain the data…"
+            type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            disabled={busy}
           />
           <Button
+            iconOnly
+            aria-label="Send"
+            className="shrink-0 rounded-lg"
+            disabled={!inputValue.trim() || busy}
+            size="xs"
             type="submit"
             variant="primary"
-            size="xs"
-            iconOnly
-            disabled={!inputValue.trim() || busy}
-            className="shrink-0 rounded-lg"
-            aria-label="Send"
           >
             <Send size={14} />
           </Button>

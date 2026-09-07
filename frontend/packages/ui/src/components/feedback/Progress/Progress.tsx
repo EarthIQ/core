@@ -1,5 +1,6 @@
-import React from "react";
 import { motion } from "framer-motion";
+import React from "react";
+
 import { cn } from "../../../utils/cn";
 
 interface ProgressProps {
@@ -28,7 +29,7 @@ const variantClasses = {
   error: "bg-gradient-to-r from-[var(--error)] to-[var(--error)]",
 };
 
-export function Progress({
+export const Progress = ({
   value,
   max = 100,
   size = "md",
@@ -38,25 +39,19 @@ export function Progress({
   animated = true,
   striped = false,
   className,
-}: ProgressProps) {
+}: ProgressProps) => {
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
 
   return (
     <div className={cn("w-full", className)}>
-      {(label || showValue) && (
-        <div className="mb-2 flex items-center justify-between">
-          {label && (
-            <span className="text-sm font-medium text-[var(--text-primary)]">
+      {(label || showValue) ? <div className="mb-2 flex items-center justify-between">
+          {label ? <span className="text-sm font-medium text-[var(--text-primary)]">
               {label}
-            </span>
-          )}
-          {showValue && (
-            <span className="text-sm text-[var(--text-secondary)] tabular-nums">
+            </span> : null}
+          {showValue ? <span className="text-sm text-[var(--text-secondary)] tabular-nums">
               {Math.round(percentage)}%
-            </span>
-          )}
-        </div>
-      )}
+            </span> : null}
+        </div> : null}
 
       <div
         className={cn(
@@ -65,8 +60,8 @@ export function Progress({
         )}
       >
         <motion.div
-          initial={animated ? { width: 0 } : { width: `${percentage}%` }}
           animate={{ width: `${percentage}%` }}
+          initial={animated ? { width: 0 } : { width: `${percentage}%` }}
           transition={{ duration: 0.5, ease: "easeOut" }}
           className={cn(
             "h-full rounded-full transition-all",

@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "../../../context/ThemeContext";
 import { Sun, Moon, Monitor } from "lucide-react";
+
 import { cn } from "@packages/ui";
+
+import { useTheme } from "../../../context/ThemeContext";
 
 type Theme = "light" | "dark" | "system";
 
@@ -39,12 +41,12 @@ const sizes = {
   },
 } as const;
 
-export function ThemeToggle({
+export const ThemeToggle = ({
   variant = "icon",
   size = "md",
   showLabel = false,
   className,
-}: ThemeToggleProps) {
+}: ThemeToggleProps) => {
   const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme();
 
   const s = sizes[size];
@@ -54,7 +56,9 @@ export function ThemeToggle({
   if (variant === "icon") {
     return (
       <motion.button
-        onClick={toggleTheme}
+        aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.92 }}
         className={cn(
           "relative flex cursor-pointer items-center justify-center rounded-full",
           s.button,
@@ -67,31 +71,29 @@ export function ThemeToggle({
           "transition-colors duration-[var(--transition-fast)]",
           className
         )}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.92 }}
-        aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+        onClick={toggleTheme}
       >
         <AnimatePresence
-          mode="wait"
           initial={false}
+          mode="wait"
         >
           <motion.div
             key={isDark ? "dark" : "light"}
-            initial={{ y: -16, opacity: 0, rotate: -90 }}
             animate={{ y: 0, opacity: 1, rotate: 0 }}
-            exit={{ y: 16, opacity: 0, rotate: 90 }}
-            transition={{ duration: 0.15 }}
             className="flex items-center justify-center"
+            exit={{ y: 16, opacity: 0, rotate: 90 }}
+            initial={{ y: -16, opacity: 0, rotate: -90 }}
+            transition={{ duration: 0.15 }}
           >
             {isDark ? (
               <Moon
-                size={s.icon}
                 className="text-[var(--primary-light)]"
+                size={s.icon}
               />
             ) : (
               <Sun
-                size={s.icon}
                 className="text-[var(--warning)]"
+                size={s.icon}
               />
             )}
           </motion.div>
@@ -104,13 +106,13 @@ export function ThemeToggle({
   if (variant === "switch") {
     return (
       <div className={cn("flex items-center gap-2.5", className)}>
-        {showLabel && (
-          <span className="text-sm font-medium text-[var(--text-secondary)]">
+        {showLabel ? <span className="text-sm font-medium text-[var(--text-secondary)]">
             {isDark ? "Dark" : "Light"}
-          </span>
-        )}
+          </span> : null}
         <button
-          onClick={toggleTheme}
+          aria-checked={isDark}
+          aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+          role="switch"
           className={cn(
             "relative cursor-pointer rounded-full",
             s.switch,
@@ -120,11 +122,11 @@ export function ThemeToggle({
             "focus:outline-none",
             isDark && "bg-[var(--toggle-bg-on)]"
           )}
-          role="switch"
-          aria-checked={isDark}
-          aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+          onClick={toggleTheme}
         >
           <motion.div
+            animate={{ x: isDark ? s.knobTravel : 0 }}
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
             className={cn(
               "absolute top-1 left-1",
               s.knob,
@@ -132,18 +134,16 @@ export function ThemeToggle({
               "bg-[var(--toggle-knob)]",
               "shadow-[var(--shadow-sm)]"
             )}
-            animate={{ x: isDark ? s.knobTravel : 0 }}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
           >
             {isDark ? (
               <Moon
-                size={s.knobIcon}
                 className="text-[var(--primary)]"
+                size={s.knobIcon}
               />
             ) : (
               <Sun
-                size={s.knobIcon}
                 className="text-[var(--warning)]"
+                size={s.knobIcon}
               />
             )}
           </motion.div>
@@ -187,7 +187,8 @@ export function ThemeToggle({
           return (
             <button
               key={option.value}
-              onClick={() => setTheme(option.value)}
+              aria-label={`Use ${option.label} theme`}
+              aria-pressed={isActive}
               className={cn(
                 "relative cursor-pointer rounded-[var(--radius-md)] px-3 py-1.5",
                 "text-sm font-medium",
@@ -198,24 +199,21 @@ export function ThemeToggle({
                   ? "text-[var(--text-primary)]"
                   : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
               )}
-              aria-label={`Use ${option.label} theme`}
-              aria-pressed={isActive}
+              onClick={() => setTheme(option.value)}
             >
-              {isActive && (
-                <motion.div
+              {isActive ? <motion.div
                   layoutId="activeTheme"
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   className={cn(
                     "absolute inset-0 rounded-[var(--radius-md)]",
                     "bg-[var(--surface)]",
                     "shadow-[var(--shadow-sm)]",
                     "border border-[var(--border-secondary)]"
                   )}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
+                /> : null}
               <span className="relative z-10 flex items-center gap-1.5">
                 {option.icon}
-                {showLabel && option.label}
+                {showLabel ? option.label : null}
               </span>
             </button>
           );
@@ -228,7 +226,7 @@ export function ThemeToggle({
   if (variant === "minimal") {
     return (
       <button
-        onClick={toggleTheme}
+        aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
         className={cn(
           "group flex cursor-pointer items-center gap-2",
           "rounded-[var(--radius-lg)] px-3 py-2",
@@ -239,31 +237,29 @@ export function ThemeToggle({
           "transition-colors duration-[var(--transition-fast)]",
           className
         )}
-        aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+        onClick={toggleTheme}
       >
         <motion.div
-          initial={false}
           animate={{ rotate: isDark ? 0 : 180 }}
-          transition={{ duration: 0.25, ease: "easeInOut" }}
           className="flex items-center justify-center"
+          initial={false}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
         >
           {isDark ? (
             <Moon
-              size={s.icon}
               className="text-[var(--primary-light)]"
+              size={s.icon}
             />
           ) : (
             <Sun
-              size={s.icon}
               className="text-[var(--warning)]"
+              size={s.icon}
             />
           )}
         </motion.div>
-        {showLabel && (
-          <span className="text-sm font-medium">
+        {showLabel ? <span className="text-sm font-medium">
             {isDark ? "Dark mode" : "Light mode"}
-          </span>
-        )}
+          </span> : null}
       </button>
     );
   }

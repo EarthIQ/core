@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
+
 import { useMap } from '../../hooks/useMap';
-import { Button, Stack } from '@packages/ui';
 
 export interface ZoomControlProps {
   /** Position on map */
@@ -151,25 +151,23 @@ export const ZoomControl: React.FC<ZoomControlProps> = ({
           padding: 2
         }}
       >
-        {showZoomIn && (
-          <button
-            onClick={handleZoomIn}
+        {showZoomIn ? <button
             disabled={isAtMaxZoom}
+            title="Zoom in"
             style={{
               ...buttonStyle,
               opacity: isAtMaxZoom ? 0.5 : 1,
               cursor: isAtMaxZoom ? 'not-allowed' : 'pointer'
             }}
-            title="Zoom in"
+            onClick={handleZoomIn}
             onMouseEnter={(e) => !isAtMaxZoom && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
           >
             +
-          </button>
-        )}
+          </button> : null}
 
-        {showZoomLevel && (
-          <div
+        {showZoomLevel ? <div
+            title={`Zoom level: ${currentZoom.toFixed(1)}`}
             style={{
               ...buttonStyle,
               cursor: 'default',
@@ -177,40 +175,34 @@ export const ZoomControl: React.FC<ZoomControlProps> = ({
               fontWeight: 'bold',
               color: '#6b7280'
             }}
-            title={`Zoom level: ${currentZoom.toFixed(1)}`}
           >
             {Math.round(currentZoom)}
-          </div>
-        )}
+          </div> : null}
 
-        {showZoomOut && (
-          <button
-            onClick={handleZoomOut}
+        {showZoomOut ? <button
             disabled={isAtMinZoom}
+            title="Zoom out"
             style={{
               ...buttonStyle,
               opacity: isAtMinZoom ? 0.5 : 1,
               cursor: isAtMinZoom ? 'not-allowed' : 'pointer'
             }}
-            title="Zoom out"
+            onClick={handleZoomOut}
             onMouseEnter={(e) => !isAtMinZoom && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
           >
             −
-          </button>
-        )}
+          </button> : null}
 
-        {showReset && resetView && (
-          <button
-            onClick={handleReset}
+        {showReset && resetView ? <button
             style={buttonStyle}
             title="Reset view"
+            onClick={handleReset}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
           >
             ⌂
-          </button>
-        )}
+          </button> : null}
       </div>
     </div>
   );

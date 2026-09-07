@@ -68,7 +68,11 @@ interface FlyTarget {
  * on that instance. The returned `mapRef` mirrors the live instance so
  * existing children (`mapRef`-based panels/tools) keep working unchanged.
  */
-export function useMapLibre(map: any | null, initialBasemap: string) {
+export function useMapLibre(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  map: any,
+  initialBasemap: string
+) {
   const mapRef = useRef<any>(null);
   const pendingFlyToRef = useRef<FlyTarget | null>(null);
   const firstBasemapSync = useRef(true);

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+
 import { useMap } from './useMap';
+
 import type { GeoJSON } from 'geojson';
 
 export interface UseFeaturesInViewOptions {
@@ -17,7 +19,7 @@ export const useFeaturesInView = (
   options: UseFeaturesInViewOptions = {}
 ): GeoJSON.Feature[] => {
   const { map, isLoaded } = useMap();
-  const { layers, filter, debounceMs = 100, includePartial = true } = options;
+  const { layers, filter, debounceMs = 100, includePartial: _includePartial = true } = options;
   const [features, setFeatures] = useState<GeoJSON.Feature[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
@@ -43,7 +45,7 @@ export const useFeaturesInView = (
       renderedFeatures.forEach(feature => {
         const id = feature.id ?? `${feature.source}-${feature.sourceLayer}-${JSON.stringify(feature.properties)}`;
         if (!uniqueFeatures.has(id)) {
-          uniqueFeatures.set(id, feature as unknown as GeoJSON.Feature);
+          uniqueFeatures.set(id, feature);
         }
       });
 

@@ -1,5 +1,6 @@
-import { useState } from "react";
 import { CheckCircle2, Loader2, Lock } from "lucide-react";
+import { useState } from "react";
+
 import { shareApi, type ShareEntityType } from "./shareApi";
 
 interface AccessRequestCardProps {
@@ -15,11 +16,11 @@ interface AccessRequestCardProps {
  * Shown to a logged-in user who opened a link to a map/project they cannot
  * access. Submitting stores the request and emails the owner an approval link.
  */
-export function AccessRequestCard({
+export const AccessRequestCard = ({
   entityType,
   entityId,
   entityTitle,
-}: AccessRequestCardProps) {
+}: AccessRequestCardProps) => {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -49,7 +50,7 @@ export function AccessRequestCard({
   return (
     <div className="w-full max-w-md bg-elevated border border-border-primary rounded-2xl shadow-2xl p-8 flex flex-col items-center text-center animate-scale-in">
       <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-        <Lock size={26} className="text-primary" />
+        <Lock className="text-primary" size={26} />
       </div>
       <h2 className="text-lg font-semibold text-text-primary">
         You don&rsquo;t have access to this {label}
@@ -66,7 +67,7 @@ export function AccessRequestCard({
 
       {sent ? (
         <div className="mt-6 w-full flex flex-col items-center gap-2 animate-fade-in">
-          <CheckCircle2 size={32} className="text-success" />
+          <CheckCircle2 className="text-success" size={32} />
           <p className="text-sm font-medium text-text-primary">Request sent</p>
           <p className="text-xs text-text-secondary leading-relaxed">
             The owner has been notified. You&rsquo;ll be able to open this {label} as
@@ -76,22 +77,20 @@ export function AccessRequestCard({
       ) : (
         <>
           <textarea
+            className="mt-5 w-full resize-none rounded-xl bg-bg-tertiary border border-border-primary px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary/60 transition-colors"
+            placeholder={`Tell the owner why you need access to this ${label}… (optional)`}
+            rows={3}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            rows={3}
-            placeholder={`Tell the owner why you need access to this ${label}… (optional)`}
-            className="mt-5 w-full resize-none rounded-xl bg-bg-tertiary border border-border-primary px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary/60 transition-colors"
           />
-          {error && (
-            <p className="mt-2 text-xs text-red-400">{error}</p>
-          )}
+          {error ? <p className="mt-2 text-xs text-red-400">{error}</p> : null}
           <button
+            className="mt-4 w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60 transition-opacity"
+            disabled={sending}
             type="button"
             onClick={handleSubmit}
-            disabled={sending}
-            className="mt-4 w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60 transition-opacity"
           >
-            {sending && <Loader2 size={15} className="animate-spin" />}
+            {sending ? <Loader2 className="animate-spin" size={15} /> : null}
             {sending ? "Sending…" : "Request access"}
           </button>
         </>

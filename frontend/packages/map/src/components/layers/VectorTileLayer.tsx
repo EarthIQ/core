@@ -1,5 +1,8 @@
-import React, { useEffect, useId, useCallback } from 'react';
+import { useEffect, useId, useCallback } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
+import type React from 'react';
 
 export interface VectorTileLayerProps {
   /** Unique layer ID */
@@ -29,7 +32,7 @@ export interface VectorTileLayerProps {
   /** Click handler */
   onClick?: (feature: any, event: any) => void;
   /** Hover handler */
-  onHover?: (feature: any | null, event: any) => void;
+  onHover?: (feature: any, event: any) => void;
   /** Enable hover state */
   hoverable?: boolean;
   /** Hover paint properties */
@@ -57,7 +60,7 @@ export const VectorTileLayer: React.FC<VectorTileLayerProps> = ({
   onHover,
   hoverable = false,
   hoverPaint,
-  selectable = false,
+  _selectable = false,
   metadata
 }) => {
   const { map, isLoaded } = useMap();

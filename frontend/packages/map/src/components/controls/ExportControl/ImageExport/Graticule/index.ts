@@ -1,6 +1,8 @@
-/* eslint-disable import/no-duplicates */
-import { Map, GeoJSONSource } from "maplibre-gl";
+ 
+import { type Map, type GeoJSONSource } from "maplibre-gl";
+
 import { getGraticule } from "./generator";
+
 import type { LinePaint } from "@/types";
 
 export interface GraticuleConfig {

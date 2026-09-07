@@ -1,6 +1,8 @@
-import React, { useState, useCallback } from 'react';
-import { useMap } from '../../hooks/useMap';
 import * as turf from '@turf/turf';
+import React, { useState, useCallback } from 'react';
+
+import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
 
 export interface BufferToolProps {
@@ -38,7 +40,7 @@ export const BufferTool: React.FC<BufferToolProps> = ({
   onResult
 }) => {
   const { map, isLoaded } = useMap();
-  const [result, setResult] = useState<GeoJSON.FeatureCollection | null>(null);
+  const [_result, setResult] = useState<GeoJSON.FeatureCollection | null>(null);
   
   const layerId = 'buffer-result-layer';
   const sourceId = 'buffer-result-source';

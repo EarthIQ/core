@@ -1,8 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Map } from "../Map";
-import { GeoJSONLayer } from "../../layers/GeoJSONLayer";
-import { NavigationControl } from "../NavigationControl";
 import { ScaleControl } from "../../controls/ScaleControl";
+import { GeoJSONLayer } from "../../layers/GeoJSONLayer";
+import { Map } from "../Map";
+import { NavigationControl } from "../NavigationControl";
+
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta<typeof Map> = {
   title: "Primitives/Map",
@@ -82,6 +83,8 @@ export const WithGeoJSON: Story = {
     <div style={{ width: "100vw", height: "100vh" }}>
       <Map {...args}>
         <GeoJSONLayer
+          hoverable
+          type="fill"
           data={{
             type: "FeatureCollection",
             features: [
@@ -103,12 +106,10 @@ export const WithGeoJSON: Story = {
               },
             ],
           }}
-          type="fill"
           paint={{
             "fill-color": "#3b82f6",
             "fill-opacity": 0.5,
           }}
-          hoverable
         />
         <NavigationControl position="top-right" />
       </Map>

@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { Locale, TranslationKey } from '../types';
+
 import { translations } from '../constants/translations';
 import { getStoredLocale } from '../utils/storage';
+
+import type { Locale, TranslationKey } from '../types';
 
 interface UseLocaleOptions {
   storageKey?: string;

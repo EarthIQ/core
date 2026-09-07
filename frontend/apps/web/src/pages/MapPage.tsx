@@ -1,63 +1,3 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import "maplibre-gl/dist/maplibre-gl.css";
-import { MessageSquare } from "lucide-react";
-import { deleteMap, updateMap, MapItem } from "@/lib/maps";
-import {
-  fetchProjectById,
-  updateProject,
-  publishMapFromProject,
-  ProjectItem,
-} from "@/lib/projects";
-import { useModules } from "@/lib/modules";
-import AIChatPanel from "@/components/map/AIChatPanel";
-import { MapNavbar } from "@/components/map/MapNavbar";
-import { MapBottomBar, TERRAIN_SOURCE_ID, TERRAIN_SOURCE_URL, TERRAIN_EXAGGERATION } from "@/components/map/MapBottomBar";
-import { MapActionBar } from "@/components/map/MapActionBar";
-import { StylePanel } from "@/components/map/StylePanel";
-import { ImportDataPortal } from "@/components/map/ImportDataPortal";
-import { LayerPanel } from "@/components/map/layer-panel/LayerPanel";
-import { LayerDndProvider } from "@/components/map/layer-panel/dndContext";
-import {
-  useLayerTree,
-  type NewLayerInput,
-} from "@/components/map/layer-panel/useLayerTree";
-import {
-  toMapLayerItems,
-  fromMapLayerItems,
-} from "@/components/map/layer-panel/serialize";
-import type { TreeNode, LayerTreeNode } from "@/components/map/layer-panel/types";
-import { useMapLibre, BASEMAP_STYLES } from "@/hooks/useMapLibre";
-import { PublishedMapsPanel } from "@/components/map/PublishedMapsPanel";
-import type { MapBuilderConfig } from "@/components/map/MapBuilder";
-import { useCollaboration } from "@/lib/useCollaboration";
-import { CollaboratorCursors } from "@/components/map/CollaboratorCursors";
-import { AccessRequestCard } from "@/components/map/share/AccessRequestCard";
-import { ApiError } from "@/lib/api";
-import {
-  useMapEditor,
-  selectCanUndo,
-  selectCanRedo,
-  selectSessionActive,
-} from "@/lib/mapEditor/store";
-import {
-  uploadDataset,
-  getVectorTileUrl,
-  getGeometrySummary,
-  getDatasetFeatures,
-  replaceDatasetFeatures,
-} from "@/lib/datasets";
-import { useMapTools } from "@/hooks/useMapTools";
-import { useMapDrawing } from "@/hooks/useMapDrawing";
-import { AnnotationOverlays } from "@/components/map/AnnotationOverlays";
-import { AnnotationInspector } from "@/components/map/AnnotationInspector";
-import { BookmarkPanel } from "@/components/map/BookmarkPanel";
-import { CommentPins } from "@/components/map/CommentPins";
-import { CommentsPanel } from "@/components/map/CommentsPanel";
-import {
-  ToolboxPanel,
-  TOOLBOX_PANEL_WIDTH,
-} from "@/components/map/ToolboxPanel";
 import {
   Map as MapCanvas,
   MapProvider,
@@ -65,6 +5,68 @@ import {
   ContextMenuControl,
 } from "@packages/map";
 import { Spinner } from "@packages/ui";
+import { MessageSquare } from "lucide-react";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+
+import AIChatPanel from "@/components/map/AIChatPanel";
+import { AnnotationInspector } from "@/components/map/AnnotationInspector";
+import { AnnotationOverlays } from "@/components/map/AnnotationOverlays";
+import { BookmarkPanel } from "@/components/map/BookmarkPanel";
+import { CollaboratorCursors } from "@/components/map/CollaboratorCursors";
+import { CommentPins } from "@/components/map/CommentPins";
+import { CommentsPanel } from "@/components/map/CommentsPanel";
+import { ImportDataPortal } from "@/components/map/ImportDataPortal";
+import { LayerDndProvider } from "@/components/map/layer-panel/dndContext";
+import { LayerPanel } from "@/components/map/layer-panel/LayerPanel";
+import {
+  toMapLayerItems,
+  fromMapLayerItems,
+} from "@/components/map/layer-panel/serialize";
+import {
+  useLayerTree,
+  type NewLayerInput,
+} from "@/components/map/layer-panel/useLayerTree";
+import { MapActionBar } from "@/components/map/MapActionBar";
+import { MapBottomBar, TERRAIN_SOURCE_ID, TERRAIN_SOURCE_URL, TERRAIN_EXAGGERATION } from "@/components/map/MapBottomBar";
+import { MapNavbar } from "@/components/map/MapNavbar";
+import { PublishedMapsPanel } from "@/components/map/PublishedMapsPanel";
+import { AccessRequestCard } from "@/components/map/share/AccessRequestCard";
+import { StylePanel } from "@/components/map/StylePanel";
+import {
+  ToolboxPanel,
+  TOOLBOX_PANEL_WIDTH,
+} from "@/components/map/ToolboxPanel";
+import { useMapDrawing } from "@/hooks/useMapDrawing";
+import { useMapLibre, BASEMAP_STYLES } from "@/hooks/useMapLibre";
+import { useMapTools } from "@/hooks/useMapTools";
+import { ApiError } from "@/lib/api";
+import {
+  uploadDataset,
+  getVectorTileUrl,
+  getGeometrySummary,
+  getDatasetFeatures,
+  replaceDatasetFeatures,
+} from "@/lib/datasets";
+import {
+  useMapEditor,
+  selectCanUndo,
+  selectCanRedo,
+  selectSessionActive,
+} from "@/lib/mapEditor/store";
+import { deleteMap, updateMap, type MapItem } from "@/lib/maps";
+import { useModules } from "@/lib/modules";
+import {
+  fetchProjectById,
+  updateProject,
+  publishMapFromProject,
+  type ProjectItem,
+} from "@/lib/projects";
+import { useCollaboration } from "@/lib/useCollaboration";
+
+import type { TreeNode, LayerTreeNode } from "@/components/map/layer-panel/types";
+import type { MapBuilderConfig } from "@/components/map/MapBuilder";
 
 export default function MapPage() {
   const [searchParams] = useSearchParams();
@@ -115,7 +117,7 @@ export default function MapPage() {
   const tree = useLayerTree([]);
 
   /** True while 3D terrain (bottom-bar toggle) is active. */
-  const [terrainOn, setTerrainOn] = useState(false);
+  const [terrainOn, _setTerrainOn] = useState(false);
 
   /**
    * Basemap switch wrapper. MapLibre v6 clears terrain whenever a new style
@@ -123,7 +125,7 @@ export default function MapPage() {
    * style finishes loading when terrain is on. The source id/URL must match
    * the `TerrainControl` props in MapBottomBar.
    */
-  const handleBasemapChange = useCallback(
+  const _handleBasemapChange = useCallback(
     (id: string) => {
       setBasemap(id);
       if (!terrainOn) return;
@@ -204,7 +206,7 @@ export default function MapPage() {
   const storeBookmarks = useMapEditor((s) => s.bookmarks);
   const storeComments = useMapEditor((s) => s.comments);
   const sessionActive = useMapEditor(selectSessionActive);
-  const drawSessionDetail = useMapEditor((s) => s.drawSession);
+  const _drawSessionDetail = useMapEditor((s) => s.drawSession);
   const drawnFeatures = useMapEditor((s) => s.drawnFeatures);
 
   const addLayers = tree.addLayers;
@@ -570,7 +572,7 @@ export default function MapPage() {
       //    point / line / polygon datasets all show; raster gets its style).
       leafLayers.forEach((layer) => {
         try {
-          const existing = map.getSource(layer.id) as any;
+          const existing = map.getSource(layer.id);
 
           // Rebuild the source when its URL or kind changed.
           if (existing) {
@@ -712,7 +714,7 @@ export default function MapPage() {
   ) {
     const existingIds = new Set(tree.nodes.map((n) => n.id));
     tree.addLayers(
-      layers.filter((l) => !existingIds.has(l.id as string)),
+      layers.filter((l) => !existingIds.has(l.id)),
       parentId,
     );
   }
@@ -850,7 +852,7 @@ export default function MapPage() {
   if (projectDenied && !currentProject) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-bg-primary p-6">
-        <AccessRequestCard entityType="project" entityId={projectId ?? ""} />
+        <AccessRequestCard entityId={projectId ?? ""} entityType="project" />
       </div>
     );
   }
@@ -859,45 +861,31 @@ export default function MapPage() {
     <MapProvider>
       <div className="relative w-full h-full overflow-hidden bg-bg-primary">
         {/* Scale bar (right side) - @packages/map control */}
-        <ScaleControl position="top-right" maxWidth={120} unit="metric" />
+        <ScaleControl maxWidth={120} position="top-right" unit="metric" />
 
         <MapNavbar
-        projectName={currentProject?.title || "EarthIQ Project"}
-        mapId={projectId}
-        projectId={projectId}
-        availableMaps={[]}
         activeMapId={projectId}
+        availableMaps={[]}
         canManageSharing={currentProject?.user_permission === "admin"}
-        mapRef={mapRef}
+        collaborators={collaborators}
+        isCollabConnected={isCollabConnected}
+        mapId={projectId}
         mapReady={mapReady}
+        mapRef={mapRef}
+        projectId={projectId}
+        projectName={currentProject?.title || "EarthIQ Project"}
         onSelectMap={() => {}}
         onBack={async () => {
           await handleSaveConfig();
           navigate("/projects");
         }}
-        collaborators={collaborators}
-        isCollabConnected={isCollabConnected}
       />
 
       {/* Map canvas - @packages/map <Map> primitive (provides MapContext to
           package controls and pushes the instance into the outer provider) */}
       <MapCanvas
-        style={BASEMAP_STYLES["opentopomap"]}
-        initialViewState={{
-          longitude: 0,
-          latitude: 20,
-          zoom: 2.5,
-          pitch: 0,
-          bearing: 0,
-        }}
         attributionControl={false}
-        onLoad={setMapInstance}
-        loadingIcon={
-          <div className="flex items-center gap-3 text-text-tertiary">
-            <Spinner size="lg" />
-            <span className="text-xs">Loading map…</span>
-          </div>
-        }
+        style={BASEMAP_STYLES["opentopomap"]}
         containerStyle={{
           position: "absolute",
           top: 0,
@@ -906,6 +894,20 @@ export default function MapPage() {
           left: aiChatOpen ? 360 : 0,
           zIndex: 0,
         }}
+        initialViewState={{
+          longitude: 0,
+          latitude: 20,
+          zoom: 2.5,
+          pitch: 0,
+          bearing: 0,
+        }}
+        loadingIcon={
+          <div className="flex items-center gap-3 text-text-tertiary">
+            <Spinner size="lg" />
+            <span className="text-xs">Loading map…</span>
+          </div>
+        }
+        onLoad={setMapInstance}
       />
 
       {/* Right-click context menu - copy coordinates / center here (map pkg) */}
@@ -923,9 +925,7 @@ export default function MapPage() {
           left: aiChatOpen ? 360 : 0,
         }}
       >
-        {mapReady && (
-          <CollaboratorCursors collaborators={collaborators} mapRef={mapRef} />
-        )}
+        {mapReady ? <CollaboratorCursors collaborators={collaborators} mapRef={mapRef} /> : null}
       </div>
 
       {!mapReady && (
@@ -946,25 +946,24 @@ export default function MapPage() {
           left: aiChatOpen ? 360 : 0,
         }}
       >
-        <AnnotationOverlays mapRef={mapRef} mapReady={mapReady} />
+        <AnnotationOverlays mapReady={mapReady} mapRef={mapRef} />
       </div>
 
       <LayerDndProvider>
         <LayerPanel
-          nodes={tree.nodes}
+          aiOpen={aiChatOpen}
+          canEdit={!!canEdit}
           childrenOf={tree.childrenOf}
           descendantLayers={tree.descendantLayers}
-          onToggleVisibility={tree.toggleVisibility}
-          onToggleCollapse={tree.toggleCollapse}
-          onOpenStyle={(l) => setStyledLayer(l)}
-          onEditLayer={canEdit ? handleEditLayer : undefined}
-          onRemoveNode={(id) => {
-            tree.removeNode(id);
-            if (styledLayer?.id === id) setStyledLayer(null);
-          }}
-          onRenameNode={tree.renameNode}
-          onMoveNode={tree.moveNode}
+          isAvailableModule={isAvailable}
+          nodes={tree.nodes}
           onAddFolder={(parentId) => tree.addFolder("New Folder", parentId)}
+          onEditLayer={canEdit ? handleEditLayer : undefined}
+          onMoveNode={tree.moveNode}
+          onOpenStyle={(l) => setStyledLayer(l)}
+          onRenameNode={tree.renameNode}
+          onToggleCollapse={tree.toggleCollapse}
+          onToggleVisibility={tree.toggleVisibility}
           onOpenImport={() => {
             setImportDestFolder(null);
             setImportPortalOpen(true);
@@ -973,40 +972,39 @@ export default function MapPage() {
             setImportDestFolder(folderId);
             setImportPortalOpen(true);
           }}
-          canEdit={!!canEdit}
-          isAvailableModule={isAvailable}
-          aiOpen={aiChatOpen}
+          onRemoveNode={(id) => {
+            tree.removeNode(id);
+            if (styledLayer?.id === id) setStyledLayer(null);
+          }}
         />
       </LayerDndProvider>
 
       {/* Published Maps Side Panel */}
-      {projectId && (
-        <PublishedMapsPanel
+      {projectId ? <PublishedMapsPanel
+          canEdit={!!canEdit}
+          currentAnnotations={storeAnnotations}
+          currentBasemap={basemap}
+          currentBearing={bearing}
+          currentLayers={toMapLayerItems(tree.nodes)}
+          currentPitch={0}
+          currentZoom={currentProject?.zoom ?? 2.5}
+          isOpen={publishedPanelOpen}
           maps={publishedMaps}
           projectId={projectId}
-          isOpen={publishedPanelOpen}
-          onClose={() => setPublishedPanelOpen(false)}
-          onPublish={handlePublishMap}
-          onDelete={handleDeletePublishedMap}
-          onUpdate={handleUpdatePublishedMap}
-          canEdit={!!canEdit}
-          currentBasemap={basemap}
           currentCenter={[
             currentProject?.center_lng ?? 0,
             currentProject?.center_lat ?? 20,
           ]}
-          currentZoom={currentProject?.zoom ?? 2.5}
-          currentBearing={bearing}
-          currentPitch={0}
-          currentLayers={toMapLayerItems(tree.nodes)}
-          currentAnnotations={storeAnnotations}
-        />
-      )}
+          onClose={() => setPublishedPanelOpen(false)}
+          onDelete={handleDeletePublishedMap}
+          onPublish={handlePublishMap}
+          onUpdate={handleUpdatePublishedMap}
+        /> : null}
 
-      {styledLayer && styledLayer.kind === "layer" && (
-        <StylePanel
+      {styledLayer && styledLayer.kind === "layer" ? <StylePanel
           layer={styledLayer}
           onClose={() => setStyledLayer(null)}
+          onRename={(id, name) => tree.renameNode(id, name)}
           onChange={(id, patch) => {
             tree.patchLayer(id, patch);
             setStyledLayer((prev) =>
@@ -1015,24 +1013,30 @@ export default function MapPage() {
                 : prev,
             );
           }}
-          onRename={(id, name) => tree.renameNode(id, name)}
-        />
-      )}
+        /> : null}
 
-      {importPortalOpen && (
-        <ImportDataPortal
+      {importPortalOpen ? <ImportDataPortal
           folders={folderOptions}
           initialFolderId={importDestFolder}
+          isAvailableModule={isAvailable}
           onClose={() => setImportPortalOpen(false)}
           onImport={handleImportLayers}
-          isAvailableModule={isAvailable}
-        />
-      )}
+        /> : null}
 
       <MapActionBar
         activeTool={activeTool}
-        onToolChange={(tool) => setActiveTool(tool)}
+        canRedo={canRedo}
+        canUndo={canUndo}
         commentPlacement={commentPlacement}
+        saving={drawSaving}
+        sessionActive={sessionActive}
+        toolboxActive={toolboxOpen}
+        onClearAnnotations={clearAnnotations}
+        onRedo={redo}
+        onSave={handleSaveDrawings}
+        onToggleToolbox={() => setToolboxOpen((v) => !v)}
+        onToolChange={(tool) => setActiveTool(tool)}
+        onUndo={undo}
         onToggleCommentPlacement={() => {
           if (commentPlacement) {
             setCommentPlacement(false);
@@ -1042,68 +1046,54 @@ export default function MapPage() {
             setCommentPlacement(true);
           }
         }}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        onUndo={undo}
-        onRedo={redo}
-        onClearAnnotations={clearAnnotations}
-        sessionActive={sessionActive}
-        onSave={handleSaveDrawings}
-        saving={drawSaving}
-        toolboxActive={toolboxOpen}
-        onToggleToolbox={() => setToolboxOpen((v) => !v)}
       />
 
       {/* Shape-session status toast (save success / failure feedback) */}
-      {statusMsg && (
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30 bg-elevated border border-base rounded-full shadow-xl px-4 py-2 text-xs text-base animate-fade-in-up whitespace-nowrap max-w-[80vw] overflow-hidden text-ellipsis">
+      {statusMsg ? <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30 bg-elevated border border-base rounded-full shadow-xl px-4 py-2 text-xs text-base animate-fade-in-up whitespace-nowrap max-w-[80vw] overflow-hidden text-ellipsis">
           {statusMsg}
-        </div>
-      )}
+        </div> : null}
 
       {/* Comment placement hint */}
-      {commentPlacement && !statusMsg && (
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30 bg-elevated border border-base rounded-full shadow-xl px-4 py-2 text-xs text-base animate-fade-in-up whitespace-nowrap">
+      {commentPlacement && !statusMsg ? <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30 bg-elevated border border-base rounded-full shadow-xl px-4 py-2 text-xs text-base animate-fade-in-up whitespace-nowrap">
           Click anywhere on the map to drop a comment pin · Esc to cancel
-        </div>
-      )}
+        </div> : null}
 
       {/* Annotation inspector (only visible when something is selected) */}
       <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30">
-        <AnnotationInspector mapRef={mapRef} mapReady={mapReady} />
+        <AnnotationInspector mapReady={mapReady} mapRef={mapRef} />
       </div>
 
       {/* Bookmark + Comments panels (self-positioning) + comment pins */}
-      <BookmarkPanel mapRef={mapRef} mapReady={mapReady} />
+      <BookmarkPanel mapReady={mapReady} mapRef={mapRef} />
       <CommentPins
-        mapRef={mapRef}
         mapReady={mapReady}
+        mapRef={mapRef}
         projectId={projectId ?? undefined}
         projectName={currentProject?.title}
       />
-      <CommentsPanel mapRef={mapRef} mapReady={mapReady} />
+      <CommentsPanel mapReady={mapReady} mapRef={mapRef} />
 
       {/* Toolbox - tools exposed by enabled modules (auto-discovered) */}
       <ToolboxPanel
-        isOpen={toolboxOpen}
-        onClose={() => setToolboxOpen(false)}
-        mapRef={mapRef}
-        mapReady={mapReady}
         basemap={basemap}
+        isOpen={toolboxOpen}
         layers={aiLayers}
+        mapReady={mapReady}
+        mapRef={mapRef}
+        onClose={() => setToolboxOpen(false)}
       />
 
       <MapBottomBar
-        zoomLevel={zoomLevel}
-        onZoomIn={zoomIn}
-        onZoomOut={zoomOut}
         activeBasemap={basemap}
-        onBasemapChange={setBasemap}
-        mapReady={mapReady}
         bearing={bearing}
+        bookmarkActive={bookmarkActive}
+        mapReady={mapReady}
+        zoomLevel={zoomLevel}
+        onBasemapChange={setBasemap}
         onResetNorth={resetNorth}
         onToggleAI={() => setAiChatOpen((v) => !v)}
-        bookmarkActive={bookmarkActive}
+        onZoomIn={zoomIn}
+        onZoomOut={zoomOut}
         onToggleBookmark={() => {
           setCommentsOpen(false);
           setBookmarkOpen(!bookmarkActive);
@@ -1112,18 +1102,18 @@ export default function MapPage() {
 
       <div className="absolute top-14 left-0 bottom-10 z-20">
         <AIChatPanel
-          isOpen={aiChatOpen}
-          onClose={() => setAiChatOpen(false)}
-          mapRef={mapRef}
-          mapReady={mapReady}
           basemap={basemap}
-          setBasemap={setBasemap}
+          isOpen={aiChatOpen}
           layers={aiLayers}
+          mapReady={mapReady}
+          mapRef={mapRef}
+          setBasemap={setBasemap}
           setLayerVisible={(id, visible) => {
             const node = tree.getNode(id);
             if (node?.kind === "layer") tree.patchLayer(id, { visible });
             else tree.toggleVisibility(id);
           }}
+          onClose={() => setAiChatOpen(false)}
         />
       </div>
       </div>

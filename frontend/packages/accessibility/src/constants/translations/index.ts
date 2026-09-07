@@ -1,12 +1,12 @@
+import { ar } from './ar';
+import { de } from './de';
 import { en } from './en';
 import { es } from './es';
 import { fr } from './fr';
-import { de } from './de';
-import { ar } from './ar';
 import { hi } from './hi';
-import { zh } from './zh';
 import { ja } from './ja';
 import { pt } from './pt';
+import { zh } from './zh';
 
 export const translations = {
   en,

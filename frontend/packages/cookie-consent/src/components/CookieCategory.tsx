@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Lock, Cookie } from 'lucide-react';
+import React, { useState } from 'react';
+
 import { CookieToggle } from './CookieToggle';
+
 import type { CookieCategoryConfig } from '../types';
 
 export interface CookieCategoryProps {
@@ -32,42 +34,36 @@ export const CookieCategory: React.FC<CookieCategoryProps> = ({
           <div className="cc-category__text">
             <div className="cc-category__title-row">
               <h3 className="cc-category__title">{category.name}</h3>
-              {category.required && (
-                <span className="cc-badge cc-badge--required">Required</span>
-              )}
+              {category.required ? <span className="cc-badge cc-badge--required">Required</span> : null}
             </div>
-            {hasCookies && (
-              <p className="cc-category__cookie-count">
+            {hasCookies ? <p className="cc-category__cookie-count">
                 {category.cookies!.length} cookie{category.cookies!.length !== 1 ? 's' : ''}
-              </p>
-            )}
+              </p> : null}
           </div>
         </div>
         
         <div className="cc-category__actions">
           <CookieToggle
-            id={`cookie-toggle-${category.id}`}
-            checked={enabled}
-            onChange={onToggle}
-            disabled={category.required}
             aria-label={`${enabled ? 'Disable' : 'Enable'} ${category.name} cookies`}
+            checked={enabled}
+            disabled={category.required}
+            id={`cookie-toggle-${category.id}`}
+            onChange={onToggle}
           />
           
-          {hasCookies && (
-            <button
-              type="button"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="cc-category__expand-btn"
+          {hasCookies ? <button
               aria-expanded={isExpanded}
               aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+              className="cc-category__expand-btn"
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
             >
               {isExpanded ? (
                 <ChevronUp className="cc-icon cc-icon--sm" />
               ) : (
                 <ChevronDown className="cc-icon cc-icon--sm" />
               )}
-            </button>
-          )}
+            </button> : null}
         </div>
       </div>
 
@@ -77,8 +73,7 @@ export const CookieCategory: React.FC<CookieCategoryProps> = ({
       </div>
 
       {/* Expanded Cookie List */}
-      {isExpanded && hasCookies && (
-        <div className="cc-category__cookies">
+      {isExpanded && hasCookies ? <div className="cc-category__cookies">
           <h4 className="cc-category__cookies-title">Cookies Used</h4>
           <div className="cc-category__cookies-list">
             {category.cookies!.map((cookie, index) => (
@@ -94,8 +89,7 @@ export const CookieCategory: React.FC<CookieCategoryProps> = ({
               </div>
             ))}
           </div>
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 };

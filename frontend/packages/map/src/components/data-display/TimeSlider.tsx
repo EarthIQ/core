@@ -1,6 +1,7 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { useMap } from '../../hooks/useMap';
 import { Slider, Button, Stack, Text } from '@packages/ui';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+
+import { useMap } from '../../hooks/useMap';
 
 export interface TimeSliderProps {
   /** Minimum date/time */
@@ -166,7 +167,7 @@ export const TimeSlider: React.FC<TimeSliderProps> = ({
       <Stack spacing="sm">
         {/* Current time display */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text size="sm" color="muted">
+          <Text color="muted" size="sm">
             {formatDate(new Date(minTime))}
           </Text>
           <Text weight="bold">
@@ -175,24 +176,24 @@ export const TimeSlider: React.FC<TimeSliderProps> = ({
               : formatDate(new Date(value))
             }
           </Text>
-          <Text size="sm" color="muted">
+          <Text color="muted" size="sm">
             {formatDate(new Date(maxTime))}
           </Text>
         </div>
 
         {/* Slider */}
         {range ? (
-          <RangeSlider
-            min={minTime}
+          <Slider
             max={maxTime}
+            min={minTime}
             step={step}
             value={rangeValue}
             onChange={handleChange}
           />
         ) : (
           <Slider
-            min={minTime}
             max={maxTime}
+            min={minTime}
             step={step}
             value={value}
             onChange={handleChange}
@@ -200,8 +201,7 @@ export const TimeSlider: React.FC<TimeSliderProps> = ({
         )}
 
         {/* Playback controls */}
-        {playback && !range && (
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+        {playback && !range ? <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
             <Button
               size="sm"
               variant="ghost"
@@ -236,8 +236,7 @@ export const TimeSlider: React.FC<TimeSliderProps> = ({
             >
               ⏭
             </Button>
-          </div>
-        )}
+          </div> : null}
       </Stack>
     </div>
   );

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { useMap } from '../../hooks/useMap';
 import { Card, Checkbox, Stack, Text, Slider } from '@packages/ui';
+import React, { useState } from 'react';
+
+import { useMap } from '../../hooks/useMap';
 
 export interface LayerConfig {
   id: string;
@@ -110,40 +111,34 @@ export const LayerSwitcher: React.FC<LayerSwitcherProps> = ({
           onClick={() => collapsible && setIsCollapsed(!isCollapsed)}
         >
           <Text weight="bold">{title}</Text>
-          {collapsible && (
-            <span>{isCollapsed ? '▼' : '▲'}</span>
-          )}
+          {collapsible ? <span>{isCollapsed ? '▼' : '▲'}</span> : null}
         </div>
 
         {!isCollapsed && Object.entries(groupedLayers).map(([group, groupLayers]) => (
           <div key={group}>
             {group !== 'default' && (
-              <Text size="sm" color="muted" style={{ marginTop: 8 }}>{group}</Text>
+              <Text color="muted" size="sm" style={{ marginTop: 8 }}>{group}</Text>
             )}
             {groupLayers.map(layer => (
               <div key={layer.id} style={{ padding: '4px 0' }}>
                 <Checkbox
                   checked={layerStates[layer.id]?.visible ?? true}
-                  onChange={(e) => handleVisibilityChange(layer.id, e.target.checked)}
                   label={layer.name}
+                  onChange={(e) => handleVisibilityChange(layer.id, e.target.checked)}
                 />
                 
-                {showOpacity && layerStates[layer.id]?.visible && (
-                  <Slider
-                    min={0}
+                {showOpacity && layerStates[layer.id]?.visible ? <Slider
                     max={1}
+                    min={0}
                     step={0.1}
+                    style={{ marginTop: 4, marginLeft: 24 }}
                     value={layerStates[layer.id]?.opacity ?? 1}
                     onChange={(value) => handleOpacityChange(layer.id, value)}
-                    style={{ marginTop: 4, marginLeft: 24 }}
-                  />
-                )}
+                  /> : null}
                 
-                {layer.legend && layerStates[layer.id]?.visible && (
-                  <div style={{ marginLeft: 24, marginTop: 4 }}>
+                {layer.legend && layerStates[layer.id]?.visible ? <div style={{ marginLeft: 24, marginTop: 4 }}>
                     {layer.legend}
-                  </div>
-                )}
+                  </div> : null}
               </div>
             ))}
           </div>

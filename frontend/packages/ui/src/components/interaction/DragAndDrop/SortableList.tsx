@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
-import { cn } from "../../../utils/cn";
+
 import { SortableItem } from "./SortableItem";
+import { cn } from "../../../utils/cn";
+
 import type { SortableListProps } from "./types";
 
-export function SortableList<T extends { id: string | number }>({
+export const SortableList = <T extends { id: string | number }>({
   items,
   type = "SORTABLE_ITEM",
   direction = "vertical",
@@ -19,7 +21,7 @@ export function SortableList<T extends { id: string | number }>({
   onDragStart,
   onDragEnd,
   keyExtractor,
-}: SortableListProps<T>) {
+}: SortableListProps<T>) => {
   const [internalItems, setInternalItems] = useState(items);
 
   // Sync with external items
@@ -58,26 +60,26 @@ export function SortableList<T extends { id: string | number }>({
 
   return (
     <div
-      className={cn(directionStyles[direction], className)}
-      style={{ gap: `${gap}px` }}
-      role="list"
       aria-label="Sortable list"
+      className={cn(directionStyles[direction], className)}
+      role="list"
+      style={{ gap: `${gap}px` }}
     >
       {internalItems.map((item, index) => {
         const key = keyExtractor ? keyExtractor(item) : item.id;
         return (
           <SortableItem
             key={key}
+            className={itemClassName}
+            direction={direction === "grid" ? "horizontal" : direction}
+            disabled={disabled}
+            dragClassName={dragItemClassName}
             id={item.id}
             index={index}
             type={type}
-            disabled={disabled}
-            direction={direction === "grid" ? "horizontal" : direction}
-            className={itemClassName}
-            dragClassName={dragItemClassName}
-            onMove={handleMove}
-            onDragStart={() => onDragStart?.(item, index)}
             onDragEnd={() => handleDragEnd(item, index)}
+            onDragStart={() => onDragStart?.(item, index)}
+            onMove={handleMove}
           >
             {(dragState) => renderItem(item, index, dragState)}
           </SortableItem>

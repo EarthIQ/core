@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from 'react';
 import { X, Shield, ExternalLink } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+
 import { CookieCategory } from './CookieCategory';
 import { useCookieConsentStore } from '../stores/cookieConsentStore';
-import type { CookieCategory as CookieCategoryType } from '../types';
 
 export const CookieSettingsModal: React.FC = () => {
   const {
@@ -71,18 +71,18 @@ export const CookieSettingsModal: React.FC = () => {
     <div className="cc-modal-overlay">
       {/* Backdrop */}
       <div 
+        aria-hidden="true"
         className="cc-modal-backdrop"
         onClick={closeSettings}
-        aria-hidden="true"
       />
 
       {/* Modal */}
       <div
         ref={modalRef}
-        role="dialog"
-        aria-modal="true"
         aria-labelledby="cc-settings-title"
+        aria-modal="true"
         className="cc-modal"
+        role="dialog"
       >
         {/* Header */}
         <div className="cc-modal__header">
@@ -91,7 +91,7 @@ export const CookieSettingsModal: React.FC = () => {
               <Shield className="cc-icon" />
             </div>
             <div>
-              <h2 id="cc-settings-title" className="cc-modal__title">
+              <h2 className="cc-modal__title" id="cc-settings-title">
                 Cookie Preferences
               </h2>
               <p className="cc-modal__subtitle">
@@ -100,10 +100,10 @@ export const CookieSettingsModal: React.FC = () => {
             </div>
           </div>
           <button
+            aria-label="Close settings"
+            className="cc-modal__close-btn"
             type="button"
             onClick={closeSettings}
-            className="cc-modal__close-btn"
-            aria-label="Close settings"
           >
             <X className="cc-icon" />
           </button>
@@ -117,60 +117,54 @@ export const CookieSettingsModal: React.FC = () => {
                 key={category.id}
                 category={category}
                 enabled={preferences[category.id]}
-                onToggle={(enabled) => setPreference(category.id as CookieCategoryType, enabled)}
+                onToggle={(enabled) => setPreference(category.id, enabled)}
               />
             ))}
           </div>
 
           {/* Policy Links */}
-          {(config.privacyPolicyUrl || config.cookiePolicyUrl) && (
-            <div className="cc-modal__links">
-              {config.privacyPolicyUrl && (
-                <a
-                  href={config.privacyPolicyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+          {(config.privacyPolicyUrl || config.cookiePolicyUrl) ? <div className="cc-modal__links">
+              {config.privacyPolicyUrl ? <a
                   className="cc-link"
+                  href={config.privacyPolicyUrl}
+                  rel="noopener noreferrer"
+                  target="_blank"
                 >
                   Privacy Policy
                   <ExternalLink className="cc-icon cc-icon--xs" />
-                </a>
-              )}
-              {config.cookiePolicyUrl && (
-                <a
-                  href={config.cookiePolicyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                </a> : null}
+              {config.cookiePolicyUrl ? <a
                   className="cc-link"
+                  href={config.cookiePolicyUrl}
+                  rel="noopener noreferrer"
+                  target="_blank"
                 >
                   Cookie Policy
                   <ExternalLink className="cc-icon cc-icon--xs" />
-                </a>
-              )}
-            </div>
-          )}
+                </a> : null}
+            </div> : null}
         </div>
 
         {/* Footer */}
         <div className="cc-modal__footer">
           <button
+            className="cc-btn cc-btn--ghost"
             type="button"
             onClick={rejectAll}
-            className="cc-btn cc-btn--ghost"
           >
             Reject All
           </button>
           <button
+            className="cc-btn cc-btn--secondary"
             type="button"
             onClick={acceptSelected}
-            className="cc-btn cc-btn--secondary"
           >
             Save Preferences
           </button>
           <button
+            className="cc-btn cc-btn--primary"
             type="button"
             onClick={acceptAll}
-            className="cc-btn cc-btn--primary"
           >
             Accept All
           </button>

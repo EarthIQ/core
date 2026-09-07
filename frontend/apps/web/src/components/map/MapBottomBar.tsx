@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Button, Tooltip } from "@packages/ui";
 import { TerrainControl } from "@packages/map";
+import { Button, Tooltip } from "@packages/ui";
 import { Compass, Bookmark } from "lucide-react";
+import { useState } from "react";
 
 /**
  * Terrain source for the 3D terrain toggle (MapTern terrarium tiles).
@@ -37,7 +37,7 @@ interface MapBottomBarProps {
   onToggleBookmark?: () => void;
 }
 
-export function MapBottomBar({
+export const MapBottomBar = ({
   zoomLevel,
   onZoomIn,
   onZoomOut,
@@ -50,7 +50,7 @@ export function MapBottomBar({
   onTerrainChange,
   bookmarkActive = false,
   onToggleBookmark,
-}: MapBottomBarProps) {
+}: MapBottomBarProps) => {
   const [basemapOpen, setBasemapOpen] = useState(false);
   const activeOption = BASEMAP_OPTIONS.find((b) => b.id === activeBasemap);
   const isRotated = Math.abs(bearing) > 0.5;
@@ -59,10 +59,10 @@ export function MapBottomBar({
     <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center gap-1 px-3 h-10 bg-elevated border-t border-border-primary text-xs">
       <Tooltip content="Toggle AI Assistant" placement="top">
         <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggleAI}
           className="text-text-secondary hover:text-text-primary gap-1"
+          size="sm"
+          variant="ghost"
+          onClick={onToggleAI}
         >
           <span>✨</span>
           <span className="font-semibold text-xs">AI</span>
@@ -72,13 +72,13 @@ export function MapBottomBar({
 
       <Tooltip content="Zoom out" placement="top">
         <Button
-          variant="ghost"
-          size="sm"
           iconOnly
-          onClick={onZoomOut}
-          disabled={!mapReady}
           aria-label="Zoom out"
           className="text-text-secondary hover:text-text-primary"
+          disabled={!mapReady}
+          size="sm"
+          variant="ghost"
+          onClick={onZoomOut}
         >
           −
         </Button>
@@ -90,44 +90,42 @@ export function MapBottomBar({
 
       <Tooltip content="Zoom in" placement="top">
         <Button
-          variant="ghost"
-          size="sm"
           iconOnly
-          onClick={onZoomIn}
-          disabled={!mapReady}
           aria-label="Zoom in"
           className="text-text-secondary hover:text-text-primary"
+          disabled={!mapReady}
+          size="sm"
+          variant="ghost"
+          onClick={onZoomIn}
         >
           +
         </Button>
       </Tooltip>
 
-      {isRotated && onResetNorth && (
-        <Tooltip content="Reset north" placement="top">
+      {isRotated && onResetNorth ? <Tooltip content="Reset north" placement="top">
           <Button
-            variant="ghost"
-            size="sm"
             iconOnly
-            onClick={onResetNorth}
             className="text-text-secondary hover:text-text-primary animate-fade-in"
+            size="sm"
+            variant="ghost"
+            onClick={onResetNorth}
           >
             <Compass
               size={14}
               style={{ transform: `rotate(${-bearing}deg)` }}
             />
           </Button>
-        </Tooltip>
-      )}
+        </Tooltip> : null}
 
       <div className="w-px h-5 bg-border-primary mx-1.5" />
 
       <div className="relative">
         <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setBasemapOpen((v) => !v)}
-          disabled={!mapReady}
           className="text-text-secondary hover:text-text-primary gap-1.5"
+          disabled={!mapReady}
+          size="sm"
+          variant="ghost"
+          onClick={() => setBasemapOpen((v) => !v)}
         >
           <span>{activeOption?.icon ?? "🗺️"}</span>
           <span className="text-xs">{activeOption?.name ?? "Basemap"}</span>
@@ -136,8 +134,7 @@ export function MapBottomBar({
           </span>
         </Button>
 
-        {basemapOpen && (
-          <div className="absolute bottom-full left-0 mb-1.5 w-44 bg-elevated border border-border-primary rounded-lg shadow-dropdown py-1 animate-fade-in-up">
+        {basemapOpen ? <div className="absolute bottom-full left-0 mb-1.5 w-44 bg-elevated border border-border-primary rounded-lg shadow-dropdown py-1 animate-fade-in-up">
             {BASEMAP_OPTIONS.map((bm) => (
               <button
                 key={bm.id}
@@ -161,40 +158,37 @@ export function MapBottomBar({
                 <span>{bm.name}</span>
               </button>
             ))}
-          </div>
-        )}
+          </div> : null}
       </div>
       <TerrainControl
-        source={TERRAIN_SOURCE_URL}
         exaggeration={TERRAIN_EXAGGERATION}
+        source={TERRAIN_SOURCE_URL}
         onChange={onTerrainChange}
       />
 
       {/* Bookmark - pinned to the right end of the bar */}
-      {onToggleBookmark && (
-        <div className="ml-auto">
+      {onToggleBookmark ? <div className="ml-auto">
           <Tooltip content="Bookmark" placement="top">
             <Button
-              variant="ghost"
-              size="sm"
               iconOnly
-              onClick={onToggleBookmark}
               aria-label="Bookmark"
               aria-pressed={bookmarkActive}
+              size="sm"
+              variant="ghost"
               className={
                 bookmarkActive
                   ? "text-primary"
                   : "text-text-secondary hover:text-text-primary"
               }
+              onClick={onToggleBookmark}
             >
               <Bookmark
-                size={16}
                 fill={bookmarkActive ? "currentColor" : "none"}
+                size={16}
               />
             </Button>
           </Tooltip>
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 }

@@ -1,4 +1,7 @@
 import * as turf from "@turf/turf";
+import proj4 from "proj4";
+import wellknown from "wellknown";
+
 import type { BBox } from "geojson";
 
 export const SpatialUtils = {
@@ -93,7 +96,7 @@ export const SpatialUtils = {
     bbox?: BBox
   ): GeoJSON.FeatureCollection<GeoJSON.Polygon> {
     const options = bbox ? { bbox: bbox } : {};
-    return turf.voronoi(points, options) as any;
+    return turf.voronoi(points, options);
   },
 
   /**
@@ -116,9 +119,7 @@ export const SpatialUtils = {
     toCRS: string
   ): GeoJSON.GeoJSON {
     // Use proj4 for coordinate transformation
-    const proj4 = require("proj4");
-
-    const transform = proj4(fromCRS, toCRS);
+    const _transform = proj4(fromCRS, toCRS);
 
     return turf.transformRotate(geojson, 0); // Placeholder - implement proper reprojection
   },
@@ -130,7 +131,6 @@ export const FormatUtils = {
    * Convert WKT to GeoJSON
    */
   wktToGeoJSON(wkt: string): GeoJSON.Geometry {
-    const wellknown = require("wellknown");
     return wellknown.parse(wkt);
   },
 
@@ -138,7 +138,6 @@ export const FormatUtils = {
    * Convert GeoJSON to WKT
    */
   geoJSONToWKT(geojson: GeoJSON.Geometry): string {
-    const wellknown = require("wellknown");
     return wellknown.stringify(geojson);
   },
 

@@ -1,5 +1,8 @@
+import * as turf from '@turf/turf';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { Feature } from 'geojson';
 
 export interface PropertyInspectorProps {
@@ -171,22 +174,20 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
       info['Coordinates'] = `${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}`;
     } else if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
       try {
-        const turf = require('@turf/turf');
         const area = turf.area(feature);
         if (area >= 1000000) {
           info['Area'] = `${(area / 1000000).toFixed(2)} km²`;
         } else {
           info['Area'] = `${area.toFixed(0)} m²`;
         }
-      } catch (e) {
+      } catch (_e) {
         // Turf not available
       }
     } else if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
       try {
-        const turf = require('@turf/turf');
         const length = turf.length(feature, { units: 'kilometers' });
         info['Length'] = `${length.toFixed(2)} km`;
-      } catch (e) {
+      } catch (_e) {
         // Turf not available
       }
     }
@@ -245,7 +246,6 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         <span style={{ fontWeight: 600, fontSize: 13 }}>{title}</span>
         {!showOnHover && (
           <button
-            onClick={handleClickAway}
             style={{
               background: 'none',
               border: 'none',
@@ -254,6 +254,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               fontSize: 18,
               lineHeight: 1
             }}
+            onClick={handleClickAway}
           >
             ×
           </button>
@@ -263,8 +264,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
       {/* Content */}
       <div style={{ padding: 12, overflowY: 'auto', maxHeight: 340 }}>
         {/* Geometry info */}
-        {geometryInfo && (
-          <div style={{
+        {geometryInfo ? <div style={{
             marginBottom: 12,
             paddingBottom: 12,
             borderBottom: '1px solid #eee'
@@ -286,8 +286,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 <span style={{ fontWeight: 500 }}>{value}</span>
               </div>
             ))}
-          </div>
-        )}
+          </div> : null}
 
         {/* Properties */}
         <div style={{ fontSize: 11, fontWeight: 600, color: '#666', marginBottom: 6 }}>
@@ -320,9 +319,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                     position: 'relative'
                   }}>
                     <span>{displayValue}</span>
-                    {enableCopy && value !== null && value !== undefined && (
-                      <button
-                        onClick={() => copyToClipboard(key, value)}
+                    {enableCopy && value !== null && value !== undefined ? <button
                         style={{
                           marginLeft: 8,
                           padding: '2px 6px',
@@ -333,10 +330,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                           borderRadius: 3,
                           cursor: 'pointer'
                         }}
+                        onClick={() => copyToClipboard(key, value)}
                       >
                         {copiedField === key ? '✓' : 'Copy'}
-                      </button>
-                    )}
+                      </button> : null}
                   </td>
                 </tr>
               ))}
@@ -345,8 +342,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         )}
 
         {/* Layer info */}
-        {(feature as any).layer && (
-          <div style={{
+        {(feature as any).layer ? <div style={{
             marginTop: 12,
             paddingTop: 12,
             borderTop: '1px solid #eee',
@@ -354,8 +350,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
             color: '#999'
           }}>
             Layer: {(feature as any).layer.id}
-          </div>
-        )}
+          </div> : null}
       </div>
     </div>
   );

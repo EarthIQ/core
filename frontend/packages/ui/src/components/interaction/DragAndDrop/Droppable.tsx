@@ -2,7 +2,9 @@
 
 import React, { useRef } from "react";
 import { useDrop } from "react-dnd";
+
 import { cn } from "../../../utils/cn";
+
 import type { DroppableProps, DragItem } from "./types";
 
 export function Droppable<T = unknown>({
@@ -44,6 +46,9 @@ export function Droppable<T = unknown>({
   return (
     <div
       ref={ref}
+      aria-dropeffect={canDrop ? "move" : "none"}
+      data-drop-active={isOver ? canDrop : null}
+      role="list"
       className={cn(
         "min-h-[48px] rounded-lg border-2 border-dashed border-gray-300 p-4 transition-all duration-200",
         "dark:border-gray-600",
@@ -53,9 +58,6 @@ export function Droppable<T = unknown>({
         disabled && "cursor-not-allowed opacity-60",
         className
       )}
-      data-drop-active={isOver && canDrop}
-      aria-dropeffect={canDrop ? "move" : "none"}
-      role="list"
     >
       {typeof children === "function" ? children(dropState) : children}
     </div>

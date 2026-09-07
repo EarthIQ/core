@@ -1,4 +1,5 @@
-import React, { useState, useCallback, ReactElement, Children, cloneElement, isValidElement } from 'react';
+import React, { useState, useCallback, type ReactElement, Children, cloneElement, isValidElement } from 'react';
+
 import type { AccordionItemProps } from './AccordionItem';
 
 interface AccordionProps {

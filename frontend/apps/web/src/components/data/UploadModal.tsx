@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Badge,
   Button,
@@ -19,6 +18,8 @@ import {
   FileText,
   X,
 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import {
   formatBytes,
   uploadDataset,
@@ -26,9 +27,11 @@ import {
   type DatasetType,
   type DataFolder,
   type GeoDatasetOut,
-} from "../../lib/datasets";
+} from "@/lib/datasets";
+
 import { FORMATS, INGESTED_FORMATS, STORED_FORMATS, TYPES } from "./constants";
 import { detectFormat } from "./helpers";
+
 import type { FileEntry } from "./types";
 
 interface Props {
@@ -249,27 +252,23 @@ export default function UploadModal({
   return (
     <Modal
       isOpen
+      closeOnOverlayClick={!batchUploading}
+      description="GeoJSON · Shapefile · KML · GeoRSS · GeoTIFF · GeoPackage · GeoParquet · CSV"
+      size="lg"
+      title="Upload Spatial Dataset"
       onClose={() => {
         if (!batchUploading) {
           onClose();
           resetForm();
         }
       }}
-      closeOnOverlayClick={!batchUploading}
-      title="Upload Spatial Dataset"
-      description="GeoJSON · Shapefile · KML · GeoRSS · GeoTIFF · GeoPackage · GeoParquet · CSV"
-      size="lg"
     >
       <form
-        onSubmit={handleUploadSubmit}
         className="flex flex-col gap-4 max-h-[calc(90vh-14rem)] overflow-y-auto scrollbar-thin pr-1"
+        onSubmit={handleUploadSubmit}
       >
         {/* Dropzone */}
         <div
-          onClick={handleDropzoneClick}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
           className={cn(
             "border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200",
             isDragOver
@@ -278,13 +277,17 @@ export default function UploadModal({
                 ? "border-success/60 bg-success/5"
                 : "border-border-hover bg-surface-hover hover:border-primary/50 hover:bg-primary/5",
           )}
+          onClick={handleDropzoneClick}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
         >
           <input
             ref={fileInputRef}
-            type="file"
             multiple
             accept=".geojson,.json,.zip,.shp,.kml,.kmz,.xml,.tif,.tiff,.gpkg,.parquet,.csv,.tsv,.txt"
             className="hidden"
+            type="file"
             onChange={(e) => {
               handleFilesSelected(e.target.files);
               e.target.value = "";
@@ -292,7 +295,7 @@ export default function UploadModal({
           />
           {fileEntries.length > 0 ? (
             <div className="flex flex-col items-center gap-1">
-              <Check size={22} className="text-success" />
+              <Check className="text-success" size={22} />
               <div className="font-semibold text-sm text-success">
                 {fileEntries.length} file
                 {fileEntries.length === 1 ? "" : "s"} selected
@@ -303,7 +306,7 @@ export default function UploadModal({
             </div>
           ) : (
             <div className="flex flex-col items-center gap-1">
-              <CloudUpload size={26} className="text-text-tertiary" />
+              <CloudUpload className="text-text-tertiary" size={26} />
               <div className="font-semibold text-sm text-text-primary">
                 Drag & drop geospatial files
               </div>
@@ -324,7 +327,7 @@ export default function UploadModal({
                 className="rounded-lg border border-border-secondary bg-surface-hover/40 p-2.5"
               >
                 <div className="flex items-center gap-2.5">
-                  <FileText size={15} className="shrink-0 text-text-tertiary" />
+                  <FileText className="shrink-0 text-text-tertiary" size={15} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="truncate text-xs font-medium text-text-primary">
@@ -336,7 +339,7 @@ export default function UploadModal({
                     </div>
                     {entry.status === "uploading" && (
                       <div className="mt-1.5 flex items-center gap-2">
-                        <Progress value={entry.progress} size="sm" />
+                        <Progress size="sm" value={entry.progress} />
                         <span className="shrink-0 text-[0.65rem] tabular-nums text-text-tertiary">
                           {entry.progress}%
                         </span>
@@ -355,10 +358,10 @@ export default function UploadModal({
                   </div>
                   {!batchUploading && (
                     <button
-                      type="button"
-                      onClick={() => removeFileEntry(i)}
                       aria-label={`Remove ${entry.file.name}`}
                       className="shrink-0 rounded-md p-1 text-text-tertiary hover:bg-error/10 hover:text-error cursor-pointer transition-colors"
+                      type="button"
+                      onClick={() => removeFileEntry(i)}
                     >
                       <X size={14} />
                     </button>
@@ -373,96 +376,95 @@ export default function UploadModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Select
             label="Format"
+            options={FORMATS.map((f) => ({ value: f.value, label: f.label }))}
+            size="sm"
             value={format}
             onChange={(v) => {
               setFormat(v as DatasetFormat);
               const suggested = SUGGESTED_TYPE[v as DatasetFormat];
               if (suggested) setType(suggested);
             }}
-            size="sm"
-            options={FORMATS.map((f) => ({ value: f.value, label: f.label }))}
           />
           <Select
             label="Category"
+            options={TYPES.map((t) => ({ value: t.value, label: t.label }))}
+            size="sm"
             value={type}
             onChange={(v) => setType(v as DatasetType)}
-            size="sm"
-            options={TYPES.map((t) => ({ value: t.value, label: t.label }))}
           />
         </div>
 
         {/* Destination folder */}
         <Select
           label="Save to folder"
+          options={folderOptions}
+          size="sm"
           value={folderId}
           onChange={(v) => setFolderId(v)}
-          size="sm"
-          options={folderOptions}
         />
 
         {/* CRS */}
         <Input
+          inputSize="sm"
           label="Coordinate Reference System (CRS)"
           value={crs}
           onChange={(e) => setCrs(e.target.value)}
-          inputSize="sm"
         />
 
         {/* Tags */}
         <Input
+          description="Tags are free-form labels that help you find and filter datasets."
+          inputSize="sm"
           label="Tags (comma-separated)"
           placeholder="e.g. hydrology, elevation, 2026"
           value={tagsInput}
           onChange={(e) => setTagsInput(e.target.value)}
-          description="Tags are free-form labels that help you find and filter datasets."
-          inputSize="sm"
         />
 
         {/* Description */}
         <Textarea
+          autoResize
+          inputSize="sm"
           label="Description"
           placeholder="What is this dataset? Where does it come from?"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          inputSize="sm"
-          autoResize
         />
 
         {/* Source */}
         <Input
+          inputSize="sm"
           label="Source / Provenance"
           placeholder="e.g. Copernicus, USGS, internal GIS team"
           value={source}
           onChange={(e) => setSource(e.target.value)}
-          inputSize="sm"
         />
 
         {/* Supported formats reference */}
         <div className="rounded-lg border border-border-secondary">
           <button
-            type="button"
-            onClick={() => setShowFormats((v) => !v)}
             aria-expanded={showFormats}
             className="flex w-full items-center justify-between px-3 py-2.5 cursor-pointer hover:bg-surface-hover transition-colors"
+            type="button"
+            onClick={() => setShowFormats((v) => !v)}
           >
             <span className="text-xs font-semibold text-text-secondary">
               Supported formats & how they're handled
             </span>
             {showFormats ? (
-              <ChevronDown size={14} className="text-text-tertiary" />
+              <ChevronDown className="text-text-tertiary" size={14} />
             ) : (
-              <ChevronRight size={14} className="text-text-tertiary" />
+              <ChevronRight className="text-text-tertiary" size={14} />
             )}
           </button>
-          {showFormats && (
-            <div className="border-t border-border-secondary p-3">
+          {showFormats ? <div className="border-t border-border-secondary p-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {FORMATS.map((f) => (
                   <div
                     key={f.value}
                     className="flex items-center gap-2 rounded-md px-2 py-1.5"
                   >
-                    <FileText size={13} className="shrink-0 text-text-tertiary" />
+                    <FileText className="shrink-0 text-text-tertiary" size={13} />
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-medium text-text-primary">
                         {f.value}
@@ -492,14 +494,13 @@ export default function UploadModal({
                 be queried directly. Stored assets are kept on disk and
                 available for download.
               </p>
-            </div>
-          )}
+            </div> : null}
         </div>
 
         <ModalFooter>
           <Button
-            variant="ghost"
             disabled={batchUploading}
+            variant="ghost"
             onClick={() => {
               onClose();
               resetForm();
@@ -508,11 +509,11 @@ export default function UploadModal({
             Cancel
           </Button>
           <Button
-            type="submit"
             disabled={fileEntries.length === 0}
+            leftIcon={<CloudUpload size={16} />}
             loading={batchUploading}
             loadingText="Uploading…"
-            leftIcon={<CloudUpload size={16} />}
+            type="submit"
           >
             Upload & Register
             {fileEntries.length > 1 ? ` (${fileEntries.length})` : ""}

@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bot,
   Check,
@@ -11,6 +10,8 @@ import {
   User,
   Circle,
 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { aiChat, getAIConfig, type AIConfig } from "@/lib/ai";
 import {
   formatBytes,
@@ -18,6 +19,7 @@ import {
   type DatasetPreview,
   type GeometrySummary,
 } from "@/lib/datasets";
+
 import type { DatasetItem } from "./types";
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -307,9 +309,9 @@ export default function AskAIPanel({
         <div className="flex shrink-0 items-center gap-2">
           {messages.length > 0 && (
             <button
-              onClick={clearChat}
               className="btn btn-ghost btn-sm gap-1.5 text-subtle hover:text-error"
               title="Clear conversation"
+              onClick={clearChat}
             >
               <Trash2 size={14} />
             </button>
@@ -321,7 +323,7 @@ export default function AskAIPanel({
                 : "border-warning/40 bg-warning/10 text-warning"
             }`}
           >
-            <Circle size={8} className="fill-current" />
+            <Circle className="fill-current" size={8} />
             {config ? (config.configured ? "Ready" : "Not set up") : "…"}
           </span>
         </div>
@@ -351,6 +353,7 @@ export default function AskAIPanel({
               {suggestions.map((s, i) => (
                 <button
                   key={i}
+                  className="rounded-full border border-subtle bg-surface-hover px-3 py-1.5 text-xs text-[var(--text-secondary)] transition-colors hover:border-primary/40 hover:text-primary"
                   onClick={() => {
                     setInput(s);
                     requestAnimationFrame(() => {
@@ -358,7 +361,6 @@ export default function AskAIPanel({
                       textareaRef.current?.focus();
                     });
                   }}
-                  className="rounded-full border border-subtle bg-surface-hover px-3 py-1.5 text-xs text-[var(--text-secondary)] transition-colors hover:border-primary/40 hover:text-primary"
                 >
                   {s}
                 </button>
@@ -370,60 +372,56 @@ export default function AskAIPanel({
             {messages.map((m) => (
               <MessageBubble
                 key={m.id}
-                message={m}
                 copied={copied === m.id}
+                message={m}
                 onCopy={() => copyMessage(m.id, m.content)}
               />
             ))}
-            {loading && (
-              <div className="flex items-center gap-2.5 self-start">
+            {loading ? <div className="flex items-center gap-2.5 self-start">
                 <BotAvatar />
                 <div className="inline-flex items-center gap-2 rounded-2xl rounded-bl-md border border-subtle bg-elevated px-3.5 py-2.5 text-sm text-subtle">
-                  <Loader2 size={14} className="animate-spin text-primary" /> Thinking…
+                  <Loader2 className="animate-spin text-primary" size={14} /> Thinking…
                 </div>
-              </div>
-            )}
+              </div> : null}
           </div>
         )}
       </div>
 
       {/* Composer */}
       <div className="border-t border-subtle px-3 py-3">
-        {sendError && (
-          <div className="mb-2.5 flex items-start gap-2 rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-xs text-error">
-            <TriangleAlert size={14} className="mt-0.5 shrink-0" />
+        {sendError ? <div className="mb-2.5 flex items-start gap-2 rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-xs text-error">
+            <TriangleAlert className="mt-0.5 shrink-0" size={14} />
             <span className="flex-1">{sendError}</span>
             <button
-              onClick={() => setSendError(null)}
-              className="opacity-70 hover:opacity-100"
               aria-label="Dismiss error"
+              className="opacity-70 hover:opacity-100"
+              onClick={() => setSendError(null)}
             >
               ×
             </button>
-          </div>
-        )}
+          </div> : null}
         <div className="flex items-end gap-2.5">
           <textarea
             ref={textareaRef}
+            className="input resize-none pl-4 pr-4 leading-relaxed"
+            placeholder="Ask about this dataset's features or geometry…  (Enter to send, Shift+Enter for a new line)"
+            rows={1}
+            style={{ minHeight: "44px", maxHeight: "140px" }}
             value={input}
+            onKeyDown={handleKeyDown}
             onChange={(e) => {
               setInput(e.target.value);
               autosize();
             }}
-            onKeyDown={handleKeyDown}
-            rows={1}
-            placeholder="Ask about this dataset's features or geometry…  (Enter to send, Shift+Enter for a new line)"
-            className="input resize-none pl-4 pr-4 leading-relaxed"
-            style={{ minHeight: "44px", maxHeight: "140px" }}
           />
           <button
-            onClick={() => handleSend()}
-            disabled={!canSend}
-            className="btn btn-primary btn-md shrink-0 gap-2 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Send message"
+            className="btn btn-primary btn-md shrink-0 gap-2 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!canSend}
+            onClick={() => handleSend()}
           >
             {loading ? (
-              <Loader2 size={16} className="animate-spin" />
+              <Loader2 className="animate-spin" size={16} />
             ) : (
               <Send size={16} />
             )}
@@ -445,18 +443,18 @@ export default function AskAIPanel({
   );
 }
 
-function BotAvatar() {
+const BotAvatar = () => {
   return (
     <div
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary"
       aria-hidden
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary"
     >
       <Bot size={17} strokeWidth={2.2} />
     </div>
   );
 }
 
-function MessageBubble({
+const MessageBubble = ({
   message,
   copied,
   onCopy,
@@ -464,14 +462,14 @@ function MessageBubble({
   message: ChatMessage;
   copied: boolean;
   onCopy: () => void;
-}) {
+}) => {
   const isUser = message.role === "user";
   return (
     <div className={`flex items-start gap-2.5 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
       {isUser ? (
         <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent"
           aria-hidden
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent"
         >
           <User size={17} strokeWidth={2.2} />
         </div>
@@ -494,23 +492,21 @@ function MessageBubble({
         </div>
         {!isUser && !message.error && (
           <div className="mt-1 flex items-center gap-2 px-1">
-            {message.meta && (
-              <span className="text-[0.62rem] text-subtle">
+            {message.meta ? <span className="text-[0.62rem] text-subtle">
                 {[
                   message.meta.model,
                   message.meta.latency_ms ? `${message.meta.latency_ms} ms` : null,
                 ]
                   .filter(Boolean)
                   .join(" · ")}
-              </span>
-            )}
+              </span> : null}
             <button
-              onClick={onCopy}
               className="inline-flex items-center gap-1 text-[0.62rem] text-subtle opacity-0 transition-opacity hover:text-primary group-hover:opacity-100"
               title="Copy answer"
+              onClick={onCopy}
             >
               {copied ? (
-                <Check size={11} className="text-success" />
+                <Check className="text-success" size={11} />
               ) : (
                 <Copy size={11} />
               )}
@@ -542,7 +538,7 @@ function renderContent(content: string) {
   });
 }
 
-function InlineText({ text }: { text: string }) {
+const InlineText = ({ text }: { text: string }) => {
   const nodes: React.ReactNode[] = [];
   const re = /(\*\*[^*]+\*\*|`[^`]+`)/g;
   let last = 0;

@@ -1,6 +1,5 @@
 // hooks/useTerraDraw.ts
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Map as MapLibreMap } from "maplibre-gl";
 import {
   TerraDraw,
   TerraDrawCircleMode,
@@ -11,6 +10,8 @@ import {
   type GeoJSONStoreFeatures,
 } from "terra-draw";
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
+
+import type { Map as MapLibreMap } from "maplibre-gl";
 
 /** A committed TerraDraw feature (structural GeoJSON Feature). */
 export interface TerraDrawFeature {
@@ -174,7 +175,7 @@ export function useTerraDraw(
         }
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [map, enabled]);
 
   /* ── report TerraDraw feature events to the caller ────────────────────── */

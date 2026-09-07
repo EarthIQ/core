@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import React, { useEffect, useRef, useState } from 'react';
+
 import { useMap } from '../../hooks/useMap';
 
 export interface MiniMapProps {
@@ -176,7 +177,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
   if (isCollapsed) {
     return (
       <button
-        onClick={() => setIsCollapsed(false)}
+        title="Show minimap"
         style={{
           position: 'absolute',
           ...positionStyles[position],
@@ -192,7 +193,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
           alignItems: 'center',
           justifyContent: 'center'
         }}
-        title="Show minimap"
+        onClick={() => setIsCollapsed(false)}
       >
         🗺️
       </button>
@@ -215,9 +216,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
     >
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
       
-      {collapsible && (
-        <button
-          onClick={() => setIsCollapsed(true)}
+      {collapsible ? <button
           style={{
             position: 'absolute',
             top: 4,
@@ -233,10 +232,10 @@ export const MiniMap: React.FC<MiniMapProps> = ({
             justifyContent: 'center',
             fontSize: 10
           }}
+          onClick={() => setIsCollapsed(true)}
         >
           ✕
-        </button>
-      )}
+        </button> : null}
     </div>
   );
 };

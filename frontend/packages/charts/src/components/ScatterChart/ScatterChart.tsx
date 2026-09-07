@@ -10,8 +10,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { ChartContainer } from '../ChartContainer';
+
 import { getColor } from '../../utils/colors';
+import { ChartContainer } from '../ChartContainer';
+
 import type { ScatterChartProps } from '../../types';
 
 export const ScatterChart: React.FC<ScatterChartProps> = ({
@@ -44,68 +46,63 @@ export const ScatterChart: React.FC<ScatterChartProps> = ({
 
   return (
     <ChartContainer
-      title={title}
+      className={className}
+      data={data}
       description={description}
-      toolbar={toolbar}
-      loading={loading}
       empty={empty || data.length === 0}
       error={error}
-      data={data}
       exportFilename={exportFilename}
-      className={className}
+      loading={loading}
+      title={title}
+      toolbar={toolbar}
     >
       <div style={{ width, height }}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer height="100%" width="100%">
           <RechartsScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
-            {showGrid && (
-              <CartesianGrid
-                strokeDasharray="3 3"
+            {showGrid ? <CartesianGrid
                 className="stroke-gray-200 dark:stroke-gray-700"
                 horizontal={gridType !== 'vertical'}
+                strokeDasharray="3 3"
                 vertical={gridType !== 'horizontal'}
-              />
-            )}
+              /> : null}
 
             {!xAxis?.hide && (
               <XAxis
-                type="number"
-                dataKey={xAxis?.dataKey || 'x'}
-                name={xAxis?.label || 'X'}
-                tickLine={false}
                 axisLine={false}
-                tickMargin={8}
-                tickFormatter={xAxis?.tickFormatter}
-                tick={{ fill: 'currentColor', fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
+                dataKey={xAxis?.dataKey || 'x'}
                 domain={xAxis?.domain}
+                name={xAxis?.label || 'X'}
+                tick={{ fill: 'currentColor', fontSize: 12 }}
+                tickFormatter={xAxis?.tickFormatter}
+                tickLine={false}
+                tickMargin={8}
+                type="number"
               />
             )}
 
             {!yAxis?.hide && (
               <YAxis
-                type="number"
-                dataKey={yAxis?.dataKey || 'y'}
-                name={yAxis?.label || 'Y'}
-                tickLine={false}
                 axisLine={false}
-                tickMargin={8}
-                tickFormatter={yAxis?.tickFormatter}
-                tick={{ fill: 'currentColor', fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
+                dataKey={yAxis?.dataKey || 'y'}
                 domain={yAxis?.domain}
+                name={yAxis?.label || 'Y'}
+                tick={{ fill: 'currentColor', fontSize: 12 }}
+                tickFormatter={yAxis?.tickFormatter}
+                tickLine={false}
+                tickMargin={8}
+                type="number"
               />
             )}
 
-            {zAxis && (
-              <ZAxis
-                type="number"
+            {zAxis ? <ZAxis
                 dataKey={zAxis.dataKey}
                 range={zAxis.range || [50, 500]}
-              />
-            )}
+                type="number"
+              /> : null}
 
-            {showTooltip && (
-              <Tooltip
+            {showTooltip ? <Tooltip
                 cursor={{ strokeDasharray: '3 3' }}
                 contentStyle={{
                   backgroundColor: 'hsl(var(--popover, 0 0% 100%))',
@@ -113,35 +110,32 @@ export const ScatterChart: React.FC<ScatterChartProps> = ({
                   borderRadius: '8px',
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                 }}
-              />
-            )}
+              /> : null}
 
-            {showLegend && (
-              <Legend
-                verticalAlign="bottom"
+            {showLegend ? <Legend
                 height={36}
-                iconType="circle"
                 iconSize={8}
+                iconType="circle"
+                verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              />
-            )}
+              /> : null}
 
             {scatters.map((scatter, index) => {
               const color = scatter.color || getColor(index, colors);
               return (
                 <Scatter
                   key={scatter.dataKey}
-                  name={scatter.name || scatter.dataKey}
+                  animationDuration={animationDuration}
                   data={data}
                   fill={color}
                   isAnimationActive={animate}
-                  animationDuration={animationDuration}
+                  name={scatter.name || scatter.dataKey}
+                  shape={scatter.shape || 'circle'}
                   onClick={(entry) => {
                     if (onDataPointClick) {
                       onDataPointClick(entry, index);
                     }
                   }}
-                  shape={scatter.shape || 'circle'}
                 />
               );
             })}

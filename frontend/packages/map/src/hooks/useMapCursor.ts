@@ -1,4 +1,5 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect as _useEffect, useCallback, useState } from 'react';
+
 import { useMap } from './useMap';
 
 export type CursorStyle = 

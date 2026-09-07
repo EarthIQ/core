@@ -1,5 +1,6 @@
-import { forwardRef, useEffect, useRef, type InputHTMLAttributes } from "react";
 import { motion } from "framer-motion";
+import { forwardRef, useEffect, useRef, type InputHTMLAttributes } from "react";
+
 import { cn } from "../../../utils/cn";
 
 /**
@@ -166,11 +167,11 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             {/* Hidden native input for accessibility */}
             <input
               ref={resolvedRef}
+              aria-invalid={error}
+              checked={checked}
+              disabled={disabled}
               id={checkboxId}
               type="checkbox"
-              disabled={disabled}
-              checked={checked}
-              aria-invalid={error}
               aria-describedby={
                 errorMessage ? `${checkboxId}-error` : undefined
               }
@@ -206,31 +207,31 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             >
               {/* Checkmark or indeterminate icon */}
               <motion.svg
+                aria-hidden="true"
+                className="h-full w-full p-0.5 text-[var(--text-on-primary)]"
+                fill="none"
                 initial={false}
+                stroke="currentColor"
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                viewBox="0 0 24 24"
                 animate={{
                   scale: isChecked ? 1 : 0,
                   opacity: isChecked ? 1 : 0,
                 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
-                className="h-full w-full p-0.5 text-[var(--text-on-primary)]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
               >
                 {indeterminate ? (
                   <path
+                    d="M20 12H4"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={3}
-                    d="M20 12H4"
                   />
                 ) : (
                   <path
+                    d="M5 13l4 4L19 7"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={3}
-                    d="M5 13l4 4L19 7"
                   />
                 )}
               </motion.svg>
@@ -238,10 +239,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           </div>
 
           {/* Label and description */}
-          {(label || description) && (
-            <div className="flex flex-col gap-0.5">
-              {label && (
-                <span
+          {(label || description) ? <div className="flex flex-col gap-0.5">
+              {label ? <span
                   className={cn(
                     "font-medium text-[var(--text-primary)]",
                     labelSizeClasses[size],
@@ -249,10 +248,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                   )}
                 >
                   {label}
-                </span>
-              )}
-              {description && (
-                <span
+                </span> : null}
+              {description ? <span
                   className={cn(
                     "text-[var(--text-secondary)]",
                     descriptionSizeClasses[size],
@@ -260,22 +257,18 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                   )}
                 >
                   {description}
-                </span>
-              )}
-            </div>
-          )}
+                </span> : null}
+            </div> : null}
         </label>
 
         {/* Error message */}
-        {error && errorMessage && (
-          <p
-            id={`${checkboxId}-error`}
+        {error && errorMessage ? <p
             className="ml-8 text-xs text-[var(--error-text)]"
+            id={`${checkboxId}-error`}
             role="alert"
           >
             {errorMessage}
-          </p>
-        )}
+          </p> : null}
       </div>
     );
   }

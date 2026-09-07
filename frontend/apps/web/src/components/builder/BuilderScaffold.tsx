@@ -1,14 +1,16 @@
+import { cn , Button } from "@packages/ui";
+import { ArrowLeft, ChevronDown, MapPin, Sparkles } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ChevronDown, MapPin, Sparkles } from "lucide-react";
-import { cn } from "@packages/ui";
-import { Button } from "@packages/ui";
-import { BuilderPicker } from "./BuilderPicker";
-import { fetchProjectById } from "@/lib/projects";
+
 import {
   buildBuilderUrl,
   type ProjectBuilder,
 } from "@/lib/builders";
+import { fetchProjectById } from "@/lib/projects";
+
+import { BuilderPicker } from "./BuilderPicker";
+
 
 interface BuilderScaffoldProps {
   /** The builder definition this page belongs to (from `lib/builders.tsx`). */
@@ -32,11 +34,11 @@ interface BuilderScaffoldProps {
  * builder is implemented. This component never knows a builder name directly;
  * it receives its definition via props.
  */
-export function BuilderScaffold({
+export const BuilderScaffold = ({
   builder,
   projectId,
   children,
-}: BuilderScaffoldProps) {
+}: BuilderScaffoldProps) => {
   const navigate = useNavigate();
   const Icon = builder.icon;
   const [projectTitle, setProjectTitle] = useState<string | null>(null);
@@ -80,9 +82,9 @@ export function BuilderScaffold({
 
   const pickerTrigger = (
     <button
-      type="button"
-      className="flex items-center gap-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-elevated)] px-3 py-2 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
       aria-label="Switch builder"
+      className="flex items-center gap-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-elevated)] px-3 py-2 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+      type="button"
     >
       <span
         className={cn(
@@ -93,7 +95,7 @@ export function BuilderScaffold({
         <Icon size={14} />
       </span>
       <span className="hidden sm:inline">{builder.label}</span>
-      <ChevronDown size={14} className="text-[var(--text-tertiary)]" />
+      <ChevronDown className="text-[var(--text-tertiary)]" size={14} />
     </button>
   );
   return (
@@ -102,12 +104,12 @@ export function BuilderScaffold({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Button
-            variant="ghost"
-            size="sm"
             iconOnly
-            onClick={() => navigate("/projects")}
             aria-label="Back to projects"
             className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            size="sm"
+            variant="ghost"
+            onClick={() => navigate("/projects")}
           >
             <ArrowLeft size={18} />
           </Button>
@@ -124,8 +126,8 @@ export function BuilderScaffold({
         </div>
 
         <BuilderPicker
-          projectId={projectId}
           hostId={builder.id}
+          projectId={projectId}
           trigger={pickerTrigger}
         />
       </div>

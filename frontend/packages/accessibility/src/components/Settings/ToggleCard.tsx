@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { Icons } from '../Icons';
+
 import type { ToggleCardProps } from '../../types';
 
 /**
@@ -14,8 +16,9 @@ export const ToggleCard: React.FC<ToggleCardProps> = ({
 }) => {
   return (
     <button
+      aria-label={`${label}: ${active ? 'On' : 'Off'}`}
+      aria-pressed={active}
       type="button"
-      onClick={onChange}
       className={`
         group relative flex w-full flex-col
         rounded-2xl p-4 text-left
@@ -25,8 +28,7 @@ export const ToggleCard: React.FC<ToggleCardProps> = ({
           : 'border border-[var(--border-primary)] bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'
         }
       `}
-      aria-pressed={active}
-      aria-label={`${label}: ${active ? 'On' : 'Off'}`}
+      onClick={onChange}
     >
       <div className="flex items-start justify-between gap-3">
         <div
@@ -47,7 +49,7 @@ export const ToggleCard: React.FC<ToggleCardProps> = ({
             ${active ? 'bg-white' : 'border-2 border-[var(--border-primary)]'}
           `}
         >
-          {active && <span className="text-primary">{<Icons.check />}</span>}
+          {active ? <span className="text-primary"><Icons.check /></span> : null}
         </div>
       </div>
       

@@ -19,9 +19,12 @@
  * skipped (with a console warning) and never rendered.
  */
 import { useEffect, useState } from "react";
+
+import { moduleRegistry } from "@/module-registry.generated";
+
 import { api } from "./api";
+
 import type { ModuleInfo } from "./modules";
-import { moduleRegistry } from "../module-registry.generated";
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Contract types                                                           */
@@ -84,7 +87,7 @@ export interface ModuleTool {
   run: (
     inputs: Record<string, unknown>,
     ctx: ToolRunContext,
-  ) => Promise<unknown> | unknown;
+  ) => unknown;
 }
 
 /** A tool resolved with the module it came from. */
@@ -165,7 +168,7 @@ async function collectModuleTools(): Promise<ResolvedTool[]> {
 
       let bundle: { tools?: unknown } | null;
       try {
-        bundle = (await loader()) as { tools?: unknown } | null;
+        bundle = (await loader());
       } catch (err) {
         console.warn(`[toolbox] failed to import module '${mod.name}':`, err);
         continue;
@@ -173,7 +176,7 @@ async function collectModuleTools(): Promise<ResolvedTool[]> {
 
       // Modules without a `tools` export are skipped - the core never needs
       // to know about individual modules.
-      if (!bundle || bundle.tools === undefined || bundle.tools === null) {
+      if (bundle?.tools === undefined || bundle.tools === null) {
         continue;
       }
 
@@ -286,7 +289,7 @@ export function groupToolsByCategory(tools: ResolvedTool[]): ToolCategory[] {
       map.set(cat, []);
       order.push(cat);
     }
-    map.get(cat)!.push(tool);
+    map.get(cat).push(tool);
   }
-  return order.map((category) => ({ category, tools: map.get(category)! }));
+  return order.map((category) => ({ category, tools: map.get(category) }));
 }

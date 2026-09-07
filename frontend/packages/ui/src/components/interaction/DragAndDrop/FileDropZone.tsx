@@ -3,6 +3,7 @@
 import React, { useCallback, useState } from "react";
 import { useDrop } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
+
 import { cn } from "../../../utils/cn";
 
 export interface FileDropZoneProps {
@@ -191,13 +192,13 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
         }}
       >
         <input
-          id="file-drop-input"
-          type="file"
-          className="hidden"
-          multiple={multiple}
           accept={accept.join(",")}
-          onChange={handleInputChange}
+          className="hidden"
           disabled={disabled}
+          id="file-drop-input"
+          multiple={multiple}
+          type="file"
+          onChange={handleInputChange}
         />
 
         {typeof children === "function" ? (
@@ -211,28 +212,28 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
                 <svg
                   className="h-8 w-8 animate-bounce text-blue-500"
                   fill="none"
-                  viewBox="0 0 24 24"
                   stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
                   <path
+                    d="M19 14l-7 7m0 0l-7-7m7 7V3"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M19 14l-7 7m0 0l-7-7m7 7V3"
                   />
                 </svg>
               ) : (
                 <svg
                   className="h-8 w-8 text-gray-400"
                   fill="none"
-                  viewBox="0 0 24 24"
                   stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
                   <path
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                   />
                 </svg>
               )}
@@ -258,8 +259,8 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
               {acceptedFiles.length} file(s) selected
             </span>
             <button
-              onClick={clearAll}
               className="text-xs text-red-500 hover:text-red-700"
+              onClick={clearAll}
             >
               Clear all
             </button>
@@ -281,11 +282,11 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
                 </div>
               </div>
               <button
+                className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeFile(index);
                 }}
-                className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
               >
                 ✕
               </button>

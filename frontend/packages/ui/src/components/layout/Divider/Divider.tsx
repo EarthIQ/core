@@ -58,13 +58,13 @@ interface DividerProps {
  * // Gradient divider with custom spacing
  * <Divider variant="gradient" spacing="lg" />
  */
-export function Divider({
+export const Divider = ({
   orientation = "horizontal",
   label,
   variant = "solid",
   spacing = "md",
   className,
-}: DividerProps) {
+}: DividerProps) => {
   // Spacing classes based on orientation
   const spacingClasses = {
     horizontal: {
@@ -85,8 +85,8 @@ export function Divider({
   if (orientation === "vertical") {
     return (
       <div
-        role="separator"
         aria-orientation="vertical"
+        role="separator"
         className={cn(
           "h-full w-px self-stretch",
           variant === "solid"
@@ -103,8 +103,8 @@ export function Divider({
   if (label) {
     return (
       <div
-        role="separator"
         aria-orientation="horizontal"
+        role="separator"
         className={cn(
           "flex w-full items-center gap-4",
           spacingClasses.horizontal[spacing],
@@ -137,8 +137,8 @@ export function Divider({
   // Simple horizontal divider
   return (
     <div
-      role="separator"
       aria-orientation="horizontal"
+      role="separator"
       className={cn(
         "h-px w-full",
         variant === "solid"

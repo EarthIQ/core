@@ -1,6 +1,9 @@
 // src/components/Layers/RasterLayer.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState as _useState } from "react";
+
 import { useMap } from "../../hooks/useMap";
+
+import type React from "react";
 
 interface RasterLayerProps {
   /** Unique layer ID */

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+
 import { useMap } from "../../hooks/useMap";
 
 /* =============================================================================
@@ -178,7 +179,6 @@ const FormatSelector: React.FC<FormatSelectorProps> = ({
   return (
     <div style={{ position: "relative" }}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
         style={{
           display: "flex",
           alignItems: "center",
@@ -193,6 +193,7 @@ const FormatSelector: React.FC<FormatSelectorProps> = ({
           cursor: "pointer",
           transition: "all 150ms ease",
         }}
+        onClick={() => setIsOpen(!isOpen)}
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor = "var(--surface-active)";
           e.currentTarget.style.borderColor = "var(--border-hover)";
@@ -204,10 +205,10 @@ const FormatSelector: React.FC<FormatSelectorProps> = ({
       >
         <span>{FORMAT_OPTIONS.find((f) => f.value === value)?.shortLabel}</span>
         <svg
-          width="10"
+          fill="none"
           height="10"
           viewBox="0 0 10 10"
-          fill="none"
+          width="10"
           style={{
             transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
             transition: "transform 150ms ease",
@@ -216,15 +217,14 @@ const FormatSelector: React.FC<FormatSelectorProps> = ({
           <path
             d="M2 3.5L5 6.5L8 3.5"
             stroke="currentColor"
-            strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"
+            strokeWidth="1.5"
           />
         </svg>
       </button>
 
-      {isOpen && (
-        <>
+      {isOpen ? <>
           <div
             style={{ position: "fixed", inset: 0, zIndex: 999 }}
             onClick={() => setIsOpen(false)}
@@ -247,10 +247,6 @@ const FormatSelector: React.FC<FormatSelectorProps> = ({
             {FORMAT_OPTIONS.map((option) => (
               <button
                 key={option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -267,6 +263,10 @@ const FormatSelector: React.FC<FormatSelectorProps> = ({
                   cursor: "pointer",
                   transition: "background-color 100ms ease",
                 }}
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor =
                     "var(--surface-hover)";
@@ -281,25 +281,24 @@ const FormatSelector: React.FC<FormatSelectorProps> = ({
                 <span>{option.label}</span>
                 {value === option.value && (
                   <svg
-                    width="14"
+                    fill="none"
                     height="14"
                     viewBox="0 0 14 14"
-                    fill="none"
+                    width="14"
                   >
                     <path
                       d="M11.5 4L5.5 10L2.5 7"
                       stroke="var(--primary)"
-                      strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
+                      strokeWidth="2"
                     />
                   </svg>
                 )}
               </button>
             ))}
           </div>
-        </>
-      )}
+        </> : null}
     </div>
   );
 };
@@ -327,17 +326,17 @@ const CopyFeedback: React.FC<CopyFeedbackProps> = ({ show }) => {
       }}
     >
       <svg
-        width="12"
+        fill="none"
         height="12"
         viewBox="0 0 12 12"
-        fill="none"
+        width="12"
       >
         <path
           d="M10 3L4.5 8.5L2 6"
           stroke="currentColor"
-          strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
+          strokeWidth="1.5"
         />
       </svg>
       Copied
@@ -521,9 +520,7 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
     return (
       <div
         className={className}
-        onClick={handleCopy}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        title={copyOnClick ? "Click to copy coordinates" : undefined}
         style={{
           ...baseStyles,
           ...getPositionStyles(position),
@@ -538,7 +535,9 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
           boxShadow: isHovered ? "var(--shadow-md)" : "var(--shadow-sm)",
           cursor: copyOnClick ? "pointer" : "default",
         }}
-        title={copyOnClick ? "Click to copy coordinates" : undefined}
+        onClick={handleCopy}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         {/* Coordinates */}
         <span
@@ -552,36 +551,28 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
         </span>
 
         {/* Separator */}
-        {(showZoom || showScale || showElevation) && (
-          <div
+        {(showZoom || showScale || showElevation) ? <div
             style={{
               width: "1px",
               height: "14px",
               backgroundColor: "var(--border-primary)",
             }}
-          />
-        )}
+          /> : null}
 
         {/* Zoom */}
-        {showZoom && (
-          <span style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
+        {showZoom ? <span style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
             z{zoom.toFixed(1)}
-          </span>
-        )}
+          </span> : null}
 
         {/* Scale */}
-        {showScale && (
-          <span style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
+        {showScale ? <span style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
             {getScale()}
-          </span>
-        )}
+          </span> : null}
 
         {/* Elevation */}
-        {showElevation && elevation !== null && (
-          <span style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
+        {showElevation && elevation !== null ? <span style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
             {elevation.toFixed(0)}m
-          </span>
-        )}
+          </span> : null}
 
         {/* Copy feedback */}
         <CopyFeedback show={copied} />
@@ -596,8 +587,6 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
     return (
       <div
         className={className}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         style={{
           ...baseStyles,
           ...getPositionStyles(position),
@@ -611,19 +600,18 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
           borderRadius: "var(--radius-lg)",
           boxShadow: "var(--shadow-sm)",
         }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         {/* Format Selector */}
-        {switchable && (
-          <FormatSelector
+        {switchable ? <FormatSelector
+            compact
             value={format}
             onChange={setFormat}
-            compact
-          />
-        )}
+          /> : null}
 
         {/* Coordinates */}
         <div
-          onClick={handleCopy}
           style={{
             display: "flex",
             alignItems: "center",
@@ -634,6 +622,7 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
             cursor: copyOnClick ? "pointer" : "default",
             transition: "background-color 150ms ease",
           }}
+          onClick={handleCopy}
         >
           <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>
             {formattedCoords}
@@ -642,24 +631,18 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
         </div>
 
         {/* Info Pills */}
-        {showZoom && (
-          <InfoPill
+        {showZoom ? <InfoPill
             label="Z"
             value={zoom.toFixed(1)}
-          />
-        )}
-        {showScale && (
-          <InfoPill
+          /> : null}
+        {showScale ? <InfoPill
             label=""
             value={getScale()}
-          />
-        )}
-        {showElevation && elevation !== null && (
-          <InfoPill
+          /> : null}
+        {showElevation && elevation !== null ? <InfoPill
             label="↑"
             value={`${elevation.toFixed(0)}m`}
-          />
-        )}
+          /> : null}
       </div>
     );
   }
@@ -670,8 +653,6 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
   return (
     <div
       className={className}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       style={{
         ...baseStyles,
         ...getPositionStyles(position),
@@ -686,6 +667,8 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
         borderRadius: "var(--radius-xl)",
         boxShadow: "var(--shadow-md)",
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Header */}
       <div
@@ -706,17 +689,14 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
         >
           Coordinates
         </span>
-        {switchable && (
-          <FormatSelector
+        {switchable ? <FormatSelector
             value={format}
             onChange={setFormat}
-          />
-        )}
+          /> : null}
       </div>
 
       {/* Coordinates Display */}
       <div
-        onClick={handleCopy}
         style={{
           display: "flex",
           alignItems: "center",
@@ -728,6 +708,7 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
           transition: "all 150ms ease",
           border: "1px solid transparent",
         }}
+        onClick={handleCopy}
         onMouseEnter={(e) => {
           if (copyOnClick) {
             e.currentTarget.style.backgroundColor = "var(--surface-hover)";
@@ -755,26 +736,26 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
         ) : (
           copyOnClick && (
             <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
               fill="none"
+              height="14"
               style={{ color: "var(--text-tertiary)" }}
+              viewBox="0 0 14 14"
+              width="14"
             >
               <rect
-                x="4.5"
-                y="4.5"
-                width="7"
                 height="7"
                 rx="1.5"
                 stroke="currentColor"
                 strokeWidth="1.2"
+                width="7"
+                x="4.5"
+                y="4.5"
               />
               <path
                 d="M2.5 9.5V3C2.5 2.17157 3.17157 1.5 4 1.5H9.5"
                 stroke="currentColor"
-                strokeWidth="1.2"
                 strokeLinecap="round"
+                strokeWidth="1.2"
               />
             </svg>
           )
@@ -782,16 +763,14 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
       </div>
 
       {/* Info Grid */}
-      {(showZoom || showScale || showElevation) && (
-        <div
+      {(showZoom || showScale || showElevation) ? <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
             gap: "8px",
           }}
         >
-          {showZoom && (
-            <div
+          {showZoom ? <div
               style={{
                 display: "flex",
                 flexDirection: "column",
@@ -822,11 +801,9 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
               >
                 {zoom.toFixed(1)}
               </span>
-            </div>
-          )}
+            </div> : null}
 
-          {showScale && (
-            <div
+          {showScale ? <div
               style={{
                 display: "flex",
                 flexDirection: "column",
@@ -857,11 +834,9 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
               >
                 {getScale()}
               </span>
-            </div>
-          )}
+            </div> : null}
 
-          {showElevation && (
-            <div
+          {showElevation ? <div
               style={{
                 display: "flex",
                 flexDirection: "column",
@@ -892,10 +867,8 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
               >
                 {elevation !== null ? `${elevation.toFixed(0)}m` : "-"}
               </span>
-            </div>
-          )}
-        </div>
-      )}
+            </div> : null}
+        </div> : null}
     </div>
   );
 };

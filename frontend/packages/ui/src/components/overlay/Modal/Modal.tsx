@@ -1,10 +1,11 @@
 // Modal.tsx
-import { type ReactNode, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { cn } from "../../../utils/cn";
+import { type ReactNode, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+
 import { useEscapeKey } from "../../../hooks/useKeyboard";
+import { cn } from "../../../utils/cn";
 
 // =========================================
 // Types
@@ -46,7 +47,6 @@ const SPRING_TRANSITION = {
 // =========================================
 const CloseButton = ({ onClose }: { onClose: () => void }) => (
   <button
-    onClick={onClose}
     aria-label="Close modal"
     className={cn(
       "absolute top-4 right-4 cursor-pointer",
@@ -62,16 +62,17 @@ const CloseButton = ({ onClose }: { onClose: () => void }) => (
         "--focus-ring": "var(--ring)",
       } as React.CSSProperties
     }
+    onClick={onClose}
     onMouseEnter={(e) => {
-      (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+      (e.currentTarget).style.backgroundColor =
         "var(--surface-hover)";
-      (e.currentTarget as HTMLButtonElement).style.color =
+      (e.currentTarget).style.color =
         "var(--text-primary)";
     }}
     onMouseLeave={(e) => {
-      (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+      (e.currentTarget).style.backgroundColor =
         "transparent";
-      (e.currentTarget as HTMLButtonElement).style.color =
+      (e.currentTarget).style.color =
         "var(--text-tertiary)";
     }}
   >
@@ -93,24 +94,20 @@ const ModalHeader = ({
 
   return (
     <div className="mb-5 pr-8">
-      {title && (
-        <h2
-          id="modal-title"
+      {title ? <h2
           className="text-lg leading-tight font-semibold"
+          id="modal-title"
           style={{ color: "var(--text-primary)" }}
         >
           {title}
-        </h2>
-      )}
-      {description && (
-        <p
-          id="modal-description"
+        </h2> : null}
+      {description ? <p
           className="mt-1.5 text-sm leading-relaxed"
+          id="modal-description"
           style={{ color: "var(--text-secondary)" }}
         >
           {description}
-        </p>
-      )}
+        </p> : null}
     </div>
   );
 };
@@ -118,7 +115,7 @@ const ModalHeader = ({
 // =========================================
 // Main Component
 // =========================================
-export function Modal({
+export const Modal = ({
   isOpen,
   onClose,
   children,
@@ -129,7 +126,7 @@ export function Modal({
   closeOnEscape = true,
   showCloseButton = true,
   className,
-}: ModalProps) {
+}: ModalProps) => {
   const [shouldRender, setShouldRender] = useState(false);
 
   useEscapeKey(onClose, closeOnEscape && isOpen);
@@ -178,28 +175,27 @@ export function Modal({
     >
       {/* Backdrop */}
       <motion.div
-        initial={{ opacity: 0 }}
         animate={{ opacity: isOpen ? 1 : 0 }}
+        className="absolute inset-0"
+        initial={{ opacity: 0 }}
+        style={{ backgroundColor: "var(--overlay)", pointerEvents: "auto" }}
         transition={{ duration: 0.2 }}
         onClick={closeOnOverlayClick && isOpen ? onClose : undefined}
-        className="absolute inset-0"
-        style={{ backgroundColor: "var(--overlay)", pointerEvents: "auto" }}
       />
 
       {/* Dialog */}
       <motion.div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={title ? "modal-title" : undefined}
         aria-describedby={description ? "modal-description" : undefined}
+        aria-labelledby={title ? "modal-title" : undefined}
+        aria-modal="true"
         initial={{ opacity: 0, scale: 0.96, y: 16 }}
+        role="dialog"
+        transition={SPRING_TRANSITION}
         animate={
           isOpen
             ? { opacity: 1, scale: 1, y: 0 }
             : { opacity: 0, scale: 0.96, y: 16 }
         }
-        transition={SPRING_TRANSITION}
-        onAnimationComplete={handleAnimationComplete}
         className={cn(
           "relative mx-auto w-full p-6",
           SIZE_CLASSES[size],
@@ -213,11 +209,12 @@ export function Modal({
           boxShadow: "var(--shadow-xl)",
           pointerEvents: "auto",
         }}
+        onAnimationComplete={handleAnimationComplete}
       >
-        {showCloseButton && <CloseButton onClose={onClose} />}
+        {showCloseButton ? <CloseButton onClose={onClose} /> : null}
         <ModalHeader
-          title={title ?? ""}
           description={description ?? ""}
+          title={title ?? ""}
         />
         <div
           className="text-sm leading-relaxed"
@@ -234,7 +231,7 @@ export function Modal({
 // =========================================
 // Modal Footer
 // =========================================
-export function ModalFooter({
+export const ModalFooter = ({
   children,
   className,
   align = "right",
@@ -242,7 +239,7 @@ export function ModalFooter({
   children: ReactNode;
   className?: string;
   align?: "left" | "center" | "right";
-}) {
+}) => {
   const alignClass = {
     left: "justify-start",
     center: "justify-center",
@@ -251,12 +248,12 @@ export function ModalFooter({
 
   return (
     <div
+      style={{ borderTop: "1px solid var(--border-primary)" }}
       className={cn(
         "mt-6 flex flex-wrap items-center gap-3 pt-4",
         alignClass,
         className
       )}
-      style={{ borderTop: "1px solid var(--border-primary)" }}
     >
       {children}
     </div>

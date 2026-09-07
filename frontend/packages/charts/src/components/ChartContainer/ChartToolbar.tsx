@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@packages/ui";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+
 import {
   FullscreenIcon,
   ImageIcon,
@@ -8,6 +9,7 @@ import {
   CheckIcon,
   MoreVerticalIcon,
 } from "../../icons";
+
 import type { ToolbarConfig } from "../../types";
 
 interface ChartToolbarProps {
@@ -74,67 +76,60 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  const handleCopy = async () => {
-    await onCopyData();
+  const handleCopy = () => {
+    onCopyData();
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
     <div
+      aria-label="Chart actions"
       className={cn("flex items-center gap-1", className)}
       role="toolbar"
-      aria-label="Chart actions"
     >
-      {fullscreen && (
-        <ToolbarButton
-          onClick={onFullscreen}
+      {fullscreen ? <ToolbarButton
           icon={<FullscreenIcon size={16} />}
           label="Fullscreen"
-        />
-      )}
+          onClick={onFullscreen}
+        /> : null}
 
-      {downloadData && (
-        <ToolbarButton
-          onClick={handleCopy}
+      {downloadData ? <ToolbarButton
+          label={copied ? "Copied!" : "Copy data"}
           icon={
             copied ? (
               <CheckIcon
-                size={16}
                 className="text-success"
+                size={16}
               />
             ) : (
               <CopyIcon size={16} />
             )
           }
-          label={copied ? "Copied!" : "Copy data"}
-        />
-      )}
+          onClick={handleCopy}
+        /> : null}
 
-      {(downloadImage || downloadData) && (
-        <div
-          className="relative"
+      {(downloadImage || downloadData) ? <div
           ref={dropdownRef}
+          className="relative"
         >
           <ToolbarButton
             ref={triggerRef}
-            onClick={() => setShowDropdown(!showDropdown)}
-            icon={<MoreVerticalIcon size={16} />}
-            label="More options"
-            disabled={isExporting}
             aria-expanded={showDropdown}
             aria-haspopup="menu"
+            disabled={isExporting}
+            icon={<MoreVerticalIcon size={16} />}
+            label="More options"
+            onClick={() => setShowDropdown(!showDropdown)}
           />
 
-          {showDropdown && (
-            <div
-              className="card-elevated animate-scale-in absolute top-full right-0 mt-1 min-w-[160px] py-1"
-              style={{ zIndex: "var(--z-dropdown)" }}
-              role="menu"
+          {showDropdown ? <div
               aria-orientation="vertical"
+              className="card-elevated animate-scale-in absolute top-full right-0 mt-1 min-w-[160px] py-1"
+              role="menu"
+              style={{ zIndex: "var(--z-dropdown)" }}
             >
-              {downloadImage && (
-                <>
+              {downloadImage ? <>
                   <DropdownHeader>Download Image</DropdownHeader>
                   <DropdownItem
                     icon={<ImageIcon size={14} />}
@@ -161,11 +156,9 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                     }}
                   />
                   <DropdownDivider />
-                </>
-              )}
+                </> : null}
 
-              {downloadData && (
-                <>
+              {downloadData ? <>
                   <DropdownHeader>Download Data</DropdownHeader>
                   <DropdownItem
                     icon={<TableIcon size={14} />}
@@ -183,8 +176,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                       setShowDropdown(false);
                     }}
                   />
-                </>
-              )}
+                </> : null}
 
               {customActions.length > 0 && (
                 <>
@@ -202,10 +194,8 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                   ))}
                 </>
               )}
-            </div>
-          )}
-        </div>
-      )}
+            </div> : null}
+        </div> : null}
     </div>
   );
 };
@@ -224,8 +214,9 @@ const ToolbarButton = React.forwardRef<HTMLButtonElement, ToolbarButtonProps>(
   ({ onClick, icon, label, disabled, ...ariaProps }, ref) => (
     <button
       ref={ref}
-      onClick={onClick}
+      aria-label={label}
       disabled={disabled}
+      title={label}
       className={cn(
         "rounded-md p-2",
         "text-muted",
@@ -239,8 +230,7 @@ const ToolbarButton = React.forwardRef<HTMLButtonElement, ToolbarButtonProps>(
           "--tw-ring-color": "var(--ring)",
         } as React.CSSProperties
       }
-      title={label}
-      aria-label={label}
+      onClick={onClick}
       {...ariaProps}
     >
       {icon}
@@ -275,14 +265,14 @@ const DropdownItem: React.FC<DropdownItemProps> = ({
   onClick,
 }) => (
   <button
-    onClick={onClick}
+    role="menuitem"
     className={cn(
       "flex w-full items-center gap-2 px-3 py-2",
       "text-base text-sm",
       "hover:bg-surface-hover",
       "transition-colors"
     )}
-    role="menuitem"
+    onClick={onClick}
   >
     <span className="text-muted">{icon}</span>
     {label}

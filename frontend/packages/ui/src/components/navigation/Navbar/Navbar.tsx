@@ -1,5 +1,6 @@
-import React, { type ReactNode, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import React, { type ReactNode, useState, useEffect } from "react";
+
 import { cn } from "../../../utils/cn";
 import { IconButton } from "../../primitives/Button/IconButton";
 
@@ -145,7 +146,7 @@ const maxWidthConfig = {
  *   ]}
  * />
  */
-export function Navbar({
+export const Navbar = ({
   logo,
   items = [],
   rightContent,
@@ -155,7 +156,7 @@ export function Navbar({
   height = "md",
   maxWidth = "7xl",
   className,
-}: NavbarProps) {
+}: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -207,6 +208,8 @@ export function Navbar({
 
   return (
     <nav
+      aria-label="Main navigation"
+      role="navigation"
       className={cn(
         // Base styles
         "z-[var(--z-sticky)] w-full",
@@ -227,8 +230,6 @@ export function Navbar({
         transparent && !isScrolled && "border-transparent bg-transparent",
         className
       )}
-      role="navigation"
-      aria-label="Main navigation"
     >
       <div
         className={cn("mx-auto px-4 sm:px-6 lg:px-8", maxWidthConfig[maxWidth])}
@@ -240,7 +241,7 @@ export function Navbar({
           )}
         >
           {/* Logo */}
-          {logo && <div className="flex-shrink-0">{logo}</div>}
+          {logo ? <div className="flex-shrink-0">{logo}</div> : null}
 
           {/* Desktop Navigation */}
           <div className="hidden items-center gap-1 md:flex">
@@ -253,22 +254,25 @@ export function Navbar({
           </div>
 
           {/* Right Content (Desktop) */}
-          {rightContent && (
-            <div className="hidden items-center gap-3 md:flex">
+          {rightContent ? <div className="hidden items-center gap-3 md:flex">
               {rightContent}
-            </div>
-          )}
+            </div> : null}
 
           {/* Mobile Menu Button */}
           <div className="flex items-center md:hidden">
             <IconButton
+              aria-controls="mobile-menu"
+              aria-expanded={mobileMenuOpen}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              label=""
+              variant="ghost"
               icon={
                 <svg
+                  aria-hidden="true"
                   className="h-6 w-6"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
-                  aria-hidden="true"
                 >
                   <motion.path
                     strokeLinecap="round"
@@ -282,12 +286,7 @@ export function Navbar({
                   />
                 </svg>
               }
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={mobileMenuOpen}
-              aria-controls="mobile-menu"
-              variant="ghost"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              label={""}
             />
           </div>
         </div>
@@ -295,25 +294,24 @@ export function Navbar({
 
       {/* Mobile Menu */}
       <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
+        {mobileMenuOpen ? <>
             {/* Backdrop */}
             <motion.div
-              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="fixed inset-0 z-[var(--z-modal-backdrop)] bg-[var(--overlay)] md:hidden"
-              onClick={() => setMobileMenuOpen(false)}
               aria-hidden="true"
+              className="fixed inset-0 z-[var(--z-modal-backdrop)] bg-[var(--overlay)] md:hidden"
+              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              onClick={() => setMobileMenuOpen(false)}
             />
 
             {/* Menu Panel */}
             <motion.div
-              id="mobile-menu"
-              initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              id="mobile-menu"
+              initial={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               className={cn(
                 "absolute top-full right-0 left-0 z-[var(--z-modal)]",
@@ -327,8 +325,8 @@ export function Navbar({
                 {items.map((item, index) => (
                   <motion.div
                     key={item.key}
-                    initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, x: -10 }}
                     transition={{ delay: index * 0.05 }}
                   >
                     <MobileNavLink
@@ -339,20 +337,17 @@ export function Navbar({
                 ))}
 
                 {/* Right content in mobile menu */}
-                {rightContent && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
+                {rightContent ? <motion.div
                     animate={{ opacity: 1 }}
-                    transition={{ delay: items.length * 0.05 }}
                     className="mt-4 border-t border-[var(--border-primary)] pt-4"
+                    initial={{ opacity: 0 }}
+                    transition={{ delay: items.length * 0.05 }}
                   >
                     {rightContent}
-                  </motion.div>
-                )}
+                  </motion.div> : null}
               </div>
             </motion.div>
-          </>
-        )}
+          </> : null}
       </AnimatePresence>
     </nav>
   );
@@ -361,15 +356,14 @@ export function Navbar({
 /**
  * Desktop navigation link component
  */
-function NavLink({ item }: { item: NavItem }) {
+const NavLink = ({ item }: { item: NavItem }) => {
   const Component = item.href ? "a" : "button";
 
   return (
     <Component
-      href={item.href}
-      onClick={item.onClick}
-      disabled={item.disabled}
       aria-current={item.active ? "page" : undefined}
+      disabled={item.disabled}
+      href={item.href}
       className={cn(
         // Base styles
         "flex items-center gap-2 rounded-xl px-4 py-2",
@@ -390,8 +384,9 @@ function NavLink({ item }: { item: NavItem }) {
         // Disabled state
         item.disabled && "pointer-events-none cursor-not-allowed opacity-50"
       )}
+      onClick={item.onClick}
     >
-      {item.icon && <span className="h-4 w-4 flex-shrink-0">{item.icon}</span>}
+      {item.icon ? <span className="h-4 w-4 flex-shrink-0">{item.icon}</span> : null}
       {item.label}
     </Component>
   );
@@ -400,24 +395,20 @@ function NavLink({ item }: { item: NavItem }) {
 /**
  * Mobile navigation link component
  */
-function MobileNavLink({
+const MobileNavLink = ({
   item,
   onClose,
 }: {
   item: NavItem;
   onClose: () => void;
-}) {
+}) => {
   const Component = item.href ? "a" : "button";
 
   return (
     <Component
-      href={item.href}
-      onClick={() => {
-        item.onClick?.();
-        onClose();
-      }}
-      disabled={item.disabled}
       aria-current={item.active ? "page" : undefined}
+      disabled={item.disabled}
+      href={item.href}
       className={cn(
         // Base styles
         "flex w-full items-center gap-3 rounded-xl px-4 py-3",
@@ -437,8 +428,12 @@ function MobileNavLink({
         // Disabled state
         item.disabled && "pointer-events-none cursor-not-allowed opacity-50"
       )}
+      onClick={() => {
+        item.onClick?.();
+        onClose();
+      }}
     >
-      {item.icon && <span className="h-5 w-5 flex-shrink-0">{item.icon}</span>}
+      {item.icon ? <span className="h-5 w-5 flex-shrink-0">{item.icon}</span> : null}
       {item.label}
     </Component>
   );

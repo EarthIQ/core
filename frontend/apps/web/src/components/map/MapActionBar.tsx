@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Tooltip } from "@packages/ui";
 import {
   MousePointer2,
   Hand,
@@ -20,7 +20,7 @@ import {
   ChevronDown,
   Toolbox,
 } from "lucide-react";
-import { Tooltip } from "@packages/ui";
+import { useEffect, useRef, useState } from "react";
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Types                                                                    */
@@ -91,7 +91,7 @@ const TOOL_GROUPS: ToolGroupDef[] = [
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Dropdown menu (flyout above the bar)                                     */
 /* ──────────────────────────────────────────────────────────────────────── */
-function ToolDropdown({
+const ToolDropdown = ({
   variants,
   activeVariantId,
   onSelect,
@@ -99,7 +99,7 @@ function ToolDropdown({
   variants: ToolVariant[];
   activeVariantId: string;
   onSelect: (id: string) => void;
-}) {
+}) => {
   return (
     <div className="absolute bottom-full left-0 mb-2 w-72 bg-elevated border border-border-primary rounded-2xl shadow-2xl py-2 z-50 animate-fade-in-up">
       {variants.map((v) => {
@@ -109,22 +109,20 @@ function ToolDropdown({
           <button
             key={v.id}
             type="button"
-            onClick={() => onSelect(v.id)}
             className={`flex items-center w-full gap-3 px-4 py-2.5 mx-0 transition-colors ${
               active
                 ? "bg-primary/10 text-primary"
                 : "text-text-primary hover:bg-surface-hover"
             }`}
+            onClick={() => onSelect(v.id)}
           >
-            <Icon size={19} className="shrink-0" />
+            <Icon className="shrink-0" size={19} />
             <span className="text-sm font-medium flex-1 text-left">
               {v.label}
             </span>
-            {v.shortcut && (
-              <span className="text-xs text-text-quaternary tabular-nums shrink-0">
+            {v.shortcut ? <span className="text-xs text-text-quaternary tabular-nums shrink-0">
                 {v.shortcut}
-              </span>
-            )}
+              </span> : null}
           </button>
         );
       })}
@@ -135,7 +133,7 @@ function ToolDropdown({
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Tool group button - main icon + chevron, opens dropdown                  */
 /* ──────────────────────────────────────────────────────────────────────── */
-function ToolGroupButton({
+const ToolGroupButton = ({
   group,
   selectedVariantId,
   isActiveTool,
@@ -149,7 +147,7 @@ function ToolGroupButton({
   isDropdownOpen: boolean;
   onOpenDropdown: () => void;
   onSelectVariant: (variantId: string) => void;
-}) {
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const selected =
     group.variants.find((v) => v.id === selectedVariantId) ?? group.variants[0];
@@ -171,7 +169,7 @@ function ToolGroupButton({
   }, [isDropdownOpen]);
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div ref={containerRef} className="relative">
       <div
         className={`flex items-center rounded-full transition-colors ${
           isDropdownOpen && !isActiveTool ? "bg-surface-hover" : ""
@@ -179,43 +177,41 @@ function ToolGroupButton({
       >
         <Tooltip content={selected.label} placement="top">
           <button
-            type="button"
-            onClick={() => onSelectVariant(selected.id)}
             aria-pressed={isActiveTool}
+            type="button"
             className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
               isActiveTool
                 ? "bg-primary text-white shadow-sm"
                 : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
             }`}
+            onClick={() => onSelectVariant(selected.id)}
           >
             <Icon size={18} />
           </button>
         </Tooltip>
 
         <button
-          type="button"
-          onClick={onOpenDropdown}
           aria-label={`${group.id} tool options`}
+          type="button"
           className={`flex items-center justify-center w-5 h-9 rounded-full transition-colors ${
             isActiveTool
               ? "text-primary hover:bg-primary/10"
               : "text-text-quaternary hover:bg-surface-hover hover:text-text-primary"
           }`}
+          onClick={onOpenDropdown}
         >
           <ChevronDown
-            size={13}
             className={`transition-transform duration-150 ${isDropdownOpen ? "rotate-180" : ""}`}
+            size={13}
           />
         </button>
       </div>
 
-      {isDropdownOpen && (
-        <ToolDropdown
-          variants={group.variants}
+      {isDropdownOpen ? <ToolDropdown
           activeVariantId={selectedVariantId}
+          variants={group.variants}
           onSelect={onSelectVariant}
-        />
-      )}
+        /> : null}
     </div>
   );
 }
@@ -246,7 +242,7 @@ interface MapActionBarProps {
   saving?: boolean;
 }
 
-export function MapActionBar({
+export const MapActionBar = ({
   activeTool: controlledTool,
   onToolChange,
   commentPlacement = false,
@@ -257,11 +253,11 @@ export function MapActionBar({
   canRedo = false,
   onUndo,
   onRedo,
-  onClearAnnotations,
+  _onClearAnnotations,
   sessionActive = false,
   onSave,
   saving = false,
-}: MapActionBarProps) {
+}: MapActionBarProps) => {
   // Fallback internal tool for uncontrolled usage.
   const [internalTool] = useState<ActiveTool>({
     groupId: NAVIGATE_GROUP.id,
@@ -290,13 +286,13 @@ export function MapActionBar({
           <ToolGroupButton
             key={group.id}
             group={group}
-            selectedVariantId={selectedVariantId}
             isActiveTool={isActive}
             isDropdownOpen={openDropdownId === group.id}
+            selectedVariantId={selectedVariantId}
+            onSelectVariant={(variantId) => selectVariant(group.id, variantId)}
             onOpenDropdown={() =>
               setOpenDropdownId((prev) => (prev === group.id ? null : group.id))
             }
-            onSelectVariant={(variantId) => selectVariant(group.id, variantId)}
           />
         );
       })}
@@ -304,14 +300,14 @@ export function MapActionBar({
       {/* Toolbox - opens the right-side panel of module tools */}
       <Tooltip content="Toolbox" placement="top">
         <button
-          type="button"
-          onClick={onToggleToolbox}
           aria-pressed={toolboxActive}
+          type="button"
           className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
             toolboxActive
               ? "bg-surface-hover text-primary"
               : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
           }`}
+          onClick={onToggleToolbox}
         >
           <Toolbox size={17} />
         </button>
@@ -319,22 +315,22 @@ export function MapActionBar({
 
       {/* Standalone toggle buttons */}
       <Tooltip
+        placement="top"
         content={
           commentPlacement
             ? "Click the map to place the comment"
             : "Add a comment to the map"
         }
-        placement="top"
       >
         <button
-          type="button"
-          onClick={onToggleCommentPlacement}
           aria-pressed={commentPlacement}
+          type="button"
           className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
             commentPlacement
               ? "bg-primary text-white shadow-sm"
               : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
           }`}
+          onClick={onToggleCommentPlacement}
         >
           <MessageSquare size={17} />
         </button>
@@ -342,8 +338,7 @@ export function MapActionBar({
 
       {/* Draw-session controls: appear only while shapes are being drawn
           (new layer) or edited (saved layer), and disappear once saved. */}
-      {sessionActive && (
-        <>
+      {sessionActive ? <>
           <div
             className="w-px h-5 mx-0.5"
             style={{ background: "var(--border-secondary)" }}
@@ -351,41 +346,36 @@ export function MapActionBar({
 
           <Tooltip content="Save shapes to the layer" placement="top">
             <button
+              className="flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              disabled={saving}
               type="button"
               onClick={onSave}
-              disabled={saving}
-              className="flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
             >
               <Save size={15} />
               {saving ? "Saving…" : "Save"}
             </button>
           </Tooltip>
 
-          {canUndo && (
-            <Tooltip content="Undo(ctrl+z)" placement="top">
+          {canUndo ? <Tooltip content="Undo(ctrl+z)" placement="top">
               <button
+                className="flex items-center justify-center w-9 h-9 rounded-full text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
                 type="button"
                 onClick={onUndo}
-                className="flex items-center justify-center w-9 h-9 rounded-full text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
               >
                 <Undo2 size={17} />
               </button>
-            </Tooltip>
-          )}
+            </Tooltip> : null}
 
-          {canRedo && (
-            <Tooltip content="Redo(ctrl+shift+z)" placement="top">
+          {canRedo ? <Tooltip content="Redo(ctrl+shift+z)" placement="top">
               <button
+                className="flex items-center justify-center w-9 h-9 rounded-full text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
                 type="button"
                 onClick={onRedo}
-                className="flex items-center justify-center w-9 h-9 rounded-full text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
               >
                 <Redo2 size={17} />
               </button>
-            </Tooltip>
-          )}
-        </>
-      )}
+            </Tooltip> : null}
+        </> : null}
     </div>
   );
 }

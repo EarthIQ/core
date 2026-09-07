@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
+
 import { useMap } from '../../hooks/useMap';
 
 export interface CompassControlProps {
@@ -124,9 +125,9 @@ export const CompassControl: React.FC<CompassControlProps> = ({
   // Render minimal style compass
   const renderMinimalCompass = () => (
     <svg
-      width={size}
       height={size}
       viewBox="0 0 40 40"
+      width={size}
       style={{
         transform: `rotate(${-bearing}deg)`,
         transition: 'transform 0.1s ease-out',
@@ -134,12 +135,12 @@ export const CompassControl: React.FC<CompassControlProps> = ({
     >
       {/* Simple arrow */}
       <polygon
-        points="20,4 24,20 20,16 16,20"
         fill="#e74c3c"
+        points="20,4 24,20 20,16 16,20"
       />
       <polygon
-        points="20,36 24,20 20,24 16,20"
         fill="#95a5a6"
+        points="20,36 24,20 20,24 16,20"
       />
     </svg>
   );
@@ -147,9 +148,9 @@ export const CompassControl: React.FC<CompassControlProps> = ({
   // Render classic style compass
   const renderClassicCompass = () => (
     <svg
-      width={size}
       height={size}
       viewBox="0 0 40 40"
+      width={size}
       style={{
         transform: `rotate(${-bearing}deg)`,
         transition: 'transform 0.1s ease-out',
@@ -159,8 +160,8 @@ export const CompassControl: React.FC<CompassControlProps> = ({
       <circle
         cx="20"
         cy="20"
-        r="18"
         fill="white"
+        r="18"
         stroke="#333"
         strokeWidth="1.5"
       />
@@ -168,40 +169,40 @@ export const CompassControl: React.FC<CompassControlProps> = ({
       <circle
         cx="20"
         cy="20"
-        r="3"
         fill="#333"
+        r="3"
       />
       {/* North needle */}
       <polygon
-        points="20,4 23,18 20,15 17,18"
         fill="#e74c3c"
+        points="20,4 23,18 20,15 17,18"
       />
       {/* South needle */}
       <polygon
-        points="20,36 23,22 20,25 17,22"
         fill="#333"
+        points="20,36 23,22 20,25 17,22"
       />
       {/* Cardinal markers */}
-      <text x="20" y="10" textAnchor="middle" fontSize="6" fill="#e74c3c" fontWeight="bold">N</text>
-      <text x="20" y="38" textAnchor="middle" fontSize="5" fill="#666">S</text>
-      <text x="4" y="22" textAnchor="middle" fontSize="5" fill="#666">W</text>
-      <text x="36" y="22" textAnchor="middle" fontSize="5" fill="#666">E</text>
+      <text fill="#e74c3c" fontSize="6" fontWeight="bold" textAnchor="middle" x="20" y="10">N</text>
+      <text fill="#666" fontSize="5" textAnchor="middle" x="20" y="38">S</text>
+      <text fill="#666" fontSize="5" textAnchor="middle" x="4" y="22">W</text>
+      <text fill="#666" fontSize="5" textAnchor="middle" x="36" y="22">E</text>
     </svg>
   );
 
   // Render modern style compass
   const renderModernCompass = () => (
     <svg
-      width={size}
       height={size}
       viewBox="0 0 40 40"
+      width={size}
     >
       {/* Background circle */}
       <circle
         cx="20"
         cy="20"
-        r="18"
         fill={isHovered ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.9)'}
+        r="18"
         stroke="rgba(0,0,0,0.1)"
         strokeWidth="1"
         style={{
@@ -228,13 +229,13 @@ export const CompassControl: React.FC<CompassControlProps> = ({
         />
         {/* N label */}
         <text
+          fill="#e74c3c"
+          fontFamily="system-ui, sans-serif"
+          fontSize="4"
+          fontWeight="bold"
+          textAnchor="middle"
           x="20"
           y="5"
-          textAnchor="middle"
-          fontSize="4"
-          fill="#e74c3c"
-          fontWeight="bold"
-          fontFamily="system-ui, sans-serif"
         >
           N
         </text>
@@ -243,8 +244,8 @@ export const CompassControl: React.FC<CompassControlProps> = ({
       <circle
         cx="20"
         cy="20"
-        r="2"
         fill="#333"
+        r="2"
       />
     </svg>
   );
@@ -314,7 +315,11 @@ export const CompassControl: React.FC<CompassControlProps> = ({
 
   return (
     <div
+      aria-label={`Compass showing ${formattedBearing} degrees ${cardinalDirection}. ${clickToResetNorth ? 'Click to reset to north.' : ''}`}
       className={className}
+      role="button"
+      tabIndex={clickToResetNorth ? 0 : -1}
+      title={clickToResetNorth ? 'Click to reset north' : `Bearing: ${formattedBearing}°`}
       style={{
         ...containerStyles,
         opacity: isRotated || isHovered ? 1 : 0.6,
@@ -323,10 +328,6 @@ export const CompassControl: React.FC<CompassControlProps> = ({
       onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      title={clickToResetNorth ? 'Click to reset north' : `Bearing: ${formattedBearing}°`}
-      role="button"
-      aria-label={`Compass showing ${formattedBearing} degrees ${cardinalDirection}. ${clickToResetNorth ? 'Click to reset to north.' : ''}`}
-      tabIndex={clickToResetNorth ? 0 : -1}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();

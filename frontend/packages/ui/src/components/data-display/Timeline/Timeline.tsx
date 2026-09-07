@@ -1,5 +1,6 @@
-import React, { type ReactNode } from "react";
 import { motion } from "framer-motion";
+import React, { type ReactNode } from "react";
+
 import { cn } from "../../../utils/cn";
 
 interface TimelineItem {
@@ -19,12 +20,12 @@ interface TimelineProps {
   className?: string;
 }
 
-export function Timeline({
+export const Timeline = ({
   items,
   orientation = "vertical",
   lineStyle = "solid",
   className,
-}: TimelineProps) {
+}: TimelineProps) => {
   if (orientation === "horizontal") {
     return (
       <div className={cn("overflow-x-auto", className)}>
@@ -32,10 +33,10 @@ export function Timeline({
           {items.map((item, index) => (
             <HorizontalTimelineItem
               key={item.id}
-              item={item}
-              isLast={index === items.length - 1}
-              lineStyle={lineStyle}
               index={index}
+              isLast={index === items.length - 1}
+              item={item}
+              lineStyle={lineStyle}
             />
           ))}
         </div>
@@ -48,10 +49,10 @@ export function Timeline({
       {items.map((item, index) => (
         <VerticalTimelineItem
           key={item.id}
-          item={item}
-          isLast={index === items.length - 1}
-          lineStyle={lineStyle}
           index={index}
+          isLast={index === items.length - 1}
+          item={item}
+          lineStyle={lineStyle}
         />
       ))}
     </div>
@@ -81,18 +82,18 @@ function getStatusClasses(status: TimelineItem["status"]) {
   }
 }
 
-function TimelineDot({ item }: { item: TimelineItem }) {
+const TimelineDot = ({ item }: { item: TimelineItem }) => {
   const { dot, dotBg, icon } = getStatusClasses(item.status);
 
   return (
     <div
+      style={{ backgroundColor: dotBg }}
       className={cn(
         "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2",
         dot,
         item.status === "current" &&
           "shadow-[0_0_0_4px_oklch(from_var(--primary)_l_c_h_/_0.2)]"
       )}
-      style={{ backgroundColor: dotBg }}
     >
       {item.icon ? (
         <span
@@ -104,16 +105,16 @@ function TimelineDot({ item }: { item: TimelineItem }) {
       ) : item.status === "completed" ? (
         <svg
           className="h-3 w-3"
-          style={{ color: icon }}
           fill="none"
           stroke="currentColor"
+          style={{ color: icon }}
           viewBox="0 0 24 24"
         >
           <path
+            d="M5 13l4 4L19 7"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={3}
-            d="M5 13l4 4L19 7"
           />
         </svg>
       ) : null}
@@ -121,7 +122,7 @@ function TimelineDot({ item }: { item: TimelineItem }) {
   );
 }
 
-function VerticalTimelineItem({
+const VerticalTimelineItem = ({
   item,
   isLast,
   lineStyle,
@@ -131,13 +132,13 @@ function VerticalTimelineItem({
   isLast: boolean;
   lineStyle: "solid" | "dashed";
   index: number;
-}) {
+}) => {
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.1 }}
       className="relative pb-8 pl-8 last:pb-0"
+      initial={{ opacity: 0, x: -20 }}
+      transition={{ delay: index * 0.1 }}
     >
       {/* Line */}
       {!isLast && (
@@ -162,24 +163,20 @@ function VerticalTimelineItem({
           <h4 className="font-medium text-[var(--text-primary)]">
             {item.title}
           </h4>
-          {item.date && (
-            <span className="text-xs text-[var(--text-tertiary)]">
+          {item.date ? <span className="text-xs text-[var(--text-tertiary)]">
               {item.date}
-            </span>
-          )}
+            </span> : null}
         </div>
-        {item.description && (
-          <p className="mb-2 text-sm text-[var(--text-secondary)]">
+        {item.description ? <p className="mb-2 text-sm text-[var(--text-secondary)]">
             {item.description}
-          </p>
-        )}
-        {item.content && <div className="card mt-3 p-4">{item.content}</div>}
+          </p> : null}
+        {item.content ? <div className="card mt-3 p-4">{item.content}</div> : null}
       </div>
     </motion.div>
   );
 }
 
-function HorizontalTimelineItem({
+const HorizontalTimelineItem = ({
   item,
   isLast,
   lineStyle,
@@ -189,14 +186,14 @@ function HorizontalTimelineItem({
   isLast: boolean;
   lineStyle: "solid" | "dashed";
   index: number;
-}) {
+}) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
       className="relative flex flex-col items-center"
+      initial={{ opacity: 0, y: 20 }}
       style={{ minWidth: 160 }}
+      transition={{ delay: index * 0.1 }}
     >
       {/* Line */}
       {!isLast && (
@@ -225,16 +222,12 @@ function HorizontalTimelineItem({
         <h4 className="mb-1 text-sm font-medium text-[var(--text-primary)]">
           {item.title}
         </h4>
-        {item.date && (
-          <span className="mb-1 block text-xs text-[var(--text-tertiary)]">
+        {item.date ? <span className="mb-1 block text-xs text-[var(--text-tertiary)]">
             {item.date}
-          </span>
-        )}
-        {item.description && (
-          <p className="text-xs text-[var(--text-secondary)]">
+          </span> : null}
+        {item.description ? <p className="text-xs text-[var(--text-secondary)]">
             {item.description}
-          </p>
-        )}
+          </p> : null}
       </div>
     </motion.div>
   );

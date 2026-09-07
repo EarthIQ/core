@@ -9,10 +9,11 @@
  */
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import ProfileSection from "@/components/settings/ProfileSection";
+
 import AppearanceSection from "@/components/settings/AppearanceSection";
 import NotificationPrefsSection from "@/components/settings/NotificationPrefsSection";
 import OrganizationSection from "@/components/settings/OrganizationSection";
+import ProfileSection from "@/components/settings/ProfileSection";
 
 const TABS = [
   { id: "profile", label: "Profile", icon: "👤" },
@@ -52,8 +53,8 @@ export default function SettingsPage() {
             </p>
           </div>
           <a
-            href="/dashboard"
             className="text-xs text-text-tertiary hover:text-text-primary no-underline"
+            href="/dashboard"
           >
             ← Back to dashboard
           </a>
@@ -63,8 +64,8 @@ export default function SettingsPage() {
           {TABS.map((t) => (
             <button
               key={t.id}
-              role="tab"
               aria-selected={tab === t.id}
+              role="tab"
               className={`px-4 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                 tab === t.id
                   ? "border-primary text-primary"

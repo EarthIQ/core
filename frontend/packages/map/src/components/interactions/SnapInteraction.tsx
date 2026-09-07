@@ -1,6 +1,9 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export interface SnapInteractionProps {
   /** Enable/disable snapping */
@@ -111,7 +114,7 @@ export const SnapInteraction: React.FC<SnapInteractionProps> = ({
   // Find closest vertex
   const findClosestVertex = useCallback((
     point: { x: number; y: number },
-    lngLat: { lng: number; lat: number }
+    _lngLat: { lng: number; lat: number }
   ): { point: number[]; distance: number } | null => {
     if (!map || !snapToVertex) return null;
 
@@ -125,7 +128,7 @@ export const SnapInteraction: React.FC<SnapInteractionProps> = ({
     let closest: { point: number[]; distance: number } | null = null;
 
     features.forEach(feature => {
-      const coords = getCoordinatesFromGeometry(feature.geometry as GeoJSON.Geometry);
+      const coords = getCoordinatesFromGeometry(feature.geometry);
       coords.forEach(coord => {
         const projected = map.project(coord as [number, number]);
         const distance = Math.sqrt(
@@ -159,7 +162,7 @@ export const SnapInteraction: React.FC<SnapInteractionProps> = ({
     let closest: { point: number[]; distance: number } | null = null;
 
     features.forEach(feature => {
-      const edges = getEdgesFromGeometry(feature.geometry as GeoJSON.Geometry);
+      const edges = getEdgesFromGeometry(feature.geometry);
       
       edges.forEach(edge => {
         const closestOnEdge = closestPointOnSegment(
@@ -186,7 +189,7 @@ export const SnapInteraction: React.FC<SnapInteractionProps> = ({
   // Find closest midpoint
   const findClosestMidpoint = useCallback((
     point: { x: number; y: number },
-    lngLat: { lng: number; lat: number }
+    _lngLat: { lng: number; lat: number }
   ): { point: number[]; distance: number } | null => {
     if (!map || !snapToMidpoint) return null;
 
@@ -200,7 +203,7 @@ export const SnapInteraction: React.FC<SnapInteractionProps> = ({
     let closest: { point: number[]; distance: number } | null = null;
 
     features.forEach(feature => {
-      const edges = getEdgesFromGeometry(feature.geometry as GeoJSON.Geometry);
+      const edges = getEdgesFromGeometry(feature.geometry);
       
       edges.forEach(edge => {
         const midpoint = [
@@ -256,7 +259,7 @@ export const SnapInteraction: React.FC<SnapInteractionProps> = ({
     for (const type of priority) {
       const result = snapFunctions[type]?.();
       if (result) {
-        return { point: result.point, type: type as any };
+        return { point: result.point, type: type };
       }
     }
 
@@ -308,7 +311,7 @@ function getEdgesFromGeometry(geometry: GeoJSON.Geometry): number[][][] {
 
   switch (geometry.type) {
     case 'LineString':
-      addEdges(geometry.coordinates as number[][]);
+      addEdges(geometry.coordinates);
       break;
     case 'Polygon':
       (geometry.coordinates as number[][][]).forEach(ring => addEdges(ring));
@@ -330,10 +333,10 @@ function getEdgesFromGeometry(geometry: GeoJSON.Geometry): number[][][] {
 function getCoordinatesFromGeometry(geometry: GeoJSON.Geometry): number[][] {
   switch (geometry.type) {
     case 'Point':
-      return [geometry.coordinates as number[]];
+      return [geometry.coordinates];
     case 'LineString':
     case 'MultiPoint':
-      return geometry.coordinates as number[][];
+      return geometry.coordinates;
     case 'Polygon':
     case 'MultiLineString':
       return (geometry.coordinates as number[][][]).flat();

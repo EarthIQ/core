@@ -1,6 +1,10 @@
-import React, { useEffect, useRef, useCallback } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import { useEffect, useRef, useCallback } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
+import type React from 'react';
+
 
 export interface GeolocateControlProps {
   /** Position on map */

@@ -7,7 +7,16 @@
  *
  * This component is 100% generic: it never references a specific module.
  */
-import { useState } from "react";
+import {
+  Alert,
+  Badge,
+  Button,
+  EmptyState,
+  Input,
+  Select,
+  Switch,
+  Textarea,
+} from "@packages/ui";
 import {
   Wrench,
   X,
@@ -24,16 +33,8 @@ import {
   Scale,
   Map as MapIcon,
 } from "lucide-react";
-import {
-  Alert,
-  Badge,
-  Button,
-  EmptyState,
-  Input,
-  Select,
-  Switch,
-  Textarea,
-} from "@packages/ui";
+import { useState } from "react";
+
 import { api, ApiError } from "@/lib/api";
 import {
   groupToolsByCategory,
@@ -65,12 +66,12 @@ const KNOWN_ICONS: Record<string, React.ComponentType<{ size?: number; className
   map: MapIcon,
 };
 
-function ToolIcon({ icon, size = 15 }: { icon?: string; size?: number }) {
+const ToolIcon = ({ icon, size = 15 }: { icon?: string; size?: number }) => {
   const name = (icon ?? "").trim().toLowerCase();
   const Comp = KNOWN_ICONS[name];
-  if (Comp) return <Comp size={size} className="text-primary shrink-0" />;
+  if (Comp) return <Comp className="text-primary shrink-0" size={size} />;
   if (name) return <span className="leading-none shrink-0" style={{ fontSize: size }}>{icon}</span>;
-  return <Wrench size={size} className="text-primary shrink-0" />;
+  return <Wrench className="text-primary shrink-0" size={size} />;
 }
 
 /* ──────────────────────────────────────────────────────────────────────── */
@@ -112,7 +113,7 @@ function stringifyResult(result: unknown): string | null {
   }
 }
 
-function ResultView({ result }: { result: unknown }) {
+const ResultView = ({ result }: { result: unknown }) => {
   if (typeof result === "string") {
     return (
       <div className="text-xs leading-relaxed whitespace-pre-wrap text-text-secondary">
@@ -138,16 +139,14 @@ function ResultView({ result }: { result: unknown }) {
           {stringifyResult(body)}
         </pre>
       )}
-      {notes && notes.length > 0 && (
-        <ul className="space-y-1">
+      {notes && notes.length > 0 ? <ul className="space-y-1">
           {notes.map((n, i) => (
             <li key={i} className="text-[11px] text-text-tertiary flex gap-1.5">
               <span className="text-primary">•</span>
-              <span>{n as string}</span>
+              <span>{n}</span>
             </li>
           ))}
-        </ul>
-      )}
+        </ul> : null}
     </div>
   );
 }
@@ -163,7 +162,7 @@ interface FieldControlProps {
   onChange: (value: unknown) => void;
 }
 
-function FieldControl({ input, value, disabled, onChange }: FieldControlProps) {
+const FieldControl = ({ input, value, disabled, onChange }: FieldControlProps) => {
   const label = input.label || input.key;
   const required = input.required !== false;
 
@@ -171,12 +170,12 @@ function FieldControl({ input, value, disabled, onChange }: FieldControlProps) {
     case "textarea":
       return (
         <Textarea
-          label={label}
-          description={input.description}
-          required={required}
-          disabled={disabled}
-          placeholder="Type here…"
           className="min-h-24 text-xs"
+          description={input.description}
+          disabled={disabled}
+          label={label}
+          placeholder="Type here…"
+          required={required}
           value={typeof value === "string" ? value : ""}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
             onChange(e.target.value)
@@ -186,10 +185,10 @@ function FieldControl({ input, value, disabled, onChange }: FieldControlProps) {
     case "select":
       return (
         <Select
+          disabled={disabled}
           label={label}
           options={(input.options ?? []).map((o) => ({ value: o, label: o }))}
           placeholder={input.options?.[0] ?? "Select…"}
-          disabled={disabled}
           value={String(value ?? "")}
           onChange={(v: string) => onChange(v)}
         />
@@ -198,24 +197,24 @@ function FieldControl({ input, value, disabled, onChange }: FieldControlProps) {
       return (
         <Switch
           checked={value === true}
-          disabled={disabled}
-          onChange={(checked: boolean) => onChange(checked)}
-          label={label}
           description={input.description}
+          disabled={disabled}
+          label={label}
           size="sm"
+          onChange={(checked: boolean) => onChange(checked)}
         />
       );
     case "number":
     case "integer":
       return (
         <Input
-          type="number"
-          step={input.type === "integer" ? "1" : "any"}
-          label={label}
           description={input.description}
-          required={required}
           disabled={disabled}
+          label={label}
           placeholder={input.default !== undefined ? String(input.default) : "0"}
+          required={required}
+          step={input.type === "integer" ? "1" : "any"}
+          type="number"
           value={value === "" ? "" : String(value ?? "")}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             const raw = e.target.value;
@@ -232,11 +231,11 @@ function FieldControl({ input, value, disabled, onChange }: FieldControlProps) {
     default:
       return (
         <Input
-          label={label}
           description={input.description}
-          required={required}
           disabled={disabled}
+          label={label}
           placeholder={input.default !== undefined ? String(input.default) : ""}
+          required={required}
           value={typeof value === "string" ? value : value === undefined ? "" : String(value)}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onChange(e.target.value)
@@ -250,14 +249,14 @@ function FieldControl({ input, value, disabled, onChange }: FieldControlProps) {
 /*  Main panel                                                               */
 /* ──────────────────────────────────────────────────────────────────────── */
 
-export function ToolboxPanel({
+export const ToolboxPanel = ({
   isOpen,
   onClose,
   mapRef,
   mapReady,
   basemap,
   layers = [],
-}: ToolboxPanelProps) {
+}: ToolboxPanelProps) => {
   const { tools, isLoading, error } = useModuleTools();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [values, setValues] = useState<Record<string, unknown>>({});
@@ -337,39 +336,39 @@ export function ToolboxPanel({
   return (
     <div
       className="absolute top-14 right-0 bottom-10 z-30 flex flex-col bg-surface border-l border-border-secondary shadow-2xl animate-slide-in-right"
-      style={{ width: TOOLBOX_PANEL_WIDTH }}
       id="map-toolbox-panel"
+      style={{ width: TOOLBOX_PANEL_WIDTH }}
     >
       {/* ── Header (back button lives here in the detail view) ── */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-border-secondary shrink-0">
         {selectedTool ? (
           <button
+            aria-label="Back to all tools"
+            className="flex items-center gap-1.5 min-w-0 text-sm font-semibold text-text-primary hover:text-primary transition-colors"
             type="button"
             onClick={goBack}
-            className="flex items-center gap-1.5 min-w-0 text-sm font-semibold text-text-primary hover:text-primary transition-colors"
-            aria-label="Back to all tools"
           >
-            <ChevronLeft size={16} className="shrink-0" />
+            <ChevronLeft className="shrink-0" size={16} />
             <span className="truncate">All tools</span>
           </button>
         ) : (
           <div className="flex items-center gap-2">
             <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Wrench size={14} className="text-primary" />
+              <Wrench className="text-primary" size={14} />
             </span>
             <span className="text-sm font-semibold text-text-primary">Toolbox</span>
             {!isLoading && tools.length > 0 && (
-              <Badge variant="default" size="sm">
+              <Badge size="sm" variant="default">
                 {tools.length}
               </Badge>
             )}
           </div>
         )}
         <button
-          type="button"
-          onClick={onClose}
           aria-label="Close toolbox"
           className="w-7 h-7 rounded-lg flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors"
+          type="button"
+          onClick={onClose}
         >
           <X size={15} />
         </button>
@@ -383,7 +382,7 @@ export function ToolboxPanel({
             <div className="px-4 py-3.5 border-b border-border-secondary">
               {/* Module tag + category at the top */}
               <div className="flex items-center gap-2 mb-2.5">
-                <Badge variant="default" size="sm" className="uppercase tracking-wider">
+                <Badge className="uppercase tracking-wider" size="sm" variant="default">
                   {selectedTool.moduleName.replace(/-module$/i, "")}
                 </Badge>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-text-quaternary">
@@ -402,11 +401,9 @@ export function ToolboxPanel({
                 </div>
               </div>
               {/* Description spans the full panel width */}
-              {selectedTool.description && (
-                <div className="mt-2.5 text-[11px] leading-relaxed text-text-secondary">
+              {selectedTool.description ? <div className="mt-2.5 text-[11px] leading-relaxed text-text-secondary">
                   {selectedTool.description}
-                </div>
-              )}
+                </div> : null}
             </div>
 
             <div className="p-4 space-y-4">
@@ -418,25 +415,21 @@ export function ToolboxPanel({
               {(selectedTool.inputs ?? []).map((input) => (
                 <FieldControl
                   key={input.key}
+                  disabled={running}
                   input={input}
                   value={values[input.key]}
-                  disabled={running}
                   onChange={(v) => setField(input.key, v)}
                 />
               ))}
 
-              {running && (
-                <div className="flex items-center gap-2 text-[11px] text-text-tertiary">
-                  <Loader2 size={13} className="animate-spin" />
+              {running ? <div className="flex items-center gap-2 text-[11px] text-text-tertiary">
+                  <Loader2 className="animate-spin" size={13} />
                   Running tool…
-                </div>
-              )}
+                </div> : null}
 
-              {runError && (
-                <Alert variant="error" title="Tool failed" className="text-xs">
+              {runError ? <Alert className="text-xs" title="Tool failed" variant="error">
                   {runError}
-                </Alert>
-              )}
+                </Alert> : null}
 
               {!running && result !== null && (
                 <div className="rounded-xl border border-border-secondary bg-surface-hover/30 p-3 space-y-2">
@@ -449,9 +442,9 @@ export function ToolboxPanel({
             </div>
 
             <div className="px-4 pb-4">
-              <Button variant="primary" className="w-full" disabled={running} onClick={runTool}>
+              <Button className="w-full" disabled={running} variant="primary" onClick={runTool}>
                 {running ? (
-                  <Loader2 size={14} className="animate-spin" />
+                  <Loader2 className="animate-spin" size={14} />
                 ) : (
                   <Play size={14} />
                 )}
@@ -462,28 +455,24 @@ export function ToolboxPanel({
         ) : (
           /* ─────────── Tool list (grouped by category) ─────────── */
           <>
-            {isLoading && (
-              <div className="flex items-center gap-2 px-4 py-6 text-[11px] text-text-tertiary">
-                <Loader2 size={13} className="animate-spin" />
+            {isLoading ? <div className="flex items-center gap-2 px-4 py-6 text-[11px] text-text-tertiary">
+                <Loader2 className="animate-spin" size={13} />
                 Discovering tools from modules…
-              </div>
-            )}
+              </div> : null}
 
-            {!isLoading && error && (
-              <div className="p-4">
-                <Alert variant="error" title="Could not load tools" className="text-xs">
+            {!isLoading && error ? <div className="p-4">
+                <Alert className="text-xs" title="Could not load tools" variant="error">
                   {error}
                 </Alert>
-              </div>
-            )}
+              </div> : null}
 
             {!isLoading && !error && groups.length === 0 && (
               <div className="px-2 pt-4">
                 <EmptyState
-                  size="sm"
-                  icon={<Wrench size={22} className="text-text-tertiary" />}
-                  title="No tools yet"
                   description="Modules can surface tools here by exporting a valid `tools` array from their frontend entry - the toolbox picks them up automatically, no core changes needed."
+                  icon={<Wrench className="text-text-tertiary" size={22} />}
+                  size="sm"
+                  title="No tools yet"
                 />
               </div>
             )}
@@ -502,9 +491,9 @@ export function ToolboxPanel({
                   {catTools.map((tool) => (
                     <button
                       key={tool.id}
+                      className="w-full flex items-start gap-3 px-4 py-2.5 text-left hover:bg-surface-hover/60 active:bg-surface-hover transition-colors"
                       type="button"
                       onClick={() => selectTool(tool)}
-                      className="w-full flex items-start gap-3 px-4 py-2.5 text-left hover:bg-surface-hover/60 active:bg-surface-hover transition-colors"
                     >
                       <span className="mt-0.5 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <ToolIcon icon={tool.icon} size={15} />
@@ -513,13 +502,11 @@ export function ToolboxPanel({
                         <span className="block text-xs font-semibold text-text-primary truncate">
                           {tool.label}
                         </span>
-                        {tool.description && (
-                          <span className="block text-[11px] leading-snug text-text-tertiary mt-0.5 line-clamp-2">
+                        {tool.description ? <span className="block text-[11px] leading-snug text-text-tertiary mt-0.5 line-clamp-2">
                             {tool.description}
-                          </span>
-                        )}
+                          </span> : null}
                       </span>
-                      <Badge variant="default" size="sm" className="shrink-0 mt-0.5">
+                      <Badge className="shrink-0 mt-0.5" size="sm" variant="default">
                         {tool.moduleName.replace(/-module$/i, "")}
                       </Badge>
                     </button>

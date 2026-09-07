@@ -6,10 +6,12 @@
 /*  history covers drawn shapes alongside annotations) and maps the         */
 /*  MapActionBar's draw variants to TerraDraw modes.                        */
 /* ──────────────────────────────────────────────────────────────────────── */
-import { useCallback, useEffect } from "react";
 import { useTerraDraw } from "@packages/map";
+import { useCallback, useEffect } from "react";
+
 import { useMapEditor } from "@/lib/mapEditor/store";
-import type { DrawnFeature } from "@/lib/mapEditor/types";
+
+import type { DrawnFeature as _DrawnFeature } from "@/lib/mapEditor/types";
 
 export interface UseMapDrawing {
   /** True once the TerraDraw engine is live on the map. */
@@ -22,7 +24,11 @@ export interface UseMapDrawing {
   featureCount: number;
 }
 
-export function useMapDrawing(map: any | null, mapReady: boolean): UseMapDrawing {
+export function useMapDrawing(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  map: any,
+  mapReady: boolean
+): UseMapDrawing {
   const drawnFeatures = useMapEditor((s) => s.drawnFeatures);
   const activeTool = useMapEditor((s) => s.activeTool);
 
@@ -34,15 +40,15 @@ export function useMapDrawing(map: any | null, mapReady: boolean): UseMapDrawing
         const store = useMapEditor.getState();
         if (action === "delete") {
           // Discrete user action → history entry
-          store.commitDrawnFeatures(features as DrawnFeature[]);
+          store.commitDrawnFeatures(features);
         } else {
           // Live edits / in-flight creates sync silently (finish commits them)
-          store.syncDrawnFeatures(features as DrawnFeature[]);
+          store.syncDrawnFeatures(features);
         }
       },
       onFinish: (features) => {
         const store = useMapEditor.getState();
-        store.commitDrawnFeatures(features as DrawnFeature[]);
+        store.commitDrawnFeatures(features);
         // Back to select after a shape is committed (same UX as annotations)
         store.setActiveTool({ groupId: "navigate", variantId: "select" });
       },

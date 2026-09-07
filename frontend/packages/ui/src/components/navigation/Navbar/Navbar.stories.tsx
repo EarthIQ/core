@@ -1,6 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { Navbar } from './Navbar';
 import { Button } from '../../primitives/Button/Button';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta<typeof Navbar> = {
   title: 'Navigation/Navbar',
@@ -32,19 +33,19 @@ type Story = StoryObj<typeof Navbar>;
 // Icon components for demos
 const HomeIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
   </svg>
 );
 
 const InfoIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
   </svg>
 );
 
 const PhoneIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+    <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
   </svg>
 );
 
@@ -100,10 +101,10 @@ export const WithRightContent: Story = {
     items: basicItems,
     rightContent: (
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm">
+        <Button size="sm" variant="ghost">
           Login
         </Button>
-        <Button variant="primary" size="sm">
+        <Button size="sm" variant="primary">
           Sign Up
         </Button>
       </div>
@@ -124,7 +125,7 @@ export const WithIcons: Story = {
     logo: <Logo />,
     items: itemsWithIcons,
     rightContent: (
-      <Button variant="primary" size="sm">
+      <Button size="sm" variant="primary">
         Get Started
       </Button>
     ),
@@ -145,7 +146,7 @@ export const Transparent: Story = {
     items: basicItems,
     transparent: true,
     rightContent: (
-      <Button variant="outline" size="sm">
+      <Button size="sm" variant="outline">
         Contact Us
       </Button>
     ),
@@ -175,7 +176,7 @@ export const NonSticky: Story = {
     items: basicItems,
     sticky: false,
     rightContent: (
-      <Button variant="primary" size="sm">
+      <Button size="sm" variant="primary">
         Sign Up
       </Button>
     ),
@@ -209,10 +210,10 @@ export const MobileResponsive: Story = {
     items: basicItems,
     rightContent: (
       <div className="flex flex-col sm:flex-row gap-2">
-        <Button variant="ghost" size="sm" className="w-full sm:w-auto">
+        <Button className="w-full sm:w-auto" size="sm" variant="ghost">
           Login
         </Button>
-        <Button variant="primary" size="sm" className="w-full sm:w-auto">
+        <Button className="w-full sm:w-auto" size="sm" variant="primary">
           Sign Up
         </Button>
       </div>
@@ -252,7 +253,7 @@ export const ManyItems: Story = {
       { key: 'blog', label: 'Blog', href: '#' },
     ],
     rightContent: (
-      <Button variant="primary" size="sm">
+      <Button size="sm" variant="primary">
         Get Started
       </Button>
     ),
@@ -272,7 +273,7 @@ export const Minimal: Story = {
     logo: <Logo />,
     items: [],
     rightContent: (
-      <Button variant="primary" size="sm">
+      <Button size="sm" variant="primary">
         Download App
       </Button>
     ),

@@ -15,10 +15,10 @@ export default function ConfirmDeleteModal({
       onClick={onCancel}
     >
       <div
-        className="w-full max-w-sm bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
         aria-modal="true"
+        className="w-full max-w-sm bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden"
+        role="dialog"
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 flex flex-col gap-4">
           <div className="flex items-center gap-3">
@@ -35,12 +35,12 @@ export default function ConfirmDeleteModal({
             </div>
           </div>
           <div className="flex gap-3 justify-end">
-            <button onClick={onCancel} className="btn btn-secondary btn-md">
+            <button className="btn btn-secondary btn-md" onClick={onCancel}>
               Cancel
             </button>
             <button
-              onClick={onConfirm}
               className="btn btn-md bg-error text-white hover:bg-error/90"
+              onClick={onConfirm}
             >
               Delete
             </button>

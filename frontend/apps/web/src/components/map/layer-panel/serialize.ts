@@ -1,9 +1,9 @@
-import type { TreeNode, FolderTreeNode, LayerTreeNode } from "./types";
+import type { TreeNode } from "./types";
 
 export function toMapLayerItems(nodes: TreeNode[]): any[] {
   return nodes.map((n) => {
     if (n.kind === "folder") {
-      const f = n as FolderTreeNode;
+      const f = n;
       return {
         id: f.id,
         name: f.name,
@@ -13,7 +13,7 @@ export function toMapLayerItems(nodes: TreeNode[]): any[] {
         collapsed: f.collapsed,
       };
     }
-    const l = n as LayerTreeNode;
+    const l = n;
     return {
       id: l.id,
       name: l.name,
@@ -48,7 +48,7 @@ export function fromMapLayerItems(items: any[]): TreeNode[] {
         parentId: raw.parentId ?? null,
         order: raw.order ?? i,
         collapsed: !!raw.collapsed,
-      } as FolderTreeNode;
+      };
     }
     return {
       id: raw.id,
@@ -69,6 +69,6 @@ export function fromMapLayerItems(items: any[]): TreeNode[] {
       brightness: raw.style?.brightness ?? raw.brightness,
       contrast: raw.style?.contrast ?? raw.contrast,
       source: raw.source,
-    } as LayerTreeNode;
+    };
   });
 }

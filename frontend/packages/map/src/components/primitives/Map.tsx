@@ -1,3 +1,8 @@
+import { Deck } from "@deck.gl/core";
+import { cn } from "@packages/ui";
+import { setWorkerUrl ,type  Map as MapLibreMap,type  StyleSpecification } from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import React, {
   useRef,
   useEffect,
@@ -10,13 +15,8 @@ import React, {
   useContext,
   type DragEvent,
 } from "react";
-import * as maplibregl from "maplibre-gl";
-import { setWorkerUrl } from "maplibre-gl";
-import type { Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
-import { Deck } from "@deck.gl/core";
+
 import { MapContext, type MapContextValue } from "../../context/MapContext";
-import { cn } from "@packages/ui";
-import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 
 setWorkerUrl(workerUrl);
 
@@ -257,14 +257,14 @@ const DefaultFileDropOverlay: React.FC<{ fileCount: number }> = memo(
           <svg
             className="h-8 w-8 animate-bounce text-blue-500"
             fill="none"
-            viewBox="0 0 24 24"
             stroke="currentColor"
+            viewBox="0 0 24 24"
           >
             <path
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
             />
           </svg>
         </div>
@@ -311,7 +311,7 @@ export const Map = memo(
         useDeckGL = false,
         deckLayers = [],
         interactive = true,
-        projection = "mercator",
+        _projection = "mercator",
         minZoom = 0,
         maxZoom = 24,
         maxBounds,
@@ -605,7 +605,7 @@ export const Map = memo(
               callbacksRef.current.onLoad?.(map!);
             };
 
-            const handleError = (e: maplibregl.ErrorEvent) => {
+            const _handleError = (e: maplibregl.ErrorEvent) => {
               const errorMessage = e.error?.message || "";
               if (
                 errorMessage.includes("aborted") ||
@@ -768,14 +768,14 @@ export const Map = memo(
           <div
             ref={containerRef}
             className={cn("map-container relative h-full w-full", className)}
-            style={containerStyle}
             role="application"
-            aria-label={ariaLabel}
-            // ─── File Drop Event Handlers ────────────────
-            onDragEnter={handleDragEnter}
+            style={containerStyle}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
+            aria-label={ariaLabel}
+            // ─── File Drop Event Handlers ────────────────
+            onDragEnter={handleDragEnter}
           >
             {/* MapLibre GL Container */}
             <div
@@ -784,39 +784,37 @@ export const Map = memo(
             />
 
             {/* Deck.gl Canvas */}
-            {useDeckGL && (
-              <canvas
+            {useDeckGL ? <canvas
                 ref={deckCanvasRef}
                 className="pointer-events-none absolute inset-0 h-full w-full"
-              />
-            )}
+              /> : null}
 
             {/* Loading indicator */}
             {!isLoaded && (
               <div
+                aria-label="Loading map"
+                aria-live="polite"
+                role="status"
                 className={cn(
                   "absolute inset-0 z-10",
                   "flex items-center justify-center",
                   "bg-[var(--backdrop)]",
                   "text-[var(--text-secondary)]"
                 )}
-                role="status"
-                aria-live="polite"
-                aria-label="Loading map"
               >
                 {loadingIcon ? (
                   loadingIcon
                 ) : (
                   <>
                     <img
-                      src="/logo_dark.svg"
                       alt="Loading map"
                       className="h-48 w-48 animate-pulse dark:hidden"
+                      src="/logo_dark.svg"
                     />
                     <img
-                      src="/logo.svg"
                       alt="Loading map"
                       className="hidden h-48 w-48 animate-pulse dark:block"
+                      src="/logo.svg"
                     />
                   </>
                 )}
@@ -824,27 +822,25 @@ export const Map = memo(
             )}
 
             {/* File Drop Overlay */}
-            {fileDropEnabled && isDragOver && (
-              <div
+            {fileDropEnabled && isDragOver ? <div
+                aria-live="assertive"
+                role="status"
                 className={cn(
                   "pointer-events-none absolute inset-0 z-50",
                   "flex items-center justify-center",
                   "bg-blue-500/10 backdrop-blur-[2px]",
                   "transition-all duration-200"
                 )}
-                aria-live="assertive"
-                role="status"
               >
                 {typeof fileDrop?.overlay === "function"
                   ? fileDrop.overlay(fileDropState)
                   : (fileDrop?.overlay ?? (
                       <DefaultFileDropOverlay fileCount={dragFileCount} />
                     ))}
-              </div>
-            )}
+              </div> : null}
 
             {/* Children only render when loaded */}
-            {isLoaded && children}
+            {isLoaded ? children : null}
           </div>
         </MapContext.Provider>
       );

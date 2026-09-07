@@ -11,8 +11,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { ChartContainer } from "../ChartContainer";
+
 import { getColor, generateGradientId } from "../../utils/colors";
+import { ChartContainer } from "../ChartContainer";
+
 import type { ComposedChartProps } from "../../types";
 
 export const ComposedChart: React.FC<ComposedChartProps> = ({
@@ -48,20 +50,20 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
 
   return (
     <ChartContainer
-      title={title}
+      className={className}
+      data={data}
       description={description}
-      toolbar={toolbar}
-      loading={loading}
       empty={empty || data.length === 0}
       error={error}
-      data={data}
       exportFilename={exportFilename}
-      className={className}
+      loading={loading}
+      title={title}
+      toolbar={toolbar}
     >
       <div style={{ width, height }}>
         <ResponsiveContainer
-          width="100%"
           height="100%"
+          width="100%"
         >
           <RechartsComposedChart
             data={data}
@@ -90,8 +92,8 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
                       key={gradientId}
                       id={gradientId}
                       x1="0"
-                      y1="0"
                       x2="0"
+                      y1="0"
                       y2="1"
                     >
                       <stop
@@ -109,75 +111,67 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
                 })}
             </defs>
 
-            {showGrid && (
-              <CartesianGrid
-                strokeDasharray="3 3"
+            {showGrid ? <CartesianGrid
                 className="stroke-gray-200 dark:stroke-gray-700"
                 horizontal={gridType !== "vertical"}
+                strokeDasharray="3 3"
                 vertical={gridType !== "horizontal"}
-              />
-            )}
+              /> : null}
 
             {!xAxis?.hide && (
               <XAxis
-                dataKey="name"
-                tickLine={false}
                 axisLine={false}
-                tickMargin={8}
-                tickFormatter={xAxis?.tickFormatter}
-                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
+                dataKey="name"
+                tick={{ fill: "currentColor", fontSize: 12 }}
+                tickFormatter={xAxis?.tickFormatter}
+                tickLine={false}
+                tickMargin={8}
               />
             )}
 
             {!yAxis?.hide && (
               <YAxis
-                yAxisId="left"
-                tickLine={false}
                 axisLine={false}
-                tickMargin={8}
-                tickFormatter={yAxis?.tickFormatter}
-                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
                 domain={yAxis?.domain}
+                tick={{ fill: "currentColor", fontSize: 12 }}
+                tickFormatter={yAxis?.tickFormatter}
+                tickLine={false}
+                tickMargin={8}
+                yAxisId="left"
               />
             )}
 
-            {secondaryYAxis && !secondaryYAxis.hide && (
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                tickLine={false}
+            {secondaryYAxis && !secondaryYAxis.hide ? <YAxis
                 axisLine={false}
-                tickMargin={8}
-                tickFormatter={secondaryYAxis.tickFormatter}
-                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
                 domain={secondaryYAxis.domain}
-              />
-            )}
+                orientation="right"
+                tick={{ fill: "currentColor", fontSize: 12 }}
+                tickFormatter={secondaryYAxis.tickFormatter}
+                tickLine={false}
+                tickMargin={8}
+                yAxisId="right"
+              /> : null}
 
-            {showTooltip && (
-              <Tooltip
+            {showTooltip ? <Tooltip
+                labelStyle={{ fontWeight: 600, marginBottom: 4 }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover, 0 0% 100%))",
                   border: "1px solid hsl(var(--border, 220 13% 91%))",
                   borderRadius: "8px",
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-                labelStyle={{ fontWeight: 600, marginBottom: 4 }}
-              />
-            )}
+              /> : null}
 
-            {showLegend && (
-              <Legend
-                verticalAlign="bottom"
+            {showLegend ? <Legend
                 height={36}
-                iconType="circle"
                 iconSize={8}
+                iconType="circle"
+                verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              />
-            )}
+              /> : null}
 
             {elements.map((element, index) => {
               const color = element.config.color || getColor(index, colors);
@@ -187,45 +181,46 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
                   return (
                     <Bar
                       key={element.config.dataKey}
-                      yAxisId="left"
-                      dataKey={element.config.dataKey}
-                      name={element.config.name || element.config.dataKey}
-                      fill={color}
-                      radius={element.config.radius ?? [4, 4, 0, 0]}
-                      isAnimationActive={animate}
                       animationDuration={animationDuration}
+                      dataKey={element.config.dataKey}
+                      fill={color}
+                      isAnimationActive={animate}
+                      name={element.config.name || element.config.dataKey}
+                      radius={element.config.radius ?? [4, 4, 0, 0]}
+                      yAxisId="left"
                     />
                   );
                 case "line":
                   return (
                     <Line
                       key={element.config.dataKey}
-                      yAxisId={secondaryYAxis ? "right" : "left"}
-                      type="monotone"
+                      animationDuration={animationDuration}
                       dataKey={element.config.dataKey}
+                      dot={element.config.showDots !== false}
+                      isAnimationActive={animate}
                       name={element.config.name || element.config.dataKey}
                       stroke={color}
                       strokeWidth={element.config.strokeWidth || 2}
-                      dot={element.config.showDots !== false}
-                      isAnimationActive={animate}
-                      animationDuration={animationDuration}
+                      type="monotone"
+                      yAxisId={secondaryYAxis ? "right" : "left"}
                     />
                   );
-                case "area":
+                case "area": {
                   const gradientId = generateGradientId(chartId, index);
                   return (
                     <Area
                       key={element.config.dataKey}
-                      yAxisId="left"
-                      type="monotone"
+                      animationDuration={animationDuration}
                       dataKey={element.config.dataKey}
-                      name={element.config.name || element.config.dataKey}
-                      stroke={color}
                       fill={`url(#${gradientId})`}
                       isAnimationActive={animate}
-                      animationDuration={animationDuration}
+                      name={element.config.name || element.config.dataKey}
+                      stroke={color}
+                      type="monotone"
+                      yAxisId="left"
                     />
                   );
+                }
                 default:
                   return null;
               }

@@ -1,4 +1,5 @@
 import React, { type ComponentType, type ErrorInfo } from 'react';
+
 import { ErrorBoundary } from './ErrorBoundary';
 import { ErrorFallback } from './ErrorFallback';
 

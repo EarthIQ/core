@@ -11,7 +11,7 @@
     "build": "vite build",
     "analyze": "vite-bundle-visualizer",
     "build-storybook": "storybook build",
-    "lint": "eslint . --ext ts,tsx",
+    "lint": "eslint .",
     "storybook": "storybook dev -p 6006"
   },
   "dependencies": {

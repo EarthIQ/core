@@ -1,7 +1,12 @@
-import React, { useEffect, useId, useState, useCallback } from 'react';
-import { useMap } from '../../hooks/useMap';
 import { GridLayer as DeckGridLayer } from '@deck.gl/aggregation-layers';
 import * as turf from '@turf/turf';
+import { useEffect, useId, useState, useCallback as _useCallback } from 'react';
+
+import { useMap } from '../../hooks/useMap';
+
+import type React from 'react';
+
+
 
 export interface GridLayerProps {
   /** Unique layer ID */

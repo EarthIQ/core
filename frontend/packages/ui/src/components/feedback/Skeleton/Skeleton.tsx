@@ -1,4 +1,5 @@
 import React from "react";
+
 import { cn } from "../../../utils/cn";
 
 interface SkeletonProps {
@@ -10,14 +11,14 @@ interface SkeletonProps {
   animate?: boolean;
 }
 
-export function Skeleton({
+export const Skeleton = ({
   className,
   variant = "text",
   width,
   height,
   lines = 1,
   animate = true,
-}: SkeletonProps) {
+}: SkeletonProps) => {
   const baseClasses = cn(
     "skeleton",
     !animate && "bg-[var(--bg-tertiary)]",
@@ -58,53 +59,53 @@ export function Skeleton({
 }
 
 // Pre-built skeleton patterns
-export function SkeletonCard({ className }: { className?: string }) {
+export const SkeletonCard = ({ className }: { className?: string }) => {
   return (
     <div className={cn("card space-y-4 p-6", className)}>
       <div className="flex items-center space-x-4">
         <Skeleton
+          height={48}
           variant="circular"
           width={48}
-          height={48}
         />
         <div className="flex-1 space-y-2">
           <Skeleton
-            width="60%"
             height={16}
+            width="60%"
           />
           <Skeleton
-            width="40%"
             height={12}
+            width="40%"
           />
         </div>
       </div>
       <Skeleton
-        variant="text"
         lines={3}
+        variant="text"
       />
       <div className="flex gap-2">
         <Skeleton
+          height={32}
           variant="rounded"
           width={80}
-          height={32}
         />
         <Skeleton
+          height={32}
           variant="rounded"
           width={80}
-          height={32}
         />
       </div>
     </div>
   );
 }
 
-export function SkeletonTable({
+export const SkeletonTable = ({
   rows = 5,
   cols = 4,
 }: {
   rows?: number;
   cols?: number;
-}) {
+}) => {
   return (
     <div className="space-y-3">
       {/* Header */}
@@ -112,8 +113,8 @@ export function SkeletonTable({
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton
             key={i}
-            width={`${100 / cols}%`}
             height={16}
+            width={`${100 / cols}%`}
           />
         ))}
       </div>
@@ -126,8 +127,8 @@ export function SkeletonTable({
           {Array.from({ length: cols }).map((_, colIndex) => (
             <Skeleton
               key={colIndex}
-              width={`${100 / cols}%`}
               height={14}
+              width={`${100 / cols}%`}
             />
           ))}
         </div>

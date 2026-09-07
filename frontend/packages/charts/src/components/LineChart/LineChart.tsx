@@ -10,8 +10,10 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import { ChartContainer } from "../ChartContainer";
+
 import { getColor } from "../../utils/colors";
+import { ChartContainer } from "../ChartContainer";
+
 import type { LineChartProps } from "../../types";
 
 const defaultTickFormatter = (value: any) => {
@@ -59,20 +61,20 @@ export const LineChart: React.FC<LineChartProps> = ({
 
   return (
     <ChartContainer
-      title={title}
+      className={className}
+      data={data}
       description={description}
-      toolbar={toolbar}
-      loading={loading}
       empty={empty || data.length === 0}
       error={error}
-      data={data}
       exportFilename={exportFilename}
-      className={className}
+      loading={loading}
+      title={title}
+      toolbar={toolbar}
     >
       <div style={{ width, height }}>
         <ResponsiveContainer
-          width="100%"
           height="100%"
+          width="100%"
         >
           <RechartsLineChart
             data={data}
@@ -90,24 +92,22 @@ export const LineChart: React.FC<LineChartProps> = ({
               if (payload) onDataPointClick(payload, index);
             }}
           >
-            {showGrid && (
-              <CartesianGrid
-                strokeDasharray="3 3"
+            {showGrid ? <CartesianGrid
                 className="stroke-gray-200 dark:stroke-gray-700"
                 horizontal={gridType !== "vertical"}
+                strokeDasharray="3 3"
                 vertical={gridType !== "horizontal"}
-              />
-            )}
+              /> : null}
 
             {!xAxis?.hide && (
               <XAxis
-                dataKey="name"
-                tickLine={false}
                 axisLine={false}
-                tickMargin={8}
-                tickFormatter={xAxis?.tickFormatter}
-                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
+                dataKey="name"
+                tick={{ fill: "currentColor", fontSize: 12 }}
+                tickFormatter={xAxis?.tickFormatter}
+                tickLine={false}
+                tickMargin={8}
                 label={
                   xAxis?.label
                     ? {
@@ -124,14 +124,14 @@ export const LineChart: React.FC<LineChartProps> = ({
 
             {!yAxis?.hide && (
               <YAxis
-                tickLine={false}
                 axisLine={false}
-                tickMargin={4}
-                tickFormatter={yAxis?.tickFormatter || defaultTickFormatter}
-                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
                 domain={yAxis?.domain}
+                tick={{ fill: "currentColor", fontSize: 12 }}
                 tickCount={yAxis?.tickCount}
+                tickFormatter={yAxis?.tickFormatter || defaultTickFormatter}
+                tickLine={false}
+                tickMargin={4}
                 width={yAxis?.label ? 50 : 40}
                 label={
                   yAxis?.label
@@ -149,62 +149,58 @@ export const LineChart: React.FC<LineChartProps> = ({
               />
             )}
 
-            {showTooltip && (
-              <Tooltip
+            {showTooltip ? <Tooltip
+                cursor={tooltipConfig.cursor ?? { stroke: "#ccc" }}
+                formatter={tooltipConfig.formatter}
+                labelFormatter={tooltipConfig.labelFormatter}
+                labelStyle={{ fontWeight: 600, marginBottom: 4 }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover, 0 0% 100%))",
                   border: "1px solid hsl(var(--border, 220 13% 91%))",
                   borderRadius: "8px",
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-                labelStyle={{ fontWeight: 600, marginBottom: 4 }}
-                formatter={tooltipConfig.formatter}
-                labelFormatter={tooltipConfig.labelFormatter}
-                cursor={tooltipConfig.cursor ?? { stroke: "#ccc" }}
-              />
-            )}
+              /> : null}
 
-            {showLegend && (
-              <Legend
-                verticalAlign={legendPosition === "top" ? "top" : "bottom"}
+            {showLegend ? <Legend
                 height={36}
-                iconType="circle"
                 iconSize={8}
+                iconType="circle"
+                verticalAlign={legendPosition === "top" ? "top" : "bottom"}
                 wrapperStyle={{
                   paddingTop: legendPosition === "bottom" ? 16 : 0,
                 }}
-              />
-            )}
+              /> : null}
 
             {referenceLines.map((refLine, index) => (
               <ReferenceLine
                 key={index}
-                y={refLine.y}
-                x={refLine.x}
+                label={refLine.label}
                 stroke={refLine.color || "#666"}
                 strokeDasharray={refLine.strokeDasharray || "3 3"}
-                label={refLine.label}
+                x={refLine.x}
+                y={refLine.y}
               />
             ))}
 
             {lines.map((line, index) => (
               <Line
                 key={line.dataKey}
-                type={curved ? "monotone" : "linear"}
+                activeDot={{ r: (line.dotSize || 3) + 3, strokeWidth: 2 }}
+                animationDuration={animationDuration}
+                connectNulls={connectNulls}
                 dataKey={line.dataKey}
+                isAnimationActive={animate}
                 name={line.name || line.dataKey}
                 stroke={line.color || getColor(index, colors)}
-                strokeWidth={line.strokeWidth || 2}
                 strokeDasharray={line.strokeDasharray}
+                strokeWidth={line.strokeWidth || 2}
+                type={curved ? "monotone" : "linear"}
                 dot={
                   line.showDots !== false
                     ? { r: line.dotSize || 3, strokeWidth: 2 }
                     : false
                 }
-                activeDot={{ r: (line.dotSize || 3) + 3, strokeWidth: 2 }}
-                isAnimationActive={animate}
-                animationDuration={animationDuration}
-                connectNulls={connectNulls}
               />
             ))}
           </RechartsLineChart>

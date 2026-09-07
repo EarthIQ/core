@@ -1,5 +1,6 @@
-import React from "react";
 import { motion } from "framer-motion";
+import React from "react";
+
 import { cn } from "../../../utils/cn";
 
 interface SpinnerProps {
@@ -23,17 +24,17 @@ const variantClasses = {
   secondary: "border-[var(--secondary)]/30 border-t-[var(--secondary)]",
 };
 
-export function Spinner({
+export const Spinner = ({
   size = "md",
   variant = "default",
   className,
   label = "Loading",
-}: SpinnerProps) {
+}: SpinnerProps) => {
   return (
     <div
+      aria-label={label}
       className="inline-flex items-center justify-center"
       role="status"
-      aria-label={label}
     >
       <motion.div
         animate={{ rotate: 360 }}
@@ -51,25 +52,26 @@ export function Spinner({
 }
 
 // Dots Spinner Variant
-export function DotsSpinner({
+export const DotsSpinner = ({
   size = "md",
   className,
 }: {
   size?: "sm" | "md" | "lg";
   className?: string;
-}) {
+}) => {
   const dotSizes = { sm: "w-1.5 h-1.5", md: "w-2 h-2", lg: "w-3 h-3" };
   const gaps = { sm: "gap-1", md: "gap-1.5", lg: "gap-2" };
 
   return (
     <div
+      aria-label="Loading"
       className={cn("inline-flex items-center", gaps[size], className)}
       role="status"
-      aria-label="Loading"
     >
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
+          className={cn("rounded-full bg-[var(--primary)]", dotSizes[size])}
           animate={{
             scale: [1, 1.2, 1],
             opacity: [0.5, 1, 0.5],
@@ -79,7 +81,6 @@ export function DotsSpinner({
             repeat: Infinity,
             delay: i * 0.15,
           }}
-          className={cn("rounded-full bg-[var(--primary)]", dotSizes[size])}
         />
       ))}
       <span className="sr-only">Loading</span>

@@ -8,8 +8,10 @@ import {
   ResponsiveContainer,
   Sector,
 } from "recharts";
-import { ChartContainer } from "../ChartContainer";
+
 import { getColor } from "../../utils/colors";
+import { ChartContainer } from "../ChartContainer";
+
 import type { PieChartProps } from "../../types";
 
 const renderActiveShape = (props: any) => {
@@ -21,20 +23,20 @@ const renderActiveShape = (props: any) => {
       <Sector
         cx={cx}
         cy={cy}
+        endAngle={endAngle}
+        fill={fill}
         innerRadius={innerRadius}
         outerRadius={outerRadius + 6}
         startAngle={startAngle}
-        endAngle={endAngle}
-        fill={fill}
       />
       <Sector
         cx={cx}
         cy={cy}
-        startAngle={startAngle}
         endAngle={endAngle}
+        fill={fill}
         innerRadius={outerRadius + 8}
         outerRadius={outerRadius + 10}
-        fill={fill}
+        startAngle={startAngle}
       />
     </g>
   );
@@ -91,38 +93,38 @@ export const PieChart: React.FC<PieChartProps> = ({
 
   return (
     <ChartContainer
-      title={title}
+      className={className}
+      data={data}
       description={description}
-      toolbar={toolbar}
-      loading={loading}
       empty={empty || data.length === 0}
       error={error}
-      data={data}
       exportFilename={exportFilename}
-      className={className}
+      loading={loading}
+      title={title}
+      toolbar={toolbar}
     >
       <div style={{ width, height }}>
         <ResponsiveContainer
-          width="100%"
           height="100%"
+          width="100%"
         >
           <RechartsPieChart>
             <Pie
-              data={data}
+              activeShape={renderActiveShape}
+              animationDuration={animationDuration}
               cx="50%"
               cy="50%"
-              innerRadius={innerRadius}
-              outerRadius={outerRadius}
+              data={data}
               dataKey={dataKey}
-              nameKey={nameKey}
-              paddingAngle={paddingAngle}
-              startAngle={startAngle}
               endAngle={endAngle}
+              innerRadius={innerRadius}
               isAnimationActive={animate}
-              animationDuration={animationDuration}
               label={showLabels ? renderLabel : undefined}
               labelLine={showLabels}
-              activeShape={renderActiveShape}
+              nameKey={nameKey}
+              outerRadius={outerRadius}
+              paddingAngle={paddingAngle}
+              startAngle={startAngle}
               onClick={(entry, index) => {
                 if (onDataPointClick) {
                   onDataPointClick(entry, index);
@@ -132,15 +134,14 @@ export const PieChart: React.FC<PieChartProps> = ({
               {data.map((_, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={getColor(index, colors)}
                   className="stroke-white dark:stroke-gray-950"
+                  fill={getColor(index, colors)}
                   strokeWidth={2}
                 />
               ))}
             </Pie>
 
-            {showTooltip && (
-              <Tooltip
+            {showTooltip ? <Tooltip
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover, 0 0% 100%))",
                   border: "1px solid hsl(var(--border, 220 13% 91%))",
@@ -151,18 +152,15 @@ export const PieChart: React.FC<PieChartProps> = ({
                   value.toLocaleString(),
                   name,
                 ]}
-              />
-            )}
+              /> : null}
 
-            {showLegend && (
-              <Legend
-                verticalAlign="bottom"
+            {showLegend ? <Legend
                 height={36}
-                iconType="circle"
                 iconSize={8}
+                iconType="circle"
+                verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              />
-            )}
+              /> : null}
           </RechartsPieChart>
         </ResponsiveContainer>
       </div>

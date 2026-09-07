@@ -1,6 +1,9 @@
-import React, { useEffect, useId } from 'react';
+import { useEffect, useId } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export interface ClusterLayerProps {
   /** Unique layer ID */
@@ -143,7 +146,7 @@ export const ClusterLayer: React.FC<ClusterLayerProps> = ({
       map.on('click', clusterId, (e) => {
         const features = map.queryRenderedFeatures(e.point, { layers: [clusterId] });
         const clusterId2 = features[0].properties?.cluster_id;
-        (map.getSource(sourceId) as any).getClusterExpansionZoom(clusterId2, (err: any, zoom: number) => {
+        (map.getSource(sourceId)).getClusterExpansionZoom(clusterId2, (err: any, zoom: number) => {
           if (err) return;
           map.easeTo({
             center: (features[0].geometry as any).coordinates,

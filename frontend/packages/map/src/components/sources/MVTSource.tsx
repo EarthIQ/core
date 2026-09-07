@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+
 import { useMap } from '../../hooks/useMap';
 
 export interface MVTSourceProps {
@@ -202,7 +203,7 @@ export const useMVTSource = (id: string) => {
 
   const getSource = useCallback(() => {
     if (!map || !isLoaded) return null;
-    return map.getSource(id) as maplibregl.VectorTileSource | undefined;
+    return map.getSource(id);
   }, [map, isLoaded, id]);
 
   const querySourceFeatures = useCallback((

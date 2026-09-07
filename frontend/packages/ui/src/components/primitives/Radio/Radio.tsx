@@ -1,5 +1,6 @@
-import React, { forwardRef, type InputHTMLAttributes } from "react";
 import { motion } from "framer-motion";
+import React, { forwardRef, type InputHTMLAttributes } from "react";
+
 import { cn } from "../../../utils/cn";
 
 interface RadioProps extends Omit<
@@ -32,10 +33,10 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
         <div className="relative flex items-center justify-center">
           <input
             ref={ref}
-            type="radio"
-            disabled={disabled}
             checked={checked}
             className="peer sr-only"
+            disabled={disabled}
+            type="radio"
             {...props}
           />
           <motion.div
@@ -49,6 +50,12 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
               borderColor: checked ? "var(--primary)" : "var(--input-border)",
               backgroundColor: "var(--input-bg)",
             }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.borderColor = checked
+                ? "var(--primary)"
+                : "var(--input-border)";
+            }}
             onFocus={(e) => {
               if (!disabled) {
                 e.currentTarget.style.boxShadow =
@@ -58,45 +65,33 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
                   : "oklch(from var(--primary) l c h / 0.5)";
               }
             }}
-            onBlur={(e) => {
-              e.currentTarget.style.boxShadow = "none";
-              e.currentTarget.style.borderColor = checked
-                ? "var(--primary)"
-                : "var(--input-border)";
-            }}
           >
             <motion.div
+              className="h-1/2 w-1/2 rounded-full"
               initial={false}
+              style={{ backgroundColor: "var(--primary)" }}
               animate={{
                 scale: checked ? 1 : 0,
                 opacity: checked ? 1 : 0,
               }}
-              className="h-1/2 w-1/2 rounded-full"
-              style={{ backgroundColor: "var(--primary)" }}
             />
           </motion.div>
         </div>
 
-        {(label || description) && (
-          <div className="flex flex-col">
-            {label && (
-              <span
+        {(label || description) ? <div className="flex flex-col">
+            {label ? <span
                 className="text-sm font-medium"
                 style={{ color: "var(--text-primary)" }}
               >
                 {label}
-              </span>
-            )}
-            {description && (
-              <span
+              </span> : null}
+            {description ? <span
                 className="text-xs"
                 style={{ color: "var(--text-secondary)" }}
               >
                 {description}
-              </span>
-            )}
-          </div>
-        )}
+              </span> : null}
+          </div> : null}
       </label>
     );
   }

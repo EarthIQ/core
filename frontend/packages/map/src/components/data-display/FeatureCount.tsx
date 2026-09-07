@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { FeatureCollection } from 'geojson';
 
 export interface FeatureCountProps {
@@ -180,7 +182,7 @@ export const FeatureCount: React.FC<FeatureCountProps> = ({
 
   // Default icon
   const defaultIcon = (
-    <svg width={size === 'small' ? 12 : size === 'large' ? 18 : 14} height={size === 'small' ? 12 : size === 'large' ? 18 : 14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg fill="none" height={size === 'small' ? 12 : size === 'large' ? 18 : 14} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width={size === 'small' ? 12 : size === 'large' ? 18 : 14}>
       <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
     </svg>
   );
@@ -216,14 +218,13 @@ export const FeatureCount: React.FC<FeatureCountProps> = ({
             color: '#666'
           }}>
             {label}
-            {viewportOnly && ' (visible)'}
+            {viewportOnly ? ' (visible)' : null}
           </div>
         </div>
       </div>
 
       {/* Breakdown */}
-      {showBreakdown && Object.keys(breakdown).length > 0 && (
-        <div style={{
+      {showBreakdown && Object.keys(breakdown).length > 0 ? <div style={{
           marginTop: 8,
           paddingTop: 8,
           borderTop: '1px solid #eee',
@@ -245,8 +246,7 @@ export const FeatureCount: React.FC<FeatureCountProps> = ({
               {type}: {typeCount}
             </span>
           ))}
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 };

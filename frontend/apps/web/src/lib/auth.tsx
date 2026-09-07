@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
+
 import { api } from "./api";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -45,7 +46,7 @@ const TOKEN_KEY = "eq_token";
 
 // ── Provider ───────────────────────────────────────────────────────────────────
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

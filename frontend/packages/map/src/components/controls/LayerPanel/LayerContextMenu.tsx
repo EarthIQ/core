@@ -1,15 +1,9 @@
 // src/components/controls/LayerPanel/LayerContextMenu.tsx
 
-import React, { useEffect, useRef, useCallback } from "react";
 import {
   ZoomIn,
-  Info,
-  Download,
-  Trash2,
-  ArrowUp,
-  ArrowDown,
-  Copy,
 } from "lucide-react";
+import React, { useEffect, useRef } from "react";
 
 interface LayerContextMenuProps {
   isOpen: boolean;
@@ -28,12 +22,12 @@ export const LayerContextMenu: React.FC<LayerContextMenuProps> = ({
   isOpen,
   onClose,
   onZoomTo,
-  onDelete,
-  onMoveUp,
-  onMoveDown,
-  onShowProperties,
-  onDuplicate,
-  locked = false,
+  _onDelete,
+  _onMoveUp,
+  _onMoveDown,
+  _onShowProperties,
+  _onDuplicate,
+  _locked = false,
   layerName = "Layer",
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -94,32 +88,30 @@ export const LayerContextMenu: React.FC<LayerContextMenuProps> = ({
   return (
     <div
       ref={menuRef}
-      role="menu"
       aria-label={`Actions for ${layerName}`}
       className="animate-in fade-in-0 zoom-in-95 absolute top-full right-0 z-50 mt-1 min-w-[200px] rounded-lg border border-[var(--border-primary)] bg-[var(--bg-elevated)] py-1 shadow-xl duration-100"
+      role="menu"
       style={{ transformOrigin: "top right" }}
     >
       {menuItems.map((item, index) => (
         <React.Fragment key={index}>
           <button
-            role="menuitem"
-            onClick={() => {
-              item.onClick?.();
-              onClose();
-            }}
             disabled={item.disabled}
+            role="menuitem"
             className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
               item.danger
                 ? "text-[var(--error)] hover:bg-red-50 dark:hover:bg-red-950/30"
                 : "text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
             }`}
+            onClick={() => {
+              item.onClick?.();
+              onClose();
+            }}
           >
             {item.icon}
             <span>{item.label}</span>
           </button>
-          {item.dividerAfter && (
-            <div className="my-1 h-px bg-[var(--border-secondary)]" />
-          )}
+          {item.dividerAfter ? <div className="my-1 h-px bg-[var(--border-secondary)]" /> : null}
         </React.Fragment>
       ))}
     </div>

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Map,
   ExternalLink,
@@ -11,11 +10,13 @@ import {
   Share2,
   X,
 } from "lucide-react";
-import type { MapItem } from "@/lib/maps";
+import { useState } from "react";
+
+import { type MapItem ,type  MapLayerItem } from "@/lib/maps";
+
+import { MapBuilder, type MapBuilderConfig } from "./MapBuilder";
 import { ShareDialog } from "./share/ShareDialog";
 
-import { MapBuilder, MapBuilderConfig } from "./MapBuilder";
-import type { MapLayerItem } from "@/lib/maps";
 import type { Annotation } from "@/lib/mapEditor/types";
 
 interface PublishedMapsPanelProps {
@@ -37,7 +38,7 @@ interface PublishedMapsPanelProps {
   currentAnnotations: Annotation[];
 }
 
-export function PublishedMapsPanel({
+export const PublishedMapsPanel = ({
   maps,
   projectId,
   isOpen,
@@ -53,7 +54,7 @@ export function PublishedMapsPanel({
   currentPitch,
   currentLayers,
   currentAnnotations,
-}: PublishedMapsPanelProps) {
+}: PublishedMapsPanelProps) => {
   const [builderOpen, setBuilderOpen] = useState(false);
   const [builderEditingMap, setBuilderEditingMap] = useState<MapItem | null>(
     null,
@@ -78,12 +79,10 @@ export function PublishedMapsPanel({
   return (
     <>
       {/* Backdrop - click outside to close */}
-      {isOpen && (
-        <div
+      {isOpen ? <div
           className="fixed inset-0 z-[19] pointer-events-auto"
           onClick={onClose}
-        />
-      )}
+        /> : null}
 
       {/* Slide-in panel */}
       <div
@@ -94,7 +93,7 @@ export function PublishedMapsPanel({
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-2.5 border-b border-border-secondary shrink-0">
           <div className="flex items-center gap-1.5">
-            <Map size={14} className="text-primary" />
+            <Map className="text-primary" size={14} />
             <span className="text-xs font-bold text-text-primary">
               Published Maps
             </span>
@@ -105,29 +104,26 @@ export function PublishedMapsPanel({
             )}
           </div>
           <button
-            onClick={onClose}
-            className="p-1 rounded hover:bg-surface-hover text-text-tertiary hover:text-text-primary transition-colors"
             aria-label="Close panel"
+            className="p-1 rounded hover:bg-surface-hover text-text-tertiary hover:text-text-primary transition-colors"
+            onClick={onClose}
           >
             <X size={14} />
           </button>
         </div>
 
         {/* Content list */}
-        {isOpen && (
-          <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2.5 scrollbar-thin">
-            {canEdit && (
-              <button
+        {isOpen ? <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2.5 scrollbar-thin">
+            {canEdit ? <button
+                className="w-full py-1.5 border border-dashed border-border-primary hover:border-primary/50 rounded-lg text-xs font-semibold text-text-secondary hover:text-primary flex items-center justify-center gap-1.5 bg-surface/30 hover:bg-primary/5 transition-all duration-200"
                 onClick={() => {
                   setBuilderEditingMap(null);
                   setBuilderOpen(true);
                 }}
-                className="w-full py-1.5 border border-dashed border-border-primary hover:border-primary/50 rounded-lg text-xs font-semibold text-text-secondary hover:text-primary flex items-center justify-center gap-1.5 bg-surface/30 hover:bg-primary/5 transition-all duration-200"
               >
                 <Plus size={14} />
                 Publish Viewport
-              </button>
-            )}
+              </button> : null}
 
             {maps.length === 0 ? (
               <div className="text-center py-8 text-xs text-text-tertiary">
@@ -155,15 +151,15 @@ export function PublishedMapsPanel({
                     <span className="shrink-0">
                       {m.is_public ? (
                         <Globe
-                          size={11}
-                          className="text-success"
                           aria-label="Public"
+                          className="text-success"
+                          size={11}
                         />
                       ) : (
                         <Lock
-                          size={11}
-                          className="text-accent"
                           aria-label="Private"
+                          className="text-accent"
+                          size={11}
                         />
                       )}
                     </span>
@@ -173,32 +169,32 @@ export function PublishedMapsPanel({
                   <div className="flex items-center justify-between border-t border-border-secondary/40 pt-2 mt-0.5">
                     <div className="flex items-center gap-1.5">
                       <button
-                        onClick={() => handleCopyLink(m.id)}
                         className={`text-[10px] font-medium flex items-center gap-1 transition-colors ${
                           copiedId === m.id
                             ? "text-success"
                             : "text-text-secondary hover:text-text-primary"
                         }`}
+                        onClick={() => handleCopyLink(m.id)}
                       >
                         <Copy size={11} />
                         {copiedId === m.id ? "Copied" : "Copy Link"}
                       </button>
 
                       <a
-                        href={`/share/map/${m.id}`}
-                        target="_blank"
-                        rel="noreferrer"
                         className="text-[10px] text-text-secondary hover:text-text-primary font-medium flex items-center gap-1"
+                        href={`/share/map/${m.id}`}
+                        rel="noreferrer"
+                        target="_blank"
                       >
                         <ExternalLink size={11} />
                         View
                       </a>
 
                       <button
-                        type="button"
-                        onClick={() => setShareMap(m)}
                         className="text-[10px] text-text-secondary hover:text-text-primary font-medium flex items-center gap-1"
                         title="Manage sharing"
+                        type="button"
+                        onClick={() => setShareMap(m)}
                       >
                         <Share2 size={11} />
                         Share
@@ -206,64 +202,59 @@ export function PublishedMapsPanel({
                     </div>
 
                     <div className="flex items-center gap-1">
-                      {canEdit && (
-                        <>
+                      {canEdit ? <>
                           <button
+                            className="p-1 rounded hover:bg-surface-hover text-text-tertiary hover:text-text-primary transition-colors"
+                            title="Edit Map Builder"
                             onClick={() => {
                               setBuilderEditingMap(m);
                               setBuilderOpen(true);
                             }}
-                            className="p-1 rounded hover:bg-surface-hover text-text-tertiary hover:text-text-primary transition-colors"
-                            title="Edit Map Builder"
                           >
                             <Settings size={11} />
                           </button>
                           <button
-                            onClick={() => onDelete(m.id)}
                             className="p-1 rounded hover:bg-surface-hover text-text-tertiary hover:text-danger-hover transition-colors"
                             title="Delete Publish"
+                            onClick={() => onDelete(m.id)}
                           >
                             <Trash2 size={11} />
                           </button>
-                        </>
-                      )}
+                        </> : null}
                     </div>
                   </div>
                 </div>
               ))
             )}
-          </div>
-        )}
+          </div> : null}
       </div>
 
       {/* Map Builder (full-page) */}
       <MapBuilder
-        isOpen={builderOpen}
-        onClose={handleBuilderClose}
-        projectId={projectId}
-        currentBasemap={currentBasemap}
-        currentCenter={currentCenter}
-        currentZoom={currentZoom}
-        currentBearing={currentBearing}
-        currentPitch={currentPitch}
-        currentLayers={currentLayers}
         currentAnnotations={currentAnnotations}
+        currentBasemap={currentBasemap}
+        currentBearing={currentBearing}
+        currentCenter={currentCenter}
+        currentLayers={currentLayers}
+        currentPitch={currentPitch}
+        currentZoom={currentZoom}
         editingMap={builderEditingMap}
+        isOpen={builderOpen}
+        projectId={projectId}
+        onClose={handleBuilderClose}
         onPublish={onPublish}
         onUpdate={onUpdate}
       />
 
       {/* Per-map Share Dialog */}
-      {shareMap && (
-        <ShareDialog
-          open={!!shareMap}
-          onClose={() => setShareMap(null)}
-          entityType="map"
+      {shareMap ? <ShareDialog
+          canManage={canEdit}
           entityId={shareMap.id}
           entityTitle={shareMap.title}
-          canManage={canEdit}
-        />
-      )}
+          entityType="map"
+          open={!!shareMap}
+          onClose={() => setShareMap(null)}
+        /> : null}
     </>
   );
 }

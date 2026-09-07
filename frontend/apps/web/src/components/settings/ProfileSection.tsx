@@ -5,6 +5,7 @@
  * change the password (POST ``/api/v1/profile/me/password``).
  */
 import { useCallback, useEffect, useState } from "react";
+
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { initials } from "@/lib/format";
@@ -180,9 +181,9 @@ export default function ProfileSection() {
       <div className="card p-5 flex items-center gap-4">
         {profile.avatar_url ? (
           <img
-            src={profile.avatar_url}
             alt="avatar"
             className="w-16 h-16 rounded-full object-cover border border-border-primary"
+            src={profile.avatar_url}
           />
         ) : (
           <div className="w-16 h-16 rounded-full bg-primary/15 text-primary text-xl font-bold flex items-center justify-center border border-primary/20">
@@ -194,9 +195,7 @@ export default function ProfileSection() {
             {profile.full_name || "Unnamed user"}
           </div>
           <div className="text-xs text-text-secondary truncate">{profile.email}</div>
-          {profile.job_title && (
-            <div className="text-xs text-text-tertiary mt-0.5">{profile.job_title}</div>
-          )}
+          {profile.job_title ? <div className="text-xs text-text-tertiary mt-0.5">{profile.job_title}</div> : null}
           <div className="text-[0.65rem] text-text-tertiary mt-1">
             Joined {new Date(profile.created_at).toLocaleDateString()}
           </div>
@@ -217,55 +216,55 @@ export default function ProfileSection() {
             <label className="form-label">Full name</label>
             <input
               className="input"
+              placeholder="Ada Lovelace"
               value={form.full_name}
               onChange={(e) => set("full_name", e.target.value)}
-              placeholder="Ada Lovelace"
             />
           </div>
           <div className="form-field">
             <label className="form-label">Job title</label>
             <input
               className="input"
+              placeholder="Hydrologist"
               value={form.job_title}
               onChange={(e) => set("job_title", e.target.value)}
-              placeholder="Hydrologist"
             />
           </div>
           <div className="form-field">
             <label className="form-label">Location</label>
             <input
               className="input"
+              placeholder="Bonn, Germany"
               value={form.location}
               onChange={(e) => set("location", e.target.value)}
-              placeholder="Bonn, Germany"
             />
           </div>
           <div className="form-field">
             <label className="form-label">Phone</label>
             <input
               className="input"
+              placeholder="+49 30 123456"
               value={form.phone}
               onChange={(e) => set("phone", e.target.value)}
-              placeholder="+49 30 123456"
             />
           </div>
           <div className="form-field sm:col-span-2">
             <label className="form-label">Website / profile</label>
             <input
               className="input"
+              placeholder="https://…"
               value={form.website}
               onChange={(e) => set("website", e.target.value)}
-              placeholder="https://…"
             />
           </div>
           <div className="form-field sm:col-span-2">
             <label className="form-label">Bio</label>
             <textarea
               className="input min-h-[5rem] resize-y"
+              maxLength={4000}
+              placeholder="A short line about what you work on…"
               value={form.bio}
               onChange={(e) => set("bio", e.target.value)}
-              placeholder="A short line about what you work on…"
-              maxLength={4000}
             />
           </div>
           <div className="form-field">
@@ -287,9 +286,9 @@ export default function ProfileSection() {
             <label className="form-label">Avatar URL</label>
             <input
               className="input"
+              placeholder="https://…/me.jpg"
               value={form.avatar_url}
               onChange={(e) => set("avatar_url", e.target.value)}
-              placeholder="https://…/me.jpg"
             />
           </div>
         </div>
@@ -314,32 +313,32 @@ export default function ProfileSection() {
         <div className="form-field">
           <label className="form-label">Current password</label>
           <input
-            type="password"
+            autoComplete="current-password"
             className="input"
+            type="password"
             value={pw.current}
             onChange={(e) => setPw((p) => ({ ...p, current: e.target.value }))}
-            autoComplete="current-password"
           />
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="form-field">
             <label className="form-label">New password</label>
             <input
-              type="password"
+              autoComplete="new-password"
               className="input"
+              type="password"
               value={pw.next}
               onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))}
-              autoComplete="new-password"
             />
           </div>
           <div className="form-field">
             <label className="form-label">Confirm new password</label>
             <input
-              type="password"
+              autoComplete="new-password"
               className="input"
+              type="password"
               value={pw.confirm}
               onChange={(e) => setPw((p) => ({ ...p, confirm: e.target.value }))}
-              autoComplete="new-password"
             />
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { type ReactNode, type HTMLAttributes } from 'react';
+
 import { cn } from '../../../utils/cn';
 
 interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
@@ -16,13 +17,13 @@ const sizeClasses = {
   full: 'max-w-full',
 };
 
-export function Container({
+export const Container = ({
   children,
   size = 'xl',
   centered = true,
   className,
   ...props
-}: ContainerProps) {
+}: ContainerProps) => {
   return (
     <div
       className={cn(

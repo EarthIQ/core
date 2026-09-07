@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef } from "react";
+
 import { useMapEditor, defaultAnnotationFor } from "@/lib/mapEditor/store";
-import type {
-  ActiveTool,
-  Annotation,
-  AnnotationKind,
-  PointAnnotation,
+import { POINT_KINDS, SHAPE_KINDS ,type 
+  ActiveTool,type 
+  Annotation,type 
+  AnnotationKind,type 
+  PointAnnotation,type 
   ShapeAnnotation,
 } from "@/lib/mapEditor/types";
-import { POINT_KINDS, SHAPE_KINDS } from "@/lib/mapEditor/types";
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Constants                                                              */
@@ -99,7 +99,7 @@ function buildGeoJSON(annotations: Annotation[], selectionId: string | null) {
     if ((SHAPE_KINDS as AnnotationKind[]).includes(ann.kind)) {
       const s = ann as ShapeAnnotation;
       if (s.kind === "circle") {
-        const center = (s.geometry as any).coordinates as [number, number];
+        const center = (s.geometry).coordinates as [number, number];
         features.push({
           type: "Feature",
           id: ann.id,
@@ -157,7 +157,7 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
   /* ── ensure source + layers exist ─────────────────────────────────────── */
   const ensureLayers = useCallback(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded?.()) return false;
+    if (!map?.isStyleLoaded?.()) return false;
     if (!map.getSource(SRC)) {
       map.addSource(SRC, {
         type: "geojson",

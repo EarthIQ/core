@@ -5,8 +5,9 @@ import React, {
   useCallback,
   type ReactNode,
 } from "react";
-import type { Map as MapLibreMap } from "maplibre-gl";
+
 import type { Deck } from "@deck.gl/core";
+import type { Map as MapLibreMap } from "maplibre-gl";
 
 /**
  * Context value interface for Map state management

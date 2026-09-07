@@ -1,5 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { Stack, HStack, VStack } from './Stack';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta<typeof Stack> = {
   title: 'Layout/Stack',
@@ -75,7 +76,7 @@ export const Default: Story = {
  */
 export const Horizontal: Story = {
   render: () => (
-    <Stack direction="row" gap="md" align="center">
+    <Stack align="center" direction="row" gap="md">
       <Box>Item 1</Box>
       <Box>Item 2</Box>
       <Box>Item 3</Box>
@@ -89,7 +90,7 @@ export const Horizontal: Story = {
 export const HStackExample: Story = {
   name: 'HStack (Horizontal)',
   render: () => (
-    <HStack gap="lg" align="center">
+    <HStack align="center" gap="lg">
       <Box>Left</Box>
       <Box>Center</Box>
       <Box>Right</Box>
@@ -103,7 +104,7 @@ export const HStackExample: Story = {
 export const VStackExample: Story = {
   name: 'VStack (Vertical)',
   render: () => (
-    <VStack gap="lg" align="start">
+    <VStack align="start" gap="lg">
       <Box>Top</Box>
       <Box>Middle</Box>
       <Box>Bottom</Box>
@@ -138,9 +139,9 @@ export const Alignments: Story = {
   render: () => (
     <HStack gap="xl">
       {(['start', 'center', 'end', 'stretch'] as const).map((alignment) => (
-        <VStack key={alignment} gap="sm" className="flex-1">
+        <VStack key={alignment} className="flex-1" gap="sm">
           <span className="text-white/60 text-sm">align="{alignment}"</span>
-          <HStack gap="sm" align={alignment} className="h-24 bg-white/5 rounded-lg p-2">
+          <HStack align={alignment} className="h-24 bg-white/5 rounded-lg p-2" gap="sm">
             <Box className="h-8">A</Box>
             <Box className="h-12">B</Box>
             <Box className="h-6">C</Box>
@@ -160,7 +161,7 @@ export const Justifications: Story = {
       {(['start', 'center', 'end', 'between', 'around', 'evenly'] as const).map((justification) => (
         <VStack key={justification} gap="sm">
           <span className="text-white/60 text-sm">justify="{justification}"</span>
-          <HStack gap="sm" justify={justification} className="bg-white/5 rounded-lg p-2">
+          <HStack className="bg-white/5 rounded-lg p-2" gap="sm" justify={justification}>
             <Box>A</Box>
             <Box>B</Box>
             <Box>C</Box>
@@ -176,7 +177,7 @@ export const Justifications: Story = {
  */
 export const Wrapping: Story = {
   render: () => (
-    <Stack direction="row" gap="sm" wrap className="max-w-md">
+    <Stack wrap className="max-w-md" direction="row" gap="sm">
       {Array.from({ length: 10 }, (_, i) => (
         <Box key={i}>Item {i + 1}</Box>
       ))}
@@ -189,8 +190,8 @@ export const Wrapping: Story = {
  */
 export const NestedLayout: Story = {
   render: () => (
-    <VStack gap="lg" className="p-4 bg-white/5 rounded-xl">
-      <HStack gap="md" justify="between" align="center">
+    <VStack className="p-4 bg-white/5 rounded-xl" gap="lg">
+      <HStack align="center" gap="md" justify="between">
         <Box>Logo</Box>
         <HStack gap="sm">
           <Box>Nav 1</Box>
@@ -199,7 +200,7 @@ export const NestedLayout: Story = {
         </HStack>
       </HStack>
       <HStack gap="lg">
-        <VStack gap="sm" className="flex-1">
+        <VStack className="flex-1" gap="sm">
           <Box className="h-20">Sidebar Item 1</Box>
           <Box className="h-20">Sidebar Item 2</Box>
         </VStack>

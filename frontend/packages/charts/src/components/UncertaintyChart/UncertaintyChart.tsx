@@ -10,7 +10,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+
 import { ChartContainer } from "../ChartContainer";
+
 import type { UncertaintyChartProps } from "../../types";
 
 const defaultTickFormatter = (value: any) => {
@@ -85,20 +87,20 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
 
   return (
     <ChartContainer
-      title={title}
+      className={className}
+      data={data}
       description={description}
-      toolbar={toolbar}
-      loading={loading}
       empty={empty || data.length === 0}
       error={error}
-      data={data}
       exportFilename={exportFilename}
-      className={className}
+      loading={loading}
+      title={title}
+      toolbar={toolbar}
     >
       <div style={{ width, height }}>
         <ResponsiveContainer
-          width="100%"
           height="100%"
+          width="100%"
         >
           <RechartsComposedChart
             data={chartData}
@@ -121,8 +123,8 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
               <linearGradient
                 id="colorUncertainty"
                 x1="0"
-                y1="0"
                 x2="0"
+                y1="0"
                 y2="1"
               >
                 <stop
@@ -138,8 +140,8 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
               </linearGradient>
               <filter id="glow">
                 <feGaussianBlur
-                  stdDeviation="2.5"
                   result="coloredBlur"
+                  stdDeviation="2.5"
                 />
                 <feMerge>
                   <feMergeNode in="coloredBlur" />
@@ -148,24 +150,22 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
               </filter>
             </defs>
 
-            {showGrid && (
-              <CartesianGrid
-                strokeDasharray="3 3"
+            {showGrid ? <CartesianGrid
                 className="stroke-gray-200 dark:stroke-gray-700"
                 horizontal={gridType !== "vertical"}
+                strokeDasharray="3 3"
                 vertical={gridType !== "horizontal"}
-              />
-            )}
+              /> : null}
 
             {!xAxis?.hide && (
               <XAxis
-                dataKey="name"
-                tickLine={false}
                 axisLine={false}
-                tickMargin={8}
-                tickFormatter={xAxis?.tickFormatter}
-                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
+                dataKey="name"
+                tick={{ fill: "currentColor", fontSize: 12 }}
+                tickFormatter={xAxis?.tickFormatter}
+                tickLine={false}
+                tickMargin={8}
                 label={
                   xAxis?.label
                     ? {
@@ -182,13 +182,13 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
 
             {!yAxis?.hide && (
               <YAxis
-                tickLine={false}
                 axisLine={false}
-                tickMargin={4}
-                tickFormatter={yAxis?.tickFormatter || defaultTickFormatter}
-                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
                 domain={yAxis?.domain}
+                tick={{ fill: "currentColor", fontSize: 12 }}
+                tickFormatter={yAxis?.tickFormatter || defaultTickFormatter}
+                tickLine={false}
+                tickMargin={4}
                 width={yAxis?.label ? 50 : 40}
                 label={
                   yAxis?.label
@@ -206,8 +206,9 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
               />
             )}
 
-            {showTooltip && (
-              <Tooltip
+            {showTooltip ? <Tooltip
+                formatter={customTooltipFormatter}
+                labelStyle={{ fontWeight: "bold", marginBottom: "8px" }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover, 0 0% 100%))",
                   border: "1px solid hsl(var(--border, 220 13% 91%))",
@@ -215,20 +216,17 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                   color: "hsl(var(--popover-foreground))",
                 }}
-                formatter={customTooltipFormatter}
-                labelStyle={{ fontWeight: "bold", marginBottom: "8px" }}
-              />
-            )}
+              /> : null}
 
             <Area
-              type="monotone"
-              dataKey="range"
-              stroke="none"
-              fill="url(#colorUncertainty)"
-              name="Uncertainty Band"
               connectNulls
-              isAnimationActive={animate}
               animationDuration={animationDuration}
+              dataKey="range"
+              fill="url(#colorUncertainty)"
+              isAnimationActive={animate}
+              name="Uncertainty Band"
+              stroke="none"
+              type="monotone"
             />
 
             {lines.map((line) => {
@@ -236,12 +234,17 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
               return (
                 <Line
                   key={line.dataKey}
-                  type="monotone"
+                  connectNulls
+                  animationDuration={animationDuration}
                   dataKey={line.dataKey}
-                  stroke={isMean ? "#10b981" : line.color}
-                  strokeWidth={isMean ? 3 : line.strokeWidth || 1.5}
-                  strokeDasharray={line.strokeDasharray}
                   dot={false}
+                  isAnimationActive={animate}
+                  name={line.name}
+                  stroke={isMean ? "#10b981" : line.color}
+                  strokeDasharray={line.strokeDasharray}
+                  strokeWidth={isMean ? 3 : line.strokeWidth || 1.5}
+                  style={isMean ? { filter: "url(#glow)" } : { opacity: 0.8 }}
+                  type="monotone"
                   activeDot={
                     isMean
                       ? {
@@ -252,24 +255,17 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
                         }
                       : { r: 4, fill: line.color, stroke: "none" }
                   }
-                  name={line.name}
-                  connectNulls
-                  style={isMean ? { filter: "url(#glow)" } : { opacity: 0.8 }}
-                  isAnimationActive={animate}
-                  animationDuration={animationDuration}
                 />
               );
             })}
 
-            {showLegend && (
-              <Legend
-                verticalAlign="bottom"
+            {showLegend ? <Legend
                 height={36}
-                iconType="circle"
                 iconSize={8}
+                iconType="circle"
+                verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              />
-            )}
+              /> : null}
           </RechartsComposedChart>
         </ResponsiveContainer>
       </div>

@@ -1,6 +1,9 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef as _useRef } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export interface EditInteractionProps {
   /** Feature to edit */
@@ -65,7 +68,7 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
   const [editedFeature, setEditedFeature] = useState<GeoJSON.Feature | null>(null);
   const [selectedVertexIndex, setSelectedVertexIndex] = useState<number[] | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [_dragOffset, _setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [hoveredVertex, setHoveredVertex] = useState<number[] | null>(null);
   const [hoveredMidpoint, setHoveredMidpoint] = useState<number[] | null>(null);
 
@@ -185,7 +188,7 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
     const vertices = getVertices(editedFeature.geometry);
     
     // Add vertex points
-    vertices.forEach((vertex, index) => {
+    vertices.forEach((vertex, _index) => {
       features.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: vertex.coords },
@@ -230,7 +233,7 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
 
     switch (geometry.type) {
       case 'Point':
-        vertices.push({ coords: geometry.coordinates as number[], index: [0] });
+        vertices.push({ coords: geometry.coordinates, index: [0] });
         break;
       case 'LineString':
         (geometry.coordinates as number[][]).forEach((coord, i) => {
@@ -293,7 +296,7 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
 
     switch (geometry.type) {
       case 'LineString':
-        addMidpoints(geometry.coordinates as number[][]);
+        addMidpoints(geometry.coordinates);
         break;
       case 'Polygon':
         (geometry.coordinates as number[][][]).forEach((ring, ringIndex) => {
@@ -461,7 +464,7 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
     let closestDistance = Infinity;
 
     features.forEach(feature => {
-      const featureCoords = getCoordinatesFromGeometry(feature.geometry as GeoJSON.Geometry);
+      const featureCoords = getCoordinatesFromGeometry(feature.geometry);
       featureCoords.forEach(coord => {
         const d = Math.sqrt(
           Math.pow(coords[0] - coord[0], 2) + 
@@ -556,10 +559,10 @@ function arraysEqual(a: number[], b: number[]): boolean {
 function getCoordinatesFromGeometry(geometry: GeoJSON.Geometry): number[][] {
   switch (geometry.type) {
     case 'Point':
-      return [geometry.coordinates as number[]];
+      return [geometry.coordinates];
     case 'LineString':
     case 'MultiPoint':
-      return geometry.coordinates as number[][];
+      return geometry.coordinates;
     case 'Polygon':
     case 'MultiLineString':
       return (geometry.coordinates as number[][][]).flat();

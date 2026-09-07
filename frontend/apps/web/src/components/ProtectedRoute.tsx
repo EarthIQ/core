@@ -1,5 +1,6 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
+
 import { useAuth } from "@/lib/auth";
 
 /**
@@ -7,7 +8,7 @@ import { useAuth } from "@/lib/auth";
  * Shows nothing while loading (prevents flash).
  * Redirects to /login if unauthenticated, preserving the intended path.
  */
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
@@ -29,7 +30,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate replace state={{ from: location }} to="/login" />;
   }
 
   return <>{children}</>;

@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useRef } from "react";
-import { useMapEditor } from "@/lib/mapEditor/store";
-import type { PointAnnotation } from "@/lib/mapEditor/types";
-import { POINT_KINDS } from "@/lib/mapEditor/types";
 import { StickyNote, Image as ImageIcon, Link2, Play } from "lucide-react";
+import { useEffect, useMemo, useRef } from "react";
+
+import { useMapEditor } from "@/lib/mapEditor/store";
+import { POINT_KINDS ,type  PointAnnotation } from "@/lib/mapEditor/types";
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Per-kind content                                                         */
 /* ──────────────────────────────────────────────────────────────────────── */
-function PointContent({ ann }: { ann: PointAnnotation }) {
+const PointContent = ({ ann }: { ann: PointAnnotation }) => {
   const color = ann.color || "#50aad1";
 
   switch (ann.kind) {
@@ -38,7 +38,7 @@ function PointContent({ ann }: { ann: PointAnnotation }) {
           style={{ background: color }}
           title={ann.text || "Note"}
         >
-          <StickyNote size={20} className="text-white/90" />
+          <StickyNote className="text-white/90" size={20} />
         </div>
       );
     case "image":
@@ -48,10 +48,10 @@ function PointContent({ ann }: { ann: PointAnnotation }) {
           style={{ background: "#000" }}
         >
           {ann.url ? (
-            <img src={ann.url} alt="" className="w-full h-full object-cover" />
+            <img alt="" className="w-full h-full object-cover" src={ann.url} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-surface-hover">
-              <ImageIcon size={20} className="text-text-tertiary" />
+              <ImageIcon className="text-text-tertiary" size={20} />
             </div>
           )}
         </div>
@@ -78,7 +78,7 @@ function PointContent({ ann }: { ann: PointAnnotation }) {
           className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium shadow-md text-white"
           style={{ background: color }}
         >
-          <Play size={14} fill="currentColor" />
+          <Play fill="currentColor" size={14} />
           <span className="max-w-[140px] truncate">
             {ann.url ? safeHost(ann.url) : "Video"}
           </span>
@@ -100,13 +100,13 @@ function safeHost(url: string) {
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Overlay layer                                                            */
 /* ──────────────────────────────────────────────────────────────────────── */
-export function AnnotationOverlays({
+export const AnnotationOverlays = ({
   mapRef,
   mapReady,
 }: {
   mapRef: React.RefObject<any>;
   mapReady: boolean;
-}) {
+}) => {
   const annotations = useMapEditor((s) => s.annotations);
   const selectionId = useMapEditor((s) => s.selectionId);
   const setSelectionId = useMapEditor((s) => s.setSelectionId);
@@ -176,13 +176,6 @@ export function AnnotationOverlays({
             <div
               role="button"
               tabIndex={0}
-              onClick={(e) => onNodeClick(e, ann.id)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onNodeClick(e as any, ann.id);
-                }
-              }}
               className={`pointer-events-auto cursor-pointer transition-transform hover:scale-105 ${
                 selected ? "scale-105" : ""
               }`}
@@ -191,15 +184,20 @@ export function AnnotationOverlays({
                 outlineOffset: 3,
                 borderRadius: "9999px",
               }}
+              onClick={(e) => onNodeClick(e, ann.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onNodeClick(e as any, ann.id);
+                }
+              }}
             >
               <PointContent ann={ann} />
             </div>
             {/* selection halo dot above marker */}
             {ann.kind === "marker" && (
               <div className="flex justify-center -mt-1 -translate-y-3">
-                {selected && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                )}
+                {selected ? <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> : null}
               </div>
             )}
             {/* decorative pin stem for the marker */}

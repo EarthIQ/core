@@ -5,6 +5,7 @@ import React, {
   useState,
   useMemo,
 } from "react";
+
 import { useMap } from "../../hooks/useMap";
 
 export interface RasterTileSourceProps {
@@ -238,17 +239,13 @@ export const useRasterTileSource = (id: string) => {
     }
 
     // Attempt to read the source right away (it may already exist)
-    const existing = map.getSource(id) as
-      | maplibregl.RasterTileSource
-      | undefined;
+    const existing = map.getSource(id);
     setSource(existing ?? null);
 
     // Re-check whenever sources change
     const handleSourceData = (e: maplibregl.MapSourceDataEvent) => {
       if (e.sourceId === id) {
-        const src = map.getSource(id) as
-          | maplibregl.RasterTileSource
-          | undefined;
+        const src = map.getSource(id);
         setSource(src ?? null);
       }
     };

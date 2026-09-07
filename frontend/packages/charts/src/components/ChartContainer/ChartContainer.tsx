@@ -1,10 +1,12 @@
-import React, { forwardRef } from "react";
 import { cn } from "@packages/ui";
+import React, { forwardRef } from "react";
+
 import { ChartToolbar } from "./ChartToolbar";
 import { FullscreenModal } from "./FullscreenModal";
 import { useChartExport } from "../../hooks/useChartExport";
 import { useChartFullscreen } from "../../hooks/useChartFullscreen";
 import { LoadingSpinner, ChartIcon } from "../../icons";
+
 import type { ToolbarConfig } from "../../types";
 
 interface ChartContainerProps {
@@ -103,14 +105,12 @@ export const ChartContainer = forwardRef<HTMLDivElement, ChartContainerProps>(
               </span>
             </div>
             <p className="chart-empty-text mt-3 text-base">{errorText}</p>
-            {onRetry && (
-              <button
-                onClick={onRetry}
+            {onRetry ? <button
                 className="btn btn-secondary mt-4"
+                onClick={onRetry}
               >
                 Try again
-              </button>
-            )}
+              </button> : null}
           </div>
         );
       }
@@ -143,31 +143,25 @@ export const ChartContainer = forwardRef<HTMLDivElement, ChartContainerProps>(
         className={cn("chart-card", className)}
       >
         {/* Header */}
-        {(title || description || showToolbar) && (
-          <div className="chart-card-header flex items-start justify-between">
+        {(title || description || showToolbar) ? <div className="chart-card-header flex items-start justify-between">
             <div className="min-w-0 flex-1">
-              {title && <h3 className="chart-card-title">{title}</h3>}
-              {description && (
-                <p className="chart-card-description">{description}</p>
-              )}
+              {title ? <h3 className="chart-card-title">{title}</h3> : null}
+              {description ? <p className="chart-card-description">{description}</p> : null}
             </div>
-            {showToolbar && (
-              <ChartToolbar
+            {showToolbar ? <ChartToolbar
                 config={toolbarConfig}
-                onDownloadImage={handleDownloadImage}
-                onDownloadData={handleDownloadData}
-                onCopyData={copyToClipboard}
-                onFullscreen={toggleFullscreen}
                 isExporting={isExporting}
-              />
-            )}
-          </div>
-        )}
+                onCopyData={copyToClipboard}
+                onDownloadData={handleDownloadData}
+                onDownloadImage={handleDownloadImage}
+                onFullscreen={toggleFullscreen}
+              /> : null}
+          </div> : null}
 
         {/* Chart Content */}
         <div
-          className="chart-card-content"
           ref={ref}
+          className="chart-card-content"
         >
           {renderContent()}
         </div>
@@ -179,8 +173,8 @@ export const ChartContainer = forwardRef<HTMLDivElement, ChartContainerProps>(
         {chartContent}
         <FullscreenModal
           isOpen={isFullscreen}
-          onClose={closeFullscreen}
           title={title}
+          onClose={closeFullscreen}
         >
           <div className="h-full w-full">{renderContent()}</div>
         </FullscreenModal>

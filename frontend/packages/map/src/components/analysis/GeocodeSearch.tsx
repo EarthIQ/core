@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+
 import { useMap } from '../../hooks/useMap';
 
 export interface GeocodeResult {
@@ -163,7 +164,7 @@ export const GeocodeSearch: React.FC<GeocodeSearchProps> = ({
 
     // Fly to location
     if (result.bbox) {
-      map.fitBounds(result.bbox as [number, number, number, number], {
+      map.fitBounds(result.bbox, {
         padding: 50,
         maxZoom: zoomLevel
       });
@@ -192,7 +193,7 @@ export const GeocodeSearch: React.FC<GeocodeSearchProps> = ({
       };
 
       if (map.getSource(markerLayerId)) {
-        (map.getSource(markerLayerId) as any).setData(markerGeoJson);
+        (map.getSource(markerLayerId)).setData(markerGeoJson);
       } else {
         map.addSource(markerLayerId, {
           type: 'geojson',
@@ -306,12 +307,7 @@ export const GeocodeSearch: React.FC<GeocodeSearchProps> = ({
         {/* Search input */}
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <button
-            onClick={() => {
-              setIsExpanded(!isExpanded);
-              if (!isExpanded) {
-                setTimeout(() => inputRef.current?.focus(), 100);
-              }
-            }}
+            aria-label="Search"
             style={{
               width: 40,
               height: 40,
@@ -322,22 +318,24 @@ export const GeocodeSearch: React.FC<GeocodeSearchProps> = ({
               backgroundColor: 'transparent',
               cursor: 'pointer'
             }}
-            aria-label="Search"
+            onClick={() => {
+              setIsExpanded(!isExpanded);
+              if (!isExpanded) {
+                setTimeout(() => inputRef.current?.focus(), 100);
+              }
+            }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+            <svg fill="none" height="18" stroke="#666" strokeWidth="2" viewBox="0 0 24 24" width="18">
               <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              <line x1="21" x2="16.65" y1="21" y2="16.65" />
             </svg>
           </button>
 
-          {isExpanded && (
-            <input
+          {isExpanded ? <input
               ref={inputRef}
+              placeholder={placeholder}
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={placeholder}
               style={{
                 flex: 1,
                 height: 40,
@@ -346,16 +344,11 @@ export const GeocodeSearch: React.FC<GeocodeSearchProps> = ({
                 fontSize: 14,
                 paddingRight: 40
               }}
-            />
-          )}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+            /> : null}
 
-          {isExpanded && query && (
-            <button
-              onClick={() => {
-                setQuery('');
-                setResults([]);
-                clearMarker();
-              }}
+          {isExpanded && query ? <button
               style={{
                 position: 'absolute',
                 right: 8,
@@ -369,29 +362,28 @@ export const GeocodeSearch: React.FC<GeocodeSearchProps> = ({
                 borderRadius: '50%',
                 cursor: 'pointer'
               }}
+              onClick={() => {
+                setQuery('');
+                setResults([]);
+                clearMarker();
+              }}
             >
               ×
-            </button>
-          )}
+            </button> : null}
         </div>
 
         {/* Loading indicator */}
-        {isLoading && isExpanded && (
-          <div style={{ padding: '8px 12px', fontSize: 12, color: '#666' }}>
+        {isLoading && isExpanded ? <div style={{ padding: '8px 12px', fontSize: 12, color: '#666' }}>
             Searching...
-          </div>
-        )}
+          </div> : null}
 
         {/* Error message */}
-        {error && isExpanded && (
-          <div style={{ padding: '8px 12px', fontSize: 12, color: '#e74c3c' }}>
+        {error && isExpanded ? <div style={{ padding: '8px 12px', fontSize: 12, color: '#e74c3c' }}>
             {error}
-          </div>
-        )}
+          </div> : null}
 
         {/* Results list */}
-        {results.length > 0 && isExpanded && (
-          <div style={{
+        {results.length > 0 && isExpanded ? <div style={{
             borderTop: '1px solid #eee',
             maxHeight: 300,
             overflowY: 'auto'
@@ -399,14 +391,14 @@ export const GeocodeSearch: React.FC<GeocodeSearchProps> = ({
             {results.map((result, index) => (
               <div
                 key={result.id}
-                onClick={() => handleSelect(result)}
-                onMouseEnter={() => setSelectedIndex(index)}
                 style={{
                   padding: '10px 12px',
                   cursor: 'pointer',
                   backgroundColor: selectedIndex === index ? '#f0f7ff' : 'transparent',
                   borderBottom: '1px solid #f0f0f0'
                 }}
+                onClick={() => handleSelect(result)}
+                onMouseEnter={() => setSelectedIndex(index)}
               >
                 <div style={{ fontWeight: 500, fontSize: 13 }}>{result.name}</div>
                 <div style={{ fontSize: 11, color: '#666', marginTop: 2 }}>
@@ -417,8 +409,7 @@ export const GeocodeSearch: React.FC<GeocodeSearchProps> = ({
                 </div>
               </div>
             ))}
-          </div>
-        )}
+          </div> : null}
       </div>
     </div>
   );

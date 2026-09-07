@@ -1,7 +1,11 @@
-import React, { useEffect, useId, useState, useRef, useCallback } from 'react';
-import { useMap } from '../../hooks/useMap';
 import { TripsLayer } from '@deck.gl/geo-layers';
+import { useEffect, useId, useState, useRef, useCallback } from 'react';
+
+import { useMap } from '../../hooks/useMap';
+
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export interface TripData {
   path: [number, number, number][]; // [lng, lat, timestamp]
@@ -90,7 +94,7 @@ export const TripLayer: React.FC<TripLayerProps> = ({
   onTimeChange,
   fadeTrail = true
 }) => {
-  const { map, deck, isLoaded } = useMap();
+  const { map: _map, deck, isLoaded: _isLoaded } = useMap();
   const autoId = useId();
   const id = propId || `trip-layer-${autoId}`;
   const [processedData, setProcessedData] = useState<any[]>([]);

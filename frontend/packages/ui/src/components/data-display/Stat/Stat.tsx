@@ -1,5 +1,6 @@
-import React, { type ReactNode } from "react";
 import { motion } from "framer-motion";
+import React, { type ReactNode } from "react";
+
 import { cn } from "../../../utils/cn";
 
 interface StatProps {
@@ -35,7 +36,7 @@ const sizeConfig = {
   },
 };
 
-export function Stat({
+export const Stat = ({
   label,
   value,
   previousValue,
@@ -45,7 +46,7 @@ export function Stat({
   trend,
   size = "md",
   className,
-}: StatProps) {
+}: StatProps) => {
   const config = sizeConfig[size];
 
   const getTrendColor = () => {
@@ -68,10 +69,10 @@ export function Stat({
           viewBox="0 0 24 24"
         >
           <path
+            d="M20 12H4"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M20 12H4"
           />
         </svg>
       );
@@ -85,10 +86,10 @@ export function Stat({
         viewBox="0 0 24 24"
       >
         <path
+          d="M7 17l9.2-9.2M17 17V7H7"
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M7 17l9.2-9.2M17 17V7H7"
         />
       </svg>
     ) : (
@@ -99,10 +100,10 @@ export function Stat({
         viewBox="0 0 24 24"
       >
         <path
+          d="M17 7l-9.2 9.2M7 7v10h10"
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M17 7l-9.2 9.2M7 7v10h10"
         />
       </svg>
     );
@@ -110,9 +111,9 @@ export function Stat({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn("card p-6", className)}
+      initial={{ opacity: 0, y: 20 }}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
@@ -134,43 +135,36 @@ export function Stat({
           </p>
 
           {/* Change */}
-          {(change !== undefined || changeLabel) && (
-            <div
+          {(change !== undefined || changeLabel) ? <div
+              style={{ backgroundColor: getTrendBg() }}
               className={cn(
                 "mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5",
                 config.change,
                 getTrendColor()
               )}
-              style={{ backgroundColor: getTrendBg() }}
             >
-              {trend && getTrendIcon()}
+              {trend ? getTrendIcon() : null}
               {change !== undefined && (
                 <span className="font-medium">
                   {change > 0 ? "+" : ""}
                   {change}%
                 </span>
               )}
-              {changeLabel && (
-                <span className="text-[var(--text-tertiary)]">
+              {changeLabel ? <span className="text-[var(--text-tertiary)]">
                   {changeLabel}
-                </span>
-              )}
-            </div>
-          )}
+                </span> : null}
+            </div> : null}
 
           {/* Previous Value */}
-          {previousValue && (
-            <p
+          {previousValue ? <p
               className={cn("mt-1 text-[var(--text-tertiary)]", config.change)}
             >
               Previous: {previousValue}
-            </p>
-          )}
+            </p> : null}
         </div>
 
         {/* Icon */}
-        {icon && (
-          <div
+        {icon ? <div
             className={cn(
               "flex shrink-0 items-center justify-center rounded-xl",
               "bg-[var(--info-bg)] text-[var(--primary)]",
@@ -178,8 +172,7 @@ export function Stat({
             )}
           >
             {icon}
-          </div>
-        )}
+          </div> : null}
       </div>
     </motion.div>
   );
@@ -192,11 +185,11 @@ interface StatGroupProps {
   className?: string;
 }
 
-export function StatGroup({
+export const StatGroup = ({
   children,
   columns = 4,
   className,
-}: StatGroupProps) {
+}: StatGroupProps) => {
   const gridCols = {
     2: "grid-cols-1 sm:grid-cols-2",
     3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",

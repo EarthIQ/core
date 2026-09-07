@@ -1,6 +1,8 @@
-import React, { useState, useCallback, useMemo } from 'react';
 import * as turf from '@turf/turf';
+import React, { useState, useCallback, useMemo } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { Feature, FeatureCollection, Point, Polygon } from 'geojson';
 
 export interface VoronoiToolProps {
@@ -85,7 +87,7 @@ export const VoronoiTool: React.FC<VoronoiToolProps> = ({
   }, [map]);
 
   // Execute Voronoi
-  const executeVoronoi = useCallback(async () => {
+  const executeVoronoi = useCallback(() => {
     setIsProcessing(true);
     setError(null);
 
@@ -154,15 +156,15 @@ export const VoronoiTool: React.FC<VoronoiToolProps> = ({
             _sourcePointId: sourcePoint?.id
           }
         };
-      }).filter(f => f !== null) as Feature<Polygon>[];
+      }).filter(f => f !== null);
 
-      setResult(voronoiPolygons as FeatureCollection<Polygon>);
-      onResult?.(voronoiPolygons as FeatureCollection<Polygon>);
+      setResult(voronoiPolygons);
+      onResult?.(voronoiPolygons);
 
       // Add to map
       if (map && showResult) {
         if (map.getSource(outputLayerId)) {
-          (map.getSource(outputLayerId) as any).setData(voronoiPolygons);
+          (map.getSource(outputLayerId)).setData(voronoiPolygons);
         } else {
           map.addSource(outputLayerId, {
             type: 'geojson',
@@ -264,11 +266,11 @@ export const VoronoiTool: React.FC<VoronoiToolProps> = ({
       }}
     >
       <div style={{ fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
           <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
-          <line x1="12" y1="22" x2="12" y2="2" />
-          <line x1="22" y1="8.5" x2="2" y2="15.5" />
-          <line x1="2" y1="8.5" x2="22" y2="15.5" />
+          <line x1="12" x2="12" y1="22" y2="2" />
+          <line x1="22" x2="2" y1="8.5" y2="15.5" />
+          <line x1="2" x2="22" y1="8.5" y2="15.5" />
         </svg>
         Voronoi Tool
       </div>
@@ -279,7 +281,6 @@ export const VoronoiTool: React.FC<VoronoiToolProps> = ({
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <button
-          onClick={executeVoronoi}
           disabled={isProcessing || !isLoaded}
           style={{
             flex: 1,
@@ -291,13 +292,12 @@ export const VoronoiTool: React.FC<VoronoiToolProps> = ({
             cursor: isProcessing ? 'not-allowed' : 'pointer',
             fontSize: 13
           }}
+          onClick={executeVoronoi}
         >
           {isProcessing ? 'Processing...' : 'Generate Voronoi'}
         </button>
 
-        {result && (
-          <button
-            onClick={clearResult}
+        {result ? <button
             style={{
               padding: '8px 12px',
               backgroundColor: '#e74c3c',
@@ -307,23 +307,22 @@ export const VoronoiTool: React.FC<VoronoiToolProps> = ({
               cursor: 'pointer',
               fontSize: 13
             }}
+            onClick={clearResult}
           >
             Clear
-          </button>
-        )}
+          </button> : null}
       </div>
 
       <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
         <input
-          type="checkbox"
           checked={showResult}
+          type="checkbox"
           onChange={(e) => setShowResult(e.target.checked)}
         />
         Show result on map
       </label>
 
-      {error && (
-        <div style={{
+      {error ? <div style={{
           marginTop: 12,
           padding: 8,
           backgroundColor: '#fee',
@@ -332,11 +331,9 @@ export const VoronoiTool: React.FC<VoronoiToolProps> = ({
           fontSize: 12
         }}>
           {error.message}
-        </div>
-      )}
+        </div> : null}
 
-      {result && (
-        <div style={{
+      {result ? <div style={{
           marginTop: 12,
           padding: 8,
           backgroundColor: '#fef3e2',
@@ -344,8 +341,7 @@ export const VoronoiTool: React.FC<VoronoiToolProps> = ({
           fontSize: 12
         }}>
           <strong>Result:</strong> {result.features.length} Voronoi cells
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 };

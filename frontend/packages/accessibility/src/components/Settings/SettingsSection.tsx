@@ -1,7 +1,9 @@
 import React from 'react';
+
 import { MultiLevelCard } from './MultiLevelCard';
 import { ToggleCard } from './ToggleCard';
 import { Icons } from '../Icons';
+
 import type { AccessibilitySettings, TranslationKey } from '../../types';
 
 interface SettingsSectionProps {
@@ -27,147 +29,147 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
     <div className="grid grid-cols-2 gap-3">
       {/* Multi-level Settings */}
       <MultiLevelCard
+        description={t('fontSizeDesc')}
         icon={<Icons.fontSize />}
         label={t('fontSize')}
-        description={t('fontSizeDesc')}
-        value={settings.fontSize}
         maxLevel={3}
         options={getOptions('fontSizeOptions')}
+        value={settings.fontSize}
         onChange={(v) => updateSetting('fontSize', v)}
       />
 
       <MultiLevelCard
+        description={t('contrastDesc')}
         icon={<Icons.contrast />}
         label={t('contrast')}
-        description={t('contrastDesc')}
-        value={settings.contrast}
         maxLevel={2}
         options={getOptions('contrastOptions')}
+        value={settings.contrast}
         onChange={(v) => updateSetting('contrast', v)}
       />
 
       <MultiLevelCard
+        description={t('saturationDesc')}
         icon={<Icons.saturation />}
         label={t('saturation')}
-        description={t('saturationDesc')}
-        value={settings.saturation}
         maxLevel={2}
         options={getOptions('saturationOptions')}
+        value={settings.saturation}
         onChange={(v) => updateSetting('saturation', v)}
       />
 
       <MultiLevelCard
+        description={t('lineHeightDesc')}
         icon={<Icons.lineHeight />}
         label={t('lineHeight')}
-        description={t('lineHeightDesc')}
-        value={settings.lineHeight}
         maxLevel={2}
         options={getOptions('lineHeightOptions')}
+        value={settings.lineHeight}
         onChange={(v) => updateSetting('lineHeight', v)}
       />
 
       <MultiLevelCard
+        description={t('letterSpacingDesc')}
         icon={<Icons.letterSpacing />}
         label={t('letterSpacing')}
-        description={t('letterSpacingDesc')}
-        value={settings.letterSpacing}
         maxLevel={2}
         options={getOptions('letterSpacingOptions')}
+        value={settings.letterSpacing}
         onChange={(v) => updateSetting('letterSpacing', v)}
       />
 
       <MultiLevelCard
+        description={t('wordSpacingDesc')}
         icon={<Icons.wordSpacing />}
         label={t('wordSpacing')}
-        description={t('wordSpacingDesc')}
-        value={settings.wordSpacing}
         maxLevel={2}
         options={getOptions('wordSpacingOptions')}
+        value={settings.wordSpacing}
         onChange={(v) => updateSetting('wordSpacing', v)}
       />
 
       <MultiLevelCard
+        description={t('textAlignDesc')}
         icon={<Icons.textAlign />}
         label={t('textAlign')}
-        description={t('textAlignDesc')}
-        value={settings.textAlign}
         maxLevel={2}
         options={getOptions('textAlignOptions')}
+        value={settings.textAlign}
         onChange={(v) => updateSetting('textAlign', v)}
       />
 
       <MultiLevelCard
+        description={t('cursorSizeDesc')}
         icon={<Icons.cursorSize />}
         label={t('cursorSize')}
-        description={t('cursorSizeDesc')}
-        value={settings.cursorSize}
         maxLevel={2}
         options={getOptions('cursorSizeOptions')}
+        value={settings.cursorSize}
         onChange={(v) => updateSetting('cursorSize', v)}
       />
 
       {/* Toggle Settings */}
       <ToggleCard
+        active={settings.dyslexicFont}
+        description={t('dyslexicFontDesc')}
         icon={<Icons.dyslexicFont />}
         label={t('dyslexicFont')}
-        description={t('dyslexicFontDesc')}
-        active={settings.dyslexicFont}
         onChange={() => updateSetting('dyslexicFont', !settings.dyslexicFont)}
       />
 
       <ToggleCard
+        active={settings.reducedMotion}
+        description={t('reducedMotionDesc')}
         icon={<Icons.reducedMotion />}
         label={t('reducedMotion')}
-        description={t('reducedMotionDesc')}
-        active={settings.reducedMotion}
         onChange={() => updateSetting('reducedMotion', !settings.reducedMotion)}
       />
 
       <ToggleCard
+        active={settings.highlightLinks}
+        description={t('highlightLinksDesc')}
         icon={<Icons.highlightLinks />}
         label={t('highlightLinks')}
-        description={t('highlightLinksDesc')}
-        active={settings.highlightLinks}
         onChange={() => updateSetting('highlightLinks', !settings.highlightLinks)}
       />
 
       <ToggleCard
+        active={settings.highlightHeadings}
+        description={t('highlightHeadingsDesc')}
         icon={<Icons.highlightHeadings />}
         label={t('highlightHeadings')}
-        description={t('highlightHeadingsDesc')}
-        active={settings.highlightHeadings}
         onChange={() => updateSetting('highlightHeadings', !settings.highlightHeadings)}
       />
 
       <ToggleCard
+        active={settings.focusIndicator}
+        description={t('focusIndicatorDesc')}
         icon={<Icons.focusIndicator />}
         label={t('focusIndicator')}
-        description={t('focusIndicatorDesc')}
-        active={settings.focusIndicator}
         onChange={() => updateSetting('focusIndicator', !settings.focusIndicator)}
       />
 
       <ToggleCard
+        active={settings.hideImages}
+        description={t('hideImagesDesc')}
         icon={<Icons.hideImages />}
         label={t('hideImages')}
-        description={t('hideImagesDesc')}
-        active={settings.hideImages}
         onChange={() => updateSetting('hideImages', !settings.hideImages)}
       />
 
       <ToggleCard
+        active={settings.readingGuide}
+        description={t('readingGuideDesc')}
         icon={<Icons.readingGuide />}
         label={t('readingGuide')}
-        description={t('readingGuideDesc')}
-        active={settings.readingGuide}
         onChange={() => updateSetting('readingGuide', !settings.readingGuide)}
       />
 
       <ToggleCard
+        active={settings.readingMask}
+        description={t('readingMaskDesc')}
         icon={<Icons.readingMask />}
         label={t('readingMask')}
-        description={t('readingMaskDesc')}
-        active={settings.readingMask}
         onChange={() => updateSetting('readingMask', !settings.readingMask)}
       />
     </div>

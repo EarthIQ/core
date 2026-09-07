@@ -1,6 +1,5 @@
 // src/components/controls/LayerPanel/GroupIcon.tsx
 
-import React from "react";
 import {
   Map,
   Layers,
@@ -15,6 +14,7 @@ import {
   Wifi,
   CloudSun,
 } from "lucide-react";
+import React from "react";
 
 interface GroupIconProps {
   icon?: string;

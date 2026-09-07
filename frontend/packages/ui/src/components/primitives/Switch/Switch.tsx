@@ -1,9 +1,10 @@
+import { motion } from "framer-motion";
 import React, {
   forwardRef,
   useCallback,
   type InputHTMLAttributes,
 } from "react";
-import { motion } from "framer-motion";
+
 import { cn } from "../../../utils/cn";
 
 // =========================================
@@ -66,10 +67,10 @@ const SwitchTrack = ({
 }: SwitchTrackProps) => (
   <motion.div
     className={cn("rounded-full", TRACK_SIZES[size], className)}
+    transition={{ duration: 0.2 }}
     animate={{
       backgroundColor: checked ? "var(--toggle-bg-on)" : "var(--toggle-bg-off)",
     }}
-    transition={{ duration: 0.2 }}
   >
     {children}
   </motion.div>
@@ -82,10 +83,10 @@ interface SwitchThumbProps {
 
 const SwitchThumb = ({ checked, size }: SwitchThumbProps) => (
   <motion.div
-    initial={false}
     animate={{ x: checked ? THUMB_OFFSET[size].on : THUMB_OFFSET[size].off }}
-    transition={SPRING_CONFIG}
     className={cn("absolute top-1 rounded-full", THUMB_SIZES[size])}
+    initial={false}
+    transition={SPRING_CONFIG}
     style={{
       backgroundColor: "var(--toggle-knob)",
       boxShadow: "var(--shadow-sm)",
@@ -103,22 +104,18 @@ const SwitchLabel = ({ label, description }: SwitchLabelProps) => {
 
   return (
     <div className="flex flex-col gap-0.5">
-      {label && (
-        <span
+      {label ? <span
           className="text-sm leading-none font-medium"
           style={{ color: "var(--text-primary)" }}
         >
           {label}
-        </span>
-      )}
-      {description && (
-        <span
+        </span> : null}
+      {description ? <span
           className="text-xs leading-tight"
           style={{ color: "var(--text-tertiary)" }}
         >
           {description}
-        </span>
-      )}
+        </span> : null}
     </div>
   );
 };
@@ -170,16 +167,16 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
         {/* Hidden Input */}
         <input
           ref={ref}
-          id={switchId}
-          type="checkbox"
-          role="switch"
           aria-checked={isChecked}
           aria-label={label}
-          disabled={disabled}
           checked={checked}
-          defaultChecked={defaultChecked}
-          onChange={handleChange}
           className="sr-only hidden"
+          defaultChecked={defaultChecked}
+          disabled={disabled}
+          id={switchId}
+          role="switch"
+          type="checkbox"
+          onChange={handleChange}
           {...props}
         />
 
@@ -187,8 +184,8 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
         <div className="relative flex-shrink-0">
           <SwitchTrack
             checked={isChecked}
-            size={size}
             className={className ?? ""}
+            size={size}
           >
             <SwitchThumb
               checked={isChecked}
@@ -199,8 +196,8 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
 
         {/* Label & Description */}
         <SwitchLabel
-          label={label ?? ""}
           description={description ?? ""}
+          label={label ?? ""}
         />
       </label>
     );

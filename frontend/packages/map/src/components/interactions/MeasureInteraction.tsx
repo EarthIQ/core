@@ -1,7 +1,11 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useMap } from '../../hooks/useMap';
 import * as turf from '@turf/turf';
+import { useEffect, useState, useCallback, useRef as _useRef } from 'react';
+
+import { useMap } from '../../hooks/useMap';
+
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export type MeasureMode = 'distance' | 'area' | 'radius' | 'angle' | null;
 
@@ -537,7 +541,7 @@ function findSnapPoint(
   features.forEach(feature => {
     const coords = getCoordinatesFromGeometry(feature.geometry as GeoJSON.Geometry);
     coords.forEach(coord => {
-      const projected = map.project(coord as [number, number]);
+      const projected = map.project(coord);
       const distance = Math.sqrt(
         Math.pow(projected.x - point.x, 2) +
         Math.pow(projected.y - point.y, 2)
@@ -555,10 +559,10 @@ function findSnapPoint(
 function getCoordinatesFromGeometry(geometry: GeoJSON.Geometry): number[][] {
   switch (geometry.type) {
     case 'Point':
-      return [geometry.coordinates as number[]];
+      return [geometry.coordinates];
     case 'LineString':
     case 'MultiPoint':
-      return geometry.coordinates as number[][];
+      return geometry.coordinates;
     case 'Polygon':
     case 'MultiLineString':
       return (geometry.coordinates as number[][][]).flat();

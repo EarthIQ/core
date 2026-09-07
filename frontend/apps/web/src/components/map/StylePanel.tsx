@@ -1,7 +1,10 @@
-import { useState } from "react";
 import { X } from "lucide-react";
-import type { LayerTreeNode } from "./layer-panel/types";
+import { useState } from "react";
+
 import { LAYER_COLORS } from "./layer-panel/useLayerTree";
+
+import type { LayerTreeNode } from "./layer-panel/types";
+
 
 interface StylePanelProps {
   layer: LayerTreeNode;
@@ -10,7 +13,7 @@ interface StylePanelProps {
   onRename: (id: string, name: string) => void;
 }
 
-function SliderField({
+const SliderField = ({
   label,
   value,
   display,
@@ -26,7 +29,7 @@ function SliderField({
   max: number;
   step: number;
   onChange: (v: number) => void;
-}) {
+}) => {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between">
@@ -38,24 +41,24 @@ function SliderField({
         </span>
       </div>
       <input
-        type="range"
-        min={min}
+        className="w-full accent-primary"
         max={max}
+        min={min}
         step={step}
+        type="range"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-primary"
       />
     </div>
   );
 }
 
-export function StylePanel({
+export const StylePanel = ({
   layer,
   onClose,
   onChange,
   onRename,
-}: StylePanelProps) {
+}: StylePanelProps) => {
   const [nameDraft, setNameDraft] = useState(layer.name);
   const color = layer.color ?? "#22d3a0";
   const opacity = layer.opacity ?? 0.8;
@@ -95,9 +98,9 @@ export function StylePanel({
           </span>
         </div>
         <button
+          className="p-1 rounded-md text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors"
           type="button"
           onClick={onClose}
-          className="p-1 rounded-md text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors"
         >
           <X size={14} />
         </button>
@@ -108,13 +111,13 @@ export function StylePanel({
           Layer Name
         </div>
         <input
+          className="w-full text-xs font-semibold text-text-primary bg-surface-hover border border-border-secondary rounded-md px-2 py-1.5 outline-none focus:border-primary/50"
           value={nameDraft}
-          onChange={(e) => setNameDraft(e.target.value)}
           onBlur={commitName}
+          onChange={(e) => setNameDraft(e.target.value)}
           onKeyDown={(e) =>
             e.key === "Enter" && (e.target as HTMLInputElement).blur()
           }
-          className="w-full text-xs font-semibold text-text-primary bg-surface-hover border border-border-secondary rounded-md px-2 py-1.5 outline-none focus:border-primary/50"
         />
       </div>
 
@@ -127,23 +130,23 @@ export function StylePanel({
           </label>
           <div className="flex items-center gap-3">
             <input
+              className="w-9 h-9 rounded-lg border-2 border-border-primary cursor-pointer bg-transparent p-0.5"
               type="color"
               value={color}
               onChange={(e) => onChange(layer.id, { color: e.target.value })}
-              className="w-9 h-9 rounded-lg border-2 border-border-primary cursor-pointer bg-transparent p-0.5"
             />
             <div className="flex gap-1.5 flex-wrap">
               {LAYER_COLORS.map((c) => (
                 <button
                   key={c}
-                  type="button"
-                  title={c}
-                  onClick={() => onChange(layer.id, { color: c })}
                   className="w-5 h-5 rounded-full border-2 transition-transform hover:scale-110"
+                  title={c}
+                  type="button"
                   style={{
                     background: c,
                     borderColor: color === c ? "#fff" : "transparent",
                   }}
+                  onClick={() => onChange(layer.id, { color: c })}
                 />
               ))}
             </div>
@@ -151,23 +154,23 @@ export function StylePanel({
         </div>
 
         <SliderField
-          label="Opacity"
-          value={opacity}
           display={`${Math.round(opacity * 100)}%`}
-          min={0}
+          label="Opacity"
           max={1}
+          min={0}
           step={0.05}
+          value={opacity}
           onChange={(v) => onChange(layer.id, { opacity: v })}
         />
 
         {layer.layerType === "vector" && (
           <SliderField
-            label="Line Width"
-            value={lineWidth}
             display={`${lineWidth}px`}
-            min={0.5}
+            label="Line Width"
             max={10}
+            min={0.5}
             step={0.5}
+            value={lineWidth}
             onChange={(v) => onChange(layer.id, { lineWidth: v })}
           />
         )}
@@ -175,21 +178,21 @@ export function StylePanel({
         {layer.layerType === "raster" && (
           <>
             <SliderField
-              label="Brightness"
-              value={brightness}
               display={`${Math.round(brightness * 100)}%`}
-              min={0}
+              label="Brightness"
               max={2}
+              min={0}
               step={0.05}
+              value={brightness}
               onChange={(v) => onChange(layer.id, { brightness: v })}
             />
             <SliderField
-              label="Contrast"
-              value={contrast}
               display={`${Math.round(contrast * 100)}%`}
-              min={0}
+              label="Contrast"
               max={2}
+              min={0}
               step={0.05}
+              value={contrast}
               onChange={(v) => onChange(layer.id, { contrast: v })}
             />
           </>
@@ -201,39 +204,37 @@ export function StylePanel({
           </label>
           <div className="flex items-center gap-2 text-[0.7rem] text-text-secondary">
             <input
-              type="number"
-              min={0}
+              className="w-14 bg-surface-hover border border-border-secondary rounded px-1.5 py-1 text-center outline-none"
               max={maxZoom}
+              min={0}
+              type="number"
               value={minZoom}
               onChange={(e) =>
                 onChange(layer.id, { minZoom: Number(e.target.value) })
               }
-              className="w-14 bg-surface-hover border border-border-secondary rounded px-1.5 py-1 text-center outline-none"
             />
             <span>to</span>
             <input
-              type="number"
-              min={minZoom}
+              className="w-14 bg-surface-hover border border-border-secondary rounded px-1.5 py-1 text-center outline-none"
               max={22}
+              min={minZoom}
+              type="number"
               value={maxZoom}
               onChange={(e) =>
                 onChange(layer.id, { maxZoom: Number(e.target.value) })
               }
-              className="w-14 bg-surface-hover border border-border-secondary rounded px-1.5 py-1 text-center outline-none"
             />
           </div>
         </div>
 
-        {layer.tileUrl && (
-          <div className="flex flex-col gap-1.5">
+        {layer.tileUrl ? <div className="flex flex-col gap-1.5">
             <label className="text-[0.65rem] uppercase tracking-widest text-text-quaternary font-semibold">
               Tile URL
             </label>
             <div className="text-[0.68rem] font-mono text-text-tertiary bg-surface-hover rounded-lg px-2.5 py-2 break-all leading-relaxed border border-border-secondary">
               {layer.tileUrl}
             </div>
-          </div>
-        )}
+          </div> : null}
 
         <div className="flex flex-col gap-1.5">
           <label className="text-[0.65rem] uppercase tracking-widest text-text-quaternary font-semibold">
@@ -246,9 +247,9 @@ export function StylePanel({
         </div>
 
         <button
+          className="text-[0.7rem] text-text-tertiary hover:text-error underline self-start"
           type="button"
           onClick={resetStyle}
-          className="text-[0.7rem] text-text-tertiary hover:text-error underline self-start"
         >
           Reset to defaults
         </button>

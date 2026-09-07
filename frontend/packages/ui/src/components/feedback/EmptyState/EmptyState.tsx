@@ -1,4 +1,5 @@
 import React, { type ReactNode } from "react";
+
 import { cn } from "../../../utils/cn";
 import { Button } from "../../primitives/Button/Button";
 
@@ -39,7 +40,7 @@ const sizeConfig = {
   },
 };
 
-export function EmptyState({
+export const EmptyState = ({
   icon,
   title,
   description,
@@ -47,7 +48,7 @@ export function EmptyState({
   secondaryAction,
   size = "md",
   className,
-}: EmptyStateProps) {
+}: EmptyStateProps) => {
   const config = sizeConfig[size];
 
   return (
@@ -82,10 +83,10 @@ export function EmptyState({
             viewBox="0 0 24 24"
           >
             <path
+              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={1.5}
-              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
             />
           </svg>
         </div>
@@ -102,59 +103,57 @@ export function EmptyState({
       </h3>
 
       {/* Description */}
-      {description && (
-        <p
+      {description ? <p
           className={cn(
             "mb-6 max-w-sm text-[var(--text-secondary)]",
             config.description
           )}
         >
           {description}
-        </p>
-      )}
+        </p> : null}
 
       {/* Actions */}
-      {(action || secondaryAction) && (
-        <div className="flex items-center gap-3">
-          {action && (
-            <Button
+      {(action || secondaryAction) ? <div className="flex items-center gap-3">
+          {action ? <Button
               variant="primary"
               onClick={action.onClick}
             >
               {action.label}
-            </Button>
-          )}
-          {secondaryAction && (
-            <Button
+            </Button> : null}
+          {secondaryAction ? <Button
               variant="ghost"
               onClick={secondaryAction.onClick}
             >
               {secondaryAction.label}
-            </Button>
-          )}
-        </div>
-      )}
+            </Button> : null}
+        </div> : null}
     </div>
   );
 }
 
 // Pre-built empty states
-export function NoDataEmptyState(props: Partial<EmptyStateProps>) {
+export const NoDataEmptyState = (props: Partial<EmptyStateProps>) => {
   return (
     <EmptyState
-      title="No data available"
       description="There's nothing to display here yet."
+      title="No data available"
       {...props}
     />
   );
 }
 
-export function NoSearchResultsEmptyState({
+export const NoSearchResultsEmptyState = ({
   query,
   ...props
-}: Partial<EmptyStateProps> & { query?: string }) {
+}: Partial<EmptyStateProps> & { query?: string }) => {
   return (
     <EmptyState
+      title="No results found"
+      description={
+        query
+          ? `We couldn't find anything matching "${query}"`
+          : "Try adjusting your search or filters"
+      }
       icon={
         <svg
           className="h-8 w-8 text-[var(--text-tertiary)]"
@@ -163,30 +162,27 @@ export function NoSearchResultsEmptyState({
           viewBox="0 0 24 24"
         >
           <path
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={1.5}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
           />
         </svg>
-      }
-      title="No results found"
-      description={
-        query
-          ? `We couldn't find anything matching "${query}"`
-          : "Try adjusting your search or filters"
       }
       {...props}
     />
   );
 }
 
-export function ErrorEmptyState({
+export const ErrorEmptyState = ({
   onRetry,
   ...props
-}: Partial<EmptyStateProps> & { onRetry?: () => void }) {
+}: Partial<EmptyStateProps> & { onRetry?: () => void }) => {
   return (
     <EmptyState
+      action={onRetry ? { label: "Try Again", onClick: onRetry } : undefined}
+      description="We encountered an error while loading. Please try again."
+      title="Something went wrong"
       icon={
         <svg
           className="h-8 w-8 text-[var(--error)]"
@@ -195,16 +191,13 @@ export function ErrorEmptyState({
           viewBox="0 0 24 24"
         >
           <path
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={1.5}
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
           />
         </svg>
       }
-      title="Something went wrong"
-      description="We encountered an error while loading. Please try again."
-      action={onRetry ? { label: "Try Again", onClick: onRetry } : undefined}
       {...props}
     />
   );

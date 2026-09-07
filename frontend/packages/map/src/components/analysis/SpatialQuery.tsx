@@ -1,6 +1,8 @@
-import React, { useState, useCallback } from 'react';
-import { useMap } from '../../hooks/useMap';
 import * as turf from '@turf/turf';
+import React, { useState, useCallback } from 'react';
+
+import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
 
 export type SpatialOperation = 
@@ -39,7 +41,7 @@ export const SpatialQuery: React.FC<SpatialQueryProps> = ({
   highlightStyle = { color: '#ef4444', width: 3 }
 }) => {
   const { map, isLoaded } = useMap();
-  const [results, setResults] = useState<GeoJSON.FeatureCollection | null>(null);
+  const [_results, setResults] = useState<GeoJSON.FeatureCollection | null>(null);
 
   const executeQuery = useCallback(() => {
     if (!target || !queryGeometry) return;

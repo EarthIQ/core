@@ -95,7 +95,7 @@ export interface DatasetPreview {
 /** Geometry-type profile of a dataset (point / line / polygon mix). */
 export interface GeometrySummary {
   dataset_id: string;
-  kind: "vector" | "raster" | string;
+  kind: string;
   dominant: "point" | "line" | "polygon" | null;
   counts: Record<string, number>;
   total: number;
@@ -112,8 +112,8 @@ export interface GeoDatasetFeature {
 
 export interface UploadDatasetParams {
   file: File;
-  format?: DatasetFormat | string;
-  type?: DatasetType | string;
+  format?: string;
+  type?: string;
   crs?: string;
   tags?: string;
   description?: string;
@@ -437,7 +437,7 @@ async function folderRequest<T>(
     const body = await res.json().catch(() => ({}));
     throw new Error(body?.detail ?? `HTTP ${res.status}`);
   }
-  if (res.status === 204) return undefined as T;
+  if (res.status === 204) return undefined;
   return (await res.json()) as T;
 }
 

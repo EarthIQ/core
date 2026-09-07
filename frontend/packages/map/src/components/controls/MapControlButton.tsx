@@ -1,3 +1,4 @@
+import { cn } from "@packages/ui";
 import {
   createContext,
   useCallback,
@@ -7,7 +8,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { cn } from "@packages/ui";
 
 // ─── Control Group Container ──────────────────────────────────────────
 //
@@ -59,12 +59,12 @@ interface ControlGroupProps {
   children: ReactNode;
 }
 
-export function ControlGroup({
+export const ControlGroup = ({
   position,
   className,
   id,
   children,
-}: ControlGroupProps) {
+}: ControlGroupProps) => {
   return (
     <div
       id={id}
@@ -164,7 +164,7 @@ interface ControlButtonProps {
   id?: string;
 }
 
-export function ControlButton({
+export const ControlButton = ({
   icon,
   label,
   active = false,
@@ -172,14 +172,13 @@ export function ControlButton({
   onClick,
   className,
   id,
-}: ControlButtonProps) {
+}: ControlButtonProps) => {
   return (
     <button
-      id={id}
-      onClick={onClick}
-      disabled={disabled}
-      title={label}
       aria-label={label}
+      disabled={disabled}
+      id={id}
+      title={label}
       className={cn(
         // ── Layout ───────────────────────────────────────────────
         // Centred flex container sized to a fixed 36 × 36 px tap
@@ -221,6 +220,7 @@ export function ControlButton({
         // ── Consumer overrides ───────────────────────────────────
         className
       )}
+      onClick={onClick}
     >
       {icon}
     </button>
@@ -241,7 +241,7 @@ export function ControlButton({
 // `<div>` rather than an `<hr>`, keeping the markup minimal.
 // ───────────────────────────────────────────────────────────────────────
 
-export function ControlDivider() {
+export const ControlDivider = () => {
   return <hr className="mx-2 h-px bg-[var(--border-primary)]" />;
 }
 
@@ -335,7 +335,7 @@ interface ControlButtonFlyoutProps {
   children: ReactNode;
 }
 
-export function ControlButtonFlyout({
+export const ControlButtonFlyout = ({
   icon,
   label,
   flyoutSide = "right",
@@ -347,7 +347,7 @@ export function ControlButtonFlyout({
   className,
   flyoutClassName,
   children,
-}: ControlButtonFlyoutProps) {
+}: ControlButtonFlyoutProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = forceOpen || internalOpen;
 
@@ -456,22 +456,17 @@ export function ControlButtonFlyout({
     >
       {/* ── Trigger ──────────────────────────────────────────── */}
       <ControlButton
+        active={active || open}
+        className={className}
+        disabled={disabled}
         icon={icon}
         label={label}
-        active={active || open}
-        disabled={disabled}
         onClick={() => setInternalOpen((prev) => !prev)}
-        className={className}
       />
 
       {/* ── Flyout panel (a real ControlGroup) ───────────────── */}
       <div
         ref={flyoutRef}
-        style={
-          flyoutSide === "right"
-            ? { left: `calc(100% + ${flyoutGap}px)` }
-            : { right: `calc(100% + ${flyoutGap}px)` }
-        }
         className={cn(
           "absolute z-[var(--z-dropdown)]",
 
@@ -492,6 +487,11 @@ export function ControlButtonFlyout({
             ? "pointer-events-auto scale-100 opacity-100"
             : "pointer-events-none scale-95 opacity-0"
         )}
+        style={
+          flyoutSide === "right"
+            ? { left: `calc(100% + ${flyoutGap}px)` }
+            : { right: `calc(100% + ${flyoutGap}px)` }
+        }
       >
         {/*
           We render a ControlGroup with position overridden to remove
@@ -500,8 +500,8 @@ export function ControlButtonFlyout({
           and override the positioning classes.
         */}
         <div
-          role="menu"
           aria-label={`${label} options`}
+          role="menu"
           className={cn(
             // ── Reuse ControlGroup's visual treatment ─────────
             "flex flex-col",
@@ -551,14 +551,14 @@ interface FlyoutCloseButtonProps {
   className?: string;
 }
 
-export function FlyoutCloseButton({
+export const FlyoutCloseButton = ({
   icon,
   label,
   active = false,
   disabled = false,
   onClick,
   className,
-}: FlyoutCloseButtonProps) {
+}: FlyoutCloseButtonProps) => {
   const { close } = useFlyoutContext();
 
   const handleClick = () => {
@@ -568,12 +568,12 @@ export function FlyoutCloseButton({
 
   return (
     <ControlButton
+      active={active}
+      className={className}
+      disabled={disabled}
       icon={icon}
       label={label}
-      active={active}
-      disabled={disabled}
       onClick={handleClick}
-      className={className}
     />
   );
 }

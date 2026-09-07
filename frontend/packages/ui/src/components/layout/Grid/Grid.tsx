@@ -1,4 +1,5 @@
 import React, { type ReactNode, type HTMLAttributes } from "react";
+
 import { cn } from "../../../utils/cn";
 
 /**
@@ -269,14 +270,14 @@ const rowSpanClasses: Record<RowSpanCount, string> = {
  *
  * @see {@link GridItem} - For spanning multiple columns or rows
  */
-export function Grid({
+export const Grid = ({
   children,
   cols = 3,
   gap = "md",
   responsive = true,
   className,
   ...props
-}: GridProps): JSX.Element {
+}: GridProps): JSX.Element => {
   return (
     <div
       className={cn(
@@ -332,13 +333,13 @@ export function Grid({
  *
  * @see {@link Grid} - Parent container component
  */
-export function GridItem({
+export const GridItem = ({
   children,
   colSpan,
   rowSpan,
   className,
   ...props
-}: GridItemProps): JSX.Element {
+}: GridItemProps): JSX.Element => {
   return (
     <div
       className={cn(

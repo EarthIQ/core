@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
 import { Cookie, Settings, Shield } from 'lucide-react';
-import { useCookieConsentStore } from '../stores/cookieConsentStore';
+import React, { useEffect } from 'react';
+
 import { CookieSettingsModal } from './CookieSettingsModal';
+import { useCookieConsentStore } from '../stores/cookieConsentStore';
+
 import type { CookieConsentConfig, BannerPosition } from '../types';
 
 export interface CookieBannerProps {
@@ -40,11 +42,11 @@ export const CookieBanner: React.FC<CookieBannerProps> = ({ config }) => {
       <CookieSettingsModal />
       
       <div
-        role="dialog"
-        aria-modal="false"
-        aria-labelledby="cc-banner-title"
         aria-describedby="cc-banner-description"
+        aria-labelledby="cc-banner-title"
+        aria-modal="false"
         className={`cc-banner ${POSITION_CLASSES[position]}`}
+        role="dialog"
       >
         <div className="cc-banner__container">
           <div className="cc-banner__content">
@@ -54,10 +56,10 @@ export const CookieBanner: React.FC<CookieBannerProps> = ({ config }) => {
                 <Cookie className="cc-icon" />
               </div>
               <div className="cc-banner__text">
-                <h2 id="cc-banner-title" className="cc-banner__title">
+                <h2 className="cc-banner__title" id="cc-banner-title">
                   We value your privacy
                 </h2>
-                <p id="cc-banner-description" className="cc-banner__description">
+                <p className="cc-banner__description" id="cc-banner-description">
                   We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. 
                   By clicking "Accept All", you consent to our use of cookies.
                 </p>
@@ -79,44 +81,38 @@ export const CookieBanner: React.FC<CookieBannerProps> = ({ config }) => {
             {/* Actions */}
             <div className="cc-banner__actions">
               <button
+                className="cc-btn cc-btn--ghost cc-banner__btn--reject"
                 type="button"
                 onClick={rejectAll}
-                className="cc-btn cc-btn--ghost cc-banner__btn--reject"
               >
                 Reject All
               </button>
               <button
+                className="cc-btn cc-btn--secondary"
                 type="button"
                 onClick={openSettings}
-                className="cc-btn cc-btn--secondary"
               >
                 <Settings className="cc-icon cc-icon--sm" />
                 Customize
               </button>
               <button
+                className="cc-btn cc-btn--primary cc-banner__btn--accept"
                 type="button"
                 onClick={acceptAll}
-                className="cc-btn cc-btn--primary cc-banner__btn--accept"
               >
                 Accept All
               </button>
             </div>
 
             {/* Policy Links */}
-            {(storeConfig.privacyPolicyUrl || storeConfig.cookiePolicyUrl) && (
-              <div className="cc-banner__policy-links">
-                {storeConfig.privacyPolicyUrl && (
-                  <a href={storeConfig.privacyPolicyUrl} className="cc-banner__policy-link">
+            {(storeConfig.privacyPolicyUrl || storeConfig.cookiePolicyUrl) ? <div className="cc-banner__policy-links">
+                {storeConfig.privacyPolicyUrl ? <a className="cc-banner__policy-link" href={storeConfig.privacyPolicyUrl}>
                     Privacy Policy
-                  </a>
-                )}
-                {storeConfig.cookiePolicyUrl && (
-                  <a href={storeConfig.cookiePolicyUrl} className="cc-banner__policy-link">
+                  </a> : null}
+                {storeConfig.cookiePolicyUrl ? <a className="cc-banner__policy-link" href={storeConfig.cookiePolicyUrl}>
                     Cookie Policy
-                  </a>
-                )}
-              </div>
-            )}
+                  </a> : null}
+              </div> : null}
           </div>
         </div>
       </div>

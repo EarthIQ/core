@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from "react";
 import { Check, MessageCircle, Send, Trash2, X } from "lucide-react";
-import { useMapEditor } from "@/lib/mapEditor/store";
+import { useEffect, useRef, useState } from "react";
+
+import { MentionTextarea } from "@/components/map/MentionTextarea";
 import { useAuth } from "@/lib/auth";
+import { useMapEditor } from "@/lib/mapEditor/store";
 import {
   sendMention,
   type PeopleSearchResult,
 } from "@/lib/notifications";
-import { MentionTextarea } from "@/components/map/MentionTextarea";
+
 import type { CommentThread } from "@/lib/mapEditor/types";
 
 /* ──────────────────────────────────────────────────────────────────────── */
@@ -33,7 +35,7 @@ function formatWhen(ts: number) {
   return `${d.toLocaleDateString([], { day: "2-digit", month: "short" })}, ${time}`;
 }
 
-function Avatar({
+const Avatar = ({
   name,
   size = 24,
   muted = false,
@@ -41,15 +43,15 @@ function Avatar({
   name: string;
   size?: number;
   muted?: boolean;
-}) {
+}) => {
   return (
     <span
+      style={{ width: size, height: size, fontSize: Math.max(9, size * 0.38) }}
       className={`flex items-center justify-center rounded-full font-bold shrink-0 select-none ${
         muted
           ? "bg-surface-hover text-text-tertiary border border-border-primary"
           : "bg-primary/15 text-primary border border-primary/20"
       }`}
-      style={{ width: size, height: size, fontSize: Math.max(9, size * 0.38) }}
     >
       {initials(name)}
     </span>
@@ -97,7 +99,7 @@ function notifyMentioned(
 }
 
 /** A single highlighted mention pill (used by {@link renderBody}). */
-function MentionPill({ name }: { name: string }) {
+const MentionPill = ({ name }: { name: string }) => {
   return (
     <span
       className="inline-flex items-center align-middle rounded-full"
@@ -163,7 +165,7 @@ export function renderBody(
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Speech-bubble pin (lucide MessageCircle) with the author's initials     */
 /* ──────────────────────────────────────────────────────────────────────── */
-function CommentPin({
+const CommentPin = ({
   author,
   resolved,
   active = false,
@@ -175,12 +177,20 @@ function CommentPin({
   active?: boolean;
   ghost?: boolean;
   onClick?: () => void;
-}) {
+}) => {
   const color = resolved ? "var(--success)" : "var(--primary)";
   return (
     <div
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : -1}
+      aria-label={
+        ghost
+          ? "New comment"
+          : `Comment by ${author}${resolved ? " (resolved)" : ""}`
+      }
+      className={`pointer-events-auto relative w-[42px] h-[34px] transition-transform duration-150 ${
+        onClick ? "cursor-pointer hover:scale-110" : ""
+      } ${ghost ? "opacity-80" : ""}`}
       onClick={onClick}
       onKeyDown={
         onClick
@@ -192,14 +202,6 @@ function CommentPin({
             }
           : undefined
       }
-      aria-label={
-        ghost
-          ? "New comment"
-          : `Comment by ${author}${resolved ? " (resolved)" : ""}`
-      }
-      className={`pointer-events-auto relative w-[42px] h-[34px] transition-transform duration-150 ${
-        onClick ? "cursor-pointer hover:scale-110" : ""
-      } ${ghost ? "opacity-80" : ""}`}
     >
       {/* speech bubble (lucide MessageCircle): the icon's tail tip sits at
           ≈(2,21) in its 24×24 viewBox, so at size 26 placed at left 19 /
@@ -207,10 +209,10 @@ function CommentPin({
           where the standard pin placement (bottom-center anchor) points the
           pin at the map location */}
       <MessageCircle
-        size={26}
-        strokeWidth={2}
         className="absolute text-white"
         fill={color}
+        size={26}
+        strokeWidth={2}
         style={{ left: 19, top: 11 }}
       />
       {/* initials centered over the bubble body - the MessageCircle path is
@@ -224,8 +226,7 @@ function CommentPin({
       </span>
       {/* active thread: a tight ring hugging the bubble only (the resolved
           state is conveyed by the green fill, so no separate ✓ badge) */}
-      {active && (
-        <span
+      {active ? <span
           aria-hidden
           className="absolute pointer-events-none"
           style={{
@@ -236,8 +237,7 @@ function CommentPin({
             borderRadius: 13,
             boxShadow: "0 0 0 2px var(--primary)",
           }}
-        />
-      )}
+        /> : null}
     </div>
   );
 }
@@ -245,7 +245,7 @@ function CommentPin({
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Open-thread card (messages + replies + resolve/reopen/delete)            */
 /* ──────────────────────────────────────────────────────────────────────── */
-function ThreadCard({
+const ThreadCard = ({
   thread,
   projectId,
   projectName,
@@ -253,7 +253,7 @@ function ThreadCard({
   thread: CommentThread;
   projectId?: string;
   projectName?: string;
-}) {
+}) => {
   const { user } = useAuth();
   const replyToThread = useMapEditor((s) => s.replyToThread);
   const setThreadResolved = useMapEditor((s) => s.setThreadResolved);
@@ -297,40 +297,38 @@ function ThreadCard({
           </p>
         </div>
         <button
+          aria-label="Close comment"
+          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
           type="button"
           onClick={() => setActiveThreadId(null)}
-          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
-          aria-label="Close comment"
         >
           <X size={14} />
         </button>
       </div>
 
       {/* resolved banner */}
-      {thread.resolved && (
-        <div className="flex items-center gap-2 px-3.5 py-2 bg-success/10 border-b border-success/30">
-          <Check size={13} className="text-success shrink-0" />
+      {thread.resolved ? <div className="flex items-center gap-2 px-3.5 py-2 bg-success/10 border-b border-success/30">
+          <Check className="text-success shrink-0" size={13} />
           <span className="text-xs text-success flex-1">
             {thread.resolvedByName
               ? `Resolved by ${thread.resolvedByName}`
               : "Resolved"}
           </span>
           <button
+            className="text-xs font-medium text-text-secondary hover:text-text-primary underline underline-offset-2"
             type="button"
             onClick={() => setThreadResolved(thread.id, false)}
-            className="text-xs font-medium text-text-secondary hover:text-text-primary underline underline-offset-2"
           >
             Reopen
           </button>
-        </div>
-      )}
+        </div> : null}
 
       {/* messages */}
       <div className="flex-1 overflow-y-auto max-h-[210px] min-h-[56px] px-3.5 py-3 space-y-3">
         {thread.messages.map((m, i) => (
           <div key={m.id} className="flex gap-2">
             <div className="pt-0.5">
-              <Avatar name={m.author} size={i === 0 ? 22 : 18} muted={i !== 0} />
+              <Avatar muted={i !== 0} name={m.author} size={i === 0 ? 22 : 18} />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline gap-2">
@@ -366,6 +364,7 @@ function ThreadCard({
           <div className="flex-1 min-w-0">
             <MentionTextarea
               key={replyKey}
+              className="w-full px-3 py-2 text-[13px] rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
               placeholder={`Reply to ${opener.author.split(" ")[0]}…`}
               rows={2}
               onSubmit={send}
@@ -375,15 +374,14 @@ function ThreadCard({
                   prev.some((p) => p.id === u.id) ? prev : [...prev, u],
                 )
               }
-              className="w-full px-3 py-2 text-[13px] rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
             />
           </div>
           <button
+            aria-label="Send reply"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-white hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            disabled={!reply.trim()}
             type="button"
             onClick={send}
-            disabled={!reply.trim()}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-white hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            aria-label="Send reply"
           >
             <Send size={14} />
           </button>
@@ -394,27 +392,25 @@ function ThreadCard({
       <div className="flex items-center gap-1 px-2.5 py-1.5 border-t border-border-primary">
         {!thread.resolved && (
           <button
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-text-secondary hover:bg-success/10 hover:text-success transition-colors"
             type="button"
             onClick={() => setThreadResolved(thread.id, true, myId, me)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-text-secondary hover:bg-success/10 hover:text-success transition-colors"
           >
             <Check size={13} />
             Resolve
           </button>
         )}
-        {canDelete && (
-          <button
+        {canDelete ? <button
+            className="ml-auto flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-text-tertiary hover:bg-error/10 hover:text-error transition-colors"
             type="button"
             onClick={() => {
               removeThread(thread.id);
               setActiveThreadId(null);
             }}
-            className="ml-auto flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-text-tertiary hover:bg-error/10 hover:text-error transition-colors"
           >
             <Trash2 size={13} />
             Delete
-          </button>
-        )}
+          </button> : null}
       </div>
     </div>
   );
@@ -423,7 +419,7 @@ function ThreadCard({
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Composer card for a freshly dropped pin (first message)                  */
 /* ──────────────────────────────────────────────────────────────────────── */
-function ComposerCard({
+const ComposerCard = ({
   lngLat,
   projectId,
   projectName,
@@ -431,7 +427,7 @@ function ComposerCard({
   lngLat: [number, number];
   projectId?: string;
   projectName?: string;
-}) {
+}) => {
   const { user } = useAuth();
   const addThread = useMapEditor((s) => s.addThread);
   const setPendingCommentLocation = useMapEditor(
@@ -465,10 +461,10 @@ function ComposerCard({
           <p className="text-[11px] text-text-tertiary">New comment</p>
         </div>
         <button
+          aria-label="Cancel comment"
+          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
           type="button"
           onClick={() => setPendingCommentLocation(null)}
-          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
-          aria-label="Cancel comment"
         >
           <X size={14} />
         </button>
@@ -476,9 +472,10 @@ function ComposerCard({
       <div className="px-3 py-2.5">
         <MentionTextarea
           key={composerKey}
+          autoFocus
+          className="w-full px-3 py-2 text-[13px] rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
           placeholder="What would you like to say about this spot?"
           rows={3}
-          autoFocus
           onSubmit={post}
           onTextChange={setBody}
           onMention={(u) =>
@@ -486,22 +483,21 @@ function ComposerCard({
               prev.some((p) => p.id === u.id) ? prev : [...prev, u],
             )
           }
-          className="w-full px-3 py-2 text-[13px] rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
         />
       </div>
       <div className="flex items-center justify-end gap-2 px-3 py-2 border-t border-border-primary">
         <button
+          className="px-3 py-1.5 rounded-lg text-xs font-medium text-text-secondary hover:bg-surface-hover transition-colors"
           type="button"
           onClick={() => setPendingCommentLocation(null)}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium text-text-secondary hover:bg-surface-hover transition-colors"
         >
           Cancel
         </button>
         <button
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-white hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          disabled={!body.trim()}
           type="button"
           onClick={post}
-          disabled={!body.trim()}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-white hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <Send size={12} />
           Post
@@ -514,7 +510,7 @@ function ComposerCard({
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Overlay: a pin per thread + the open card / composer                     */
 /* ──────────────────────────────────────────────────────────────────────── */
-export function CommentPins({
+export const CommentPins = ({
   mapRef,
   mapReady,
   projectId,
@@ -524,7 +520,7 @@ export function CommentPins({
   mapReady: boolean;
   projectId?: string;
   projectName?: string;
-}) {
+}) => {
   const comments = useMapEditor((s) => s.comments);
   const pending = useMapEditor((s) => s.pendingCommentLocation);
   const placing = useMapEditor((s) => s.commentPlacement);
@@ -650,41 +646,36 @@ export function CommentPins({
           style={{ transform: "translate(-50%, -100%)" }}
         >
           <CommentPin
+            active={t.id === activeThreadId}
             author={t.messages[0].author}
             resolved={t.resolved}
-            active={t.id === activeThreadId}
             onClick={() => setActiveThreadId(t.id)}
           />
         </div>
       ))}
 
       {/* pending pin (awaiting its first message) */}
-      {pending && (
-        <div
+      {pending ? <div
           ref={(el) => {
             pinRefs.current["__pending"] = el;
           }}
           className="absolute top-0 left-0 will-change-transform"
           style={{ transform: "translate(-50%, -100%)" }}
         >
-          <CommentPin author={me} resolved={false} active />
-        </div>
-      )}
+          <CommentPin active author={me} resolved={false} />
+        </div> : null}
 
       {/* ghost preview while placing (hidden until the cursor moves) */}
-      {placing && !pending && (
-        <div
+      {placing && !pending ? <div
           ref={ghostRef}
           className="absolute top-0 left-0 pointer-events-none will-change-transform"
           style={{ transform: "translate(-50%, -100%)", opacity: 0 }}
         >
-          <CommentPin author={me} resolved={false} ghost />
-        </div>
-      )}
+          <CommentPin ghost author={me} resolved={false} />
+        </div> : null}
 
       {/* open card: thread or composer (one at a time) */}
-      {(activeThread || pending) && (
-        <div
+      {(activeThread || pending) ? <div
           ref={cardRef}
           /* NOTE: the outer container is `pointer-events-none` (an inherited
              property) - without this explicit `auto`, the whole card,
@@ -694,9 +685,9 @@ export function CommentPins({
         >
           {activeThread ? (
             <ThreadCard
-              thread={activeThread}
               projectId={projectId}
               projectName={projectName}
+              thread={activeThread}
             />
           ) : (
             pending && (
@@ -707,8 +698,7 @@ export function CommentPins({
               />
             )
           )}
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 }

@@ -1,7 +1,8 @@
 // src/hooks/useVideoExport.ts
 
+import { type Map as MaplibreMap } from "maplibre-gl";
 import { useCallback, useRef, useState } from "react";
-import { Map as MaplibreMap } from "maplibre-gl";
+
 import type {
   ExportSettings,
   ExportProgress,
@@ -30,7 +31,7 @@ export function useVideoExport({
 
   const abortRef = useRef(false);
 
-  const captureFrame = useCallback(async (): Promise<Blob | null> => {
+  const _captureFrame = useCallback(async (): Promise<Blob | null> => {
     if (!map) return null;
 
     const canvas = map.getCanvas();
@@ -176,7 +177,7 @@ export function useVideoExport({
         // Encode
         setProgress((p) => ({ ...p, phase: "encoding", percentage: 85 }));
 
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<void>((resolve, _reject) => {
           gif.on("finished", (blob: Blob) => {
             // Download
             const url = URL.createObjectURL(blob);

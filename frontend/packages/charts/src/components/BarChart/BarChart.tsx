@@ -10,8 +10,10 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import { ChartContainer } from "../ChartContainer";
+
 import { getColor } from "../../utils/colors";
+import { ChartContainer } from "../ChartContainer";
+
 import type { BarChartProps } from "../../types";
 
 const defaultTickFormatter = (value: any) => {
@@ -59,22 +61,24 @@ export const BarChart: React.FC<BarChartProps> = ({
 
   return (
     <ChartContainer
-      title={title}
+      className={className}
+      data={data}
       description={description}
-      toolbar={toolbar}
-      loading={loading}
       empty={empty || data.length === 0}
       error={error}
-      data={data}
       exportFilename={exportFilename}
-      className={className}
+      loading={loading}
+      title={title}
+      toolbar={toolbar}
     >
       <div style={{ width, height }}>
         <ResponsiveContainer
-          width="100%"
           height="100%"
+          width="100%"
         >
           <RechartsBarChart
+            barCategoryGap={barCategoryGap}
+            barGap={barGap}
             data={data}
             layout={layout}
             margin={{
@@ -83,8 +87,6 @@ export const BarChart: React.FC<BarChartProps> = ({
               left: 0,
               bottom: xAxis?.label ? 20 : 10,
             }}
-            barGap={barGap}
-            barCategoryGap={barCategoryGap}
             onClick={(e) => {
               if (!onDataPointClick) return;
               const index = e.activeTooltipIndex;
@@ -93,26 +95,24 @@ export const BarChart: React.FC<BarChartProps> = ({
               if (payload) onDataPointClick(payload, index);
             }}
           >
-            {showGrid && (
-              <CartesianGrid
-                strokeDasharray="3 3"
+            {showGrid ? <CartesianGrid
                 className="stroke-gray-200 dark:stroke-gray-700"
                 horizontal={layout === "horizontal" && gridType !== "vertical"}
+                strokeDasharray="3 3"
                 vertical={layout === "vertical" || gridType === "vertical"}
-              />
-            )}
+              /> : null}
 
             {layout === "horizontal" ? (
               <>
                 {!xAxis?.hide && (
                   <XAxis
-                    dataKey="name"
-                    tickLine={false}
                     axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={xAxis?.tickFormatter}
-                    tick={{ fill: "currentColor", fontSize: 12 }}
                     className="text-gray-600 dark:text-gray-400"
+                    dataKey="name"
+                    tick={{ fill: "currentColor", fontSize: 12 }}
+                    tickFormatter={xAxis?.tickFormatter}
+                    tickLine={false}
+                    tickMargin={8}
                     label={
                       xAxis?.label
                         ? {
@@ -128,13 +128,13 @@ export const BarChart: React.FC<BarChartProps> = ({
                 )}
                 {!yAxis?.hide && (
                   <YAxis
-                    tickLine={false}
                     axisLine={false}
-                    tickMargin={4}
-                    tickFormatter={yAxis?.tickFormatter || defaultTickFormatter}
-                    tick={{ fill: "currentColor", fontSize: 12 }}
                     className="text-gray-600 dark:text-gray-400"
                     domain={yAxis?.domain}
+                    tick={{ fill: "currentColor", fontSize: 12 }}
+                    tickFormatter={yAxis?.tickFormatter || defaultTickFormatter}
+                    tickLine={false}
+                    tickMargin={4}
                     width={yAxis?.label ? 50 : 40}
                     label={
                       yAxis?.label
@@ -156,13 +156,13 @@ export const BarChart: React.FC<BarChartProps> = ({
               <>
                 {!xAxis?.hide && (
                   <XAxis
-                    type="number"
-                    tickLine={false}
                     axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={xAxis?.tickFormatter}
-                    tick={{ fill: "currentColor", fontSize: 12 }}
                     className="text-gray-600 dark:text-gray-400"
+                    tick={{ fill: "currentColor", fontSize: 12 }}
+                    tickFormatter={xAxis?.tickFormatter}
+                    tickLine={false}
+                    tickMargin={8}
+                    type="number"
                     label={
                       xAxis?.label
                         ? {
@@ -178,13 +178,13 @@ export const BarChart: React.FC<BarChartProps> = ({
                 )}
                 {!yAxis?.hide && (
                   <YAxis
-                    dataKey="name"
-                    type="category"
-                    tickLine={false}
                     axisLine={false}
-                    tickMargin={4}
-                    tick={{ fill: "currentColor", fontSize: 12 }}
                     className="text-gray-600 dark:text-gray-400"
+                    dataKey="name"
+                    tick={{ fill: "currentColor", fontSize: 12 }}
+                    tickLine={false}
+                    tickMargin={4}
+                    type="category"
                     width={yAxis?.label ? 100 : 80}
                     label={
                       yAxis?.label
@@ -203,41 +203,37 @@ export const BarChart: React.FC<BarChartProps> = ({
               </>
             )}
 
-            {showTooltip && (
-              <Tooltip
-                formatter={tooltipFormatter}
+            {showTooltip ? <Tooltip
                 cursor={{ fill: "hsl(var(--muted, 220 14% 96%))" }}
+                formatter={tooltipFormatter}
+                labelStyle={{ fontWeight: 600, marginBottom: 4 }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover, 0 0% 100%))",
                   border: "1px solid hsl(var(--border, 220 13% 91%))",
                   borderRadius: "8px",
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-                labelStyle={{ fontWeight: 600, marginBottom: 4 }}
-              />
-            )}
+              /> : null}
 
-            {showLegend && (
-              <Legend
-                verticalAlign="bottom"
+            {showLegend ? <Legend
                 height={36}
-                iconType="circle"
                 iconSize={8}
+                iconType="circle"
+                verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              />
-            )}
+              /> : null}
 
             {bars.map((bar, index) => (
               <Bar
                 key={bar.dataKey}
-                dataKey={bar.dataKey}
-                name={bar.name || bar.dataKey}
-                fill={bar.color || getColor(index, colors)}
-                stackId={stacked ? "stack" : bar.stackId}
-                isAnimationActive={animate}
                 animationDuration={animationDuration}
-                radius={bar.radius ?? [4, 4, 0, 0]}
                 barSize={barSize}
+                dataKey={bar.dataKey}
+                fill={bar.color || getColor(index, colors)}
+                isAnimationActive={animate}
+                name={bar.name || bar.dataKey}
+                radius={bar.radius ?? [4, 4, 0, 0]}
+                stackId={stacked ? "stack" : bar.stackId}
               >
                 {data.map((entry, idx) => (
                   <Cell
@@ -245,7 +241,7 @@ export const BarChart: React.FC<BarChartProps> = ({
                     fill={
                       (entry.color as string) ||
                       bar.color ||
-                      (getColor(index, colors) as string)
+                      (getColor(index, colors))
                     }
                   />
                 ))}

@@ -1,6 +1,10 @@
-import React, { useEffect, useId, useState } from 'react';
-import { useMap } from '../../hooks/useMap';
 import { geojson as fgbGeojson } from 'flatgeobuf';
+import { useEffect, useId, useState } from 'react';
+
+import { useMap } from '../../hooks/useMap';
+
+import type React from 'react';
+
 
 export interface FlatGeobufSourceProps {
   /** Unique source ID */
@@ -49,7 +53,7 @@ export const FlatGeobufSource: React.FC<FlatGeobufSourceProps> = ({
   const autoId = useId();
   const id = propId || `fgb-source-${autoId}`;
   const sourceId = `${id}-source`;
-  const [features, setFeatures] = useState<any[]>([]);
+  const [_features, setFeatures] = useState<any[]>([]);
 
   useEffect(() => {
     if (!map || !isLoaded) return;

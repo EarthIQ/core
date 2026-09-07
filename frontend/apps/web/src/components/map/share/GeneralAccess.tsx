@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Globe, Lock } from "lucide-react";
-import { RoleSelect } from "./RoleSelect";
-import { ROLE_META, type GeneralAccess as GA, type LinkRole } from "./types";
+import { useEffect, useRef, useState } from "react";
 
-export function GeneralAccessSection({
+import { RoleSelect } from "./RoleSelect";
+import { ROLE_META as _ROLE_META, type GeneralAccess as GA, type LinkRole } from "./types";
+
+export const GeneralAccessSection = ({
   general,
   canManage,
   onChange,
@@ -14,7 +15,7 @@ export function GeneralAccessSection({
   onChange: (g: GA) => void;
   /** Noun for the shared entity ("map" | "project") - used in helper text. */
   label?: string;
-}) {
+}) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -48,38 +49,35 @@ export function GeneralAccessSection({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="relative inline-block" ref={ref}>
+          <div ref={ref} className="relative inline-block">
             <button
-              type="button"
               disabled={!canManage}
-              onClick={() => setOpen((v) => !v)}
+              type="button"
               className={`flex items-center gap-1 px-2 py-1 -ml-2 rounded-lg text-[0.82rem] font-medium transition-colors ${
                 canManage
                   ? "text-text-primary hover:bg-surface-hover"
                   : "text-text-secondary cursor-default"
               }`}
+              onClick={() => setOpen((v) => !v)}
             >
               {isLink ? "Anyone with the link" : "Restricted"}
-              {canManage && (
-                <ChevronDown size={13} className={open ? "rotate-180" : ""} />
-              )}
+              {canManage ? <ChevronDown className={open ? "rotate-180" : ""} size={13} /> : null}
             </button>
 
-            {open && (
-              <div className="absolute left-0 top-full mt-1 w-72 bg-elevated border border-border-primary rounded-xl shadow-2xl py-1.5 z-[80] animate-fade-in">
+            {open ? <div className="absolute left-0 top-full mt-1 w-72 bg-elevated border border-border-primary rounded-xl shadow-2xl py-1.5 z-[80] animate-fade-in">
                 {(["restricted", "link"] as const).map((t) => (
                   <button
                     key={t}
+                    className="flex items-start gap-2.5 w-full px-3 py-2 text-left hover:bg-surface-hover transition-colors"
                     type="button"
                     onClick={() => {
                       onChange({ ...general, type: t });
                       setOpen(false);
                     }}
-                    className="flex items-start gap-2.5 w-full px-3 py-2 text-left hover:bg-surface-hover transition-colors"
                   >
                     <span className="w-4 shrink-0 pt-0.5">
                       {general.type === t && (
-                        <Check size={14} className="text-primary" />
+                        <Check className="text-primary" size={14} />
                       )}
                     </span>
                     <span className="flex-1">
@@ -96,8 +94,7 @@ export function GeneralAccessSection({
                     </span>
                   </button>
                 ))}
-              </div>
-            )}
+              </div> : null}
           </div>
 
           <div className="text-[0.7rem] text-text-tertiary mt-0.5 px-0">
@@ -113,13 +110,11 @@ export function GeneralAccessSection({
           </div>
         </div>
 
-        {isLink && (
-          <RoleSelect
+        {isLink ? <RoleSelect
+            disabled={!canManage}
             value={general.role}
             onChange={(r) => onChange({ ...general, role: r as LinkRole })}
-            disabled={!canManage}
-          />
-        )}
+          /> : null}
       </div>
     </div>
   );

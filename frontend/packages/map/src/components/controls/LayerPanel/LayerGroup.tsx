@@ -1,10 +1,12 @@
 // src/components/controls/LayerPanel/LayerGroup.tsx
 
+import { ChevronDown, ChevronRight, Eye, EyeOff } from "lucide-react";
 import React, { memo, useCallback } from "react";
-import { ChevronDown, ChevronRight, Eye, EyeOff, Radio } from "lucide-react";
+
 import { GroupIcon } from "./GroupIcon";
 import { LayerItem } from "./LayerItem";
 import { SubGroupComponent } from "./SubGroup";
+
 import type { ResolvedGroup } from "./types";
 
 interface LayerGroupProps {
@@ -60,16 +62,16 @@ export const LayerGroupComponent: React.FC<LayerGroupProps> = memo(
 
     return (
       <div
+        aria-label={group.name}
         className="border-b border-[var(--border-secondary)] last:border-b-0"
         role="group"
-        aria-label={group.name}
       >
         {/* Group Header */}
         <div
-          onClick={handleToggle}
+          aria-expanded={group.expanded}
           className="flex cursor-pointer items-center gap-2 px-3 py-2.5 transition-colors select-none hover:bg-[var(--surface-hover)]"
           role="button"
-          aria-expanded={group.expanded}
+          onClick={handleToggle}
         >
           {group.expanded ? (
             <ChevronDown className="h-4 w-4 flex-shrink-0 text-[var(--text-secondary)]" />
@@ -79,9 +81,9 @@ export const LayerGroupComponent: React.FC<LayerGroupProps> = memo(
 
           <span style={{ color: group.color || "var(--primary)" }}>
             <GroupIcon
-              icon={group.icon || "folder"}
-              expanded={group.expanded}
               className="h-4 w-4"
+              expanded={group.expanded}
+              icon={group.icon || "folder"}
             />
           </span>
 
@@ -101,9 +103,9 @@ export const LayerGroupComponent: React.FC<LayerGroupProps> = memo(
           )} */}
 
           <button
-            onClick={handleVisibility}
-            className="flex-shrink-0 rounded p-0.5 transition-colors hover:bg-[var(--surface-active)]"
             aria-label={`${group.visible ? "Hide" : "Show"} all in ${group.name}`}
+            className="flex-shrink-0 rounded p-0.5 transition-colors hover:bg-[var(--surface-active)]"
+            onClick={handleVisibility}
           >
             {group.visible ? (
               <Eye className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
@@ -121,8 +123,7 @@ export const LayerGroupComponent: React.FC<LayerGroupProps> = memo(
         </div>
 
         {/* Content */}
-        {group.expanded && (
-          <div className="pb-1">
+        {group.expanded ? <div className="pb-1">
             {/* Direct Layers */}
             {group.layers.length > 0 && (
               <div
@@ -136,20 +137,20 @@ export const LayerGroupComponent: React.FC<LayerGroupProps> = memo(
                 {group.layers.map((layer) => (
                   <LayerItem
                     key={layer.id}
-                    layer={layer}
+                    allowDelete={allowDelete ? !group.locked : null}
+                    allowReorder={allowReorder}
+                    indentLevel={1}
                     isSelected={selectedLayerId === layer.id}
+                    layer={layer}
+                    showTypeBadge={showTypeBadges}
+                    singleSelect={group.singleSelect}
+                    onDelete={onLayerDelete}
+                    onMoveDown={onLayerMoveDown}
+                    onMoveUp={onLayerMoveUp}
+                    onOpacityChange={onLayerOpacityChange}
                     onSelect={onSelectLayer}
                     onVisibilityChange={onLayerVisibilityChange}
-                    onOpacityChange={onLayerOpacityChange}
-                    onDelete={onLayerDelete}
                     onZoomTo={onLayerZoomTo}
-                    onMoveUp={onLayerMoveUp}
-                    onMoveDown={onLayerMoveDown}
-                    showTypeBadge={showTypeBadges}
-                    allowReorder={allowReorder}
-                    allowDelete={allowDelete && !group.locked}
-                    singleSelect={group.singleSelect}
-                    indentLevel={1}
                   />
                 ))}
               </div>
@@ -161,26 +162,25 @@ export const LayerGroupComponent: React.FC<LayerGroupProps> = memo(
                 {group.subGroups.map((subGroup) => (
                   <SubGroupComponent
                     key={subGroup.id}
+                    allowDelete={allowDelete ? !group.locked : null}
+                    allowReorder={allowReorder}
+                    selectedLayerId={selectedLayerId}
+                    showTypeBadges={showTypeBadges}
                     subGroup={subGroup}
+                    onLayerDelete={onLayerDelete}
+                    onLayerMoveDown={onLayerMoveDown}
+                    onLayerMoveUp={onLayerMoveUp}
+                    onLayerOpacityChange={onLayerOpacityChange}
+                    onLayerVisibilityChange={onLayerVisibilityChange}
+                    onLayerZoomTo={onLayerZoomTo}
+                    onSelectLayer={onSelectLayer}
                     onToggleExpanded={onToggleSubGroupExpanded}
                     onToggleVisibility={onToggleSubGroupVisibility}
-                    selectedLayerId={selectedLayerId}
-                    onSelectLayer={onSelectLayer}
-                    onLayerVisibilityChange={onLayerVisibilityChange}
-                    onLayerOpacityChange={onLayerOpacityChange}
-                    onLayerDelete={onLayerDelete}
-                    onLayerZoomTo={onLayerZoomTo}
-                    onLayerMoveUp={onLayerMoveUp}
-                    onLayerMoveDown={onLayerMoveDown}
-                    showTypeBadges={showTypeBadges}
-                    allowReorder={allowReorder}
-                    allowDelete={allowDelete && !group.locked}
                   />
                 ))}
               </div>
             )}
-          </div>
-        )}
+          </div> : null}
       </div>
     );
   }

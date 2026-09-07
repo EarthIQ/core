@@ -1,6 +1,7 @@
-import React, { type ReactNode, type HTMLAttributes } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { motion, type HTMLMotionProps } from "framer-motion";
+import React, { type ReactNode as _ReactNode, type HTMLAttributes } from "react";
+
 import { cn } from "../../../utils/cn";
 
 const cardVariants = cva(
@@ -54,7 +55,7 @@ export interface CardProps
   animate?: boolean;
 }
 
-export function Card({
+export const Card = ({
   className,
   variant,
   size,
@@ -63,7 +64,7 @@ export function Card({
   animate = true,
   children,
   ...props
-}: CardProps) {
+}: CardProps) => {
   const Comp = animate ? motion.div : "div";
   const animationProps = animate
     ? {
@@ -79,7 +80,7 @@ export function Card({
         cardVariants({ variant, size, hoverable, glow }),
         className
       )}
-      {...(animationProps as any)}
+      {...(animationProps)}
       {...(props as HTMLMotionProps<"div">)}
     >
       {children}
@@ -87,11 +88,11 @@ export function Card({
   );
 }
 
-export function CardHeader({
+export const CardHeader = ({
   className,
   children,
   ...props
-}: HTMLAttributes<HTMLDivElement>) {
+}: HTMLAttributes<HTMLDivElement>) => {
   return (
     <div
       className={cn("mb-4", className)}
@@ -102,11 +103,11 @@ export function CardHeader({
   );
 }
 
-export function CardTitle({
+export const CardTitle = ({
   className,
   children,
   ...props
-}: HTMLAttributes<HTMLHeadingElement>) {
+}: HTMLAttributes<HTMLHeadingElement>) => {
   return (
     <h3
       className={cn("text-base text-xl font-semibold", className)}
@@ -117,11 +118,11 @@ export function CardTitle({
   );
 }
 
-export function CardDescription({
+export const CardDescription = ({
   className,
   children,
   ...props
-}: HTMLAttributes<HTMLParagraphElement>) {
+}: HTMLAttributes<HTMLParagraphElement>) => {
   return (
     <p
       className={cn("text-subtle mt-1 text-sm", className)}
@@ -132,11 +133,11 @@ export function CardDescription({
   );
 }
 
-export function CardContent({
+export const CardContent = ({
   className,
   children,
   ...props
-}: HTMLAttributes<HTMLDivElement>) {
+}: HTMLAttributes<HTMLDivElement>) => {
   return (
     <div
       className={cn("text-base", className)}
@@ -147,11 +148,11 @@ export function CardContent({
   );
 }
 
-export function CardFooter({
+export const CardFooter = ({
   className,
   children,
   ...props
-}: HTMLAttributes<HTMLDivElement>) {
+}: HTMLAttributes<HTMLDivElement>) => {
   return (
     <div
       className={cn("mt-6 flex items-center gap-4", className)}

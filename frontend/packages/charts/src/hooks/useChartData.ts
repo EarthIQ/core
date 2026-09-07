@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+
 import type { ChartDataPoint } from '../types';
 
 interface UseChartDataOptions {

@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+
 import type { ModelDefinition, PerformanceConfig } from "./types";
 
 // ── Singleton loader management ──────────────────────────────────────────

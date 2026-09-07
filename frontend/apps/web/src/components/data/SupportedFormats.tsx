@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { FORMATS, INGESTED_FORMATS, STORED_FORMATS } from "./constants";
 import { formatIcon } from "./helpers";
 
@@ -22,21 +23,21 @@ export default function SupportedFormats({ onAddData }: Props) {
 
   return (
     <section
-      className="card overflow-hidden"
       aria-labelledby="supported-formats-heading"
+      className="card overflow-hidden"
     >
       <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-surface-hover transition-colors"
+        type="button"
+        onClick={() => setOpen((v) => !v)}
       >
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-xl shrink-0">🧩</span>
           <div className="min-w-0 text-left">
             <h2
-              id="supported-formats-heading"
               className="text-base font-bold text-text-primary"
+              id="supported-formats-heading"
             >
               Supported Formats
             </h2>
@@ -47,17 +48,16 @@ export default function SupportedFormats({ onAddData }: Props) {
           </div>
         </div>
         <span
+          aria-hidden
           className={`text-text-tertiary transition-transform duration-200 ${
             open ? "rotate-180" : ""
           }`}
-          aria-hidden
         >
           ▼
         </span>
       </button>
 
-      {open && (
-        <div className="border-t border-border-secondary">
+      {open ? <div className="border-t border-border-secondary">
           <div className="overflow-x-auto">
             <table className="table text-sm w-full">
               <thead className="bg-bg-tertiary">
@@ -98,12 +98,10 @@ export default function SupportedFormats({ onAddData }: Props) {
                             <div className="font-semibold text-text-primary text-sm">
                               {f.label}
                             </div>
-                            {isCsv && (
-                              <div className="text-[0.65rem] text-text-tertiary">
+                            {isCsv ? <div className="text-[0.65rem] text-text-tertiary">
                                 Ingested as a queryable layer when a coordinate
                                 pair is detected
-                              </div>
-                            )}
+                              </div> : null}
                           </div>
                         </div>
                       </td>
@@ -140,17 +138,14 @@ export default function SupportedFormats({ onAddData }: Props) {
               queried directly. Stored assets are kept on disk and available for
               download or further processing.
             </div>
-            {onAddData && (
-              <button
-                onClick={onAddData}
+            {onAddData ? <button
                 className="btn btn-secondary btn-sm shrink-0"
+                onClick={onAddData}
               >
                 + Upload a new dataset
-              </button>
-            )}
+              </button> : null}
           </div>
-        </div>
-      )}
+        </div> : null}
     </section>
   );
 }

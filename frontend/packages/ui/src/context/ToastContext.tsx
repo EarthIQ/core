@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "framer-motion";
 import {
   createContext,
   useContext,
@@ -7,7 +8,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+
 import { cn } from "../utils/cn";
 
 /**
@@ -109,65 +110,65 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 const toastIcons: Record<ToastType, ReactNode> = {
   success: (
     <svg
+      aria-hidden="true"
       className="h-5 w-5 flex-shrink-0"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
-      aria-hidden="true"
     >
       <path
+        d="M5 13l4 4L19 7"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={2}
-        d="M5 13l4 4L19 7"
       />
     </svg>
   ),
   error: (
     <svg
+      aria-hidden="true"
       className="h-5 w-5 flex-shrink-0"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
-      aria-hidden="true"
     >
       <path
+        d="M6 18L18 6M6 6l12 12"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={2}
-        d="M6 18L18 6M6 6l12 12"
       />
     </svg>
   ),
   warning: (
     <svg
+      aria-hidden="true"
       className="h-5 w-5 flex-shrink-0"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
-      aria-hidden="true"
     >
       <path
+        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={2}
-        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
       />
     </svg>
   ),
   info: (
     <svg
+      aria-hidden="true"
       className="h-5 w-5 flex-shrink-0"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
-      aria-hidden="true"
     >
       <path
+        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={2}
-        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
       />
     </svg>
   ),
@@ -248,7 +249,7 @@ const getAnimationVariants = (position: ToastPosition) => {
 /**
  * Individual Toast Item Component
  */
-function ToastItem({
+const ToastItem = ({
   toast,
   onRemove,
   position,
@@ -256,7 +257,7 @@ function ToastItem({
   toast: Toast;
   onRemove: () => void;
   position: ToastPosition;
-}) {
+}) => {
   const [isHovered, setIsHovered] = useState(false);
   const [progress, setProgress] = useState(100);
   const startTimeRef = useRef(Date.now());
@@ -338,14 +339,13 @@ function ToastItem({
   return (
     <motion.div
       layout
-      initial={variants.initial}
       animate={variants.animate}
-      exit={variants.exit}
-      transition={{ duration: 0.2, ease: "easeOut" }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      role="alert"
       aria-live="polite"
+      exit={variants.exit}
+      initial={variants.initial}
+      role="alert"
+      style={getBackgroundStyle(toast.type)}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className={cn(
         // Base styles
         "relative flex w-full max-w-sm items-start gap-3 overflow-hidden",
@@ -354,49 +354,45 @@ function ToastItem({
         // Type-specific styles
         toastStyles[toast.type]
       )}
-      style={getBackgroundStyle(toast.type)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Icon */}
       <span data-icon="">{toastIcons[toast.type]}</span>
 
       {/* Content */}
       <div className="flex flex-1 flex-col gap-1">
-        {toast.title && (
-          <p
-            data-title=""
+        {toast.title ? <p
             className="text-sm font-semibold"
+            data-title=""
           >
             {toast.title}
-          </p>
-        )}
+          </p> : null}
         <p
-          data-message=""
           className="text-sm"
+          data-message=""
         >
           {toast.message}
         </p>
 
         {/* Action button */}
-        {toast.action && (
-          <button
-            onClick={() => {
-              toast.action?.onClick();
-              onRemove();
-            }}
+        {toast.action ? <button
             className={cn(
               "mt-2 self-start text-sm font-medium underline underline-offset-2",
               "opacity-80 transition-opacity hover:opacity-100",
               "focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
             )}
+            onClick={() => {
+              toast.action?.onClick();
+              onRemove();
+            }}
           >
             {toast.action.label}
-          </button>
-        )}
+          </button> : null}
       </div>
 
       {/* Close button */}
       <button
-        onClick={onRemove}
         aria-label="Dismiss notification"
         className={cn(
           "flex-shrink-0 rounded-[var(--radius-md)] p-1",
@@ -404,19 +400,20 @@ function ToastItem({
           "hover:bg-[var(--surface-hover)] hover:opacity-100",
           "focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
         )}
+        onClick={onRemove}
       >
         <svg
+          aria-hidden="true"
           className="h-4 w-4"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          aria-hidden="true"
         >
           <path
+            d="M6 18L18 6M6 6l12 12"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M6 18L18 6M6 6l12 12"
           />
         </svg>
       </button>
@@ -425,9 +422,9 @@ function ToastItem({
       {toast.duration > 0 && (
         <div className="absolute inset-x-0 bottom-0 h-1 overflow-hidden">
           <motion.div
+            animate={{ width: `${progress}%` }}
             className="h-full bg-current opacity-20"
             initial={{ width: "100%" }}
-            animate={{ width: `${progress}%` }}
             transition={{ duration: 0.1, ease: "linear" }}
           />
         </div>
@@ -465,12 +462,12 @@ function ToastItem({
  *   return <button onClick={handleSave}>Save</button>;
  * }
  */
-export function ToastProvider({
+export const ToastProvider = ({
   children,
   position = "bottom-right",
   maxToasts = 5,
   defaultDuration = 5000,
-}: ToastProviderProps) {
+}: ToastProviderProps) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const addToast = useCallback(
@@ -548,13 +545,13 @@ export function ToastProvider({
 
       {/* Toast Container - Fixed with high z-index */}
       <div
+        aria-label="Notifications"
+        aria-live="polite"
         style={{ zIndex: "var(--z-toast, 9999)" }}
         className={cn(
           "pointer-events-none fixed flex flex-col gap-2",
           positionClasses[position]
         )}
-        aria-label="Notifications"
-        aria-live="polite"
       >
         <AnimatePresence mode="sync">
           {toasts.map((toast) => (
@@ -563,9 +560,9 @@ export function ToastProvider({
               className="pointer-events-auto"
             >
               <ToastItem
+                position={position}
                 toast={toast}
                 onRemove={() => removeToast(toast.id)}
-                position={position}
               />
             </div>
           ))}

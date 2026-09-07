@@ -1,8 +1,10 @@
 // components/analysis/StatisticsPanel.tsx
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import * as turf from '@turf/turf';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+
 import { useMap } from '../../hooks/useMap';
-import type { FeatureCollection, Feature } from 'geojson';
+
+import type { FeatureCollection, Feature as _Feature } from 'geojson';
 
 export interface StatisticsResult {
   field: string;
@@ -263,18 +265,16 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
         onClick={() => collapsible && setIsCollapsed(!isCollapsed)}
       >
         <span style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="18" y1="20" x2="18" y2="10" />
-            <line x1="12" y1="20" x2="12" y2="4" />
-            <line x1="6" y1="20" x2="6" y2="14" />
+          <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
+            <line x1="18" x2="18" y1="20" y2="10" />
+            <line x1="12" x2="12" y1="20" y2="4" />
+            <line x1="6" x2="6" y1="20" y2="14" />
           </svg>
           {title}
         </span>
-        {collapsible && (
-          <span style={{ transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+        {collapsible ? <span style={{ transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
             ▼
-          </span>
-        )}
+          </span> : null}
       </div>
 
       {/* Content */}
@@ -287,8 +287,7 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
           ) : (
             <>
               {/* Geometry Statistics */}
-              {geometryStats && (
-                <div style={{ marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid #eee' }}>
+              {geometryStats ? <div style={{ marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid #eee' }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 8 }}>
                     Geometry Overview
                   </div>
@@ -328,8 +327,7 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
                       ))}
                     </div>
                   </div>
-                </div>
-              )}
+                </div> : null}
 
               {/* Field Statistics */}
               {results.map((stat, index) => (
@@ -391,8 +389,7 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
                     )}
                   </div>
 
-                  {stat.values && stat.values.length > 0 && (
-                    <div style={{ marginTop: 8 }}>
+                  {stat.values && stat.values.length > 0 ? <div style={{ marginTop: 8 }}>
                       <div style={{ fontSize: 11, color: '#666', marginBottom: 4 }}>Top Values:</div>
                       {stat.values.slice(0, 5).map(({ value, count }) => (
                         <div
@@ -408,8 +405,7 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
                           <span style={{ color: '#666' }}>{count}</span>
                         </div>
                       ))}
-                    </div>
-                  )}
+                    </div> : null}
                 </div>
               ))}
 
@@ -421,7 +417,6 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
 
               {/* Refresh button */}
               <button
-                onClick={calculateStatistics}
                 style={{
                   width: '100%',
                   marginTop: 8,
@@ -433,6 +428,7 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
                   cursor: 'pointer',
                   fontSize: 12
                 }}
+                onClick={calculateStatistics}
               >
                 Refresh Statistics
               </button>

@@ -1,4 +1,5 @@
 import { FORMATS, TYPES } from "./constants";
+
 import type { SortDir, SortField, ViewMode } from "./types";
 
 interface Props {
@@ -56,32 +57,32 @@ export default function FilterSidebar(props: Props) {
       <div className="card p-3 flex flex-col gap-3">
         <div className="relative">
           <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
+            className="text-text-tertiary absolute left-3 top-1/2 -translate-y-1/2"
             fill="none"
+            height="16"
             stroke="currentColor"
             strokeWidth="2"
-            className="text-text-tertiary absolute left-3 top-1/2 -translate-y-1/2"
+            viewBox="0 0 24 24"
+            width="16"
           >
             <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <line x1="21" x2="16.65" y1="21" y2="16.65" />
           </svg>
           <input
-            type="text"
+            className="input input-sm pl-9"
             placeholder="Search datasets…"
+            type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="input input-sm pl-9"
           />
         </div>
 
         <div className="form-field">
           <label className="form-label">Type</label>
           <select
+            className="input input-sm"
             value={typeFilter}
             onChange={(e) => onTypeFilterChange(e.target.value)}
-            className="input input-sm"
           >
             <option value="all">All Types</option>
             {TYPES.map((t) => (
@@ -95,9 +96,9 @@ export default function FilterSidebar(props: Props) {
         <div className="form-field">
           <label className="form-label">Format</label>
           <select
+            className="input input-sm"
             value={formatFilter}
             onChange={(e) => onFormatFilterChange(e.target.value)}
-            className="input input-sm"
           >
             <option value="all">All Formats</option>
             {FORMATS.map((f) => (
@@ -110,8 +111,8 @@ export default function FilterSidebar(props: Props) {
 
         {activeFilterCount > 0 && (
           <button
-            onClick={onClearFilters}
             className="btn btn-ghost btn-xs text-error justify-self-start"
+            onClick={onClearFilters}
           >
             ✕ Clear all filters
           </button>
@@ -130,12 +131,12 @@ export default function FilterSidebar(props: Props) {
               return (
                 <button
                   key={tag}
-                  onClick={() => onToggleTag(tag)}
                   className={`text-[0.7rem] px-2 py-1 rounded-full border transition-colors ${
                     active
                       ? "bg-primary text-text-on-primary border-primary"
                       : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
                   }`}
+                  onClick={() => onToggleTag(tag)}
                 >
                   #{tag}
                 </button>
@@ -151,9 +152,9 @@ export default function FilterSidebar(props: Props) {
           <label className="form-label">Sort by</label>
           <div className="flex gap-1.5">
             <select
+              className="input input-sm flex-1"
               value={sortField}
               onChange={(e) => onSortFieldChange(e.target.value as SortField)}
-              className="input input-sm flex-1"
             >
               <option value="updated">Recently Updated</option>
               <option value="name">Name</option>
@@ -161,9 +162,9 @@ export default function FilterSidebar(props: Props) {
               <option value="size">File Size</option>
             </select>
             <button
-              onClick={onToggleSortDir}
               className="btn btn-secondary btn-sm btn-icon"
               title={sortDir === "asc" ? "Ascending" : "Descending"}
+              onClick={onToggleSortDir}
             >
               {sortDir === "asc" ? "↑" : "↓"}
             </button>
@@ -174,24 +175,24 @@ export default function FilterSidebar(props: Props) {
           <label className="form-label">View</label>
           <div className="flex items-center rounded-lg border border-border-primary overflow-hidden">
             <button
-              onClick={() => onViewModeChange("table")}
+              title="Table view"
               className={`flex-1 px-2 py-1.5 text-sm ${
                 viewMode === "table"
                   ? "bg-primary/10 text-primary"
                   : "text-text-tertiary hover:bg-surface-hover"
               }`}
-              title="Table view"
+              onClick={() => onViewModeChange("table")}
             >
               ☰ Table
             </button>
             <button
-              onClick={() => onViewModeChange("grid")}
+              title="Grid view"
               className={`flex-1 px-2 py-1.5 text-sm ${
                 viewMode === "grid"
                   ? "bg-primary/10 text-primary"
                   : "text-text-tertiary hover:bg-surface-hover"
               }`}
-              title="Grid view"
+              onClick={() => onViewModeChange("grid")}
             >
               ▦ Grid
             </button>
@@ -199,9 +200,9 @@ export default function FilterSidebar(props: Props) {
         </div>
 
         <button
-          onClick={onRefresh}
-          title="Refresh"
           className="btn btn-secondary btn-sm w-full"
+          title="Refresh"
+          onClick={onRefresh}
         >
           ↻ Refresh
         </button>

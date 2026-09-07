@@ -9,8 +9,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { ChartContainer } from "../ChartContainer";
+
 import { getColor, generateGradientId } from "../../utils/colors";
+import { ChartContainer } from "../ChartContainer";
+
 import type { AreaChartProps } from "../../types";
 
 export const AreaChart: React.FC<AreaChartProps> = ({
@@ -48,20 +50,20 @@ export const AreaChart: React.FC<AreaChartProps> = ({
 
   return (
     <ChartContainer
-      title={title}
+      className={className}
+      data={data}
       description={description}
-      toolbar={toolbar}
-      loading={loading}
       empty={empty || data.length === 0}
       error={error}
-      data={data}
       exportFilename={exportFilename}
-      className={className}
+      loading={loading}
+      title={title}
+      toolbar={toolbar}
     >
       <div style={{ width, height }}>
         <ResponsiveContainer
-          width="100%"
           height="100%"
+          width="100%"
         >
           <RechartsAreaChart
             data={data}
@@ -88,8 +90,8 @@ export const AreaChart: React.FC<AreaChartProps> = ({
                     key={gradientId}
                     id={gradientId}
                     x1="0"
-                    y1="0"
                     x2="0"
+                    y1="0"
                     y2="1"
                   >
                     <stop
@@ -107,24 +109,22 @@ export const AreaChart: React.FC<AreaChartProps> = ({
               })}
             </defs>
 
-            {showGrid && (
-              <CartesianGrid
-                strokeDasharray="3 3"
+            {showGrid ? <CartesianGrid
                 className="stroke-gray-200 dark:stroke-gray-700"
                 horizontal={gridType !== "vertical"}
+                strokeDasharray="3 3"
                 vertical={gridType !== "horizontal"}
-              />
-            )}
+              /> : null}
 
             {!xAxis?.hide && (
               <XAxis
-                dataKey="name"
-                tickLine={false}
                 axisLine={false}
-                tickMargin={8}
-                tickFormatter={xAxis?.tickFormatter}
-                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
+                dataKey="name"
+                tick={{ fill: "currentColor", fontSize: 12 }}
+                tickFormatter={xAxis?.tickFormatter}
+                tickLine={false}
+                tickMargin={8}
                 label={
                   xAxis?.label
                     ? {
@@ -141,13 +141,13 @@ export const AreaChart: React.FC<AreaChartProps> = ({
 
             {!yAxis?.hide && (
               <YAxis
-                tickLine={false}
                 axisLine={false}
-                tickMargin={8}
-                tickFormatter={yAxis?.tickFormatter}
-                tick={{ fill: "currentColor", fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
                 domain={yAxis?.domain}
+                tick={{ fill: "currentColor", fontSize: 12 }}
+                tickFormatter={yAxis?.tickFormatter}
+                tickLine={false}
+                tickMargin={8}
                 label={
                   yAxis?.label
                     ? {
@@ -163,27 +163,23 @@ export const AreaChart: React.FC<AreaChartProps> = ({
               />
             )}
 
-            {showTooltip && (
-              <Tooltip
+            {showTooltip ? <Tooltip
+                labelStyle={{ fontWeight: 600, marginBottom: 4 }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover, 0 0% 100%))",
                   border: "1px solid hsl(var(--border, 220 13% 91%))",
                   borderRadius: "8px",
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-                labelStyle={{ fontWeight: 600, marginBottom: 4 }}
-              />
-            )}
+              /> : null}
 
-            {showLegend && (
-              <Legend
-                verticalAlign="bottom"
+            {showLegend ? <Legend
                 height={36}
-                iconType="circle"
                 iconSize={8}
+                iconType="circle"
+                verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              />
-            )}
+              /> : null}
 
             {areas.map((area, index) => {
               const gradientId = generateGradientId(chartId, index);
@@ -191,17 +187,17 @@ export const AreaChart: React.FC<AreaChartProps> = ({
               return (
                 <Area
                   key={area.dataKey}
-                  type={curved ? "monotone" : "linear"}
-                  dataKey={area.dataKey}
-                  name={area.name || area.dataKey}
-                  stroke={color}
-                  strokeWidth={area.strokeWidth || 2}
-                  fill={`url(#${gradientId})`}
-                  fillOpacity={area.fillOpacity || 1}
-                  stackId={stacked ? "stack" : undefined}
-                  isAnimationActive={animate}
                   animationDuration={animationDuration}
                   connectNulls={connectNulls}
+                  dataKey={area.dataKey}
+                  fill={`url(#${gradientId})`}
+                  fillOpacity={area.fillOpacity || 1}
+                  isAnimationActive={animate}
+                  name={area.name || area.dataKey}
+                  stackId={stacked ? "stack" : undefined}
+                  stroke={color}
+                  strokeWidth={area.strokeWidth || 2}
+                  type={curved ? "monotone" : "linear"}
                 />
               );
             })}

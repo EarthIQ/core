@@ -1,16 +1,3 @@
-import { useState, useEffect, useRef } from "react";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/lib/auth";
-import { useTheme } from "@/lib/theme";
-import { useNotifications } from "@/lib/notifications";
-import { useModules } from "@/lib/modules";
-import { usePermissions } from "@/lib/usePermissions";
-import { initials, timeAgo } from "@/lib/format";
-import { Logo, LogoMark } from "./Logo";
-import {
-  moduleRegistry,
-  type ModuleBundle,
-} from "../module-registry.generated";
 import {
   Search,
   Bell,
@@ -22,6 +9,21 @@ import {
   LogOut,
   X,
 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+
+import { useAuth } from "@/lib/auth";
+import { initials, timeAgo } from "@/lib/format";
+import { useModules } from "@/lib/modules";
+import { useNotifications } from "@/lib/notifications";
+import { useTheme } from "@/lib/theme";
+import { usePermissions } from "@/lib/usePermissions";
+import {
+  moduleRegistry,
+  type ModuleBundle,
+} from "@/module-registry.generated";
+
+import { Logo, LogoMark } from "./Logo";
 
 interface NavItem {
   label: string;
@@ -77,16 +79,16 @@ function useModuleNavItems(): NavItem[] {
 
 // ── Icons ──────────────────────────────────────────────────────────────────────
 
-function ChevronIcon({ collapsed }: { collapsed: boolean }) {
+const ChevronIcon = ({ collapsed }: { collapsed: boolean }) => {
   return (
     <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
+      className="shrink-0"
       fill="none"
+      height="18"
       stroke="currentColor"
       strokeWidth="2"
-      className="shrink-0"
+      viewBox="0 0 24 24"
+      width="18"
     >
       {collapsed ? (
         <path d="M13 17l5-5-5-5M6 17l5-5-5-5" />
@@ -99,7 +101,7 @@ function ChevronIcon({ collapsed }: { collapsed: boolean }) {
 
 // ── User Menu Popover ──────────────────────────────────────────────────────────
 
-function UserMenuPopover({
+const UserMenuPopover = ({
   user,
   activeTheme,
   toggleTheme,
@@ -119,7 +121,7 @@ function UserMenuPopover({
   collapsed: boolean;
   /** Bounding rect of the avatar button (used to anchor the popped-out menu). */
   anchorRect: DOMRect | null;
-}) {
+}) => {
   const displayName = user?.full_name || user?.email || "Signed In User";
   const itemClass =
     "group flex w-full items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium " +
@@ -144,13 +146,13 @@ function UserMenuPopover({
 
   return (
     <div
+      style={collapsedStyle}
       className={
         (collapsed
           ? "fixed "
           : "absolute bottom-full left-0 right-0 w-full min-w-[15rem] ") +
         "mb-2 bg-elevated border border-border-primary rounded-xl shadow-xl animate-fade-in-up z-50 overflow-hidden"
       }
-      style={collapsedStyle}
     >
       {/* User Info Header */}
       <div className="flex items-center gap-3 px-3.5 py-3 border-b border-border-secondary bg-surface-hover/50">
@@ -165,11 +167,9 @@ function UserMenuPopover({
             <span className="text-[0.65rem] text-text-tertiary truncate">
               {user?.email}
             </span>
-            {user?.is_superuser && (
-              <span className="shrink-0 text-[0.55rem] font-bold uppercase tracking-wide px-1.5 py-px rounded-full bg-primary/10 text-primary border border-primary/15">
+            {user?.is_superuser ? <span className="shrink-0 text-[0.55rem] font-bold uppercase tracking-wide px-1.5 py-px rounded-full bg-primary/10 text-primary border border-primary/15">
                 Admin
-              </span>
-            )}
+              </span> : null}
           </div>
         </div>
       </div>
@@ -177,22 +177,22 @@ function UserMenuPopover({
       {/* Menu Items */}
       <div className="py-1.5">
         <button className={itemClass} onClick={onSettings}>
-          <Settings size={15} className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" />
+          <Settings className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" size={15} />
           <span className="flex-1 text-left">Profile &amp; Settings</span>
           <span className="text-[0.65rem] text-text-tertiary group-hover:text-primary transition-colors">→</span>
         </button>
 
         <button className={itemClass} onClick={onNotifications}>
-          <Bell size={15} className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" />
+          <Bell className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" size={15} />
           <span className="flex-1 text-left">Notifications</span>
           <span className="text-[0.65rem] text-text-tertiary group-hover:text-primary transition-colors">→</span>
         </button>
 
         <button className={itemClass} onClick={toggleTheme}>
           {activeTheme === "dark" ? (
-            <Sun size={15} className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" />
+            <Sun className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" size={15} />
           ) : (
-            <Moon size={15} className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" />
+            <Moon className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" size={15} />
           )}
           <span className="flex-1 text-left">
             {activeTheme === "dark" ? "Light mode" : "Dark mode"}
@@ -214,7 +214,7 @@ function UserMenuPopover({
           className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-error hover:bg-error-subtle transition-colors duration-100 cursor-pointer"
           onClick={onLogout}
         >
-          <LogOut size={15} className="shrink-0" />
+          <LogOut className="shrink-0" size={15} />
           Sign out
         </button>
       </div>
@@ -227,7 +227,7 @@ function UserMenuPopover({
 // Replaces the old static "Settings" modal. Shows the live unread badge and
 // a quick dropdown (recent items, mark-all-read, open the full center).
 
-function NotificationBell() {
+const NotificationBell = () => {
   const { unread, items, connected, markAllRead, markRead } = useNotifications();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -244,12 +244,12 @@ function NotificationBell() {
   const recent = items.slice(0, 5);
 
   return (
-    <div className="relative" ref={ref}>
+    <div ref={ref} className="relative">
       <button
+        aria-label={`Notifications (${unread} unread)`}
         className="btn btn-ghost btn-icon btn-sm text-text-secondary hover:text-text-primary relative"
         title={connected ? "Notifications" : "Notifications (offline)"}
         onClick={() => setOpen((o) => !o)}
-        aria-label={`Notifications (${unread} unread)`}
       >
         {unread > 0 ? <Bell size={18} /> : <BellOff size={18} />}
         {unread > 0 && (
@@ -259,8 +259,7 @@ function NotificationBell() {
         )}
       </button>
 
-      {open && (
-        <div className="absolute right-0 top-full mt-2 w-[min(92vw,21rem)] bg-elevated border border-border-primary rounded-xl shadow-dropdown animate-fade-in-up z-50 overflow-hidden">
+      {open ? <div className="absolute right-0 top-full mt-2 w-[min(92vw,21rem)] bg-elevated border border-border-primary rounded-xl shadow-dropdown animate-fade-in-up z-50 overflow-hidden">
           <div className="px-4 py-3 border-b border-border-secondary flex items-center justify-between">
             <span className="text-sm font-semibold text-text-primary">
               Notifications
@@ -279,7 +278,7 @@ function NotificationBell() {
                 className="text-xs text-primary cursor-pointer no-underline"
                 onClick={markAllRead}
               >
-                <CheckCheck size={13} className="inline mr-1" />
+                <CheckCheck className="inline mr-1" size={13} />
                 Mark all read
               </button>
             )}
@@ -314,11 +313,9 @@ function NotificationBell() {
                       {n.title}
                     </span>
                   </div>
-                  {n.body && (
-                    <div className="text-[0.65rem] text-text-tertiary truncate mt-0.5">
+                  {n.body ? <div className="text-[0.65rem] text-text-tertiary truncate mt-0.5">
                       {n.body}
-                    </div>
-                  )}
+                    </div> : null}
                   <div className="text-[0.6rem] text-text-tertiary mt-0.5">
                     {timeAgo(n.created_at)}
                   </div>
@@ -338,15 +335,14 @@ function NotificationBell() {
               View all notifications →
             </button>
           </div>
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 }
 
 // ── Main AppShell ──────────────────────────────────────────────────────────────
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
   const { activeTheme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -459,31 +455,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {!isCollapsed ? (
             <>
               <NavLink
-                to="/dashboard"
                 className="flex items-center no-underline transition-opacity duration-150 hover:opacity-80"
+                to="/dashboard"
               >
                 <Logo size={28} wordmarkClassName="text-sm" />
               </NavLink>
 
               <button
-                className="btn btn-ghost btn-icon btn-xs text-text-tertiary hover:text-text-primary cursor-pointer"
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                title="Collapse sidebar"
                 aria-label="Toggle sidebar"
+                className="btn btn-ghost btn-icon btn-xs text-text-tertiary hover:text-text-primary cursor-pointer"
+                title="Collapse sidebar"
+                onClick={() => setIsCollapsed(!isCollapsed)}
               >
                 <ChevronIcon collapsed={false} />
               </button>
             </>
           ) : (
             <button
-              className="flex items-center justify-center cursor-pointer border-none bg-transparent p-0"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              title="Expand sidebar"
               aria-label="Expand sidebar"
+              className="flex items-center justify-center cursor-pointer border-none bg-transparent p-0"
+              title="Expand sidebar"
+              onClick={() => setIsCollapsed(!isCollapsed)}
             >
               <LogoMark
-                size={34}
                 className="transition-opacity duration-150 hover:opacity-80"
+                size={34}
               />
             </button>
           )}
@@ -500,8 +496,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {allNav.map((item) => (
             <NavLink
               key={item.to}
-              to={item.to}
               title={isCollapsed ? item.label : undefined}
+              to={item.to}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-150 ${
                   isActive
@@ -520,48 +516,46 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Footer / User */}
         <div
-          className="relative px-2 pb-3 pt-2 border-t border-border-secondary shrink-0"
           ref={popoverRef}
+          className="relative px-2 pb-3 pt-2 border-t border-border-secondary shrink-0"
         >
           {/* Popover */}
-          {isUserMenuOpen && (
-            <UserMenuPopover
-              user={user}
+          {isUserMenuOpen ? <UserMenuPopover
               activeTheme={activeTheme}
-              toggleTheme={toggleTheme}
               collapsed={isCollapsed}
+              toggleTheme={toggleTheme}
+              user={user}
               anchorRect={
                 isCollapsed
                   ? userBtnRef.current?.getBoundingClientRect() ?? null
                   : null
               }
-              onSettings={() => {
-                setIsUserMenuOpen(false);
-                navigate("/settings");
-              }}
-              onNotifications={() => {
-                setIsUserMenuOpen(false);
-                navigate("/notifications");
-              }}
               onLogout={() => {
                 setIsUserMenuOpen(false);
                 logout();
                 navigate("/login");
               }}
-            />
-          )}
+              onNotifications={() => {
+                setIsUserMenuOpen(false);
+                navigate("/notifications");
+              }}
+              onSettings={() => {
+                setIsUserMenuOpen(false);
+                navigate("/settings");
+              }}
+            /> : null}
 
           {/* User Button */}
           <button
-            id="user-menu-btn"
             ref={userBtnRef}
+            id="user-menu-btn"
+            title="User Profile & Settings"
             className={`flex items-center transition-colors duration-150 cursor-pointer border-none text-left rounded-xl ${
               isUserMenuOpen
                 ? "bg-surface-active"
                 : "bg-transparent hover:bg-surface-hover"
             } ${isCollapsed ? "w-10 h-10 mx-auto justify-center p-0" : "w-full gap-2.5 p-2"}`}
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            title="User Profile & Settings"
           >
             <div className="w-8 h-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0 border border-primary/10">
               {userInitial}
@@ -588,38 +582,36 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {!isStandaloneView && (
           <header className="navbar shrink-0 flex items-center justify-between px-4 h-14">
             {/* Left */}
-            <div className="flex items-center"></div>
+            <div className="flex items-center" />
 
             {/* Center - Search */}
             <div className="flex-1 min-w-0 flex justify-center px-2">
               <div className="relative w-full max-w-md group">
                 <Search
-                  size={15}
                   className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-tertiary)] group-focus-within:text-primary transition-colors duration-150"
+                  size={15}
                 />
                 <input
                   ref={searchRef}
+                  aria-label="Search"
+                  className="w-full h-9 rounded-[var(--radius-md)] border border-[var(--input-border)] bg-[var(--input-bg)] pl-9 pr-16 text-xs text-[var(--text-primary)] transition-all duration-150 focus:outline-none focus:border-[var(--input-focus-border)] focus:shadow-[0_0_0_3px_oklch(from_var(--primary)_l_c_h/0.15)]"
+                  placeholder="Search projects, layers, datasets…"
                   type="text"
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
-                  placeholder="Search projects, layers, datasets…"
-                  aria-label="Search"
-                  className="w-full h-9 rounded-[var(--radius-md)] border border-[var(--input-border)] bg-[var(--input-bg)] pl-9 pr-16 text-xs text-[var(--text-primary)] transition-all duration-150 focus:outline-none focus:border-[var(--input-focus-border)] focus:shadow-[0_0_0_3px_oklch(from_var(--primary)_l_c_h/0.15)]"
                 />
                 <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                  {searchValue && (
-                    <button
+                  {searchValue ? <button
+                      aria-label="Clear search"
+                      className="p-0.5 rounded-md text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
                       type="button"
                       onClick={() => {
                         setSearchValue("");
                         searchRef.current?.focus();
                       }}
-                      aria-label="Clear search"
-                      className="p-0.5 rounded-md text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
                     >
                       <X size={13} />
-                    </button>
-                  )}
+                    </button> : null}
                   <kbd className="hidden sm:flex items-center justify-center h-5 min-w-5 px-1.5 rounded-md border border-[var(--border-primary)] bg-[var(--surface-hover)] text-[0.6rem] font-semibold text-[var(--text-tertiary)] select-none pointer-events-none">
                     /
                   </kbd>

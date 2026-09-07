@@ -1,10 +1,11 @@
+import { cva, type VariantProps } from "class-variance-authority";
+import { motion } from "framer-motion";
 import React, {
   forwardRef,
   type ButtonHTMLAttributes,
   type ReactNode,
 } from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { motion } from "framer-motion";
+
 import { cn } from "../../../utils/cn";
 import { Spinner } from "../../feedback/Spinner/Spinner";
 
@@ -99,12 +100,21 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     return (
       <motion.button
         ref={ref}
+        aria-label={label}
+        className={cn(iconButtonVariants({ variant, size }), className)}
+        disabled={disabled || loading}
+        style={getVariantStyles()}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className={cn(iconButtonVariants({ variant, size }), className)}
-        style={getVariantStyles()}
-        disabled={disabled || loading}
-        aria-label={label}
+        onBlur={(e) => {
+          e.currentTarget.style.boxShadow = "none";
+        }}
+        onFocus={(e) => {
+          if (!disabled && !loading) {
+            e.currentTarget.style.boxShadow =
+              "0 0 0 2px var(--bg-primary), 0 0 0 4px var(--primary)";
+          }
+        }}
         onMouseEnter={(e) => {
           if (!disabled && !loading) {
             Object.assign(e.currentTarget.style, getHoverStyles());
@@ -114,15 +124,6 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
           if (!disabled && !loading) {
             Object.assign(e.currentTarget.style, getVariantStyles());
           }
-        }}
-        onFocus={(e) => {
-          if (!disabled && !loading) {
-            e.currentTarget.style.boxShadow =
-              "0 0 0 2px var(--bg-primary), 0 0 0 4px var(--primary)";
-          }
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.boxShadow = "none";
         }}
         {...props}
       >

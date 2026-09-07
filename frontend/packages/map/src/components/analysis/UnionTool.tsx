@@ -1,6 +1,8 @@
-import React, { useState, useCallback, useMemo } from 'react';
 import * as turf from '@turf/turf';
+import React, { useState, useCallback, useMemo } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { Feature, FeatureCollection, Polygon, MultiPolygon } from 'geojson';
 
 export interface UnionToolProps {
@@ -73,7 +75,7 @@ export const UnionTool: React.FC<UnionToolProps> = ({
   }, [propertiesStrategy]);
 
   // Perform union
-  const executeUnion = useCallback(async () => {
+  const executeUnion = useCallback(() => {
     setIsProcessing(true);
     setError(null);
 
@@ -131,7 +133,7 @@ export const UnionTool: React.FC<UnionToolProps> = ({
         };
 
         if (map.getSource(outputLayerId)) {
-          (map.getSource(outputLayerId) as any).setData(fc);
+          (map.getSource(outputLayerId)).setData(fc);
         } else {
           map.addSource(outputLayerId, {
             type: 'geojson',
@@ -208,7 +210,7 @@ export const UnionTool: React.FC<UnionToolProps> = ({
       }}
     >
       <div style={{ fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
           <circle cx="8" cy="12" r="6" />
           <circle cx="16" cy="12" r="6" />
         </svg>
@@ -222,7 +224,6 @@ export const UnionTool: React.FC<UnionToolProps> = ({
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <button
-          onClick={executeUnion}
           disabled={isProcessing || !isLoaded}
           style={{
             flex: 1,
@@ -234,13 +235,12 @@ export const UnionTool: React.FC<UnionToolProps> = ({
             cursor: isProcessing ? 'not-allowed' : 'pointer',
             fontSize: 13
           }}
+          onClick={executeUnion}
         >
           {isProcessing ? 'Processing...' : 'Execute Union'}
         </button>
 
-        {result && (
-          <button
-            onClick={clearResult}
+        {result ? <button
             style={{
               padding: '8px 12px',
               backgroundColor: '#e74c3c',
@@ -250,23 +250,22 @@ export const UnionTool: React.FC<UnionToolProps> = ({
               cursor: 'pointer',
               fontSize: 13
             }}
+            onClick={clearResult}
           >
             Clear
-          </button>
-        )}
+          </button> : null}
       </div>
 
       <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
         <input
-          type="checkbox"
           checked={showResult}
+          type="checkbox"
           onChange={(e) => setShowResult(e.target.checked)}
         />
         Show result on map
       </label>
 
-      {error && (
-        <div style={{
+      {error ? <div style={{
           marginTop: 12,
           padding: 8,
           backgroundColor: '#fee',
@@ -275,11 +274,9 @@ export const UnionTool: React.FC<UnionToolProps> = ({
           fontSize: 12
         }}>
           {error.message}
-        </div>
-      )}
+        </div> : null}
 
-      {result && (
-        <div style={{
+      {result ? <div style={{
           marginTop: 12,
           padding: 8,
           backgroundColor: '#f3e5f5',
@@ -289,8 +286,7 @@ export const UnionTool: React.FC<UnionToolProps> = ({
           <strong>Result:</strong> {result.geometry.type}
           <br />
           <small>Area: {turf.area(result).toLocaleString()} m²</small>
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 };

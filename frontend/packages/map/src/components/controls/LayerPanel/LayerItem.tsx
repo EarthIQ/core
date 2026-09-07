@@ -1,6 +1,5 @@
 // src/components/controls/LayerPanel/LayerItem.tsx
 
-import React, { useState, useCallback, memo } from "react";
 import {
   Eye,
   EyeOff,
@@ -17,9 +16,12 @@ import {
   Shield,
   Hash,
 } from "lucide-react";
+import React, { useState, useCallback, memo } from "react";
+
+import { LayerContextMenu } from "./LayerContextMenu";
 import { LayerTypeIcon } from "./LayerTypeIcon";
 import { OpacitySlider } from "./OpacitySlider";
-import { LayerContextMenu } from "./LayerContextMenu";
+
 import type { ResolvedLayer } from "./types";
 
 interface LayerItemProps {
@@ -111,25 +113,25 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
 
     return (
       <div
+        aria-selected={isSelected}
         className="select-none"
         role="treeitem"
-        aria-selected={isSelected}
       >
         {/* Main Row */}
         <div
-          onClick={handleRowClick}
+          style={{ paddingLeft }}
           className={`group relative flex cursor-pointer items-center gap-1.5 py-1.5 pr-2 transition-colors ${
             isSelected
               ? "border-l-2 border-l-[var(--primary)] bg-[var(--primary)]/10"
               : "border-l-2 border-l-transparent hover:bg-[var(--surface-hover)]"
           } ${!layer.visible ? "opacity-50" : ""} ${isMissing ? "opacity-40" : ""}`}
-          style={{ paddingLeft }}
+          onClick={handleRowClick}
         >
           {/* Drag Handle */}
           {allowReorder && !layer.locked ? (
             <GripVertical
-              className="h-3.5 w-3.5 flex-shrink-0 cursor-grab text-[var(--text-tertiary)] opacity-0 transition-opacity group-hover:opacity-100"
               aria-hidden="true"
+              className="h-3.5 w-3.5 flex-shrink-0 cursor-grab text-[var(--text-tertiary)] opacity-0 transition-opacity group-hover:opacity-100"
             />
           ) : (
             <div className="w-3.5 flex-shrink-0" />
@@ -137,10 +139,10 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
 
           {/* ─── Visibility Toggle: Radio vs Checkbox ─── */}
           <button
-            onClick={handleVisibilityClick}
-            disabled={!layer.allowToggleVisibility || isMissing}
-            className="flex-shrink-0 rounded p-0.5 transition-colors hover:bg-[var(--surface-active)] disabled:cursor-not-allowed disabled:opacity-40"
             aria-label={`${layer.visible ? "Hide" : "Show"} ${layer.displayName}`}
+            className="flex-shrink-0 rounded p-0.5 transition-colors hover:bg-[var(--surface-active)] disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={!layer.allowToggleVisibility || isMissing}
+            onClick={handleVisibilityClick}
           >
             {singleSelect ? (
               /* ── Radio Button Style ── */
@@ -151,9 +153,7 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                     : "border-[var(--text-tertiary)] bg-transparent"
                 }`}
               >
-                {layer.visible && (
-                  <div className="h-1.5 w-1.5 rounded-full bg-white" />
-                )}
+                {layer.visible ? <div className="h-1.5 w-1.5 rounded-full bg-white" /> : null}
               </div>
             ) : /* ── Checkbox / Eye Style ── */
             layer.visible ? (
@@ -165,24 +165,22 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
 
           {/* Layer Type Icon */}
           <LayerTypeIcon
-            type={layer.type}
             className="h-4 w-4 text-[var(--text-secondary)]"
+            type={layer.type}
           />
 
           {/* Color Swatch */}
-          {layer.color && (
-            <div
+          {layer.color ? <div
               className="h-3 w-3 flex-shrink-0 rounded border border-[var(--border-primary)]"
               style={{ backgroundColor: layer.color }}
-            />
-          )}
+            /> : null}
 
           {/* Layer Name */}
           <div className="flex min-w-0 flex-1 items-center gap-1">
             <span
-              onClick={handleVisibilityClick}
               className={`block cursor-pointer truncate text-sm font-medium text-[var(--text-primary)] transition-opacity hover:opacity-75 ${isMissing ? "italic" : ""} ${!layer.allowToggleVisibility ? "cursor-default hover:opacity-100" : ""}`}
               title={`${layer.displayName} (${layer.id})\nClick to toggle visibility`}
+              onClick={handleVisibilityClick}
             >
               {layer.displayName}
             </span>
@@ -192,74 +190,65 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
           </div>
 
           {/* Metadata badge */}
-          {layer.metadata?.featureCount && (
-            <span className="flex-shrink-0 rounded bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-tertiary)] tabular-nums">
+          {layer.metadata?.featureCount ? <span className="flex-shrink-0 rounded bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-tertiary)] tabular-nums">
               {Number(layer.metadata.featureCount).toLocaleString()}
-            </span>
-          )}
+            </span> : null}
 
           {/* Type Badge */}
-          {showTypeBadge && layer.existsOnMap && (
-            <span className="hidden flex-shrink-0 rounded bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-[var(--text-tertiary)] uppercase sm:inline-block">
+          {showTypeBadge && layer.existsOnMap ? <span className="hidden flex-shrink-0 rounded bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-[var(--text-tertiary)] uppercase sm:inline-block">
               {layer.type}
-            </span>
-          )}
+            </span> : null}
 
           {/* Lock */}
-          {layer.locked && (
-            <Lock className="h-3.5 w-3.5 flex-shrink-0 text-[var(--text-tertiary)]" />
-          )}
+          {layer.locked ? <Lock className="h-3.5 w-3.5 flex-shrink-0 text-[var(--text-tertiary)]" /> : null}
 
           {/* Actions */}
           <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-            {layer.allowChangeOpacity && (
-              <button
-                onClick={handleOpacityToggle}
-                disabled={isMissing}
-                className={`rounded p-1 transition-colors hover:bg-[var(--surface-active)] disabled:cursor-not-allowed disabled:opacity-40 ${showOpacity ? "text-[var(--primary)]" : "text-[var(--text-tertiary)]"}`}
-                aria-label="Toggle opacity"
+            {layer.allowChangeOpacity ? <button
                 aria-expanded={showOpacity}
+                aria-label="Toggle opacity"
+                className={`rounded p-1 transition-colors hover:bg-[var(--surface-active)] disabled:cursor-not-allowed disabled:opacity-40 ${showOpacity ? "text-[var(--primary)]" : "text-[var(--text-tertiary)]"}`}
+                disabled={isMissing}
+                onClick={handleOpacityToggle}
               >
                 {showOpacity ? (
                   <ChevronDown className="h-3.5 w-3.5" />
                 ) : (
                   <ChevronRight className="h-3.5 w-3.5" />
                 )}
-              </button>
-            )}
+              </button> : null}
             <div className="relative">
               <button
-                onClick={handleContextMenuToggle}
-                className="rounded p-1 transition-colors hover:bg-[var(--surface-active)]"
-                aria-label="More actions"
-                aria-haspopup="menu"
                 aria-expanded={showContextMenu}
+                aria-haspopup="menu"
+                aria-label="More actions"
+                className="rounded p-1 transition-colors hover:bg-[var(--surface-active)]"
+                onClick={handleContextMenuToggle}
               >
                 <MoreVertical className="h-3.5 w-3.5 text-[var(--text-tertiary)]" />
               </button>
               <LayerContextMenu
                 isOpen={showContextMenu}
+                layerName={layer.displayName}
+                locked={layer.locked}
                 onClose={() => setShowContextMenu(false)}
+                onMoveUp={allowReorder ? () => onMoveUp(layer.id) : undefined}
                 onZoomTo={() => onZoomTo(layer.id)}
                 onDelete={
                   allowDelete && !layer.locked
                     ? () => onDelete(layer.id)
                     : undefined
                 }
-                onMoveUp={allowReorder ? () => onMoveUp(layer.id) : undefined}
                 onMoveDown={
                   allowReorder ? () => onMoveDown(layer.id) : undefined
                 }
-                locked={layer.locked}
-                layerName={layer.displayName}
               />
             </div>
           </div>
         </div>
 
         {/* Opacity Slider & Details */}
-        {showOpacity && (
-          <div
+        {showOpacity ? <div
             className="flex flex-col gap-2 rounded-b-lg bg-[var(--bg-tertiary)]/50 px-3 py-3"
             style={{ paddingLeft: paddingLeft + 24 }}
             onClick={(e) => e.stopPropagation()}
@@ -275,19 +264,15 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
               </div>
             </div>
 
-            {layer.allowChangeOpacity && (
-              <OpacitySlider
+            {layer.allowChangeOpacity ? <OpacitySlider
+                disabled={!layer.visible || isMissing}
                 value={layer.opacity}
                 onChange={handleOpacityChange}
-                disabled={!layer.visible || isMissing}
-              />
-            )}
+              /> : null}
 
             {/* Collection Details */}
-            {layer.metadata && (
-              <div className="mt-2 flex flex-col gap-2 border-t border-[var(--border-primary)] pt-2">
-                {layer.metadata["description"] && (
-                  <div className="flex flex-col gap-1">
+            {layer.metadata ? <div className="mt-2 flex flex-col gap-2 border-t border-[var(--border-primary)] pt-2">
+                {layer.metadata["description"] ? <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1 text-[10px] font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
                       <Info className="h-3 w-3" />
                       About
@@ -298,10 +283,10 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                           return (
                             <a
                               key={i}
-                              href={part}
-                              target="_blank"
-                              rel="noopener noreferrer"
                               className="text-[var(--primary)] hover:underline break-all"
+                              href={part}
+                              rel="noopener noreferrer"
+                              target="_blank"
                             >
                               {part}
                             </a>
@@ -310,8 +295,7 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                         return part;
                       })}
                     </p>
-                  </div>
-                )}
+                  </div> : null}
 
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                   {layer.metadata["count"] !== undefined && (
@@ -326,8 +310,7 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                     </div>
                   )}
 
-                  {layer.metadata["format"] && (
-                    <div className="flex flex-col gap-0.5">
+                  {layer.metadata["format"] ? <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-1 text-[9px] font-medium text-[var(--text-tertiary)] uppercase opacity-70">
                         <Database className="h-2.5 w-2.5" />
                         Format
@@ -335,11 +318,9 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                       <span className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase">
                         {layer.metadata["format"] as string}
                       </span>
-                    </div>
-                  )}
+                    </div> : null}
 
-                  {layer.metadata["tags"] && (
-                    <div className="col-span-2 flex flex-col gap-0.5">
+                  {layer.metadata["tags"] ? <div className="col-span-2 flex flex-col gap-0.5">
                       <div className="flex items-center gap-1 text-[9px] font-medium text-[var(--text-tertiary)] uppercase opacity-70">
                         <Tag className="h-2.5 w-2.5" />
                         Tags
@@ -347,11 +328,9 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                       <span className="text-[11px] font-semibold text-[var(--text-secondary)]">
                         {layer.metadata["tags"] as string}
                       </span>
-                    </div>
-                  )}
+                    </div> : null}
 
-                  {layer.metadata["license"] && (
-                    <div className="flex flex-col gap-0.5">
+                  {layer.metadata["license"] ? <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-1 text-[9px] font-medium text-[var(--text-tertiary)] uppercase opacity-70">
                         <Shield className="h-2.5 w-2.5" />
                         License
@@ -359,11 +338,9 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                       <span className="text-[11px] font-semibold text-[var(--text-secondary)]">
                         {layer.metadata["license"] as string}
                       </span>
-                    </div>
-                  )}
+                    </div> : null}
 
-                  {(layer.metadata["start"] || layer.metadata["end"]) && (
-                    <div className="col-span-2 flex flex-col gap-0.5">
+                  {(layer.metadata["start"] || layer.metadata["end"]) ? <div className="col-span-2 flex flex-col gap-0.5">
                       <div className="flex items-center gap-1 text-[9px] font-medium text-[var(--text-tertiary)] uppercase opacity-70">
                         <Calendar className="h-2.5 w-2.5" />
                         Temporal Coverage
@@ -387,13 +364,10 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                             : "Now"}
                         </span>
                       </div>
-                    </div>
-                  )}
+                    </div> : null}
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              </div> : null}
+          </div> : null}
       </div>
     );
   }

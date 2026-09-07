@@ -1,5 +1,3 @@
-import React, { useState, type ReactNode } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   useFloating,
   useHover,
@@ -14,6 +12,9 @@ import {
   shift,
   arrow,
 } from "@floating-ui/react";
+import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, type ReactNode } from "react";
+
 import { cn } from "../../../utils/cn";
 
 interface TooltipProps {
@@ -25,14 +26,14 @@ interface TooltipProps {
   className?: string;
 }
 
-export function Tooltip({
+export const Tooltip = ({
   children,
   content,
   placement = "top",
   delay = 200,
   disabled,
   className,
-}: TooltipProps) {
+}: TooltipProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const arrowRef = React.useRef<HTMLDivElement>(null);
 
@@ -70,7 +71,7 @@ export function Tooltip({
     role,
   ]);
 
-  const { isMounted, styles: transitionStyles } = useTransitionStyles(context, {
+  const { isMounted, styles: _transitionStyles } = useTransitionStyles(context, {
     duration: 100,
     initial: { opacity: 0, transform: "scale(0.95)" },
   });
@@ -100,8 +101,7 @@ export function Tooltip({
 
       <FloatingPortal>
         <AnimatePresence>
-          {isMounted && !disabled && (
-            <div
+          {isMounted && !disabled ? <div
               ref={refs.setFloating}
               style={{
                 ...floatingStyles,
@@ -111,9 +111,9 @@ export function Tooltip({
               {...getFloatingProps()}
             >
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.1 }}
                 className={cn(
                   "bg-elevated border-base shadow-elevated rounded-lg border px-3 py-1.5 text-sm whitespace-nowrap backdrop-blur-sm",
@@ -133,12 +133,11 @@ export function Tooltip({
                       middlewareData.arrow?.y != null
                         ? `${middlewareData.arrow.y}px`
                         : "",
-                    [staticSide as string]: "-4px",
+                    [staticSide]: "-4px",
                   }}
                 />
               </motion.div>
-            </div>
-          )}
+            </div> : null}
         </AnimatePresence>
       </FloatingPortal>
     </>

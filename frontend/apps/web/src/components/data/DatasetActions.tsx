@@ -1,4 +1,5 @@
 import { isVectorized } from "./helpers";
+
 import type { DatasetItem } from "./types";
 
 interface Props {
@@ -30,43 +31,43 @@ export default function DatasetActions({
       }`}
     >
       <button
-        onClick={() => onInspect(d)}
-        title="Inspect Schema / Preview"
         className={`${compact ? base : ""} btn btn-secondary btn-xs`}
+        title="Inspect Schema / Preview"
+        onClick={() => onInspect(d)}
       >
         Inspect
       </button>
 
       <button
-        onClick={() => onEdit(d)}
-        title="Edit metadata"
         className={`${compact ? base : ""} btn btn-xs bg-info/10 text-info border border-info/30 hover:bg-info/20`}
+        title="Edit metadata"
+        onClick={() => onEdit(d)}
       >
         ✏️ Edit
       </button>
 
       <button
-        onClick={() => onDownload(d)}
-        title="Download original file"
         className={`${compact ? base : ""} btn btn-xs bg-success/10 text-success border border-success/30 hover:bg-success/20`}
+        title="Download original file"
+        onClick={() => onDownload(d)}
       >
         ⬇️
       </button>
 
       {isVectorized(d) && (
         <button
-          onClick={() => onOpenTileUrl(d)}
-          title="Get MVT Tile URL"
           className={`${compact ? base : ""} btn btn-xs bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20`}
+          title="Get MVT Tile URL"
+          onClick={() => onOpenTileUrl(d)}
         >
           🗺
         </button>
       )}
 
       <button
-        onClick={() => onRequestDelete(d.id, d.name)}
-        title="Delete dataset"
         className={`${compact ? base : ""} btn btn-ghost btn-icon btn-xs text-error hover:bg-error/10`}
+        title="Delete dataset"
+        onClick={() => onRequestDelete(d.id, d.name)}
       >
         🗑️
       </button>

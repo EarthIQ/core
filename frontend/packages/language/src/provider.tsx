@@ -8,6 +8,7 @@ import {
 
 import { LanguageContext, type LanguageContextValue } from "./context";
 import { createLanguage } from "./create-language";
+
 import type { LanguageConfig, Translations } from "./types";
 
 export interface LanguageProviderProps<T extends Translations> {
@@ -18,13 +19,13 @@ export interface LanguageProviderProps<T extends Translations> {
   onLocaleChange?: (locale: keyof T & string) => void;
 }
 
-export function LanguageProvider<T extends Translations>({
+export const LanguageProvider = <T extends Translations>({
   children,
   config,
   initialLocale,
   persistKey = "app-locale",
   onLocaleChange,
-}: LanguageProviderProps<T>): ReactNode {
+}: LanguageProviderProps<T>): ReactNode => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentLocale, setCurrentLocale] = useState<keyof T & string>(
     initialLocale || config.defaultLocale
@@ -47,9 +48,9 @@ export function LanguageProvider<T extends Translations>({
 
     const stored = localStorage.getItem(persistKey);
 
-    if (stored && language.locales.includes(stored as keyof T & string)) {
-      setCurrentLocale(stored as keyof T & string);
-      language.setLocale(stored as keyof T & string);
+    if (stored && language.locales.includes(stored)) {
+      setCurrentLocale(stored);
+      language.setLocale(stored);
     }
 
     setIsLoading(false);

@@ -1,5 +1,7 @@
 import React, { useEffect, useCallback, useRef } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
 
 export interface GeoJSONSourceProps {
@@ -60,7 +62,7 @@ export const GeoJSONSource: React.FC<GeoJSONSourceProps> = ({
   clusterMinPoints = 2,
   clusterProperties,
   lineMetrics = false,
-  filter,
+  _filter,
   refreshInterval,
   onLoad,
   onError,
@@ -90,7 +92,7 @@ export const GeoJSONSource: React.FC<GeoJSONSourceProps> = ({
   useEffect(() => {
     if (!map || !isLoaded) return;
 
-    const initSource = async () => {
+    const initSource = () => {
       try {
         let sourceData: GeoJSON.GeoJSON | string = data;
 
@@ -204,7 +206,7 @@ export const GeoJSONSource: React.FC<GeoJSONSourceProps> = ({
           source.setData(newData);
           onDataChange?.(newData);
         }
-      } catch (error) {
+      } catch (_error) {
         // Error already handled in fetchData
       }
     };
@@ -228,7 +230,7 @@ export const useGeoJSONSource = (id: string) => {
 
   const getSource = useCallback(() => {
     if (!map || !isLoaded) return null;
-    return map.getSource(id) as maplibregl.GeoJSONSource | undefined;
+    return map.getSource(id);
   }, [map, isLoaded, id]);
 
   const setData = useCallback((data: GeoJSON.GeoJSON | string) => {
@@ -246,8 +248,8 @@ export const useGeoJSONSource = (id: string) => {
         return;
       }
       source.getClusterExpansionZoom(clusterId, (error, zoom) => {
-        if (error) reject(error);
-        else resolve(zoom!);
+        if (error) reject(error instanceof Error ? error : new Error(String(error)));
+        else resolve(zoom);
       });
     });
   }, [getSource]);
@@ -260,7 +262,7 @@ export const useGeoJSONSource = (id: string) => {
         return;
       }
       source.getClusterChildren(clusterId, (error, features) => {
-        if (error) reject(error);
+        if (error) reject(error instanceof Error ? error : new Error(String(error)));
         else resolve(features as GeoJSON.Feature[]);
       });
     });
@@ -278,7 +280,7 @@ export const useGeoJSONSource = (id: string) => {
         return;
       }
       source.getClusterLeaves(clusterId, limit || 10, offset || 0, (error, features) => {
-        if (error) reject(error);
+        if (error) reject(error instanceof Error ? error : new Error(String(error)));
         else resolve(features as GeoJSON.Feature[]);
       });
     });

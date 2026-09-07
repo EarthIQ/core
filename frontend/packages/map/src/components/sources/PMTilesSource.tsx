@@ -2,12 +2,16 @@
 // TYPE DEFINITIONS
 // ============================================================================
 
-import React, { useEffect, useId, useCallback, useRef } from "react";
-import { useMap } from "../../hooks/useMap";
-import * as pmtiles from "pmtiles";
 import * as maplibregl from "maplibre-gl";
-import type { MapMouseEvent, MapGeoJSONFeature } from "maplibre-gl";
+import * as pmtiles from "pmtiles";
+import { useEffect, useId, useCallback as _useCallback, useRef } from "react";
+
+import { useMap } from "../../hooks/useMap";
+
+
 import type { Feature } from "geojson";
+import type { MapMouseEvent, MapGeoJSONFeature } from "maplibre-gl";
+import type React from "react";
 
 /**
  * Supported layer types for PMTiles rendering
@@ -364,7 +368,7 @@ function toFeature(f?: maplibregl.MapGeoJSONFeature): Feature {
         id: f.id,
         properties: f.properties,
         geometry: (f as any).geometry,
-      } as Feature);
+      });
 }
 
 // ============================================================================
@@ -443,7 +447,7 @@ function createLayerManager({
     if (filter) config.filter = filter;
     if (minZoom !== undefined) config.minzoom = minZoom;
     if (maxZoom !== undefined) config.maxzoom = maxZoom;
-    console.log("[PMTilesSource] Adding layer:", config);
+    console.warn("[PMTilesSource] Adding layer:", config);
 
     map.addLayer(config, beforeId);
   }

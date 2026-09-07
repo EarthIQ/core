@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, UserMinus, Crown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
 import { ASSIGNABLE_ROLES, ROLE_META, type Role } from "./types";
 
 interface RoleSelectProps {
@@ -13,7 +14,7 @@ interface RoleSelectProps {
   align?: "left" | "right";
 }
 
-export function RoleSelect({
+export const RoleSelect = ({
   value,
   onChange,
   disabled,
@@ -21,7 +22,7 @@ export function RoleSelect({
   onRemove,
   onTransferOwnership,
   align = "right",
-}: RoleSelectProps) {
+}: RoleSelectProps) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -38,11 +39,10 @@ export function RoleSelect({
   const isOwner = value === "owner";
 
   return (
-    <div className="relative shrink-0" ref={ref}>
+    <div ref={ref} className="relative shrink-0">
       <button
-        type="button"
         disabled={disabled || isOwner}
-        onClick={() => setOpen((v) => !v)}
+        type="button"
         className={`flex items-center gap-1 rounded-lg transition-colors ${
           compact ? "px-2 py-1 text-xs" : "px-2.5 py-1.5 text-[0.8rem]"
         } ${
@@ -50,18 +50,18 @@ export function RoleSelect({
             ? "text-text-tertiary cursor-default"
             : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
         }`}
+        onClick={() => setOpen((v) => !v)}
       >
         <span className="whitespace-nowrap">{ROLE_META[value].label}</span>
         {!isOwner && !disabled && (
           <ChevronDown
-            size={13}
             className={`transition-transform ${open ? "rotate-180" : ""}`}
+            size={13}
           />
         )}
       </button>
 
-      {open && (
-        <div
+      {open ? <div
           className={`absolute top-full mt-1 w-64 bg-elevated border border-border-primary rounded-xl shadow-2xl py-1.5 z-[80] animate-fade-in ${
             align === "right" ? "right-0" : "left-0"
           }`}
@@ -69,15 +69,15 @@ export function RoleSelect({
           {ASSIGNABLE_ROLES.map((role) => (
             <button
               key={role}
+              className="flex items-start gap-2.5 w-full px-3 py-2 text-left hover:bg-surface-hover transition-colors"
               type="button"
               onClick={() => {
                 onChange(role);
                 setOpen(false);
               }}
-              className="flex items-start gap-2.5 w-full px-3 py-2 text-left hover:bg-surface-hover transition-colors"
             >
               <span className="w-4 shrink-0 pt-0.5">
-                {value === role && <Check size={14} className="text-primary" />}
+                {value === role && <Check className="text-primary" size={14} />}
               </span>
               <span className="flex-1 min-w-0">
                 <span className="block text-[0.8rem] font-medium text-text-primary">
@@ -90,45 +90,38 @@ export function RoleSelect({
             </button>
           ))}
 
-          {(onTransferOwnership || onRemove) && (
-            <div className="h-px bg-border-secondary mx-2 my-1" />
-          )}
+          {(onTransferOwnership || onRemove) ? <div className="h-px bg-border-secondary mx-2 my-1" /> : null}
 
-          {onTransferOwnership && (
-            <button
+          {onTransferOwnership ? <button
+              className="flex items-center gap-2.5 w-full px-3 py-2 text-left hover:bg-surface-hover transition-colors"
               type="button"
               onClick={() => {
                 onTransferOwnership();
                 setOpen(false);
               }}
-              className="flex items-center gap-2.5 w-full px-3 py-2 text-left hover:bg-surface-hover transition-colors"
             >
               <span className="w-4 shrink-0">
-                <Crown size={14} className="text-warning" />
+                <Crown className="text-warning" size={14} />
               </span>
               <span className="text-[0.8rem] text-text-primary">
                 Transfer ownership
               </span>
-            </button>
-          )}
+            </button> : null}
 
-          {onRemove && (
-            <button
+          {onRemove ? <button
+              className="flex items-center gap-2.5 w-full px-3 py-2 text-left text-red-400 hover:bg-red-500/10 transition-colors"
               type="button"
               onClick={() => {
                 onRemove();
                 setOpen(false);
               }}
-              className="flex items-center gap-2.5 w-full px-3 py-2 text-left text-red-400 hover:bg-red-500/10 transition-colors"
             >
               <span className="w-4 shrink-0">
                 <UserMinus size={14} />
               </span>
               <span className="text-[0.8rem]">Remove access</span>
-            </button>
-          )}
-        </div>
-      )}
+            </button> : null}
+        </div> : null}
     </div>
   );
 }

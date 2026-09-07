@@ -1,6 +1,8 @@
-import { useState, useCallback, useEffect } from "react";
 import { Globe, Map as MapIcon } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+
 import { useMap } from "@packages/map";
+
 import { ControlButton } from "./MapControlButton";
 
 type GlobeControlProps = {
@@ -11,7 +13,7 @@ type GlobeControlProps = {
   };
 };
 
-export function GlobeControl({ className, labels = {} }: GlobeControlProps) {
+export const GlobeControl = ({ className, labels = {} }: GlobeControlProps) => {
   const { map, isLoaded } = useMap();
   const [isGlobe, setIsGlobe] = useState(false);
 
@@ -52,7 +54,9 @@ export function GlobeControl({ className, labels = {} }: GlobeControlProps) {
 
   return (
     <ControlButton
+      active={isGlobe}
       className={className}
+      label={isGlobe ? switchToMercator : switchToGlobe}
       icon={
         isGlobe ? (
           <MapIcon className="h-4 w-4" />
@@ -60,8 +64,6 @@ export function GlobeControl({ className, labels = {} }: GlobeControlProps) {
           <Globe className="h-4 w-4" />
         )
       }
-      label={isGlobe ? switchToMercator : switchToGlobe}
-      active={isGlobe}
       onClick={toggleProjection}
     />
   );

@@ -1,3 +1,4 @@
+import { cn } from "@packages/ui";
 import React from "react";
 import {
   PieChart as RechartsPieChart,
@@ -8,9 +9,10 @@ import {
   ResponsiveContainer,
   Sector,
 } from "recharts";
-import { ChartContainer } from "../ChartContainer";
-import { cn } from "@packages/ui";
+
 import { getColor } from "../../utils/colors";
+import { ChartContainer } from "../ChartContainer";
+
 import type { DonutChartProps } from "../../types";
 
 const renderActiveShape = (props: any) => {
@@ -22,11 +24,11 @@ const renderActiveShape = (props: any) => {
       <Sector
         cx={cx}
         cy={cy}
+        endAngle={endAngle}
+        fill={fill}
         innerRadius={innerRadius}
         outerRadius={outerRadius + 6}
         startAngle={startAngle}
-        endAngle={endAngle}
-        fill={fill}
       />
     </g>
   );
@@ -75,41 +77,41 @@ export const DonutChart: React.FC<DonutChartProps> = ({
 
   return (
     <ChartContainer
-      title={title}
+      className={className}
+      data={data}
       description={description}
-      toolbar={toolbar}
-      loading={loading}
       empty={empty || data.length === 0}
       error={error}
-      data={data}
       exportFilename={exportFilename}
-      className={className}
+      loading={loading}
+      title={title}
+      toolbar={toolbar}
     >
       <div
-        style={{ width, height }}
         className="relative"
+        style={{ width, height }}
       >
         <ResponsiveContainer
-          width="100%"
           height="100%"
+          width="100%"
         >
           <RechartsPieChart>
             <Pie
-              data={data}
+              activeShape={renderActiveShape}
+              animationDuration={animationDuration}
               cx="50%"
               cy="50%"
-              innerRadius={innerRadius}
-              outerRadius={outerRadius}
+              data={data}
               dataKey={dataKey}
-              nameKey={nameKey}
-              paddingAngle={paddingAngle}
-              startAngle={startAngle}
               endAngle={endAngle}
+              innerRadius={innerRadius}
               isAnimationActive={animate}
-              animationDuration={animationDuration}
               label={showLabels}
               labelLine={showLabels}
-              activeShape={renderActiveShape}
+              nameKey={nameKey}
+              outerRadius={outerRadius}
+              paddingAngle={paddingAngle}
+              startAngle={startAngle}
               onClick={(entry, index) => {
                 if (onDataPointClick) {
                   onDataPointClick(entry, index);
@@ -119,15 +121,14 @@ export const DonutChart: React.FC<DonutChartProps> = ({
               {data.map((_, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={getColor(index, colors)}
                   className="stroke-white dark:stroke-gray-950"
+                  fill={getColor(index, colors)}
                   strokeWidth={2}
                 />
               ))}
             </Pie>
 
-            {showTooltip && (
-              <Tooltip
+            {showTooltip ? <Tooltip
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover, 0 0% 100%))",
                   border: "1px solid hsl(var(--border, 220 13% 91%))",
@@ -138,30 +139,26 @@ export const DonutChart: React.FC<DonutChartProps> = ({
                   value.toLocaleString(),
                   name,
                 ]}
-              />
-            )}
+              /> : null}
 
-            {showLegend && (
-              <Legend
-                verticalAlign="bottom"
+            {showLegend ? <Legend
                 height={36}
-                iconType="circle"
                 iconSize={8}
+                iconType="circle"
+                verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              />
-            )}
+              /> : null}
           </RechartsPieChart>
         </ResponsiveContainer>
 
         {/* Center Content */}
-        {(centerLabel || centerValue !== undefined || centerDescription) && (
-          <div
+        {(centerLabel || centerValue !== undefined || centerDescription) ? <div
+            style={{ marginTop: showLegend ? -18 : 0 }}
             className={cn(
               "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform",
               "flex flex-col items-center justify-center text-center",
               "pointer-events-none"
             )}
-            style={{ marginTop: showLegend ? -18 : 0 }}
           >
             {centerLabel ? (
               centerLabel
@@ -174,15 +171,12 @@ export const DonutChart: React.FC<DonutChartProps> = ({
                       : centerValue}
                   </span>
                 )}
-                {centerDescription && (
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                {centerDescription ? <span className="text-sm text-gray-500 dark:text-gray-400">
                     {centerDescription}
-                  </span>
-                )}
+                  </span> : null}
               </>
             )}
-          </div>
-        )}
+          </div> : null}
       </div>
     </ChartContainer>
   );

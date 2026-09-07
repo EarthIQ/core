@@ -1,5 +1,8 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
+
 import { useMap } from "../../hooks/useMap";
+
+import type React from "react";
 
 interface AnchorLayerProps {
   /** Unique ID for the anchor layer */

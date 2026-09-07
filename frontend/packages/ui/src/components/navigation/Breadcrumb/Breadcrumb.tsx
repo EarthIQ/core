@@ -1,5 +1,6 @@
 import React, { type ReactNode } from "react";
-import { cn } from "../../../utils/cn";
+
+import { cn as _cn } from "../../../utils/cn";
 
 interface BreadcrumbItem {
   key: string;
@@ -15,26 +16,26 @@ interface BreadcrumbProps {
   className?: string;
 }
 
-export function Breadcrumb({
+export const Breadcrumb = ({
   items,
   separator = (
     <svg
       className="h-4 w-4"
       fill="none"
       stroke="currentColor"
-      viewBox="0 0 24 24"
       style={{ color: "var(--text-tertiary)" }}
+      viewBox="0 0 24 24"
     >
       <path
+        d="M9 5l7 7-7 7"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={2}
-        d="M9 5l7 7-7 7"
       />
     </svg>
   ),
   className,
-}: BreadcrumbProps) {
+}: BreadcrumbProps) => {
   return (
     <nav
       aria-label="Breadcrumb"
@@ -51,10 +52,10 @@ export function Breadcrumb({
             >
               {item.href && !isLast ? (
                 <a
-                  href={item.href}
-                  onClick={item.onClick}
                   className="flex items-center gap-1.5 transition-colors"
+                  href={item.href}
                   style={{ color: "var(--text-tertiary)" }}
+                  onClick={item.onClick}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = "var(--text-primary)";
                   }}

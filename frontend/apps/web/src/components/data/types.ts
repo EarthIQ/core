@@ -3,7 +3,7 @@ import type {
   DatasetPreview,
   DatasetType,
   GeoDatasetOut,
-} from "../../lib/datasets";
+} from "@/lib/datasets";
 
 // Re-export so components can pull everything from a single place.
 export type { DatasetFormat, DatasetPreview, DatasetType, GeoDatasetOut };

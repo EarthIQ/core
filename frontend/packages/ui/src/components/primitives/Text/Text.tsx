@@ -228,7 +228,7 @@ export const Text = forwardRef<HTMLElement, TextProps>(({
   ...props
 }, ref) => {
   // Determine element to render
-  const Element = (as || variantElementMap[variant] || 'span') as keyof JSX.IntrinsicElements;
+  const Element = (as || variantElementMap[variant] || 'span');
 
   // Build styles
   const computedStyles = useMemo((): React.CSSProperties => {
@@ -401,9 +401,9 @@ export const Label: React.FC<Omit<TextProps, 'variant'> & { required?: boolean; 
   children,
   ...props
 }) => (
-  <Text variant="label" as="label" {...props}>
+  <Text as="label" variant="label" {...props}>
     {children}
-    {required && <span style={{ color: '#e74c3c', marginLeft: 4 }}>*</span>}
+    {required ? <span style={{ color: '#e74c3c', marginLeft: 4 }}>*</span> : null}
   </Text>
 );
 
@@ -446,32 +446,31 @@ export const Link: React.FC<Omit<TextProps, 'as'> & {
 
   return (
     <Text
-      as="a"
-      // @ts-ignore
       href={href}
-      target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
       style={linkStyles}
+      target={external ? '_blank' : undefined}
       onMouseEnter={() => setIsHovered(true)}
+      as="a"
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- intentional ts-ignore for the as="a" polymorphic prop
+      // @ts-ignore
       onMouseLeave={() => setIsHovered(false)}
       {...props}
     >
       {children}
-      {external && (
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
+      {external ? <svg
           fill="none"
+          height="12"
           stroke="currentColor"
           strokeWidth="2"
           style={{ marginLeft: 4, verticalAlign: 'middle' }}
+          viewBox="0 0 24 24"
+          width="12"
         >
           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
           <polyline points="15 3 21 3 21 9" />
-          <line x1="10" y1="14" x2="21" y2="3" />
-        </svg>
-      )}
+          <line x1="10" x2="21" y1="14" y2="3" />
+        </svg> : null}
     </Text>
   );
 };
@@ -498,22 +497,22 @@ export const Blockquote: React.FC<Omit<TextProps, 'as'>> = ({
 );
 
 export const Strong: React.FC<Omit<TextProps, 'as' | 'weight'>> = (props) => (
-  <Text as="strong" weight="bold" inline {...props} />
+  <Text inline as="strong" weight="bold" {...props} />
 );
 
 export const Em: React.FC<Omit<TextProps, 'as' | 'italic'>> = (props) => (
-  <Text as="em" italic inline {...props} />
+  <Text inline italic as="em" {...props} />
 );
 
 export const Small: React.FC<Omit<TextProps, 'as' | 'size'>> = (props) => (
-  <Text as="small" size="sm" inline {...props} />
+  <Text inline as="small" size="sm" {...props} />
 );
 
 export const Sup: React.FC<Omit<TextProps, 'as'>> = ({ style, ...props }) => (
   <Text
+    inline
     as="sup"
     size="xs"
-    inline
     style={{ verticalAlign: 'super', ...style }}
     {...props}
   />
@@ -521,9 +520,9 @@ export const Sup: React.FC<Omit<TextProps, 'as'>> = ({ style, ...props }) => (
 
 export const Sub: React.FC<Omit<TextProps, 'as'>> = ({ style, ...props }) => (
   <Text
+    inline
     as="sub"
     size="xs"
-    inline
     style={{ verticalAlign: 'sub', ...style }}
     {...props}
   />

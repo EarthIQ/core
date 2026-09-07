@@ -1,6 +1,7 @@
-import { type ReactNode } from "react";
-import { Plus, Trash2 } from "lucide-react";
 import { cn } from "@packages/ui";
+import { Plus, Trash2 } from "lucide-react";
+import { type ReactNode } from "react";
+
 import type { BuilderIcon } from "@/lib/builders";
 
 interface BuilderWorkspaceProps {
@@ -24,12 +25,12 @@ interface BuilderWorkspaceProps {
  * structure (list on the left, workspace on the right) while staying fully
  * self-contained and easy to extend later.
  */
-export function BuilderWorkspace({
+export const BuilderWorkspace = ({
   sidebar,
   main,
   className,
-  sidebarClassName,
-}: BuilderWorkspaceProps) {
+  _sidebarClassName,
+}: BuilderWorkspaceProps) => {
   return (
     <div className={cn("mt-6 flex items-start gap-5", className)}>
       <aside
@@ -56,29 +57,27 @@ interface SidebarHeaderProps {
 }
 
 /** Label row + "Add" action at the top of a builder sidebar. */
-export function SidebarHeader({
+export const SidebarHeader = ({
   icon: Icon,
   title,
   addLabel = "Add",
   onAdd,
-}: SidebarHeaderProps) {
+}: SidebarHeaderProps) => {
   return (
     <div className="flex items-center justify-between gap-2 px-1 pb-2">
       <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-        {Icon && <Icon size={13} />}
+        {Icon ? <Icon size={13} /> : null}
         {title}
       </div>
-      {onAdd && (
-        <button
-          type="button"
-          onClick={onAdd}
+      {onAdd ? <button
           aria-label={`${addLabel} ${title}`}
           className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+          type="button"
+          onClick={onAdd}
         >
           <Plus size={13} />
           {addLabel}
-        </button>
-      )}
+        </button> : null}
     </div>
   );
 }
@@ -93,14 +92,14 @@ interface SidebarItemProps {
 }
 
 /** One row in a builder sidebar list - click to open, trash to remove. */
-export function SidebarItem({
+export const SidebarItem = ({
   icon: Icon,
   title,
   subtitle,
   active = false,
   onClick,
   onDelete,
-}: SidebarItemProps) {
+}: SidebarItemProps) => {
   return (
     <div
       className={cn(
@@ -111,12 +110,11 @@ export function SidebarItem({
       )}
     >
       <button
+        className="flex min-w-0 flex-1 cursor-pointer items-start gap-2.5 rounded-xl px-2.5 py-2 text-left"
         type="button"
         onClick={onClick}
-        className="flex min-w-0 flex-1 cursor-pointer items-start gap-2.5 rounded-xl px-2.5 py-2 text-left"
       >
-        {Icon && (
-          <span
+        {Icon ? <span
             className={cn(
               "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
               active
@@ -125,8 +123,7 @@ export function SidebarItem({
             )}
           >
             <Icon size={14} />
-          </span>
-        )}
+          </span> : null}
         <span className="min-w-0">
           <span
             className={cn(
@@ -138,23 +135,19 @@ export function SidebarItem({
           >
             {title}
           </span>
-          {subtitle && (
-            <span className="block truncate text-xs text-[var(--text-tertiary)]">
+          {subtitle ? <span className="block truncate text-xs text-[var(--text-tertiary)]">
               {subtitle}
-            </span>
-          )}
+            </span> : null}
         </span>
       </button>
-      {onDelete && (
-        <button
-          type="button"
-          onClick={onDelete}
+      {onDelete ? <button
           aria-label={`Remove ${title}`}
           className="mt-2 shrink-0 cursor-pointer rounded-md p-1 text-[var(--text-tertiary)] opacity-0 transition-opacity hover:bg-[var(--surface-hover)] hover:text-[var(--error-text)] group-hover:opacity-100"
+          type="button"
+          onClick={onDelete}
         >
           <Trash2 size={13} />
-        </button>
-      )}
+        </button> : null}
     </div>
   );
 }
@@ -169,12 +162,12 @@ interface EditorPlaceholderProps {
 }
 
 /** A builder's main canvas before the real editor is implemented. */
-export function EditorPlaceholder({
+export const EditorPlaceholder = ({
   icon: Icon,
   title,
   description,
   actions,
-}: EditorPlaceholderProps) {
+}: EditorPlaceholderProps) => {
   return (
     <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)] px-6 py-12 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">

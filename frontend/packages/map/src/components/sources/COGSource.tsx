@@ -1,6 +1,10 @@
-import React, { useEffect, useId, useState } from 'react';
+import { fromUrl, Pool } from 'geotiff';
+import { useEffect, useId, useState } from 'react';
+
 import { useMap } from '../../hooks/useMap';
-import GeoTIFF, { fromUrl, Pool } from 'geotiff';
+
+import type React from 'react';
+
 
 export interface COGSourceProps {
   /** Unique source ID */
@@ -37,10 +41,10 @@ export interface COGMetadata {
 export const COGSource: React.FC<COGSourceProps> = ({
   id: propId,
   url,
-  bands = [1],
-  colorRamp = 'viridis',
-  range,
-  noData,
+  _bands = [1],
+  _colorRamp = 'viridis',
+  _range,
+  _noData,
   opacity = 1,
   visible = true,
   onLoad,
@@ -49,7 +53,7 @@ export const COGSource: React.FC<COGSourceProps> = ({
   const { map, isLoaded } = useMap();
   const autoId = useId();
   const id = propId || `cog-source-${autoId}`;
-  const [metadata, setMetadata] = useState<COGMetadata | null>(null);
+  const [_metadata, setMetadata] = useState<COGMetadata | null>(null);
 
   useEffect(() => {
     if (!map || !isLoaded) return;

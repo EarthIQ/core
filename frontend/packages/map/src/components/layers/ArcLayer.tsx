@@ -1,7 +1,11 @@
-import React, { useEffect, useId, useState, useCallback } from 'react';
-import { useMap } from '../../hooks/useMap';
 import { ArcLayer as DeckArcLayer } from '@deck.gl/layers';
+import { useEffect, useId, useState, useCallback as _useCallback } from 'react';
+
+import { useMap } from '../../hooks/useMap';
+
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export interface ArcData {
   source: [number, number];
@@ -91,7 +95,7 @@ export const ArcLayer: React.FC<ArcLayerProps> = ({
   const autoId = useId();
   const id = propId || `arc-layer-${autoId}`;
   const [processedData, setProcessedData] = useState<any[]>([]);
-  const [animationTime, setAnimationTime] = useState(0);
+  const [_animationTime, setAnimationTime] = useState(0);
 
   // Process data
   useEffect(() => {

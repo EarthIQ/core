@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import * as turf from '@turf/turf';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { FeatureCollection, Feature } from 'geojson';
 
 export interface DataSummaryField {
@@ -135,7 +137,7 @@ export const DataSummary: React.FC<DataSummaryProps> = ({
             if (f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString') {
               totalLength += turf.length(f, { units: 'kilometers' });
             }
-          } catch (e) {
+          } catch (_e) {
             // Skip invalid geometries
           }
         });
@@ -155,7 +157,7 @@ export const DataSummary: React.FC<DataSummaryProps> = ({
           const fc = turf.featureCollection(features);
           const bbox = turf.bbox(fc);
           geoSummary.bounds = `${bbox[0].toFixed(4)}, ${bbox[1].toFixed(4)} - ${bbox[2].toFixed(4)}, ${bbox[3].toFixed(4)}`;
-        } catch (e) {
+        } catch (_e) {
           // Skip if bbox fails
         }
 
@@ -239,24 +241,20 @@ export const DataSummary: React.FC<DataSummaryProps> = ({
         }}>
           {title}
         </span>
-        {collapsible && (
-          <span style={{
+        {collapsible ? <span style={{
             transform: isCollapsed ? 'rotate(-90deg)' : 'none',
             transition: 'transform 0.2s',
             color: '#666',
             fontSize: 10
           }}>
             ▼
-          </span>
-        )}
+          </span> : null}
       </div>
 
       {/* Loading */}
-      {showLoading && isLoading && !isCollapsed && (
-        <div style={{ textAlign: 'center', color: '#999', padding: 10, fontSize: 12 }}>
+      {showLoading && isLoading && !isCollapsed ? <div style={{ textAlign: 'center', color: '#999', padding: 10, fontSize: 12 }}>
           Calculating...
-        </div>
-      )}
+        </div> : null}
 
       {/* Content */}
       {!isCollapsed && !isLoading && (
@@ -300,8 +298,7 @@ export const DataSummary: React.FC<DataSummaryProps> = ({
           </div>
 
           {/* Geometry summary */}
-          {includeGeometrySummary && Object.keys(geometrySummary).length > 0 && (
-            <div style={{
+          {includeGeometrySummary && Object.keys(geometrySummary).length > 0 ? <div style={{
               marginTop: 12,
               paddingTop: 12,
               borderTop: '1px solid #eee'
@@ -328,12 +325,10 @@ export const DataSummary: React.FC<DataSummaryProps> = ({
                   <span style={{ fontWeight: 500, color: '#333' }}>{String(value)}</span>
                 </div>
               ))}
-            </div>
-          )}
+            </div> : null}
 
           {/* Refresh button */}
           <button
-            onClick={calculateSummary}
             style={{
               width: '100%',
               marginTop: 12,
@@ -345,6 +340,7 @@ export const DataSummary: React.FC<DataSummaryProps> = ({
               fontSize: 11,
               color: '#666'
             }}
+            onClick={calculateSummary}
           >
             ↻ Refresh
           </button>

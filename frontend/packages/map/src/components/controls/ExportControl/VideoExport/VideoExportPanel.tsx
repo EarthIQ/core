@@ -1,14 +1,3 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
-import type { Map as MaplibreMap } from "maplibre-gl";
-import { useMapAnimationEngine } from "../../../../hooks/useMapAnimationEngine";
-import { useVideoExport } from "../../../../hooks/useVideoExport";
-import { Timeline } from "./Timeline";
-import { KeyframeProperties } from "./KeyframeProperties";
-import { ExportSettingsPanel } from "./ExportSettings";
-import type {
-  PlaybackSpeed,
-  ExportSettings,
-} from "../../../../types/video-export";
 import {
   Play,
   Pause,
@@ -27,6 +16,19 @@ import {
   Layers,
   X,
 } from "lucide-react";
+import { useState, useCallback, useEffect, useMemo } from "react";
+
+import { ExportSettingsPanel } from "./ExportSettings";
+import { KeyframeProperties } from "./KeyframeProperties";
+import { Timeline } from "./Timeline";
+import { useMapAnimationEngine } from "../../../../hooks/useMapAnimationEngine";
+import { useVideoExport } from "../../../../hooks/useVideoExport";
+
+import type {
+  PlaybackSpeed,
+  ExportSettings,
+} from "../../../../types/video-export";
+import type { Map as MaplibreMap } from "maplibre-gl";
 
 interface VideoExportPanelProps {
   map?: MaplibreMap | null;
@@ -43,11 +45,11 @@ function formatTime(seconds: number): string {
   return `${secs.toFixed(1)}s`;
 }
 
-export function VideoExportPanel({
+export const VideoExportPanel = ({
   map,
   onClose,
   className = "",
-}: VideoExportPanelProps) {
+}: VideoExportPanelProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showExportSettings, setShowExportSettings] = useState(false);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
@@ -98,11 +100,13 @@ export function VideoExportPanel({
           break;
         case "ArrowLeft":
           e.preventDefault();
-          e.shiftKey ? engine.goToPrevKeyframe() : engine.stepBackward();
+          if (e.shiftKey) engine.goToPrevKeyframe();
+          else engine.stepBackward();
           break;
         case "ArrowRight":
           e.preventDefault();
-          e.shiftKey ? engine.goToNextKeyframe() : engine.stepForward();
+          if (e.shiftKey) engine.goToNextKeyframe();
+          else engine.stepForward();
           break;
         case "Home":
           e.preventDefault();
@@ -139,8 +143,7 @@ export function VideoExportPanel({
   );
 
   return (
-    <>
-      <div
+    <div
         className={`relative mb-9 flex w-full flex-col ${className}`}
         style={{
           backgroundColor: "var(--bg-elevated)",
@@ -150,14 +153,14 @@ export function VideoExportPanel({
         {/* Export Settings Overlay */}
         <div className="relative">
           <ExportSettingsPanel
-            isOpen={showExportSettings}
-            onClose={() => setShowExportSettings(false)}
-            onExport={handleExport}
-            onCancel={exporter.cancelExport}
             isExporting={exporter.isExporting}
+            isOpen={showExportSettings}
+            keyframeCount={engine.keyframes.length}
             progress={exporter.progress}
             totalDuration={engine.totalDuration}
-            keyframeCount={engine.keyframes.length}
+            onCancel={exporter.cancelExport}
+            onClose={() => setShowExportSettings(false)}
+            onExport={handleExport}
           />
         </div>
 
@@ -201,21 +204,23 @@ export function VideoExportPanel({
             <button
               className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
               style={{ color: "var(--text-secondary)" }}
-              onClick={engine.goToPrevKeyframe}
               title="Previous Keyframe (Shift+←)"
+              onClick={engine.goToPrevKeyframe}
             >
               <SkipBack size={14} />
             </button>
             <button
               className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
               style={{ color: "var(--text-secondary)" }}
-              onClick={engine.stepBackward}
               title="Step Backward (←)"
+              onClick={engine.stepBackward}
             >
               <ChevronLeft size={14} />
             </button>
             <button
               className="rounded-lg p-2 transition-all"
+              disabled={engine.keyframes.length < 2}
+              title="Play/Pause (Space)"
               style={{
                 backgroundColor: engine.timeline.isPlaying
                   ? "var(--error)"
@@ -223,8 +228,6 @@ export function VideoExportPanel({
                 color: "var(--text-on-primary)",
               }}
               onClick={engine.togglePlayPause}
-              disabled={engine.keyframes.length < 2}
-              title="Play/Pause (Space)"
             >
               {engine.timeline.isPlaying ? (
                 <Pause size={16} />
@@ -235,24 +238,24 @@ export function VideoExportPanel({
             <button
               className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
               style={{ color: "var(--text-secondary)" }}
-              onClick={engine.stop}
               title="Stop"
+              onClick={engine.stop}
             >
               <Square size={14} />
             </button>
             <button
               className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
               style={{ color: "var(--text-secondary)" }}
-              onClick={engine.stepForward}
               title="Step Forward (→)"
+              onClick={engine.stepForward}
             >
               <ChevronRight size={14} />
             </button>
             <button
               className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
               style={{ color: "var(--text-secondary)" }}
-              onClick={engine.goToNextKeyframe}
               title="Next Keyframe (Shift+→)"
+              onClick={engine.goToNextKeyframe}
             >
               <SkipForward size={14} />
             </button>
@@ -270,8 +273,7 @@ export function VideoExportPanel({
                 <Gauge size={10} />
                 {engine.playbackSpeed}x
               </button>
-              {showSpeedMenu && (
-                <>
+              {showSpeedMenu ? <>
                   <div
                     className="fixed inset-0 z-40"
                     onClick={() => setShowSpeedMenu(false)}
@@ -305,8 +307,7 @@ export function VideoExportPanel({
                       </button>
                     ))}
                   </div>
-                </>
-              )}
+                </> : null}
             </div>
           </div>
 
@@ -314,13 +315,13 @@ export function VideoExportPanel({
           <div className="flex items-center gap-1.5">
             <button
               className="flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all"
+              title="Add Keyframe (K)"
               style={{
                 backgroundColor: "var(--success-bg)",
                 color: "var(--success-text)",
                 border: "1px solid var(--success-border)",
               }}
               onClick={() => engine.addKeyframe()}
-              title="Add Keyframe (K)"
             >
               <Plus size={12} />
               Keyframe
@@ -330,11 +331,11 @@ export function VideoExportPanel({
               <button
                 className="rounded-md p-1.5 transition-colors hover:bg-[var(--error-bg)]"
                 style={{ color: "var(--text-tertiary)" }}
+                title="Clear All"
                 onClick={() => {
                   if (window.confirm("Clear all keyframes?"))
                     engine.clearKeyframes();
                 }}
-                title="Clear All"
               >
                 <Trash2 size={13} />
               </button>
@@ -347,28 +348,28 @@ export function VideoExportPanel({
 
             <button
               className="flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all"
+              disabled={engine.keyframes.length < 2}
               style={{
                 backgroundColor: "var(--primary)",
                 color: "var(--text-on-primary)",
               }}
               onClick={() => setShowExportSettings(true)}
-              disabled={engine.keyframes.length < 2}
             >
               <Download size={12} />
               Export
             </button>
 
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
               className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
               style={{ color: "var(--text-tertiary)" }}
+              onClick={() => setIsExpanded(!isExpanded)}
             >
               {isExpanded ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
             </button>
             <button
-              onClick={onClose}
               className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
               style={{ color: "var(--text-tertiary)" }}
+              onClick={onClose}
             >
               <X size={13} />
             </button>
@@ -376,34 +377,31 @@ export function VideoExportPanel({
         </div>
 
         {/* Timeline area */}
-        {isExpanded && (
-          <div className="px-4 pt-2 pb-3">
+        {isExpanded ? <div className="px-4 pt-2 pb-3">
             <Timeline
-              keyframes={engine.keyframes}
-              timeline={engine.timeline}
-              selectedKeyframeId={engine.selectedKeyframeId}
               getKeyframeTime={engine.getKeyframeTime}
-              onSeek={engine.seekTo}
-              onKeyframeSelect={engine.setSelectedKeyframeId}
-              onKeyframeRemove={engine.removeKeyframe}
+              keyframes={engine.keyframes}
+              selectedKeyframeId={engine.selectedKeyframeId}
+              timeline={engine.timeline}
               onKeyframeDuplicate={engine.duplicateKeyframe}
-              onKeyframeUpdateFromMap={engine.updateKeyframeFromMap}
+              onKeyframeRemove={engine.removeKeyframe}
+              onKeyframeSelect={engine.setSelectedKeyframeId}
               onKeyframeUpdate={engine.updateKeyframe}
+              onKeyframeUpdateFromMap={engine.updateKeyframeFromMap}
+              onSeek={engine.seekTo}
             />
 
             {/* Selected keyframe properties */}
-            {selectedKeyframe && selectedKeyframeIndex >= 0 && (
-              <div className="mt-3">
+            {selectedKeyframe && selectedKeyframeIndex >= 0 ? <div className="mt-3">
                 <KeyframeProperties
+                  isLast={selectedKeyframeIndex === engine.keyframes.length - 1}
                   keyframe={selectedKeyframe}
                   keyframeIndex={selectedKeyframeIndex}
                   keyframeTime={engine.getKeyframeTime(selectedKeyframeIndex)}
-                  isLast={selectedKeyframeIndex === engine.keyframes.length - 1}
                   onUpdate={engine.updateKeyframe}
                   onUpdateFromMap={engine.updateKeyframeFromMap}
                 />
-              </div>
-            )}
+              </div> : null}
 
             {/* Empty state */}
             {engine.keyframes.length === 0 && (
@@ -452,12 +450,10 @@ export function VideoExportPanel({
                 created automatically
               </div>
             )}
-          </div>
-        )}
+          </div> : null}
 
         {/* Shortcuts bar */}
-        {isExpanded && (
-          <div
+        {isExpanded ? <div
             className="flex items-center justify-center gap-4 px-4 py-1.5 text-[9px]"
             style={{
               borderTop: "1px solid var(--divider)",
@@ -494,9 +490,7 @@ export function VideoExportPanel({
               </kbd>{" "}
               Delete
             </span>
-          </div>
-        )}
+          </div> : null}
       </div>
-    </>
   );
 }

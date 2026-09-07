@@ -34,7 +34,7 @@
     "dev": "tsup --watch",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint .",
     "prepublishOnly": "pnpm run build"
   },
   "peerDependencies": {
@@ -42,6 +42,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@packages/eslint-config": "workspace:^",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "tsup": "^8.5.1",

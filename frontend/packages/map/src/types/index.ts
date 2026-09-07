@@ -1,5 +1,4 @@
 import type { GeoJSON } from "geojson";
-import type { Map, LngLatBoundsLike, FitBoundsOptions } from "maplibre-gl";
 import type { ReactNode } from "react";
 
 // Re-export GeoJSON types

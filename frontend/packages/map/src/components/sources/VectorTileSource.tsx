@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
+
 import { useMap } from '../../hooks/useMap';
 
 export interface VectorTileSourceProps {
@@ -123,7 +124,7 @@ export const useVectorTileSource = (id: string) => {
 
   const getSource = useCallback(() => {
     if (!map || !isLoaded) return null;
-    return map.getSource(id) as maplibregl.VectorTileSource | undefined;
+    return map.getSource(id);
   }, [map, isLoaded, id]);
 
   const getSourceLayers = useCallback((): string[] => {

@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
 import { Button, Modal, ModalFooter, cn } from "@packages/ui";
 import { Check, Folder, FolderInput, Inbox } from "lucide-react";
-import type { DataFolder } from "../../lib/datasets";
+import { useMemo, useState } from "react";
+
 import type { DatasetItem } from "./types";
+import type { DataFolder } from "@/lib/datasets";
 
 interface Props {
   datasets: DatasetItem[];
@@ -52,32 +53,32 @@ export default function MoveModal({
   return (
     <Modal
       isOpen
-      onClose={onClose}
       size="sm"
       title={
         many
           ? `Move ${datasets.length} datasets to…`
           : `Move "${datasets[0]?.name ?? "dataset"}" to…`
       }
+      onClose={onClose}
     >
       <div className="flex flex-col gap-1 max-h-[50vh] overflow-y-auto scrollbar-thin pr-1">
         {/* Ungrouped destination */}
         <button
           type="button"
-          onClick={() => setTarget(null)}
           className={cn(
             "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium cursor-pointer transition-colors",
             target === null
               ? "bg-primary/[0.1] text-primary"
               : "text-text-secondary hover:bg-surface-hover",
           )}
+          onClick={() => setTarget(null)}
         >
           <Inbox
-            size={14}
             className={target === null ? "text-primary" : "text-text-tertiary"}
+            size={14}
           />
           <span className="flex-1 truncate">Ungrouped (All Data)</span>
-          {target === null && <Check size={13} className="text-primary shrink-0" />}
+          {target === null && <Check className="text-primary shrink-0" size={13} />}
         </button>
 
         {flat.length === 0 && (
@@ -89,42 +90,42 @@ export default function MoveModal({
         {flat.map((f) => (
           <button
             key={f.id}
+            style={{ paddingLeft: `${10 + f.depth * 16}px` }}
             type="button"
-            onClick={() => setTarget(f.id)}
             className={cn(
               "flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium cursor-pointer transition-colors",
               target === f.id
                 ? "bg-primary/[0.1] text-primary"
                 : "text-text-secondary hover:bg-surface-hover",
             )}
-            style={{ paddingLeft: `${10 + f.depth * 16}px` }}
+            onClick={() => setTarget(f.id)}
           >
             {f.depth > 0 && (
               <span className="text-text-tertiary shrink-0 select-none">└</span>
             )}
             <Folder
-              size={14}
               className={target === f.id ? "text-primary" : "text-secondary shrink-0"}
+              size={14}
             />
             <span className="flex-1 truncate">{f.name}</span>
             <span className="shrink-0 text-[0.62rem] tabular-nums text-text-tertiary">
               {f.dataset_count}
             </span>
-            {target === f.id && <Check size={13} className="text-primary shrink-0" />}
+            {target === f.id && <Check className="text-primary shrink-0" size={13} />}
           </button>
         ))}
       </div>
 
       <ModalFooter>
-        <Button variant="ghost" disabled={moving} onClick={onClose}>
+        <Button disabled={moving} variant="ghost" onClick={onClose}>
           Cancel
         </Button>
         <Button
-          variant="primary"
           disabled={target === undefined}
+          leftIcon={<FolderInput size={15} />}
           loading={moving}
           loadingText="Moving…"
-          leftIcon={<FolderInput size={15} />}
+          variant="primary"
           onClick={() => {
             if (target !== undefined) onMove(target);
           }}

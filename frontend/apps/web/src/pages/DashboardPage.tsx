@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Button } from "@packages/ui";
 import {
   Folder,
   Database,
@@ -11,17 +10,19 @@ import {
   Plus,
   Upload,
 } from "lucide-react";
-import { Button } from "@packages/ui";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { useAuth } from "@/lib/auth";
-import { useModules, ModuleInfo } from "@/lib/modules";
+import { listDatasets } from "@/lib/datasets";
+import { fetchMaps, type MapItem } from "@/lib/maps";
+import { useModules, type ModuleInfo } from "@/lib/modules";
 import {
   fetchProjects,
   createProject,
-  ProjectItem,
-  ProjectCreateInput,
+  type ProjectItem,
+  type ProjectCreateInput,
 } from "@/lib/projects";
-import { fetchMaps, MapItem } from "@/lib/maps";
-import { listDatasets } from "@/lib/datasets";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -99,13 +100,13 @@ const HERO_SLIDES: Slide[] = [
   },
 ];
 
-function HeroSlideshow({
+const HeroSlideshow = ({
   userName,
   onCreateProject,
 }: {
   userName: string;
   onCreateProject: () => void;
-}) {
+}) => {
   const [greeting] = useState(() => greetingForHour(new Date().getHours()));
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -145,29 +146,29 @@ function HeroSlideshow({
     >
       {/* Landscape background */}
       <svg
-        className="absolute inset-0 w-full h-full"
-        viewBox="0 0 1200 260"
-        preserveAspectRatio="xMidYMid slice"
         aria-hidden="true"
+        className="absolute inset-0 w-full h-full"
+        preserveAspectRatio="xMidYMid slice"
+        viewBox="0 0 1200 260"
       >
         <defs>
-          <linearGradient id="hero-sky" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="hero-sky" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0%" stopColor="#aee3f5" />
             <stop offset="55%" stopColor="#cdeef7" />
             <stop offset="100%" stopColor="#e8f7e9" />
           </linearGradient>
-          <linearGradient id="hero-mountain" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="hero-mountain" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0%" stopColor="#8d9aa8" />
             <stop offset="45%" stopColor="#b3bec9" />
             <stop offset="100%" stopColor="#5f7050" />
           </linearGradient>
-          <linearGradient id="hero-grass" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="hero-grass" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0%" stopColor="#7fb069" />
             <stop offset="100%" stopColor="#4e8c46" />
           </linearGradient>
         </defs>
-        <rect width="1200" height="260" fill="url(#hero-sky)" />
-        <circle cx="980" cy="70" r="42" fill="#fff6d8" opacity="0.85" />
+        <rect fill="url(#hero-sky)" height="260" width="1200" />
+        <circle cx="980" cy="70" fill="#fff6d8" opacity="0.85" r="42" />
         <path
           d="M0 190 Q150 150 300 185 T600 180 T900 190 T1200 175 V260 H0 Z"
           fill="#9db98a"
@@ -222,16 +223,16 @@ function HeroSlideshow({
             </div>
           </div>
           <button
-            onClick={handleCta}
             className="px-4 py-2 rounded-lg bg-white/90 text-gray-800 font-bold text-xs hover:bg-white transition-colors cursor-pointer shadow-md"
+            onClick={handleCta}
           >
             {slide.ctaLabel}
           </button>
           <div className="flex items-center gap-2">
             <button
-              onClick={goPrev}
-              className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/35 transition-colors cursor-pointer"
               aria-label="Previous slide"
+              className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/35 transition-colors cursor-pointer"
+              onClick={goPrev}
             >
               <ChevronLeft size={15} />
             </button>
@@ -239,20 +240,20 @@ function HeroSlideshow({
               {HERO_SLIDES.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => setCurrent(i)}
+                  aria-label={`Go to slide ${i + 1}`}
                   className={`rounded-full transition-all cursor-pointer ${
                     i === current
                       ? "w-5 h-1 bg-white"
                       : "w-2 h-1 bg-white/50 hover:bg-white/75"
                   }`}
-                  aria-label={`Go to slide ${i + 1}`}
+                  onClick={() => setCurrent(i)}
                 />
               ))}
             </div>
             <button
-              onClick={goNext}
-              className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/35 transition-colors cursor-pointer"
               aria-label="Next slide"
+              className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/35 transition-colors cursor-pointer"
+              onClick={goNext}
             >
               <ChevronRight size={15} />
             </button>
@@ -266,17 +267,17 @@ function HeroSlideshow({
           {HERO_SLIDES.map((_, i) => (
             <button
               key={i}
-              onClick={() => setCurrent(i)}
+              aria-label={`Go to slide ${i + 1}`}
               className={`rounded-full transition-all cursor-pointer ${
                 i === current ? "w-5 h-1 bg-white" : "w-2 h-1 bg-white/50"
               }`}
-              aria-label={`Go to slide ${i + 1}`}
+              onClick={() => setCurrent(i)}
             />
           ))}
         </div>
         <button
-          onClick={handleCta}
           className="px-3 py-1.5 rounded-md bg-white/90 text-gray-800 font-bold text-xs cursor-pointer shadow"
+          onClick={handleCta}
         >
           {slide.ctaLabel}
         </button>
@@ -287,7 +288,7 @@ function HeroSlideshow({
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 
-function StatCard({
+const StatCard = ({
   icon,
   label,
   value,
@@ -295,7 +296,7 @@ function StatCard({
   icon: React.ReactNode;
   label: string;
   value: number | string;
-}) {
+}) => {
   return (
     <div className="bg-surface border border-border-primary rounded-xl px-5 py-4 flex items-start justify-between gap-3 hover:border-primary/30 transition-colors">
       <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -313,7 +314,7 @@ function StatCard({
 
 // ── Create Project Illustration ───────────────────────────────────────────────
 
-function CreateProjectIllustration() {
+const CreateProjectIllustration = () => {
   return (
     <div className="relative w-[240px] h-[170px] shrink-0 hidden lg:block select-none pointer-events-none">
       {/* Back card */}
@@ -357,13 +358,13 @@ function CreateProjectIllustration() {
 
 // ── Recent Projects Panel ─────────────────────────────────────────────────────
 
-function RecentProjectsPanel({
+const RecentProjectsPanel = ({
   projects,
   loading,
 }: {
   projects: ProjectItem[];
   loading: boolean;
-}) {
+}) => {
   const navigate = useNavigate();
   const recent = projects.slice(0, 5);
 
@@ -372,20 +373,18 @@ function RecentProjectsPanel({
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-text-primary">Recent Projects</h2>
         <button
-          onClick={() => navigate("/projects")}
           className="flex items-center gap-0.5 text-sm font-semibold text-primary hover:text-primary/80 bg-transparent border-none cursor-pointer p-0"
+          onClick={() => navigate("/projects")}
         >
           View all Projects <ChevronRight size={16} />
         </button>
       </div>
 
-      {loading && (
-        <div className="space-y-3">
+      {loading ? <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-14 rounded-xl skeleton" />
           ))}
-        </div>
-      )}
+        </div> : null}
 
       {!loading && recent.length === 0 && (
         <p className="text-sm text-text-tertiary py-6 text-center">
@@ -398,11 +397,11 @@ function RecentProjectsPanel({
           {recent.map((p) => (
             <li key={p.id}>
               <button
-                onClick={() => navigate("/projects")}
                 className="w-full flex items-center gap-3 py-3 px-1 bg-transparent border-none cursor-pointer text-left hover:bg-surface-hover rounded-lg transition-colors"
+                onClick={() => navigate("/projects")}
               >
                 <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-primary/25 to-accent/20 flex items-center justify-center shrink-0 overflow-hidden">
-                  <MapIcon size={18} className="text-primary" />
+                  <MapIcon className="text-primary" size={18} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold text-text-primary truncate">
@@ -413,8 +412,8 @@ function RecentProjectsPanel({
                   </div>
                 </div>
                 <ChevronRight
-                  size={16}
                   className="text-text-tertiary shrink-0"
+                  size={16}
                 />
               </button>
             </li>
@@ -427,20 +426,20 @@ function RecentProjectsPanel({
 
 // ── Discover More Module Card ─────────────────────────────────────────────────
 
-function DiscoverCard({ mod }: { mod: ModuleInfo }) {
+const DiscoverCard = ({ mod }: { mod: ModuleInfo }) => {
   const navigate = useNavigate();
   const routeName = mod.name.replace("-module", "");
   const clickable = mod.enabled && mod.capabilities.has_frontend;
 
   return (
     <button
-      onClick={() => clickable && navigate(`/${routeName}`)}
       disabled={!clickable}
       className={`card p-5 flex items-start gap-4 text-left transition-all duration-200 ${
         clickable
           ? "hover:border-primary/40 hover:shadow-lg cursor-pointer"
           : "opacity-70 cursor-default"
       }`}
+      onClick={() => clickable && navigate(`/${routeName}`)}
     >
       <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
         <Layers size={20} />
@@ -454,14 +453,14 @@ function DiscoverCard({ mod }: { mod: ModuleInfo }) {
             "Explore what this module can do for your project."}
         </p>
       </div>
-      <ChevronRight size={16} className="text-text-tertiary shrink-0 mt-1" />
+      <ChevronRight className="text-text-tertiary shrink-0 mt-1" size={16} />
     </button>
   );
 }
 
 // ── Create Project Modal ──────────────────────────────────────────────────────
 
-function CreateProjectModal({
+const CreateProjectModal = ({
   isOpen,
   onClose,
   onCreated,
@@ -469,7 +468,7 @@ function CreateProjectModal({
   isOpen: boolean;
   onClose: () => void;
   onCreated: () => void;
-}) {
+}) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -513,48 +512,46 @@ function CreateProjectModal({
           Start a new project to organize your data.
         </p>
 
-        {error && (
-          <div className="p-3 rounded-md bg-error-subtle text-error text-sm border border-error/20">
+        {error ? <div className="p-3 rounded-md bg-error-subtle text-error text-sm border border-error/20">
             {error}
-          </div>
-        )}
+          </div> : null}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="form-field">
             <label className="form-label">Project Title</label>
             <input
-              type="text"
               required
+              className="input"
               placeholder="e.g. Watershed Assessment 2026"
+              type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="input"
             />
           </div>
 
           <div className="form-field">
             <label className="form-label">Description</label>
             <textarea
-              rows={3}
+              className="input textarea"
               placeholder="What is this project about?"
+              rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="input textarea"
             />
           </div>
 
           <div className="flex gap-3 justify-end mt-2">
             <button
+              className="btn btn-secondary btn-md"
               type="button"
               onClick={onClose}
-              className="btn btn-secondary btn-md"
             >
               Cancel
             </button>
             <button
-              type="submit"
-              disabled={loading}
               className="btn btn-primary btn-md"
+              disabled={loading}
+              type="submit"
             >
               {loading ? "Creating..." : "Create Project"}
             </button>
@@ -667,7 +664,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Projects */}
-        <RecentProjectsPanel projects={projects} loading={projectsLoading} />
+        <RecentProjectsPanel loading={projectsLoading} projects={projects} />
       </div>
 
       {/* Discover more */}
@@ -682,8 +679,8 @@ export default function DashboardPage() {
             </p>
           </div>
           <button
-            onClick={() => window.location.assign("/dashboard")}
             className="flex items-center gap-0.5 text-sm font-semibold text-primary hover:text-primary/80 bg-transparent border-none cursor-pointer p-0 shrink-0"
+            onClick={() => window.location.assign("/dashboard")}
           >
             View all Modules <ChevronRight size={16} />
           </button>

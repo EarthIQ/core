@@ -11,12 +11,13 @@
  */
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { timeAgo } from "@/lib/format";
 import {
   NOTIFICATION_CATEGORIES,
   useNotifications,
   type AppNotification,
 } from "@/lib/notifications";
-import { timeAgo } from "@/lib/format";
 
 const KIND_DOT: Record<string, string> = {
   info: "var(--primary)",
@@ -25,13 +26,13 @@ const KIND_DOT: Record<string, string> = {
   error: "var(--error)",
 };
 
-function NotificationRow({
+const NotificationRow = ({
   n,
   onOpen,
 }: {
   n: AppNotification;
   onOpen: (n: AppNotification) => void;
-}) {
+}) => {
   const { markRead, markUnread, remove } = useNotifications();
   return (
     <div
@@ -47,9 +48,9 @@ function NotificationRow({
     >
       <div className="flex items-start gap-3">
         <span
+          aria-hidden
           className="mt-1.5 w-2 h-2 rounded-full shrink-0"
           style={{ backgroundColor: KIND_DOT[n.kind] ?? "var(--primary)" }}
-          aria-hidden
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
@@ -57,18 +58,14 @@ function NotificationRow({
               <span className="badge badge-primary !px-1.5 !py-0 text-[0.6rem]">NEW</span>
             )}
             <span className="text-sm font-semibold text-text-primary">{n.title}</span>
-            {n.source && (
-              <span className="text-[0.65rem] text-text-tertiary uppercase tracking-wide">
+            {n.source ? <span className="text-[0.65rem] text-text-tertiary uppercase tracking-wide">
                 {n.source}
-              </span>
-            )}
+              </span> : null}
           </div>
-          {n.body && (
-            <p className="text-xs text-text-secondary mt-1 line-clamp-2">{n.body}</p>
-          )}
+          {n.body ? <p className="text-xs text-text-secondary mt-1 line-clamp-2">{n.body}</p> : null}
           <div className="text-[0.65rem] text-text-tertiary mt-1.5 flex items-center gap-2">
             <span>{timeAgo(n.created_at)}</span>
-            {n.link && <span className="text-primary group-hover:underline">open →</span>}
+            {n.link ? <span className="text-primary group-hover:underline">open →</span> : null}
           </div>
         </div>
         <div
@@ -95,7 +92,7 @@ function NotificationRow({
   );
 }
 
-type Filter = "all" | "unread" | string; // "all" | "unread" | <category>
+type Filter = string; // "all" | "unread" | <category>
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
@@ -144,12 +141,12 @@ export default function NotificationsPage() {
             <h1 className="text-lg font-bold text-text-primary flex items-center gap-2">
               Notifications
               <span
+                title={connected ? "Live updates connected" : "Live updates offline"}
                 className={`text-[0.6rem] px-2 py-0.5 rounded-full border ${
                   connected
                     ? "bg-success-subtle text-success border-success/20"
                     : "bg-error-subtle text-error border-error/20"
                 }`}
-                title={connected ? "Live updates connected" : "Live updates offline"}
               >
                 {connected ? "● live" : "○ offline"}
               </span>
@@ -161,7 +158,7 @@ export default function NotificationsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="btn btn-ghost btn-sm" onClick={refresh} title="Refresh now">
+            <button className="btn btn-ghost btn-sm" title="Refresh now" onClick={refresh}>
               ↻
             </button>
             {unread > 0 && (
@@ -218,8 +215,7 @@ export default function NotificationsPage() {
                 ? "Try a different search or category."
                 : "New alerts, mentions and updates will appear here."}
             </div>
-            {(search || filter !== "all") && (
-              <button
+            {(search || filter !== "all") ? <button
                 className="btn btn-ghost btn-sm mt-4"
                 onClick={() => {
                   setSearch("");
@@ -227,8 +223,7 @@ export default function NotificationsPage() {
                 }}
               >
                 Clear filters
-              </button>
-            )}
+              </button> : null}
           </div>
         ) : (
           <>
@@ -238,8 +233,8 @@ export default function NotificationsPage() {
             {page < total_pages && (
               <button
                 className="btn btn-ghost btn-sm mt-2"
-                onClick={loadMore}
                 disabled={loading}
+                onClick={loadMore}
               >
                 {loading ? "Loading…" : `Load more (${total - items.length} older)`}
               </button>

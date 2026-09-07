@@ -1,5 +1,3 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Alert,
   Button,
@@ -19,15 +17,9 @@ import {
   Search,
   SlidersHorizontal,
 } from "lucide-react";
-import {
-  createFolder,
-  deleteFolder,
-  listDatasets,
-  listFolders,
-  renameFolder,
-  type DataFolder,
-  type GeoDatasetOut,
-} from "../lib/datasets";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
   ConfirmDeleteModal,
   DatasetGrid,
@@ -43,16 +35,23 @@ import {
   TileUrlModal,
   UploadModal,
   useDatasetActions,
-} from "../components/data";
-import {
+
   FORMATS,
   type DatasetItem,
   type SortDir,
   type SortField,
-  type ViewMode,
-} from "../components/data";
+  type ViewMode} from "@/components/data";
+import {
+  createFolder,
+  deleteFolder,
+  listDatasets,
+  listFolders,
+  renameFolder,
+  type DataFolder,
+  type GeoDatasetOut,
+} from "@/lib/datasets";
 
-function DataPageInner() {
+const DataPageInner = () => {
   const navigate = useNavigate();
   const { success: toastSuccess, error: toastError, info: toastInfo } =
     useToast();
@@ -126,7 +125,7 @@ function DataPageInner() {
         search: searchQuery,
         folder: selection.folderId ?? undefined,
       });
-      setDatasets(items as DatasetItem[]);
+      setDatasets(items);
     } catch (err: any) {
       setFetchError(err?.message ?? "Failed to load datasets");
     } finally {
@@ -221,7 +220,7 @@ function DataPageInner() {
     let cur = selection.folderId;
     let depth = 0;
     while (cur && cur !== ROOT_UNGROUPED && byId.has(cur) && depth < 20) {
-      const f = byId.get(cur)!;
+      const f = byId.get(cur);
       chain.unshift({ id: f.id, name: f.name });
       cur = f.parent_id;
       depth += 1;
@@ -387,21 +386,21 @@ function DataPageInner() {
         </div>
         <div className="flex items-center gap-2.5 shrink-0">
           <IconButton
-            icon={
-              <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
-            }
-            label="Refresh catalog"
-            variant="secondary"
-            size="md"
-            onClick={fetchDatasets}
             className="border-border-primary"
+            label="Refresh catalog"
+            size="md"
+            variant="secondary"
+            icon={
+              <RefreshCw className={loading ? "animate-spin" : ""} size={16} />
+            }
+            onClick={fetchDatasets}
           />
           <Button
-            variant="primary"
-            size="md"
-            leftIcon={<CloudUpload size={16} />}
-            onClick={onAddData}
             className="shadow-sm font-semibold"
+            leftIcon={<CloudUpload size={16} />}
+            size="md"
+            variant="primary"
+            onClick={onAddData}
           >
             Add Dataset
           </Button>
@@ -409,17 +408,15 @@ function DataPageInner() {
       </div>
 
       {/* ── Fetch error ────────────────────────────────────────────────────── */}
-      {fetchError && (
-        <div>
+      {fetchError ? <div>
           <Alert
-            variant="error"
             title="Couldn't load datasets"
+            variant="error"
             onClose={() => setFetchError(null)}
           >
             {fetchError}
           </Alert>
-        </div>
-      )}
+        </div> : null}
 
       {/* ── Summary Stats ─────────────────────────────────────────────────── */}
       <SummaryStats datasets={datasets} loading={loading} />
@@ -433,13 +430,13 @@ function DataPageInner() {
               folders={folders}
               loading={loading}
               selection={selection}
-              onNavigate={onNavigate}
-              onCreateFolder={handleCreateFolder}
-              onRenameFolder={handleRenameFolder}
-              onDeleteFolder={requestDeleteFolder}
-              totalDatasets={datasets.length}
-              totalBytes={totalBytes}
               tiledCount={tiledCount}
+              totalBytes={totalBytes}
+              totalDatasets={datasets.length}
+              onCreateFolder={handleCreateFolder}
+              onDeleteFolder={requestDeleteFolder}
+              onNavigate={onNavigate}
+              onRenameFolder={handleRenameFolder}
             />
           </div>
         </aside>
@@ -456,13 +453,14 @@ function DataPageInner() {
                 const last = i === breadcrumb.length - 1;
                 return (
                   <span key={crumb.id ?? `root-${i}`} className="flex items-center gap-1">
-                    {i > 0 && <ChevronRight size={12} className="shrink-0" />}
+                    {i > 0 && <ChevronRight className="shrink-0" size={12} />}
                     {last ? (
                       <span className="font-semibold text-text-primary">
                         {crumb.name}
                       </span>
                     ) : (
                       <button
+                        className="rounded px-1 py-0.5 hover:bg-surface-hover hover:text-text-primary cursor-pointer transition-colors"
                         type="button"
                         onClick={() =>
                           onNavigate({
@@ -470,7 +468,6 @@ function DataPageInner() {
                             type: "all",
                           })
                         }
-                        className="rounded px-1 py-0.5 hover:bg-surface-hover hover:text-text-primary cursor-pointer transition-colors"
                       >
                         {crumb.name}
                       </button>
@@ -484,21 +481,21 @@ function DataPageInner() {
           <div className="card p-3 bg-surface border border-border-primary rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-2.5 flex-1 min-w-[240px]">
               <IconButton
+                className="lg:hidden shrink-0 text-text-secondary"
                 icon={<SlidersHorizontal size={18} />}
                 label="Browse folders"
-                variant="ghost"
                 size="md"
-                className="lg:hidden shrink-0 text-text-secondary"
+                variant="ghost"
                 onClick={() => setMobileNavOpen(true)}
               />
               <div className="flex-1 max-w-md">
                 <Input
-                  leftIcon={<Search size={16} className="text-text-tertiary" />}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by dataset name, format, or tag…"
                   aria-label="Search datasets"
                   className="h-9 text-xs"
+                  leftIcon={<Search className="text-text-tertiary" size={16} />}
+                  placeholder="Search by dataset name, format, or tag…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
             </div>
@@ -507,42 +504,42 @@ function DataPageInner() {
               <div className="w-44">
                 <Select
                   options={formatOptions}
+                  size="sm"
                   value={formatFilter}
                   onChange={(v) => setFormatFilter(v)}
-                  size="sm"
                 />
               </div>
 
               {/* View Switcher */}
               <div
+                aria-label="View mode"
                 className="flex rounded-lg overflow-hidden border border-border-primary bg-surface-hover/50 p-0.5"
                 role="group"
-                aria-label="View mode"
               >
                 <button
-                  type="button"
-                  onClick={() => setViewMode("table")}
                   aria-label="Table view"
                   title="Table view"
+                  type="button"
                   className={`px-2.5 h-7 flex items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                     viewMode === "table"
                       ? "bg-surface text-primary shadow-xs"
                       : "text-text-tertiary hover:text-text-primary"
                   }`}
+                  onClick={() => setViewMode("table")}
                 >
                   <List size={14} />
                   <span>Table</span>
                 </button>
                 <button
-                  type="button"
-                  onClick={() => setViewMode("grid")}
                   aria-label="Grid view"
                   title="Grid view"
+                  type="button"
                   className={`px-2.5 h-7 flex items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                     viewMode === "grid"
                       ? "bg-surface text-primary shadow-xs"
                       : "text-text-tertiary hover:text-text-primary"
                   }`}
+                  onClick={() => setViewMode("grid")}
                 >
                   <LayoutGrid size={14} />
                   <span>Grid</span>
@@ -564,34 +561,34 @@ function DataPageInner() {
               </div>
               <div className="flex items-center gap-2">
                 <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleBulkMove}
                   className="text-xs font-semibold"
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleBulkMove}
                 >
                   Move to folder…
                 </Button>
                 <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleAddToProject}
                   className="text-xs font-semibold"
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleAddToProject}
                 >
                   Add to Project
                 </Button>
                 <Button
-                  variant="error"
-                  size="sm"
-                  onClick={handleBulkDelete}
                   className="text-xs font-semibold"
+                  size="sm"
+                  variant="error"
+                  onClick={handleBulkDelete}
                 >
                   Delete Selected
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearSelection}
                   className="text-xs"
+                  size="sm"
+                  variant="ghost"
+                  onClick={clearSelection}
                 >
                   Deselect All
                 </Button>
@@ -602,51 +599,51 @@ function DataPageInner() {
           {/* Table or Grid */}
           {viewMode === "table" ? (
             <DatasetTable
+              activeFilterCount={activeFilterCount}
+              allOnPageSelected={allOnPageSelected}
               items={pageItems}
               loading={loading}
               selectedIds={selectedIds}
-              allOnPageSelected={allOnPageSelected}
-              onToggleSelectAll={toggleSelectAll}
-              onToggleSelectRow={toggleSelectRow}
-              sortField={sortField}
               sortDir={sortDir}
-              onToggleSort={onToggleSort}
-              activeFilterCount={activeFilterCount}
-              onClearFilters={clearFilters}
+              sortField={sortField}
               onAddData={onAddData}
-              onInspect={actions.openPreview}
-              onEdit={actions.openEdit}
+              onClearFilters={clearFilters}
               onDownload={actions.handleDownload}
+              onEdit={actions.openEdit}
+              onInspect={actions.openPreview}
+              onMove={(ds) => actions.requestMove([ds])}
               onOpenTileUrl={actions.openTileUrl}
               onRequestDelete={actions.requestDelete}
-              onMove={(ds) => actions.requestMove([ds])}
+              onToggleSelectAll={toggleSelectAll}
+              onToggleSelectRow={toggleSelectRow}
+              onToggleSort={onToggleSort}
             />
           ) : (
             <DatasetGrid
+              activeFilterCount={activeFilterCount}
               items={pageItems}
               loading={loading}
-              activeFilterCount={activeFilterCount}
-              onClearFilters={clearFilters}
               onAddData={onAddData}
-              onInspect={actions.openPreview}
-              onEdit={actions.openEdit}
+              onClearFilters={clearFilters}
               onDownload={actions.handleDownload}
+              onEdit={actions.openEdit}
+              onInspect={actions.openPreview}
+              onMove={(ds) => actions.requestMove([ds])}
               onOpenTileUrl={actions.openTileUrl}
               onRequestDelete={actions.requestDelete}
-              onMove={(ds) => actions.requestMove([ds])}
             />
           )}
 
           {/* Pagination */}
           <Pagination
             loading={loading}
-            totalItems={processedDatasets.length}
             page={clampedPage}
             pageSize={pageSize}
+            totalItems={processedDatasets.length}
             totalPages={totalPages}
-            onPrev={() => setPage((p) => Math.max(1, p - 1))}
             onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
             onPageSizeChange={setPageSize}
+            onPrev={() => setPage((p) => Math.max(1, p - 1))}
           />
         </div>
       </div>
@@ -654,77 +651,70 @@ function DataPageInner() {
       {/* ── Mobile folder drawer ────────────────────────────────────────────── */}
       <Drawer
         isOpen={mobileNavOpen}
-        onClose={() => setMobileNavOpen(false)}
         position="left"
         size="md"
         title="Browse catalog"
+        onClose={() => setMobileNavOpen(false)}
       >
         <FolderTree
           folders={folders}
           loading={loading}
           selection={selection}
-          onNavigate={onNavigate}
-          onCreateFolder={handleCreateFolder}
-          onRenameFolder={handleRenameFolder}
-          onDeleteFolder={requestDeleteFolder}
-          totalDatasets={datasets.length}
-          totalBytes={totalBytes}
           tiledCount={tiledCount}
+          totalBytes={totalBytes}
+          totalDatasets={datasets.length}
+          onCreateFolder={handleCreateFolder}
+          onDeleteFolder={requestDeleteFolder}
+          onNavigate={onNavigate}
+          onRenameFolder={handleRenameFolder}
         />
       </Drawer>
 
       {/* ── Upload ─────────────────────────────────────────────────────────── */}
       <UploadModal
-        open={isAddModalOpen}
         addToast={addToast}
-        onClose={() => setIsAddModalOpen(false)}
-        onUploaded={(newDs) => {
-          setDatasets((prev) => [newDs as DatasetItem, ...prev]);
-          fetchFolders();
-        }}
         folders={folders}
+        open={isAddModalOpen}
         defaultFolderId={
           selection.folderId === ROOT_UNGROUPED ? null : selection.folderId
         }
+        onClose={() => setIsAddModalOpen(false)}
+        onUploaded={(newDs) => {
+          setDatasets((prev) => [newDs, ...prev]);
+          fetchFolders();
+        }}
       />
 
       {/* ── Preview / Inspect ──────────────────────────────────────────────── */}
-      {actions.inspectTarget && (
-        <PreviewModal
+      {actions.inspectTarget ? <PreviewModal
+          addToast={addToast}
           dataset={actions.inspectTarget}
           idCopied={actions.idCopied}
           onClose={() => actions.setInspectTarget(null)}
+          onCopyId={actions.handleCopyId}
           onDownload={actions.handleDownload}
           onEdit={actions.openEdit}
           onOpenTileUrl={actions.openTileUrl}
-          onCopyId={actions.handleCopyId}
-          addToast={addToast}
-        />
-      )}
+        /> : null}
 
       {/* ── Edit metadata ──────────────────────────────────────────────────── */}
-      {actions.editDataset && (
-        <EditModal
+      {actions.editDataset ? <EditModal
           dataset={actions.editDataset}
           saving={actions.editSaving}
           onClose={() => actions.setEditDataset(null)}
           onSave={(payload) => actions.saveEdit(payload)}
-        />
-      )}
+        /> : null}
 
       {/* ── Tile URL ───────────────────────────────────────────────────────── */}
-      {actions.tileUrlDataset && (
-        <TileUrlModal
-          dataset={actions.tileUrlDataset}
+      {actions.tileUrlDataset ? <TileUrlModal
           copied={actions.tileCopied}
+          dataset={actions.tileUrlDataset}
           onClose={() => actions.setTileUrlDataset(null)}
           onCopy={actions.handleCopyTileUrl}
-        />
-      )}
+        /> : null}
 
       {/* ── Confirm delete ─────────────────────────────────────────────────── */}
-      {actions.confirmDelete && (
-        <ConfirmDeleteModal
+      {actions.confirmDelete ? <ConfirmDeleteModal
           label={actions.confirmDelete.label}
           onCancel={() => actions.setConfirmDelete(null)}
           onConfirm={() =>
@@ -736,12 +726,10 @@ function DataPageInner() {
               });
             })
           }
-        />
-      )}
+        /> : null}
 
       {/* ── Move to folder ─────────────────────────────────────────────────── */}
-      {actions.moveTargets && (
-        <MoveModal
+      {actions.moveTargets ? <MoveModal
           datasets={actions.moveTargets}
           folders={folders}
           moving={actions.moveSaving}
@@ -750,26 +738,23 @@ function DataPageInner() {
             actions.moveDatasets(folderId);
             setSelectedIds(new Set());
           }}
-        />
-      )}
+        /> : null}
 
       {/* ── Confirm delete folder ──────────────────────────────────────────── */}
-      {folderConfirm && (
-        <ConfirmDeleteModal
+      {folderConfirm ? <ConfirmDeleteModal
           label={`folder “${folderConfirm.name}”`}
           onCancel={() => setFolderConfirm(null)}
           onConfirm={() => {
             if (!folderBusy) confirmDeleteFolder();
           }}
-        />
-      )}
+        /> : null}
     </div>
   );
 }
 
 export default function DataPage() {
   return (
-    <ToastProvider position="bottom-right" maxToasts={5} defaultDuration={4200}>
+    <ToastProvider defaultDuration={4200} maxToasts={5} position="bottom-right">
       <DataPageInner />
     </ToastProvider>
   );

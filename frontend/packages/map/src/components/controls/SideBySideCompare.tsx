@@ -1,6 +1,6 @@
 // components/controls/SideBySideCompare.tsx
-import React, { useRef, useEffect, useCallback } from "react";
 import * as maplibregl from "maplibre-gl";
+import React, { useRef, useEffect, useCallback } from "react";
 
 interface SideBySideCompareProps {
   leftStyle: string;
@@ -122,10 +122,10 @@ export const SideBySideCompare: React.FC<SideBySideCompareProps> = ({
             viewBox="0 0 24 24"
           >
             <path
+              d="M8 9l4-4 4 4m0 6l-4 4-4-4"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M8 9l4-4 4 4m0 6l-4 4-4-4"
             />
           </svg>
         </div>

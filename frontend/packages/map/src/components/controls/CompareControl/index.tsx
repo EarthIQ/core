@@ -1,4 +1,12 @@
 // components/controls/CompareControl.tsx
+import { cn } from "@packages/ui";
+import {
+  ArrowLeftRight,
+  Code,
+  Columns2,
+  PanelLeftOpen,
+  Search,
+} from "lucide-react";
 import {
   type ReactNode,
   useState,
@@ -8,20 +16,15 @@ import {
   useMemo,
 } from "react";
 import { createPortal } from "react-dom";
-import * as maplibregl from "maplibre-gl";
-import type { StyleSpecification } from "maplibre-gl";
-import { cn } from "@packages/ui";
-import { ControlButton, ControlButtonFlyout } from "../MapControlButton";
+
+import { MapProvider } from "../../../context/MapContext";
 import { useMap } from "../../../hooks/useMap";
 import { Map } from "../../primitives/Map";
-import { MapProvider } from "../../../context/MapContext";
-import {
-  ArrowLeftRight,
-  Code,
-  Columns2,
-  PanelLeftOpen,
-  Search,
-} from "lucide-react";
+import { ControlButton, ControlButtonFlyout } from "../MapControlButton";
+
+import type { StyleSpecification } from "maplibre-gl";
+import type * as maplibregl from "maplibre-gl";
+
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -79,7 +82,7 @@ export interface CompareControlProps {
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════════════
 
-export function CompareControl({
+export const CompareControl = ({
   modes = DEFAULT_MODES,
   activeMode = null,
   swipePosition: swipePositionProp,
@@ -97,7 +100,7 @@ export function CompareControl({
   rightMapChildren,
   renderLeftControl,
   renderRightControl,
-}: CompareControlProps) {
+}: CompareControlProps) => {
   const { map } = useMap();
 
   // ── State ────────────────────────────────────────────────────────
@@ -156,7 +159,7 @@ export function CompareControl({
         if (style) {
           setCapturedStyle(JSON.parse(JSON.stringify(style)));
         }
-      } catch (e) {
+      } catch (_e) {
         setCapturedStyle(null);
       }
     } else if (wasActive && !nowActive) {
@@ -251,7 +254,7 @@ export function CompareControl({
             });
           }
         }
-      } catch (e) {}
+      } catch (_e) { /* ignore map padding errors */ }
     };
     updatePadding();
     window.addEventListener("resize", updatePadding);
@@ -262,7 +265,7 @@ export function CompareControl({
         if (rightMapInstance) {
           rightMapInstance.setPadding({ left: 0, top: 0, bottom: 0, right: 0 });
         }
-      } catch (e) {}
+      } catch (_e) { /* ignore map padding errors */ }
     };
   }, [map, isSideBySide, rightMapInstance]);
 
@@ -303,7 +306,7 @@ export function CompareControl({
       dragging = false;
       try {
         handle!.releasePointerCapture(e.pointerId);
-      } catch (_) {}
+      } catch (_) { /* ignore capture release errors */ }
     }
 
     function onLostCapture() {
@@ -403,20 +406,20 @@ export function CompareControl({
         className="relative"
       >
         <ControlButtonFlyout
-          icon={icon ?? <ArrowLeftRight className="h-3.5 w-3.5" />}
-          label={label}
-          flyoutSide={flyoutSide}
-          flyoutClassName={flyoutClassName}
           active={isOpen}
           className={className}
+          flyoutClassName={flyoutClassName}
+          flyoutSide={flyoutSide}
+          icon={icon ?? <ArrowLeftRight className="h-3.5 w-3.5" />}
+          label={label}
         >
           {resolvedModes.map((mode) => (
             <ControlButton
               key={mode.mode}
-              icon={mode.icon}
-              label={mode.label}
               active={activeMode === mode.mode}
               disabled={mode.disabled}
+              icon={mode.icon}
+              label={mode.label}
               onClick={() => selectMode(mode.mode)}
             />
           ))}
@@ -425,8 +428,7 @@ export function CompareControl({
 
       {isActive &&
         capturedStyle &&
-        map?.getContainer() &&
-        createPortal(
+        map?.getContainer() ? createPortal(
           <div
             ref={overlayRef}
             style={{
@@ -449,9 +451,9 @@ export function CompareControl({
             >
               <MapProvider>
                 <Map
-                  interactive={false}
                   attributionControl={false}
                   initialViewState={initialRightMapState}
+                  interactive={false}
                   style={capturedStyle}
                   onLoad={(m) => {
                     rightMapInstanceRef.current = m;
@@ -464,10 +466,8 @@ export function CompareControl({
             </div>
 
             {/* ── Swipe / Side-by-side UI ──────────────────────── */}
-            {showSwipeUI && (
-              <>
-                {renderLeftControl && (
-                  <div
+            {showSwipeUI ? <>
+                {renderLeftControl ? <div
                     style={{
                       position: "absolute",
                       top: 16,
@@ -477,10 +477,8 @@ export function CompareControl({
                     }}
                   >
                     {renderLeftControl}
-                  </div>
-                )}
-                {renderRightControl && (
-                  <div
+                  </div> : null}
+                {renderRightControl ? <div
                     style={{
                       position: "absolute",
                       top: 16,
@@ -490,8 +488,7 @@ export function CompareControl({
                     }}
                   >
                     {renderRightControl}
-                  </div>
-                )}
+                  </div> : null}
 
                 {/* Divider line */}
                 <div
@@ -510,8 +507,7 @@ export function CompareControl({
                 />
 
                 {/* Drag handle */}
-                {showDragHandle && (
-                  <div
+                {showDragHandle ? <div
                     ref={handleCallbackRef}
                     style={{
                       position: "absolute",
@@ -545,14 +541,11 @@ export function CompareControl({
                     >
                       <Code className="h-4 w-4" />
                     </div>
-                  </div>
-                )}
-              </>
-            )}
+                  </div> : null}
+              </> : null}
 
             {/* ── Spyglass cursor ──────────────────────────────── */}
-            {showSpyglassUI && isSpyglassActive && (
-              <div
+            {showSpyglassUI && isSpyglassActive ? <div
                 className={cn(
                   "pointer-events-none absolute rounded-full",
                   "border-4 border-white",
@@ -572,11 +565,10 @@ export function CompareControl({
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="h-px w-4 bg-white/50" />
                 </div>
-              </div>
-            )}
+              </div> : null}
           </div>,
           map.getContainer()
-        )}
+        ) : null}
     </>
   );
 }

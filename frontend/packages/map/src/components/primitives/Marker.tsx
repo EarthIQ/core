@@ -1,7 +1,8 @@
+import * as maplibregl from "maplibre-gl";
 import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import ReactDOM from "react-dom/client";
-import * as maplibregl from "maplibre-gl";
+
 import { useMap } from "../../hooks/useMap";
 
 export interface MarkerProps {

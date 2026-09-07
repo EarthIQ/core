@@ -14,8 +14,9 @@ import {
   PackageOpen,
   X,
 } from "lucide-react";
-import { formatBytes } from "../../lib/datasets";
-import RowActions from "./RowActions";
+
+import { formatBytes } from "@/lib/datasets";
+
 import {
   featureCountLabel,
   formatColor,
@@ -25,6 +26,8 @@ import {
   typeLabel,
   typeLucide,
 } from "./helpers";
+import RowActions from "./RowActions";
+
 import type { DatasetItem, SortField } from "./types";
 
 interface Props {
@@ -48,7 +51,7 @@ interface Props {
   onMove?: (ds: DatasetItem) => void;
 }
 
-function SortHeader({
+const SortHeader = ({
   label,
   field,
   sortField,
@@ -60,17 +63,17 @@ function SortHeader({
   sortField: SortField;
   sortDir: "asc" | "desc";
   onToggleSort: (f: SortField) => void;
-}) {
+}) => {
   const active = sortField === field;
   return (
     <button
       type="button"
-      onClick={() => onToggleSort(field)}
       className={`inline-flex items-center gap-1.5 py-1 text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer select-none group ${
         active
           ? "text-primary"
           : "text-text-secondary hover:text-text-primary"
       }`}
+      onClick={() => onToggleSort(field)}
     >
       <span>{label}</span>
       <span
@@ -80,9 +83,9 @@ function SortHeader({
       >
         {active ? (
           sortDir === "asc" ? (
-            <ArrowUp size={13} className="stroke-[2.5]" />
+            <ArrowUp className="stroke-[2.5]" size={13} />
           ) : (
-            <ArrowDown size={13} className="stroke-[2.5]" />
+            <ArrowDown className="stroke-[2.5]" size={13} />
           )
         ) : (
           <ArrowUpDown size={12} />
@@ -121,28 +124,28 @@ export default function DatasetTable({
               <th className="w-12 px-4 py-3 text-center">
                 <div className="flex items-center justify-center">
                   <Checkbox
-                    size="sm"
-                    checked={allOnPageSelected}
-                    onChange={(e) => onToggleSelectAll(e.target.checked)}
                     aria-label="Select all on page"
+                    checked={allOnPageSelected}
+                    size="sm"
+                    onChange={(e) => onToggleSelectAll(e.target.checked)}
                   />
                 </div>
               </th>
               <th className="px-4 py-3">
                 <SortHeader
-                  label="Dataset"
                   field="name"
-                  sortField={sortField}
+                  label="Dataset"
                   sortDir={sortDir}
+                  sortField={sortField}
                   onToggleSort={onToggleSort}
                 />
               </th>
               <th className="px-4 py-3">
                 <SortHeader
-                  label="Format"
                   field="format"
-                  sortField={sortField}
+                  label="Format"
                   sortDir={sortDir}
+                  sortField={sortField}
                   onToggleSort={onToggleSort}
                 />
               </th>
@@ -153,19 +156,19 @@ export default function DatasetTable({
               </th>
               <th className="px-4 py-3">
                 <SortHeader
-                  label="Records & Size"
                   field="size"
-                  sortField={sortField}
+                  label="Records & Size"
                   sortDir={sortDir}
+                  sortField={sortField}
                   onToggleSort={onToggleSort}
                 />
               </th>
               <th className="px-4 py-3">
                 <SortHeader
-                  label="Updated"
                   field="updated"
-                  sortField={sortField}
+                  label="Updated"
                   sortDir={sortDir}
+                  sortField={sortField}
                   onToggleSort={onToggleSort}
                 />
               </th>
@@ -214,20 +217,10 @@ export default function DatasetTable({
               ))
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-8">
+                <td className="p-8" colSpan={7}>
                   <EmptyState
+                    icon={<Database className="text-primary" size={28} />}
                     size="md"
-                    icon={<Database size={28} className="text-primary" />}
-                    title={
-                      activeFilterCount > 0
-                        ? "No matching datasets found"
-                        : "Your catalog is empty"
-                    }
-                    description={
-                      activeFilterCount > 0
-                        ? "Try adjusting or clearing your search and filters to see more datasets."
-                        : "Upload your first geospatial file to start building your catalog."
-                    }
                     action={
                       activeFilterCount > 0
                         ? {
@@ -235,6 +228,16 @@ export default function DatasetTable({
                             onClick: onClearFilters,
                           }
                         : { label: "Upload dataset", onClick: onAddData }
+                    }
+                    description={
+                      activeFilterCount > 0
+                        ? "Try adjusting or clearing your search and filters to see more datasets."
+                        : "Upload your first geospatial file to start building your catalog."
+                    }
+                    title={
+                      activeFilterCount > 0
+                        ? "No matching datasets found"
+                        : "Your catalog is empty"
                     }
                   />
                 </td>
@@ -251,6 +254,11 @@ export default function DatasetTable({
                 return (
                   <tr
                     key={d.id}
+                    className={`group transition-colors duration-150 cursor-pointer ${
+                      selected
+                        ? "bg-primary/[0.08] hover:bg-primary/[0.12]"
+                        : "hover:bg-surface-hover/70"
+                    } ${d._optimistic ? "opacity-60" : ""}`}
                     onClick={(e) => {
                       const target = e.target as HTMLElement;
                       if (
@@ -262,11 +270,6 @@ export default function DatasetTable({
                       }
                       onInspect(d);
                     }}
-                    className={`group transition-colors duration-150 cursor-pointer ${
-                      selected
-                        ? "bg-primary/[0.08] hover:bg-primary/[0.12]"
-                        : "hover:bg-surface-hover/70"
-                    } ${d._optimistic ? "opacity-60" : ""}`}
                   >
                     {/* Checkbox */}
                     <td
@@ -275,10 +278,10 @@ export default function DatasetTable({
                     >
                       <div className="flex items-center justify-center">
                         <Checkbox
-                          size="sm"
-                          checked={selected}
-                          onChange={() => onToggleSelectRow(d.id)}
                           aria-label={`Select ${d.name}`}
+                          checked={selected}
+                          size="sm"
+                          onChange={() => onToggleSelectRow(d.id)}
                         />
                       </div>
                     </td>
@@ -295,38 +298,31 @@ export default function DatasetTable({
                         <div className="min-w-0 max-w-sm lg:max-w-md">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <button
+                              className="font-semibold text-text-primary text-sm truncate max-w-[18rem] text-left hover:text-primary transition-colors cursor-pointer"
+                              title={d.name}
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onInspect(d);
                               }}
-                              className="font-semibold text-text-primary text-sm truncate max-w-[18rem] text-left hover:text-primary transition-colors cursor-pointer"
-                              title={d.name}
                             >
                               {d.name}
                             </button>
-                            {stored && (
-                              <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-info/10 text-info border border-info/20">
+                            {stored ? <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-info/10 text-info border border-info/20">
                                 <PackageOpen size={10} />
                                 Stored
-                              </span>
-                            )}
-                            {vectorized && (
-                              <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-accent/10 text-accent border border-accent/20">
+                              </span> : null}
+                            {vectorized ? <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-accent/10 text-accent border border-accent/20">
                                 <Layers size={10} />
                                 Tiled
-                              </span>
-                            )}
+                              </span> : null}
                           </div>
 
-                          {d.description && (
-                            <p className="text-xs text-text-tertiary truncate max-w-[22rem] mt-0.5">
+                          {d.description ? <p className="text-xs text-text-tertiary truncate max-w-[22rem] mt-0.5">
                               {d.description}
-                            </p>
-                          )}
+                            </p> : null}
 
-                          {d.tags && d.tags.length > 0 && (
-                            <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                          {d.tags && d.tags.length > 0 ? <div className="flex flex-wrap items-center gap-1 mt-1.5">
                               {d.tags.slice(0, 3).map((t) => (
                                 <span
                                   key={t}
@@ -340,8 +336,7 @@ export default function DatasetTable({
                                   +{d.tags.length - 3}
                                 </span>
                               )}
-                            </div>
-                          )}
+                            </div> : null}
                         </div>
                       </div>
                     </td>
@@ -359,7 +354,7 @@ export default function DatasetTable({
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       <div className="flex flex-col gap-1">
                         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary">
-                          <TIcon size={13} className="text-text-tertiary" />
+                          <TIcon className="text-text-tertiary" size={13} />
                           {typeLabel(d.type)}
                         </span>
                         {d.crs ? (
@@ -379,7 +374,7 @@ export default function DatasetTable({
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       <div className="flex flex-col gap-0.5">
                         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-primary">
-                          <Hash size={12} className="text-text-tertiary" />
+                          <Hash className="text-text-tertiary" size={12} />
                           {featureCountLabel(d)}
                         </span>
                         <span className="text-[0.72rem] text-text-tertiary font-mono">
@@ -391,7 +386,7 @@ export default function DatasetTable({
                     {/* Last Updated */}
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       <div className="inline-flex items-center gap-1.5 text-xs text-text-secondary">
-                        <Clock size={12} className="text-text-tertiary" />
+                        <Clock className="text-text-tertiary" size={12} />
                         <span>{d.updated_at ? d.updated_at.slice(0, 10) : "-"}</span>
                       </div>
                     </td>
@@ -406,36 +401,34 @@ export default function DatasetTable({
                         <div className="hidden sm:flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                           <Tooltip content="Inspect dataset" placement="top">
                             <IconButton
+                              className="text-text-tertiary hover:text-primary hover:bg-surface-hover h-7 w-7"
                               icon={<Eye size={14} />}
                               label="Inspect"
-                              variant="ghost"
                               size="sm"
+                              variant="ghost"
                               onClick={() => onInspect(d)}
-                              className="text-text-tertiary hover:text-primary hover:bg-surface-hover h-7 w-7"
                             />
                           </Tooltip>
 
-                          {vectorized && (
-                            <Tooltip content="MVT Tile URL" placement="top">
+                          {vectorized ? <Tooltip content="MVT Tile URL" placement="top">
                               <IconButton
+                                className="text-text-tertiary hover:text-accent hover:bg-surface-hover h-7 w-7"
                                 icon={<MapPin size={14} />}
                                 label="MVT URL"
-                                variant="ghost"
                                 size="sm"
+                                variant="ghost"
                                 onClick={() => onOpenTileUrl(d)}
-                                className="text-text-tertiary hover:text-accent hover:bg-surface-hover h-7 w-7"
                               />
-                            </Tooltip>
-                          )}
+                            </Tooltip> : null}
 
                           <Tooltip content="Download file" placement="top">
                             <IconButton
+                              className="text-text-tertiary hover:text-primary hover:bg-surface-hover h-7 w-7"
                               icon={<Download size={14} />}
                               label="Download"
-                              variant="ghost"
                               size="sm"
+                              variant="ghost"
                               onClick={() => onDownload(d)}
-                              className="text-text-tertiary hover:text-primary hover:bg-surface-hover h-7 w-7"
                             />
                           </Tooltip>
                         </div>
@@ -443,12 +436,12 @@ export default function DatasetTable({
                         {/* More dropdown menu */}
                         <RowActions
                           d={d}
-                          onInspect={onInspect}
-                          onEdit={onEdit}
                           onDownload={onDownload}
+                          onEdit={onEdit}
+                          onInspect={onInspect}
+                          onMove={onMove}
                           onOpenTileUrl={onOpenTileUrl}
                           onRequestDelete={onRequestDelete}
-                          onMove={onMove}
                         />
                       </div>
                     </td>
@@ -474,9 +467,9 @@ export default function DatasetTable({
             </span>
           </div>
           <button
+            className="inline-flex items-center gap-1 font-semibold text-error hover:text-error/80 transition-colors cursor-pointer"
             type="button"
             onClick={onClearFilters}
-            className="inline-flex items-center gap-1 font-semibold text-error hover:text-error/80 transition-colors cursor-pointer"
           >
             <X size={12} /> Clear all filters
           </button>

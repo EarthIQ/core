@@ -1,9 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { AccessibilitySettings } from '../types';
+
 import { defaultSettings } from '../constants/defaults';
 import { profiles } from '../constants/profiles';
-import { getStoredSettings, saveSettings } from '../utils/storage';
 import { applySettingsToDOM } from '../utils/applySettings';
+import { getStoredSettings, saveSettings } from '../utils/storage';
+
+import type { AccessibilitySettings } from '../types';
 
 interface UseAccessibilitySettingsOptions {
   storageKey?: string;

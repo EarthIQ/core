@@ -1,6 +1,9 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef as _useRef } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export type DrawMode = 'point' | 'line' | 'polygon' | 'rectangle' | 'circle' | 'freehand';
 
@@ -64,8 +67,8 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
   freehandTolerance = 2,
   maxPoints,
   autoClose = true,
-  showMeasurements = false,
-  measurementUnits = 'metric',
+  _showMeasurements = false,
+  _measurementUnits = 'metric',
   showGuides = true
 }) => {
   const { map, isLoaded } = useMap();
@@ -290,7 +293,7 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
     let closestDistance = Infinity;
 
     features.forEach(feature => {
-      const coords = getCoordinates(feature.geometry as GeoJSON.Geometry);
+      const coords = getCoordinates(feature.geometry);
       coords.forEach(coord => {
         const d = distance(point, coord);
         if (d < closestDistance && d < snapTolerance) {
@@ -312,7 +315,7 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
       : [e.lngLat.lng, e.lngLat.lat];
 
     switch (mode) {
-      case 'point':
+      case 'point': {
         const pointFeature: GeoJSON.Feature = {
           type: 'Feature',
           geometry: { type: 'Point', coordinates: coords },
@@ -320,6 +323,7 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
         };
         onComplete?.(pointFeature);
         break;
+      }
 
       case 'line':
         setCoordinates(prev => {
@@ -572,10 +576,10 @@ function createCirclePolygon(center: number[], radius: number, steps: number): n
 function getCoordinates(geometry: GeoJSON.Geometry): number[][] {
   switch (geometry.type) {
     case 'Point':
-      return [geometry.coordinates as number[]];
+      return [geometry.coordinates];
     case 'LineString':
     case 'MultiPoint':
-      return geometry.coordinates as number[][];
+      return geometry.coordinates;
     case 'Polygon':
     case 'MultiLineString':
       return (geometry.coordinates as number[][][]).flat();

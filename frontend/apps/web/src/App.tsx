@@ -11,32 +11,31 @@
 import { Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import { AuthProvider } from "@/lib/auth";
-import { ThemeProvider } from "@/lib/theme";
-import { PreferencesProvider } from "@/lib/preferences";
-import { NotificationsProvider } from "@/lib/notifications";
-import { useModules } from "@/lib/modules";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppShell } from "@/components/AppShell";
-
-import LoginPage from "@/pages/LoginPage";
-import DashboardPage from "@/pages/DashboardPage";
-import ProjectsPage from "@/pages/ProjectsPage";
-import DataPage from "@/pages/DataPage";
-import AdminUsersPage from "@/pages/AdminUsersPage";
-import PublicMapPage from "@/pages/PublicMapPage";
-import InviteAcceptPage from "@/pages/InviteAcceptPage";
-import AccessGrantPage from "@/pages/AccessGrantPage";
-import SettingsPage from "@/pages/SettingsPage";
-import NotificationsPage from "@/pages/NotificationsPage";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AuthProvider } from "@/lib/auth";
 import { BUILDERS } from "@/lib/builders";
+import { useModules } from "@/lib/modules";
+import { NotificationsProvider } from "@/lib/notifications";
+import { PreferencesProvider } from "@/lib/preferences";
+import { ThemeProvider } from "@/lib/theme";
+import AccessGrantPage from "@/pages/AccessGrantPage";
+import AdminUsersPage from "@/pages/AdminUsersPage";
+import DashboardPage from "@/pages/DashboardPage";
+import DataPage from "@/pages/DataPage";
+import InviteAcceptPage from "@/pages/InviteAcceptPage";
+import LoginPage from "@/pages/LoginPage";
+import NotificationsPage from "@/pages/NotificationsPage";
+import ProjectsPage from "@/pages/ProjectsPage";
+import PublicMapPage from "@/pages/PublicMapPage";
+import SettingsPage from "@/pages/SettingsPage";
 
 // AUTO-GENERATED - never import module names directly here
 import { moduleRegistry, type ModuleBundle } from "./module-registry.generated";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function PageFallback() {
+const PageFallback = () => {
   return (
     <div
       style={{
@@ -135,31 +134,31 @@ function useActiveModules() {
  * Rendered inside the protected shell. Core routes (dashboard, map) are
  * available immediately. Module routes appear once their bundles are resolved.
  */
-function ProtectedRoutes() {
+const ProtectedRoutes = () => {
   const { activeModules, resolving } = useActiveModules();
 
   return (
     <Routes>
-      <Route index element={<Navigate to="/dashboard" replace />} />
-      <Route path="dashboard" element={<DashboardPage />} />
-      <Route path="admin" element={<AdminUsersPage />} />
-      <Route path="projects" element={<ProjectsPage />} />
+      <Route index element={<Navigate replace to="/dashboard" />} />
+      <Route element={<DashboardPage />} path="dashboard" />
+      <Route element={<AdminUsersPage />} path="admin" />
+      <Route element={<ProjectsPage />} path="projects" />
       {/* Project builders - routes are declared data-driven from the
           builder registry (`lib/builders.tsx`), so new builders are wired
           automatically. Each builder page reads `?projectId=` itself. */}
       {BUILDERS.map((b) => (
-        <Route key={b.id} path={`${b.path}/*`} element={<b.page />} />
+        <Route key={b.id} element={<b.page />} path={`${b.path}/*`} />
       ))}
-      <Route path="data" element={<DataPage />} />
-      <Route path="settings" element={<SettingsPage />} />
-      <Route path="notifications" element={<NotificationsPage />} />
-      <Route path="invite/accept" element={<InviteAcceptPage />} />
-      <Route path="access/grant" element={<AccessGrantPage />} />
+      <Route element={<DataPage />} path="data" />
+      <Route element={<SettingsPage />} path="settings" />
+      <Route element={<NotificationsPage />} path="notifications" />
+      <Route element={<InviteAcceptPage />} path="invite/accept" />
+      <Route element={<AccessGrantPage />} path="access/grant" />
 
       {/* Module routes - available once bundles finish resolving */}
       {!resolving &&
         activeModules.map((m) => (
-          <Route key={m.name} path={`${m.routePath}/*`} element={<m.Page />} />
+          <Route key={m.name} element={<m.Page />} path={`${m.routePath}/*`} />
         ))}
 
       {/* 404 - only shown after module resolution is complete */}
@@ -197,8 +196,8 @@ export default function App() {
           <BrowserRouter>
             <Routes>
               {/* Public */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/share/map/:mapId" element={<PublicMapPage />} />
+              <Route element={<LoginPage />} path="/login" />
+              <Route element={<PublicMapPage />} path="/share/map/:mapId" />
 
               {/* Protected shell */}
               <Route

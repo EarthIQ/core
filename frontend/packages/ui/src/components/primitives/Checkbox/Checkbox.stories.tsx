@@ -1,6 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
+
 import { Checkbox } from "./Checkbox";
+
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta<typeof Checkbox> = {
   title: "Components/Forms/Checkbox",
@@ -61,8 +63,8 @@ export const Controlled: Story = {
     const [checked, setChecked] = useState(false);
     return (
       <Checkbox
-        label="Controlled checkbox"
         checked={checked}
+        label="Controlled checkbox"
         onChange={(e) => setChecked(e.target.checked)}
       />
     );
@@ -137,16 +139,16 @@ export const AllSizes: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
       <Checkbox
-        size="sm"
         label="Small size"
+        size="sm"
       />
       <Checkbox
-        size="md"
         label="Medium size (default)"
+        size="md"
       />
       <Checkbox
-        size="lg"
         label="Large size"
+        size="lg"
       />
     </div>
   ),
@@ -176,21 +178,21 @@ export const CheckboxGroup: Story = {
           Notification preferences
         </p>
         <Checkbox
-          label="Email"
-          description="Receive notifications via email"
           checked={selected.includes("email")}
+          description="Receive notifications via email"
+          label="Email"
           onChange={() => handleChange("email")}
         />
         <Checkbox
-          label="SMS"
-          description="Receive notifications via text message"
           checked={selected.includes("sms")}
+          description="Receive notifications via text message"
+          label="SMS"
           onChange={() => handleChange("sms")}
         />
         <Checkbox
-          label="Push notifications"
-          description="Receive push notifications on your device"
           checked={selected.includes("push")}
+          description="Receive push notifications on your device"
+          label="Push notifications"
           onChange={() => handleChange("push")}
         />
       </div>
@@ -228,17 +230,17 @@ export const SelectAllExample: Story = {
     return (
       <div className="flex flex-col gap-3">
         <Checkbox
-          label="Select all"
           checked={allChecked || indeterminate}
           indeterminate={indeterminate}
+          label="Select all"
           onChange={handleSelectAll}
         />
         <div className="ml-6 flex flex-col gap-2 border-l border-white/20 pl-4">
           {items.map((item) => (
             <Checkbox
               key={item.id}
-              label={item.label}
               checked={item.checked}
+              label={item.label}
               onChange={() => handleItemChange(item.id)}
             />
           ))}
@@ -264,42 +266,42 @@ export const FormExample: Story = {
 
     return (
       <form
-        onSubmit={handleSubmit}
         className="flex w-80 flex-col gap-4"
+        onSubmit={handleSubmit}
       >
         <h3 className="text-lg font-semibold text-white">Sign up</h3>
 
         <Checkbox
-          label="I agree to the terms and conditions"
-          description="You must accept to continue"
           checked={formData.terms}
+          description="You must accept to continue"
+          label="I agree to the terms and conditions"
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, terms: e.target.checked }))
           }
         />
 
         <Checkbox
-          label="Subscribe to newsletter"
-          description="Get weekly updates about our products"
           checked={formData.newsletter}
+          description="Get weekly updates about our products"
+          label="Subscribe to newsletter"
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, newsletter: e.target.checked }))
           }
         />
 
         <Checkbox
-          label="Receive marketing emails"
-          description="Promotional offers and discounts"
           checked={formData.marketing}
+          description="Promotional offers and discounts"
+          label="Receive marketing emails"
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, marketing: e.target.checked }))
           }
         />
 
         <button
-          type="submit"
-          disabled={!formData.terms}
           className="bg-primary-500 hover:bg-primary-600 mt-2 rounded-lg px-4 py-2 font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={!formData.terms}
+          type="submit"
         >
           Submit
         </button>
@@ -318,13 +320,13 @@ export const AllStates: Story = {
         </p>
         <Checkbox label="Unchecked" />
         <Checkbox
-          label="Checked"
           checked
+          label="Checked"
         />
         <Checkbox
-          label="Indeterminate"
-          indeterminate
           checked
+          indeterminate
+          label="Indeterminate"
         />
       </div>
 
@@ -333,19 +335,19 @@ export const AllStates: Story = {
           Disabled States
         </p>
         <Checkbox
+          disabled
           label="Disabled unchecked"
-          disabled
         />
         <Checkbox
-          label="Disabled checked"
-          disabled
           checked
+          disabled
+          label="Disabled checked"
         />
         <Checkbox
-          label="Disabled indeterminate"
+          checked
           disabled
           indeterminate
-          checked
+          label="Disabled indeterminate"
         />
       </div>
 
@@ -354,13 +356,13 @@ export const AllStates: Story = {
           With Description
         </p>
         <Checkbox
-          label="Option with description"
           description="This is a helpful description"
+          label="Option with description"
         />
         <Checkbox
-          label="Checked with description"
-          description="This option is selected"
           checked
+          description="This option is selected"
+          label="Checked with description"
         />
       </div>
 
@@ -369,16 +371,16 @@ export const AllStates: Story = {
           Sizes
         </p>
         <Checkbox
-          size="sm"
           label="Small"
+          size="sm"
         />
         <Checkbox
-          size="md"
           label="Medium"
+          size="md"
         />
         <Checkbox
-          size="lg"
           label="Large"
+          size="lg"
         />
       </div>
     </div>

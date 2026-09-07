@@ -1,3 +1,4 @@
+import { cva, type VariantProps } from "class-variance-authority";
 import React, {
   forwardRef,
   type InputHTMLAttributes,
@@ -6,7 +7,7 @@ import React, {
   cloneElement,
   isValidElement,
 } from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+
 import { cn } from "../../../utils/cn";
 
 // ============================================================================
@@ -119,16 +120,16 @@ const EyeIcon = ({ className }: { className?: string }) => (
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
+      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
     />
     <path
+      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
     />
   </svg>
 );
@@ -142,10 +143,10 @@ const EyeOffIcon = ({ className }: { className?: string }) => (
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
+      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
     />
   </svg>
 );
@@ -159,10 +160,10 @@ const CheckCircleIcon = ({ className }: { className?: string }) => (
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
+      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
     />
   </svg>
 );
@@ -176,10 +177,10 @@ const ExclamationCircleIcon = ({ className }: { className?: string }) => (
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
+      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
     />
   </svg>
 );
@@ -193,10 +194,10 @@ const WarningIcon = ({ className }: { className?: string }) => (
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
+      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
     />
   </svg>
 );
@@ -276,7 +277,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const [showPassword, setShowPassword] = useState(false);
     const [internalValue, setInternalValue] = useState("");
 
-    const inputId = id || `input-${React.useId()}`;
+    const generatedId = React.useId();
+    const inputId = id || `input-${generatedId}`;
     const size = inputSize || "md";
 
     // Determine the current value (controlled or uncontrolled)
@@ -359,28 +361,23 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={cn("w-full", containerClassName)}>
         {/* Label */}
-        {label && (
-          <label
-            htmlFor={inputId}
+        {label ? <label
             className={labelVariants({ size })}
+            htmlFor={inputId}
           >
             {label}
-            {required && (
-              <span
-                className="ml-1 text-[var(--error)]"
+            {required ? <span
                 aria-hidden="true"
+                className="ml-1 text-[var(--error)]"
               >
                 *
-              </span>
-            )}
-          </label>
-        )}
+              </span> : null}
+          </label> : null}
 
         {/* Input Container */}
         <div className="relative flex">
           {/* Left Addon */}
-          {leftAddon && (
-            <div
+          {leftAddon ? <div
               className={cn(
                 "flex items-center border border-r-0 px-3",
                 "border-[var(--input-border)] bg-[var(--bg-tertiary)]",
@@ -391,34 +388,30 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               )}
             >
               {leftAddon}
-            </div>
-          )}
+            </div> : null}
 
           {/* Input Wrapper */}
           <div className="relative flex-1">
             {/* Left Icon */}
-            {leftIcon && (
-              <div
+            {leftIcon ? <div
                 className={cn(
                   "pointer-events-none absolute top-1/2 left-0 flex -translate-y-1/2 items-center justify-center",
                   iconPositionClasses[size]
                 )}
               >
                 {renderIcon(leftIcon)}
-              </div>
-            )}
+              </div> : null}
 
             {/* Input Element */}
             <input
               ref={ref}
-              id={inputId}
-              type={inputType}
-              disabled={disabled}
-              required={required}
-              maxLength={maxLength}
-              value={value}
-              onChange={handleChange}
               aria-invalid={!!error}
+              disabled={disabled}
+              id={inputId}
+              maxLength={maxLength}
+              required={required}
+              type={inputType}
+              value={value}
               aria-describedby={
                 error
                   ? `${inputId}-error`
@@ -437,29 +430,28 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 rightAddon && "rounded-r-none border-r-0",
                 className
               )}
+              onChange={handleChange}
               {...props}
             />
 
             {/* Right Side Icons Container */}
-            {hasRightContent && (
-              <div
+            {hasRightContent ? <div
                 className={cn(
                   "absolute top-1/2 right-0 flex -translate-y-1/2 items-center gap-1",
                   rightIconPositionClasses[size]
                 )}
               >
                 {/* Clear Button */}
-                {showClearButton && (
-                  <button
+                {showClearButton ? <button
+                    aria-label="Clear input"
                     type="button"
-                    onClick={handleClear}
                     className={cn(
                       "flex items-center justify-center rounded p-0.5",
                       "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]",
                       "transition-colors duration-150",
                       "focus:ring-2 focus:ring-[var(--primary)]/20 focus:outline-none"
                     )}
-                    aria-label="Clear input"
+                    onClick={handleClear}
                   >
                     <svg
                       className={iconSizeClasses[size]}
@@ -468,58 +460,49 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                       viewBox="0 0 24 24"
                     >
                       <path
+                        d="M6 18L18 6M6 6l12 12"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
                       />
                     </svg>
-                  </button>
-                )}
+                  </button> : null}
 
                 {/* Custom Right Icon */}
-                {rightIcon && !hasStatusIcon && !isPassword && (
-                  <div className="pointer-events-none flex items-center justify-center">
+                {rightIcon && !hasStatusIcon && !isPassword ? <div className="pointer-events-none flex items-center justify-center">
                     {renderIcon(rightIcon)}
-                  </div>
-                )}
+                  </div> : null}
 
                 {/* Status Icon */}
-                {hasStatusIcon && !isPassword && (
-                  <div className="pointer-events-none flex items-center justify-center">
+                {hasStatusIcon && !isPassword ? <div className="pointer-events-none flex items-center justify-center">
                     {getStatusIcon()}
-                  </div>
-                )}
+                  </div> : null}
 
                 {/* Password Toggle */}
-                {isPassword && (
-                  <button
+                {isPassword ? <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                     className={cn(
                       "flex items-center justify-center rounded p-0.5",
                       "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]",
                       "transition-colors duration-150",
                       "focus:ring-2 focus:ring-[var(--primary)]/20 focus:outline-none"
                     )}
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
+                    onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
                       <EyeOffIcon className={iconSizeClasses[size]} />
                     ) : (
                       <EyeIcon className={iconSizeClasses[size]} />
                     )}
-                  </button>
-                )}
-              </div>
-            )}
+                  </button> : null}
+              </div> : null}
           </div>
 
           {/* Right Addon */}
-          {rightAddon && (
-            <div
+          {rightAddon ? <div
               className={cn(
                 "flex items-center border border-l-0 px-3",
                 "border-[var(--input-border)] bg-[var(--bg-tertiary)]",
@@ -530,58 +513,48 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               )}
             >
               {rightAddon}
-            </div>
-          )}
+            </div> : null}
         </div>
 
         {/* Bottom Row: Description/Error/Success/Warning & Character Count */}
         <div className="mt-1.5 flex items-start justify-between gap-2">
           <div className="flex-1">
             {/* Error Message */}
-            {error && (
-              <p
-                id={`${inputId}-error`}
+            {error ? <p
                 className="text-sm text-[var(--error-text)]"
+                id={`${inputId}-error`}
                 role="alert"
               >
                 {error}
-              </p>
-            )}
+              </p> : null}
 
             {/* Success Message */}
-            {success && !error && (
-              <p
-                id={`${inputId}-success`}
+            {success && !error ? <p
                 className="text-sm text-[var(--success-text)]"
+                id={`${inputId}-success`}
               >
                 {success}
-              </p>
-            )}
+              </p> : null}
 
             {/* Warning Message */}
-            {warning && !error && !success && (
-              <p
-                id={`${inputId}-warning`}
+            {warning && !error && !success ? <p
                 className="text-sm text-[var(--warning-text)]"
+                id={`${inputId}-warning`}
               >
                 {warning}
-              </p>
-            )}
+              </p> : null}
 
             {/* Description */}
-            {description && !error && !success && !warning && (
-              <p
-                id={`${inputId}-description`}
+            {description && !error && !success && !warning ? <p
                 className="text-sm text-[var(--text-tertiary)]"
+                id={`${inputId}-description`}
               >
                 {description}
-              </p>
-            )}
+              </p> : null}
           </div>
 
           {/* Character Count */}
-          {showCharCount && maxLength && (
-            <span
+          {showCharCount && maxLength ? <span
               className={cn(
                 "text-xs tabular-nums",
                 currentValue.length >= maxLength
@@ -592,8 +565,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               )}
             >
               {currentValue.length}/{maxLength}
-            </span>
-          )}
+            </span> : null}
         </div>
       </div>
     );

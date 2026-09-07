@@ -1,8 +1,9 @@
-import { FormEvent, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/lib/auth";
-import { ApiError } from "@/lib/api";
 import { Button, Input } from "@packages/ui";
+import { type FormEvent, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+
+import { ApiError } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -49,65 +50,63 @@ export default function LoginPage() {
 
         {/* Form */}
         <form
-          onSubmit={handleSubmit}
-          id="login-form"
           className="flex flex-col gap-4"
+          id="login-form"
+          onSubmit={handleSubmit}
         >
           {/* Error Alert */}
-          {error && (
-            <div role="alert" className="alert alert-error animate-shake">
+          {error ? <div className="alert alert-error animate-shake" role="alert">
               <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
+                className="alert-icon shrink-0"
                 fill="none"
+                height="16"
                 stroke="currentColor"
                 strokeWidth="2"
-                className="alert-icon shrink-0"
+                viewBox="0 0 24 24"
+                width="16"
               >
                 <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
+                <line x1="12" x2="12" y1="8" y2="12" />
+                <line x1="12" x2="12.01" y1="16" y2="16" />
               </svg>
               <span className="alert-content text-sm">{error}</span>
-            </div>
-          )}
+            </div> : null}
 
           {/* Email */}
-          <label htmlFor="login-email" className="form-label">
+          <label className="form-label" htmlFor="login-email">
             Email address
           </label>
           <Input
-            type="email"
+            required
+            autoComplete="email"
             id="login-email"
             placeholder="you@organization.com"
-            autoComplete="email"
-            required
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
 
           {/* Password */}
-          <label htmlFor="login-password" className="form-label">
+          <label className="form-label" htmlFor="login-password">
             Password
           </label>
           <Input
-            type="password"
+            required
+            autoComplete="current-password"
             id="login-password"
             placeholder="••••••••"
-            autoComplete="current-password"
-            required
+            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
 
           {/* Submit */}
           <Button
-            variant="primary"
-            type="submit"
             id="login-submit"
             loading={loading}
             loadingText="Signing in…"
+            type="submit"
+            variant="primary"
           >
             Sign in
           </Button>
@@ -117,8 +116,8 @@ export default function LoginPage() {
         <p className="text-xs text-text-tertiary text-center">
           Don't have an account?{" "}
           <a
-            href="#"
             className="text-primary hover:text-primary-dark font-medium transition-colors duration-150"
+            href="#"
             onClick={(e) => e.preventDefault()}
           >
             Contact your administrator

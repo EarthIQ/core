@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Icons } from '../Icons';
 
 interface PanelHeaderProps {
@@ -33,29 +34,29 @@ export const PanelHeader: React.FC<PanelHeaderProps> = ({
       </div>
       <div className="flex items-center gap-2">
         <button
-          onClick={onReset}
-          className="
-            flex h-10 w-10 items-center justify-center rounded-xl
-            text-[var(--text-secondary)]
-            transition-colors
-            hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]
-          "
           aria-label={resetLabel}
           title={resetLabel}
-        >
-          {<Icons.reset />}
-        </button>
-        <button
-          onClick={onClose}
           className="
             flex h-10 w-10 items-center justify-center rounded-xl
             text-[var(--text-secondary)]
             transition-colors
             hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]
           "
-          aria-label={closeLabel}
+          onClick={onReset}
         >
-          {<Icons.close />}
+          <Icons.reset />
+        </button>
+        <button
+          aria-label={closeLabel}
+          className="
+            flex h-10 w-10 items-center justify-center rounded-xl
+            text-[var(--text-secondary)]
+            transition-colors
+            hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]
+          "
+          onClick={onClose}
+        >
+          <Icons.close />
         </button>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React, { type ReactNode } from "react";
+
 import { cn } from "../../../utils/cn";
 
 interface KbdProps {
@@ -13,7 +14,7 @@ const sizeClasses = {
   lg: "text-sm px-2 py-1 min-w-[28px]",
 };
 
-export function Kbd({ children, size = "md", className }: KbdProps) {
+export const Kbd = ({ children, size = "md", className }: KbdProps) => {
   return (
     <kbd
       className={cn(
@@ -40,12 +41,12 @@ interface KeyboardShortcutProps {
   className?: string;
 }
 
-export function KeyboardShortcut({
+export const KeyboardShortcut = ({
   keys,
   separator = "+",
   size = "md",
   className,
-}: KeyboardShortcutProps) {
+}: KeyboardShortcutProps) => {
   // Map common key names to symbols
   const keySymbols: Record<string, string> = {
     cmd: "⌘",

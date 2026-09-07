@@ -6,6 +6,7 @@
  * running UI immediately and persists via ``PUT /api/v1/profile/me/preferences``.
  */
 import { useState } from "react";
+
 import {
   ACCENT_PRESETS,
   usePreferences,
@@ -94,13 +95,13 @@ export default function AppearanceSection() {
           {ACCENT_PRESETS.map((p) => (
             <button
               key={p.value}
+              style={{ backgroundColor: p.value }}
               title={p.label}
               className={`w-9 h-9 rounded-full border-2 transition-transform cursor-pointer ${
                 prefs.accent_color === p.value
                   ? "border-text-primary scale-110"
                   : "border-transparent hover:scale-105"
               }`}
-              style={{ backgroundColor: p.value }}
               onClick={() => pickAccent(p.value)}
             />
           ))}
@@ -113,8 +114,8 @@ export default function AppearanceSection() {
               style={{ background: customHex || "transparent" }}
             >
               <input
-                type="color"
                 className="sr-only"
+                type="color"
                 value={/^#[0-9a-fA-F]{6}$/.test(customHex) ? customHex : "#50aad1"}
                 onChange={(e) => pickAccent(e.target.value)}
               />
@@ -123,8 +124,8 @@ export default function AppearanceSection() {
           </label>
           <input
             className="input w-32"
-            value={customHex}
             placeholder="#22c55e"
+            value={customHex}
             onChange={(e) => {
               const v = e.target.value.trim();
               setCustomHex(v);
@@ -164,12 +165,12 @@ export default function AppearanceSection() {
           <div className="form-field">
             <label className="form-label">Compact mode</label>
             <button
-              role="switch"
               aria-checked={prefs.compact_mode}
-              onClick={() => update({ compact_mode: !prefs.compact_mode })}
+              role="switch"
               className={`relative w-12 h-7 rounded-full transition-colors cursor-pointer ${
                 prefs.compact_mode ? "bg-primary" : "bg-surface-hover border border-border-secondary"
               }`}
+              onClick={() => update({ compact_mode: !prefs.compact_mode })}
             >
               <span
                 className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${

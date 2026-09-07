@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useMap } from "../../hooks/useMap";
+
 import { ControlButton } from "./MapControlButton";
+import { useMap } from "../../hooks/useMap";
 
 export interface TerrainControlProps {
   /** Terrain source URL */
@@ -117,15 +118,15 @@ export const TerrainControl: React.FC<TerrainControlProps> = ({
 
   return (
     <ControlButton
-      onClick={toggleTerrain}
-      disabled={isLoading}
       active={isEnabled}
+      disabled={isLoading}
+      icon={isLoading ? <span>...</span> : <span>⛰️</span>}
       label={
         isEnabled
           ? labels.disable || "Disable 3D terrain"
           : labels.enable || "Enable 3D terrain"
       }
-      icon={isLoading ? <span>...</span> : <span>⛰️</span>}
+      onClick={toggleTerrain}
     />
   );
 };

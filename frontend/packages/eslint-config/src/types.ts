@@ -1,9 +1,14 @@
 import type { Linter } from "eslint";
 
-export type ESLintConfig = Linter.LegacyConfig;
+/**
+ * A single ESLint v9 (flat) config object.
+ *
+ * @see https://eslint.org/docs/latest/use/configure/configuration-files
+ */
+export type FlatConfig = Linter.Config;
 
-export interface ESLintConfigOptions {
-  project?: string | string[];
-  tsconfigRootDir?: string;
-  ignorePatterns?: string[];
-}
+/**
+ * An array of flat config objects — the shape consumed by an
+ * `eslint.config.js` file (and re-exported by this package).
+ */
+export type FlatConfigArray = Linter.Config[];

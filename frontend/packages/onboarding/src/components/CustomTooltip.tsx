@@ -1,10 +1,11 @@
-import React from 'react';
-import type { TooltipRenderProps } from 'react-joyride';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import React from 'react';
+
+import type { TooltipRenderProps } from 'react-joyride';
 
 export const CustomTooltip = ({
-  continuous,
+  _continuous,
   index,
   step,
   backProps,
@@ -19,18 +20,18 @@ export const CustomTooltip = ({
     <div {...tooltipProps} className="max-w-sm w-[350px] outline-none">
       <AnimatePresence mode="wait">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 10 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className="relative overflow-hidden rounded-2xl bg-[var(--surface)] border border-[var(--border-primary)] shadow-[0_20px_50px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
+          exit={{ opacity: 0, scale: 0.9, y: 10 }}
+          initial={{ opacity: 0, scale: 0.9, y: 10 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         >
           {/* Progress bar at the top */}
           <div className="absolute top-0 left-0 w-full h-1 bg-[var(--surface-hover)]">
             <motion.div 
-              initial={{ width: 0 }}
               animate={{ width: `${((index + 1) / size) * 100}%` }}
               className="h-full bg-[var(--primary)]"
+              initial={{ width: 0 }}
             />
           </div>
 

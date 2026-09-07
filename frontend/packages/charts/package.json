@@ -32,7 +32,7 @@
     "build": "tsup",
     "clean": "rm -rf dist",
     "dev": "tsup --watch",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint .",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },

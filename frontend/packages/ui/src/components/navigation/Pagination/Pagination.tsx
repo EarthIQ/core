@@ -1,4 +1,5 @@
 import React from "react";
+
 import { cn } from "../../../utils/cn";
 
 interface PaginationProps {
@@ -14,14 +15,14 @@ function range(start: number, end: number): number[] {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 }
 
-export function Pagination({
+export const Pagination = ({
   currentPage,
   totalPages,
   onPageChange,
   siblingCount = 1,
   showFirstLast = true,
   className,
-}: PaginationProps) {
+}: PaginationProps) => {
   const generatePages = () => {
     const totalPageNumbers = siblingCount * 2 + 3;
 
@@ -62,15 +63,15 @@ export function Pagination({
 
   return (
     <nav
-      className={cn("flex items-center gap-1", className)}
       aria-label="Pagination"
+      className={cn("flex items-center gap-1", className)}
     >
       {/* Previous */}
       <PaginationButton
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
         aria-label="Previous page"
         className={baseButtonClasses}
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
       >
         <svg
           className="h-5 w-5"
@@ -79,20 +80,19 @@ export function Pagination({
           viewBox="0 0 24 24"
         >
           <path
+            d="M15 19l-7-7 7-7"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M15 19l-7-7 7-7"
           />
         </svg>
       </PaginationButton>
 
       {/* First */}
-      {showFirstLast && currentPage > siblingCount + 2 && (
-        <PaginationButton
-          onClick={() => onPageChange(1)}
+      {showFirstLast && currentPage > siblingCount + 2 ? <PaginationButton
           aria-label="First page"
           className={baseButtonClasses}
+          onClick={() => onPageChange(1)}
         >
           <svg
             className="h-5 w-5"
@@ -101,14 +101,13 @@ export function Pagination({
             viewBox="0 0 24 24"
           >
             <path
+              d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
             />
           </svg>
-        </PaginationButton>
-      )}
+        </PaginationButton> : null}
 
       {/* Pages */}
       {pages.map((page, index) => {
@@ -130,10 +129,10 @@ export function Pagination({
         return (
           <PaginationButton
             key={pageNumber}
-            onClick={() => onPageChange(pageNumber)}
-            isActive={isActive}
             aria-current={isActive ? "page" : undefined}
             className={baseButtonClasses}
+            isActive={isActive}
+            onClick={() => onPageChange(pageNumber)}
           >
             {pageNumber}
           </PaginationButton>
@@ -141,11 +140,10 @@ export function Pagination({
       })}
 
       {/* Last */}
-      {showFirstLast && currentPage < totalPages - siblingCount - 1 && (
-        <PaginationButton
-          onClick={() => onPageChange(totalPages)}
+      {showFirstLast && currentPage < totalPages - siblingCount - 1 ? <PaginationButton
           aria-label="Last page"
           className={baseButtonClasses}
+          onClick={() => onPageChange(totalPages)}
         >
           <svg
             className="h-5 w-5"
@@ -154,21 +152,20 @@ export function Pagination({
             viewBox="0 0 24 24"
           >
             <path
+              d="M13 5l7 7-7 7M5 5l7 7-7 7"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M13 5l7 7-7 7M5 5l7 7-7 7"
             />
           </svg>
-        </PaginationButton>
-      )}
+        </PaginationButton> : null}
 
       {/* Next */}
       <PaginationButton
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
         aria-label="Next page"
         className={baseButtonClasses}
+        disabled={currentPage === totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
       >
         <svg
           className="h-5 w-5"
@@ -177,10 +174,10 @@ export function Pagination({
           viewBox="0 0 24 24"
         >
           <path
+            d="M9 5l7 7-7 7"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M9 5l7 7-7 7"
           />
         </svg>
       </PaginationButton>
@@ -195,7 +192,7 @@ interface PaginationButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEle
   children: React.ReactNode;
 }
 
-function PaginationButton({
+const PaginationButton = ({
   isActive = false,
   disabled = false,
   children,
@@ -203,7 +200,7 @@ function PaginationButton({
   onMouseEnter,
   onMouseLeave,
   ...props
-}: PaginationButtonProps) {
+}: PaginationButtonProps) => {
   const getStyle = (): React.CSSProperties => {
     if (disabled) {
       return {
@@ -228,9 +225,18 @@ function PaginationButton({
 
   return (
     <button
-      disabled={disabled}
       className={className}
+      disabled={disabled}
       style={getStyle()}
+      onBlur={(e) => {
+        e.currentTarget.style.boxShadow = "none";
+      }}
+      onFocus={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.boxShadow =
+            "0 0 0 3px oklch(from var(--primary) l c h / 0.2)";
+        }
+      }}
       onMouseEnter={(e) => {
         if (!disabled && !isActive) {
           e.currentTarget.style.backgroundColor = "var(--surface-hover)";
@@ -244,15 +250,6 @@ function PaginationButton({
           e.currentTarget.style.color = "var(--text-secondary)";
         }
         onMouseLeave?.(e);
-      }}
-      onFocus={(e) => {
-        if (!disabled) {
-          e.currentTarget.style.boxShadow =
-            "0 0 0 3px oklch(from var(--primary) l c h / 0.2)";
-        }
-      }}
-      onBlur={(e) => {
-        e.currentTarget.style.boxShadow = "none";
       }}
       {...props}
     >

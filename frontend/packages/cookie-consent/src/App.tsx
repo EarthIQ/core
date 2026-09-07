@@ -3,7 +3,7 @@
 import { CookieBanner, CookieSettingsButton } from '@packages/cookie-consent';
 import '@your-org/cookie-consent/styles.css';
 
-function App() {
+const App = () => {
   return (
     <div className="app">
       <main>

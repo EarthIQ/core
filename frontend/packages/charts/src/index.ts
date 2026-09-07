@@ -21,7 +21,7 @@ export {
 } from "./utils/exportUtils";
 
 // Types
-export * from "./types";
+export type * from "./types";
 
 // Icons (optional export for custom toolbars)
 export * from "./icons";

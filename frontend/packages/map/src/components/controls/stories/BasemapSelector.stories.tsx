@@ -1,6 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Map } from '../../primitives/Map';
 import { BasemapSelector, PREDEFINED_BASEMAPS } from '../BasemapSelector';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof BasemapSelector> = {
   title: 'Controls/BasemapSelector',
@@ -20,8 +21,8 @@ export const Compact: Story = {
       <Map initialViewState={{ longitude: 0, latitude: 0, zoom: 2 }}>
         <BasemapSelector
           basemaps={PREDEFINED_BASEMAPS.slice(0, 6)}
-          position="bottom-left"
           displayMode="compact"
+          position="bottom-left"
         />
       </Map>
     </div>
@@ -33,10 +34,10 @@ export const Gallery: Story = {
     <div style={{ width: '100vw', height: '100vh' }}>
       <Map initialViewState={{ longitude: 0, latitude: 0, zoom: 2 }}>
         <BasemapSelector
-          basemaps={PREDEFINED_BASEMAPS}
-          position="top-right"
-          displayMode="gallery"
           groupByCategory
+          basemaps={PREDEFINED_BASEMAPS}
+          displayMode="gallery"
+          position="top-right"
         />
       </Map>
     </div>
@@ -49,8 +50,8 @@ export const Dropdown: Story = {
       <Map initialViewState={{ longitude: 0, latitude: 0, zoom: 2 }}>
         <BasemapSelector
           basemaps={PREDEFINED_BASEMAPS}
-          position="top-left"
           displayMode="dropdown"
+          position="top-left"
         />
       </Map>
     </div>

@@ -1,14 +1,15 @@
-import { useState } from "react";
-import { useMapEditor } from "@/lib/mapEditor/store";
 import { Bookmark, Crosshair, Pencil, Trash2, X } from "lucide-react";
+import { useState } from "react";
 
-export function BookmarkPanel({
+import { useMapEditor } from "@/lib/mapEditor/store";
+
+export const BookmarkPanel = ({
   mapRef,
-  mapReady,
+  _mapReady,
 }: {
   mapRef: React.RefObject<any>;
   mapReady: boolean;
-}) {
+}) => {
   const open = useMapEditor((s) => s.bookmarkOpen);
   const setOpen = useMapEditor((s) => s.setBookmarkOpen);
   const bookmarks = useMapEditor((s) => s.bookmarks);
@@ -62,7 +63,7 @@ export function BookmarkPanel({
     <div className="absolute right-3 bottom-12 z-30 w-[300px] max-h-[calc(100%-6rem)] flex flex-col bg-elevated border border-border-primary rounded-2xl shadow-xl overflow-hidden animate-fade-in-up">
       <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border-primary">
         <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
-          <Bookmark size={16} className="text-primary" fill="currentColor" />
+          <Bookmark className="text-primary" fill="currentColor" size={16} />
         </span>
         <span className="text-sm font-semibold text-text-primary flex-1">
           Bookmarks
@@ -71,10 +72,10 @@ export function BookmarkPanel({
           <span className="badge badge-primary">{bookmarks.length}</span>
         )}
         <button
+          aria-label="Close"
+          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
           type="button"
           onClick={() => setOpen(false)}
-          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
-          aria-label="Close"
         >
           <X size={15} />
         </button>
@@ -82,18 +83,18 @@ export function BookmarkPanel({
 
       <div className="px-4 py-3 border-b border-border-primary flex gap-2">
         <input
+          className="flex-1 min-w-0 px-3 py-1.5 text-sm rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
+          placeholder="Name this view…"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") handleAdd();
           }}
-          placeholder="Name this view…"
-          className="flex-1 min-w-0 px-3 py-1.5 text-sm rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
         />
         <button
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors"
           type="button"
           onClick={handleAdd}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors"
         >
           <Crosshair size={14} />
           Add
@@ -125,22 +126,22 @@ export function BookmarkPanel({
                 {renamingId === b.id ? (
                   <input
                     autoFocus
+                    aria-label="Rename bookmark"
+                    className="flex-1 min-w-0 px-2 py-1 text-sm rounded-md bg-input-bg border border-input-focus-border text-text-primary focus:outline-none"
                     value={draftName}
-                    onChange={(e) => setDraftName(e.target.value)}
                     onBlur={() => commitRename(b.id)}
+                    onChange={(e) => setDraftName(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") commitRename(b.id);
                       if (e.key === "Escape") setRenamingId(null);
                     }}
-                    className="flex-1 min-w-0 px-2 py-1 text-sm rounded-md bg-input-bg border border-input-focus-border text-text-primary focus:outline-none"
-                    aria-label="Rename bookmark"
                   />
                 ) : (
                   <button
+                    className="flex-1 min-w-0 text-left"
+                    title="Go to this bookmark"
                     type="button"
                     onClick={() => handleJump(b.id)}
-                    title="Go to this bookmark"
-                    className="flex-1 min-w-0 text-left"
                   >
                     <div className="text-sm font-medium text-text-primary truncate">
                       {b.name}
@@ -154,20 +155,20 @@ export function BookmarkPanel({
 
                 {renamingId !== b.id && (
                   <button
+                    aria-label="Rename bookmark"
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary opacity-0 group-hover:opacity-100 focus:opacity-100 transition-colors"
                     type="button"
                     onClick={() => startRename(b.id, b.name)}
-                    className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary opacity-0 group-hover:opacity-100 focus:opacity-100 transition-colors"
-                    aria-label="Rename bookmark"
                   >
                     <Pencil size={13} />
                   </button>
                 )}
 
                 <button
+                  aria-label="Delete bookmark"
+                  className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:text-error hover:bg-error-subtle transition-colors"
                   type="button"
                   onClick={() => removeBookmark(b.id)}
-                  className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:text-error hover:bg-error-subtle transition-colors"
-                  aria-label="Delete bookmark"
                 >
                   <Trash2 size={13} />
                 </button>

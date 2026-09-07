@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+
 import { Icons } from './Icons';
 
 interface TriggerButtonProps {
@@ -20,7 +21,9 @@ export const TriggerButton = forwardRef<HTMLButtonElement, TriggerButtonProps>(
     return (
       <button
         ref={ref}
-        onClick={onClick}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-label={label}
         className={`
           fixed bottom-6 left-6 z-[9999]
           flex h-14 w-14 items-center justify-center
@@ -33,18 +36,14 @@ export const TriggerButton = forwardRef<HTMLButtonElement, TriggerButtonProps>(
             : 'border border-[var(--border-primary)] bg-[var(--surface)] text-[var(--text-primary)]'
           }
         `}
-        aria-label={label}
-        aria-expanded={isOpen}
-        aria-haspopup="dialog"
+        onClick={onClick}
       >
         {/* Call the icon as a function/component */}
         <AccessibilityIcon />
         
-        {hasActiveSettings && (
-          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-primary text-xs font-bold shadow-md">
+        {hasActiveSettings ? <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-primary text-xs font-bold shadow-md">
             <CheckIcon />
-          </span>
-        )}
+          </span> : null}
       </button>
     );
   }

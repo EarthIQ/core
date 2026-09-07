@@ -1,7 +1,12 @@
-import React, { useEffect, useId, useState, useCallback } from 'react';
-import { useMap } from '../../hooks/useMap';
 import { HexagonLayer as DeckHexagonLayer } from '@deck.gl/aggregation-layers';
 import * as turf from '@turf/turf';
+import { useEffect, useId, useState, useCallback } from 'react';
+
+import { useMap } from '../../hooks/useMap';
+
+import type React from 'react';
+
+
 
 export interface HexagonLayerProps {
   /** Unique layer ID */
@@ -365,7 +370,7 @@ export const HexagonLayer: React.FC<HexagonLayerProps> = ({
 
 // Hook for hexagon layer
 export const useHexagonLayer = (id: string) => {
-  const { map, deck, isLoaded } = useMap();
+  const { map: _map, deck, isLoaded: _isLoaded } = useMap();
 
   const getStats = useCallback(() => {
     // Get statistics from hexagon layer

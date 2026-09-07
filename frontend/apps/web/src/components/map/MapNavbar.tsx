@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Button, Tooltip } from "@packages/ui";
 import {
   ArrowLeft,
   Share2,
@@ -8,15 +7,19 @@ import {
   Blocks,
   MessageSquare,
 } from "lucide-react";
-import { Button, Tooltip } from "@packages/ui";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+
+import { BuilderPicker } from "@/components/builder/BuilderPicker";
 import { useAuth } from "@/lib/auth";
 import { useMapEditor } from "@/lib/mapEditor/store";
+
+import { PlaceSearch } from "./PlaceSearch";
+import { Avatar } from "./share/Avatar";
+import { ShareDialog } from "./share/ShareDialog";
+
 import type { MapItem } from "@/lib/maps";
 import type { CollaboratorState } from "@/lib/useCollaboration";
-import { ShareDialog } from "./share/ShareDialog";
-import { Avatar } from "./share/Avatar";
-import { BuilderPicker } from "@/components/builder/BuilderPicker";
-import { PlaceSearch } from "./PlaceSearch";
 
 interface MapNavbarProps {
   projectName: string;
@@ -37,7 +40,7 @@ interface MapNavbarProps {
   mapReady?: boolean;
 }
 
-export function MapNavbar({
+export const MapNavbar = ({
   projectName,
   mapId,
   projectId,
@@ -50,7 +53,7 @@ export function MapNavbar({
   isCollabConnected = false,
   mapRef,
   mapReady = false,
-}: MapNavbarProps) {
+}: MapNavbarProps) => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   // Source of truth for scoping builder navigation - always carry the project
@@ -107,30 +110,30 @@ export function MapNavbar({
         <div className="flex items-center gap-3">
           <Tooltip content="Back to projects" placement="bottom">
             <Button
-              variant="ghost"
-              size="sm"
               iconOnly
-              onClick={onBack}
               aria-label="Back"
               className="text-text-secondary hover:text-text-primary"
+              size="sm"
+              variant="ghost"
+              onClick={onBack}
             >
               <ArrowLeft size={18} />
             </Button>
           </Tooltip>
           <span className="w-px h-5 bg-border-primary" />
 
-          <div className="relative" ref={switcherRef}>
+          <div ref={switcherRef} className="relative">
             <button
+              className="flex flex-col items-start px-1.5 py-0.5 rounded-md hover:bg-surface-hover transition-colors"
               type="button"
               onClick={() => setSwitcherOpen((v) => !v)}
-              className="flex flex-col items-start px-1.5 py-0.5 rounded-md hover:bg-surface-hover transition-colors"
             >
               <span className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider leading-none flex items-center gap-1">
                 Project
                 {availableMaps.length > 1 && (
                   <ChevronDown
-                    size={10}
                     className={`transition-transform ${switcherOpen ? "rotate-180" : ""}`}
+                    size={10}
                   />
                 )}
               </span>
@@ -142,36 +145,34 @@ export function MapNavbar({
               </span>
             </button>
 
-            {switcherOpen && availableMaps.length > 0 && (
-              <div className="absolute left-0 top-full mt-1.5 w-64 bg-elevated border border-border-primary rounded-xl shadow-dropdown py-1.5 z-50 animate-fade-in max-h-80 overflow-y-auto scrollbar-thin">
+            {switcherOpen && availableMaps.length > 0 ? <div className="absolute left-0 top-full mt-1.5 w-64 bg-elevated border border-border-primary rounded-xl shadow-dropdown py-1.5 z-50 animate-fade-in max-h-80 overflow-y-auto scrollbar-thin">
                 <div className="px-3 py-1 text-[0.65rem] uppercase tracking-widest text-text-quaternary font-semibold">
                   Switch Map
                 </div>
                 {availableMaps.map((m) => (
                   <button
                     key={m.id}
+                    className="dropdown-item w-full gap-2 justify-between"
                     type="button"
                     onClick={() => {
                       onSelectMap(m.id);
                       setSwitcherOpen(false);
                     }}
-                    className="dropdown-item w-full gap-2 justify-between"
                   >
                     <span className="truncate">{m.title}</span>
                     {m.id === activeMapId && (
-                      <Check size={13} className="text-primary shrink-0" />
+                      <Check className="text-primary shrink-0" size={13} />
                     )}
                   </button>
                 ))}
-              </div>
-            )}
+              </div> : null}
           </div>
         </div>
 
         {/* Center: location search (Nominatim - flies the map + drops a marker) */}
         <div className="flex-1 max-w-md mx-4">
           {mapRef ? (
-            <PlaceSearch mapRef={mapRef} mapReady={mapReady} />
+            <PlaceSearch mapReady={mapReady} mapRef={mapRef} />
           ) : (
             <div className="h-8" />
           )}
@@ -186,6 +187,7 @@ export function MapNavbar({
               {collaborators.slice(0, 4).map((c) => (
                 <Tooltip
                   key={c.user_id}
+                  placement="bottom"
                   content={
                     <span className="flex flex-col gap-0.5">
                       <span className="font-semibold">
@@ -199,7 +201,6 @@ export function MapNavbar({
                       </span>
                     </span>
                   }
-                  placement="bottom"
                 >
                   <div className="relative -ml-2 first:ml-0">
                     <Avatar
@@ -221,11 +222,9 @@ export function MapNavbar({
           )}
 
           {/* Connection status dot */}
-          {isCollabConnected && (
-            <Tooltip content="Live collaboration active" placement="bottom">
+          {isCollabConnected ? <Tooltip content="Live collaboration active" placement="bottom">
               <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-            </Tooltip>
-          )}
+            </Tooltip> : null}
 
           <span className="w-px h-5 bg-border-primary" />
 
@@ -236,13 +235,13 @@ export function MapNavbar({
             placement="bottom"
           >
             <BuilderPicker
-              projectId={pickerProjectId}
               hostId="map"
+              projectId={pickerProjectId}
               trigger={
                 <button
-                  type="button"
-                  className="relative flex items-center justify-center p-1.5 rounded-lg transition-all duration-150 text-text-secondary hover:text-text-primary hover:bg-surface-hover"
                   aria-label="Project builders"
+                  className="relative flex items-center justify-center p-1.5 rounded-lg transition-all duration-150 text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+                  type="button"
                 >
                   <Blocks size={16} />
                 </button>
@@ -252,12 +251,12 @@ export function MapNavbar({
 
           <Tooltip content="Share project  (⌘⇧S)" placement="bottom">
             <Button
-              variant="ghost"
-              size="sm"
               iconOnly
-              onClick={() => setShareOpen(true)}
               aria-label="Share project"
               className="text-text-secondary hover:text-text-primary"
+              size="sm"
+              variant="ghost"
+              onClick={() => setShareOpen(true)}
             >
               <Share2 size={16} />
             </Button>
@@ -269,7 +268,14 @@ export function MapNavbar({
             placement="bottom"
           >
             <button
+              aria-label="Comments history"
+              aria-pressed={commentsOpen}
               type="button"
+              className={`relative flex items-center justify-center p-1.5 rounded-lg transition-colors ${
+                commentsOpen
+                  ? "bg-primary/10 text-primary"
+                  : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+              }`}
               onClick={() => {
                 if (commentsOpen) {
                   setCommentsOpen(false);
@@ -278,13 +284,6 @@ export function MapNavbar({
                   setCommentsOpen(true);
                 }
               }}
-              aria-pressed={commentsOpen}
-              aria-label="Comments history"
-              className={`relative flex items-center justify-center p-1.5 rounded-lg transition-colors ${
-                commentsOpen
-                  ? "bg-primary/10 text-primary"
-                  : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
-              }`}
             >
               <MessageSquare size={16} />
               {openCommentCount > 0 && (
@@ -305,12 +304,12 @@ export function MapNavbar({
       </header>
 
       <ShareDialog
-        open={shareOpen}
-        onClose={() => setShareOpen(false)}
-        entityType="project"
+        canManage={canManageSharing}
         entityId={mapId}
         entityTitle={projectName}
-        canManage={canManageSharing}
+        entityType="project"
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
       />
     </>
   );

@@ -1,5 +1,12 @@
 // DrawControl.tsx
 import {
+  PenLine,
+  RectangleHorizontal,
+  Trash2,
+  Circle,
+  Pentagon,
+} from "lucide-react";
+import {
   type ReactNode,
   useState,
   useRef,
@@ -9,8 +16,10 @@ import {
   useImperativeHandle,
   forwardRef,
 } from "react";
-import { ControlButton, ControlButtonFlyout } from "../MapControlButton";
+
 import { useDrawControl } from "../../../hooks/useDrawControl";
+import { ControlButton, ControlButtonFlyout } from "../MapControlButton";
+
 import type {
   DrawMode,
   DrawToolDefinition,
@@ -18,47 +27,39 @@ import type {
   DrawOptions,
 } from "./types";
 import type { FeatureCollection } from "geojson";
-import {
-  PenLine,
-  RectangleHorizontal,
-  Trash2,
-  Circle,
-  Pentagon,
-  Pen,
-} from "lucide-react";
 
-function LineIcon() {
+const LineIcon = () => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={20}
-      height={20}
-      viewBox="0 0 24 24"
+      aria-hidden="true"
       fill="none"
+      height={20}
       stroke="currentColor"
-      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden="true"
+      strokeWidth={1.5}
+      viewBox="0 0 24 24"
+      width={20}
+      xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M4 20L20 4" />
     </svg>
   );
 }
 
-function PointIcon() {
+const PointIcon = () => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={20}
-      height={20}
-      viewBox="0 0 24 24"
+      aria-hidden="true"
       fill="none"
+      height={20}
       stroke="currentColor"
-      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden="true"
+      strokeWidth={1.5}
+      viewBox="0 0 24 24"
+      width={20}
+      xmlns="http://www.w3.org/2000/svg"
     >
       <circle
         cx={12}
@@ -68,26 +69,26 @@ function PointIcon() {
       <circle
         cx={12}
         cy={12}
-        r={8}
         opacity={0.4}
+        r={8}
       />
     </svg>
   );
 }
 
-function FreehandIcon() {
+const FreehandIcon = () => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={20}
-      height={20}
-      viewBox="0 0 24 24"
+      aria-hidden="true"
       fill="none"
+      height={20}
       stroke="currentColor"
-      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden="true"
+      strokeWidth={1.5}
+      viewBox="0 0 24 24"
+      width={20}
+      xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M4 17c2-4 4-8 8-8s4 6 8 2" />
     </svg>
@@ -237,7 +238,7 @@ export const DrawControl = forwardRef<DrawControlRef, DrawControlProps>(
     }, [state.activeMode, setMode]);
 
     // Toggle panel
-    const togglePanel = useCallback(() => {
+    const _togglePanel = useCallback(() => {
       if (isOpen) {
         closePanel();
       } else {
@@ -319,37 +320,35 @@ export const DrawControl = forwardRef<DrawControlRef, DrawControlProps>(
         className="relative"
       >
         <ControlButtonFlyout
+          active={isOpen}
+          className={className}
+          disabled={!isReady}
+          flyoutAlign="start"
+          flyoutClassName={flyoutClassName}
+          flyoutSide={flyoutSide}
+          forceOpen={state.activeMode !== null}
           icon={icon ?? <PenLine className="h-4 w-4" />}
           label={label}
-          flyoutSide={flyoutSide}
-          flyoutAlign="start"
-          active={isOpen}
-          forceOpen={state.activeMode !== null}
-          disabled={!isReady}
-          className={className}
-          flyoutClassName={flyoutClassName}
         >
           {resolvedTools.map((tool) => (
             <ControlButton
               key={tool.mode}
+              active={state.activeMode === tool.mode}
+              disabled={!isReady}
               icon={tool.icon}
               label={tool.label}
-              active={state.activeMode === tool.mode}
               onClick={() => selectTool(tool.mode)}
-              disabled={!isReady}
             />
           ))}
-          {showTrash && hasAnyFeatures && (
-            <>
+          {showTrash && hasAnyFeatures ? <>
               <div className="mx-2 h-px bg-[var(--border-primary)]" />
               <ControlButton
+                className="text-[var(--error)] hover:bg-[var(--error-bg)]"
                 icon={<Trash2 className="h-4 w-4" />}
                 label={hasSelectedFeatures ? "Delete selected" : "Delete all"}
                 onClick={handleDelete}
-                className="text-[var(--error)] hover:bg-[var(--error-bg)]"
               />
-            </>
-          )}
+            </> : null}
         </ControlButtonFlyout>
       </div>
     );

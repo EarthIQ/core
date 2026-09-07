@@ -3,8 +3,9 @@
 // Change the totalDuration from fixed state to computed value.
 // Remove it from TimelineState and compute from keyframes.
 
+import { nanoid } from "nanoid";
 import { useCallback, useRef, useState, useEffect } from "react";
-import type { Map as MaplibreMap } from "maplibre-gl";
+
 import type {
   Keyframe,
   MapState,
@@ -12,7 +13,7 @@ import type {
   TimelineState,
   PlaybackSpeed,
 } from "../types/video-export";
-import { nanoid } from "nanoid";
+import type { Map as MaplibreMap } from "maplibre-gl";
 
 const easings: Record<EasingType, (t: number) => number> = {
   linear: (t) => t,
@@ -60,7 +61,7 @@ export function useMapAnimationEngine({
   const [keyframes, setKeyframes] = useState<Keyframe[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
+  const [isExporting, _setIsExporting] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState<PlaybackSpeed>(1);
   const [selectedKeyframeId, setSelectedKeyframeId] = useState<string | null>(

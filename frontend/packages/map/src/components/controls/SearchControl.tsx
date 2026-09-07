@@ -1,3 +1,5 @@
+import debounce from "lodash/debounce";
+import { Marker } from "maplibre-gl";
 import React, {
   useState,
   useCallback,
@@ -5,9 +7,9 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { Marker } from "maplibre-gl";
+
 import { useMap } from "../../hooks/useMap";
-import debounce from "lodash/debounce";
+
 
 export interface SearchResult {
   id: string;
@@ -77,10 +79,10 @@ const SearchIcon = ({ className }: { className?: string }) => (
     viewBox="0 0 24 24"
   >
     <path
+      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
     />
   </svg>
 );
@@ -99,9 +101,9 @@ const CrosshairIcon = ({ className }: { className?: string }) => (
       strokeWidth={2}
     />
     <path
+      d="M12 2v4M12 18v4M2 12h4M18 12h4"
       strokeLinecap="round"
       strokeWidth={2}
-      d="M12 2v4M12 18v4M2 12h4M18 12h4"
     />
   </svg>
 );
@@ -122,8 +124,8 @@ const SpinnerIcon = ({ className }: { className?: string }) => (
     />
     <path
       className="opacity-75"
-      fill="currentColor"
       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      fill="currentColor"
     />
   </svg>
 );
@@ -133,7 +135,7 @@ export const SearchControl: React.FC<SearchControlProps> = ({
   placeholder = "Search places…",
   provider = "nominatim",
   customEndpoint,
-  apiKey,
+  _apiKey,
   limit = 5,
   bounds,
   biasToViewport = true,
@@ -150,7 +152,7 @@ export const SearchControl: React.FC<SearchControlProps> = ({
   showRecent = true,
   maxRecent = 5,
   renderResult,
-  width = 320,
+  _width = 320,
   collapsible = false,
   defaultCollapsed = false,
   showCoordinatesInput = true,
@@ -211,7 +213,7 @@ export const SearchControl: React.FC<SearchControlProps> = ({
         "map-recent-searches",
         JSON.stringify(recentSearches.slice(0, maxRecent))
       );
-    } catch {}
+    } catch { /* ignore storage errors */ }
   }, [recentSearches, maxRecent]);
 
   // ── Geocoding ──────────────────────────────────────────────────────────────
@@ -273,7 +275,7 @@ export const SearchControl: React.FC<SearchControlProps> = ({
           );
           break;
         default:
-          throw new Error(`Unknown provider: ${provider}`);
+          throw new Error(`Unknown provider: ${String(provider)}`);
       }
 
       const response = await fetch(url);
@@ -377,7 +379,7 @@ export const SearchControl: React.FC<SearchControlProps> = ({
     (center: [number, number], bbox?: [number, number, number, number]) => {
       if (!map || !isLoaded) return;
       if (bbox) {
-        map.fitBounds(bbox as any, { padding: 50 });
+        map.fitBounds(bbox, { padding: 50 });
       } else {
         map.flyTo({ center, zoom: zoomTo });
       }
@@ -495,10 +497,7 @@ export const SearchControl: React.FC<SearchControlProps> = ({
     const padding = isMobile ? 8 : 10;
     return (
       <button
-        onClick={() => {
-          setIsCollapsed(false);
-          setTimeout(() => inputRef.current?.focus(), 100);
-        }}
+        aria-label="Open search"
         className="absolute z-[var(--z-dropdown)] flex h-9 w-9 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--surface)] text-[var(--text-secondary)] shadow-[var(--shadow-md)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--surface-hover)]"
         style={{
           top: padding,
@@ -506,7 +505,10 @@ export const SearchControl: React.FC<SearchControlProps> = ({
             ? { left: padding }
             : { right: padding }),
         }}
-        aria-label="Open search"
+        onClick={() => {
+          setIsCollapsed(false);
+          setTimeout(() => inputRef.current?.focus(), 100);
+        }}
       >
         <SearchIcon className="h-4 w-4" />
       </button>
@@ -562,45 +564,23 @@ export const SearchControl: React.FC<SearchControlProps> = ({
           */}
           <input
             ref={inputRef}
+            className="input w-full pr-16 pl-10"
+            placeholder={placeholder}
+            style={{ paddingLeft: 30 }}
             type="text"
             value={query}
+            onBlur={() => setTimeout(() => setIsFocused(false), 200)}
             onChange={handleInputChange}
             onFocus={() => setIsFocused(true)}
-            onBlur={() => setTimeout(() => setIsFocused(false), 200)}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            className="input w-full pr-16 pl-10"
-            style={{ paddingLeft: 30 }}
           />
 
           {/* Right-side actions */}
           <span className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-0.5">
-            {query && !isLoading && (
-              <button
-                onClick={handleClear}
-                className="rounded-[var(--radius-sm)] p-1 text-[var(--text-tertiary)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-secondary)]"
+            {query && !isLoading ? <button
                 aria-label="Clear search"
-              >
-                <svg
-                  className="h-3.5 w-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            )}
-            {collapsible && (
-              <button
-                onClick={() => setIsCollapsed(true)}
                 className="rounded-[var(--radius-sm)] p-1 text-[var(--text-tertiary)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-secondary)]"
-                aria-label="Collapse search"
+                onClick={handleClear}
               >
                 <svg
                   className="h-3.5 w-3.5"
@@ -609,32 +589,48 @@ export const SearchControl: React.FC<SearchControlProps> = ({
                   viewBox="0 0 24 24"
                 >
                   <path
+                    d="M6 18L18 6M6 6l12 12"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
                   />
                 </svg>
-              </button>
-            )}
+              </button> : null}
+            {collapsible ? <button
+                aria-label="Collapse search"
+                className="rounded-[var(--radius-sm)] p-1 text-[var(--text-tertiary)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-secondary)]"
+                onClick={() => setIsCollapsed(true)}
+              >
+                <svg
+                  className="h-3.5 w-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M15 19l-7-7 7-7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                  />
+                </svg>
+              </button> : null}
           </span>
         </div>
 
         {/* ── Dropdown ── */}
-        {showDropdown && (
-          <div
+        {showDropdown ? <div
             className="card absolute top-[calc(100%+4px)] right-0 left-0 overflow-y-auto p-0"
             style={{ maxHeight: dropdownMaxHeight }}
           >
             {/* Coordinate suggestion */}
-            {isCoordQuery && parsedCoords && (
-              <button
-                onClick={handleGoToCoords}
+            {isCoordQuery && parsedCoords ? <button
                 className={`flex w-full items-center gap-3 border-b border-[var(--border-secondary)] px-3 py-2.5 text-left transition-colors duration-[var(--transition-fast)] ${
                   selectedIndex === 0
                     ? "bg-[var(--surface-hover)]"
                     : "hover:bg-[var(--surface-hover)]"
                 }`}
+                onClick={handleGoToCoords}
               >
                 <span
                   className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full"
@@ -659,8 +655,7 @@ export const SearchControl: React.FC<SearchControlProps> = ({
                 <kbd className="hidden flex-shrink-0 rounded border border-[var(--border-primary)] px-1.5 py-0.5 text-[10px] text-[var(--text-tertiary)] sm:inline-block">
                   ↵
                 </kbd>
-              </button>
-            )}
+              </button> : null}
 
             {/* Place results */}
             {results.length > 0 && (
@@ -670,10 +665,10 @@ export const SearchControl: React.FC<SearchControlProps> = ({
                   return (
                     <SearchResultItem
                       key={result.id}
-                      result={result}
                       isSelected={adjustedIndex === selectedIndex}
-                      onClick={() => handleSelect(result)}
                       renderResult={renderResult}
+                      result={result}
+                      onClick={() => handleSelect(result)}
                     />
                   );
                 })}
@@ -681,15 +676,14 @@ export const SearchControl: React.FC<SearchControlProps> = ({
             )}
 
             {/* Recent searches */}
-            {showRecent && recentSearches.length > 0 && !query && (
-              <div>
+            {showRecent && recentSearches.length > 0 && !query ? <div>
                 <div className="flex items-center justify-between border-b border-[var(--border-primary)] px-3 py-2">
                   <span className="text-xs text-[var(--text-tertiary)]">
                     Recent searches
                   </span>
                   <button
-                    onClick={() => setRecentSearches([])}
                     className="text-xs text-[var(--text-tertiary)] transition-colors duration-[var(--transition-fast)] hover:text-[var(--text-secondary)]"
+                    onClick={() => setRecentSearches([])}
                   >
                     Clear all
                   </button>
@@ -699,25 +693,22 @@ export const SearchControl: React.FC<SearchControlProps> = ({
                   return (
                     <SearchResultItem
                       key={result.id}
-                      result={result}
-                      isSelected={adjustedIndex === selectedIndex}
-                      onClick={() => handleSelect(result)}
-                      renderResult={renderResult}
                       isRecent
+                      isSelected={adjustedIndex === selectedIndex}
+                      renderResult={renderResult}
+                      result={result}
+                      onClick={() => handleSelect(result)}
                     />
                   );
                 })}
-              </div>
-            )}
+              </div> : null}
 
             {/* No results */}
-            {query && !isCoordQuery && results.length === 0 && !isLoading && (
-              <div className="px-3 py-4 text-center">
+            {query && !isCoordQuery && results.length === 0 && !isLoading ? <div className="px-3 py-4 text-center">
                 <p className="text-sm text-[var(--text-tertiary)]">
                   No results found
                 </p>
-                {showCoordinatesInput && (
-                  <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+                {showCoordinatesInput ? <p className="mt-1 text-xs text-[var(--text-tertiary)]">
                     Try entering coordinates like{" "}
                     <button
                       className="font-medium underline underline-offset-2"
@@ -729,10 +720,8 @@ export const SearchControl: React.FC<SearchControlProps> = ({
                     >
                       48.8566, 2.3522
                     </button>
-                  </p>
-                )}
-              </div>
-            )}
+                  </p> : null}
+              </div> : null}
 
             {/*
               ── Coordinate hint ──────────────────────────────────────────────
@@ -743,8 +732,7 @@ export const SearchControl: React.FC<SearchControlProps> = ({
               !query &&
               !isCoordQuery &&
               results.length === 0 &&
-              !(showRecent && recentSearches.length > 0) && (
-                <div className="flex items-start gap-2.5 border-t border-[var(--border-secondary)] px-3 py-2.5">
+              !(showRecent && recentSearches.length > 0) ? <div className="flex items-start gap-2.5 border-t border-[var(--border-secondary)] px-3 py-2.5">
                   {/* Icon pill */}
                   <span
                     className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full"
@@ -794,8 +782,7 @@ export const SearchControl: React.FC<SearchControlProps> = ({
                       ) to jump directly to a location.
                     </p>
                   </div>
-                </div>
-              )}
+                </div> : null}
 
             {/*
               Same hint but appended below recent-searches list so it's
@@ -806,8 +793,7 @@ export const SearchControl: React.FC<SearchControlProps> = ({
               !isCoordQuery &&
               results.length === 0 &&
               showRecent &&
-              recentSearches.length > 0 && (
-                <div className="flex items-center gap-2 border-t border-[var(--border-secondary)] px-3 py-2">
+              recentSearches.length > 0 ? <div className="flex items-center gap-2 border-t border-[var(--border-secondary)] px-3 py-2">
                   <CrosshairIcon
                     className="h-3 w-3 flex-shrink-0"
                     style={{ color: "var(--primary)" }}
@@ -822,10 +808,8 @@ export const SearchControl: React.FC<SearchControlProps> = ({
                     </span>{" "}
                     to jump to exact coordinates
                   </p>
-                </div>
-              )}
-          </div>
-        )}
+                </div> : null}
+          </div> : null}
       </div>
     </div>
   );
@@ -851,12 +835,12 @@ const SearchResultItem: React.FC<SearchResultItemProps> = ({
   if (renderResult) {
     return (
       <div
-        onClick={onClick}
         className={`cursor-pointer px-3 py-2 transition-colors duration-[var(--transition-fast)] ${
           isSelected
             ? "bg-[var(--surface-hover)]"
             : "hover:bg-[var(--surface-hover)]"
         }`}
+        onClick={onClick}
       >
         {renderResult(result)}
       </div>
@@ -865,12 +849,12 @@ const SearchResultItem: React.FC<SearchResultItemProps> = ({
 
   return (
     <div
-      onClick={onClick}
       className={`flex cursor-pointer items-start gap-2 border-b border-[var(--border-secondary)] px-3 py-2 transition-colors duration-[var(--transition-fast)] ${
         isSelected
           ? "bg-[var(--surface-hover)]"
           : "hover:bg-[var(--surface-hover)]"
       }`}
+      onClick={onClick}
     >
       <span className="mt-0.5 flex-shrink-0 text-[var(--text-tertiary)]">
         {isRecent ? (
@@ -881,10 +865,10 @@ const SearchResultItem: React.FC<SearchResultItemProps> = ({
             viewBox="0 0 24 24"
           >
             <path
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
         ) : (
@@ -895,16 +879,16 @@ const SearchResultItem: React.FC<SearchResultItemProps> = ({
             viewBox="0 0 24 24"
           >
             <path
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
             />
             <path
+              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
         )}
@@ -917,11 +901,9 @@ const SearchResultItem: React.FC<SearchResultItemProps> = ({
           {result.placeName}
         </p>
       </div>
-      {result.type && (
-        <span className="flex-shrink-0 rounded-[var(--radius-sm)] bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-xs text-[var(--text-tertiary)]">
+      {result.type ? <span className="flex-shrink-0 rounded-[var(--radius-sm)] bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-xs text-[var(--text-tertiary)]">
           {result.type}
-        </span>
-      )}
+        </span> : null}
     </div>
   );
 };

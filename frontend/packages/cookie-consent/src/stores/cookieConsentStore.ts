@@ -1,5 +1,13 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+
+import { 
+  saveConsentPreferences, 
+  getConsentPreferences,
+  clearNonEssentialStorage,
+  dispatchConsentEvent,
+} from '../utils/cookies';
+
 import type { 
   CookiePreferences, 
   CookieConsentConfig,
@@ -7,12 +15,6 @@ import type {
   CookieCategory,
   CookieConsentState,
 } from '../types';
-import { 
-  saveConsentPreferences, 
-  getConsentPreferences,
-  clearNonEssentialStorage,
-  dispatchConsentEvent,
-} from '../utils/cookies';
 
 const DEFAULT_CATEGORIES: CookieCategoryConfig[] = [
   {

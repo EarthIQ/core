@@ -34,7 +34,7 @@ async function request<T>(
   }
 
   const text = await res.text();
-  return text ? (JSON.parse(text) as T) : (undefined as unknown as T);
+  return text ? (JSON.parse(text) as T) : (undefined);
 }
 
 export const api = {

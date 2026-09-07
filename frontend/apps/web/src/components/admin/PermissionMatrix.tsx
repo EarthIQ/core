@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { PermissionSummary } from "./types";
+
+import { type PermissionSummary } from "./types";
 
 interface PermissionMatrixProps {
   permissions: PermissionSummary[];
@@ -14,11 +15,11 @@ const ACTIONS: Array<{ key: "view" | "add" | "edit" | "delete"; label: string; i
   { key: "delete", label: "Delete", icon: "🗑️" },
 ];
 
-export function PermissionMatrix({
+export const PermissionMatrix = ({
   permissions,
   selectedPermissionIds,
   onChange,
-}: PermissionMatrixProps) {
+}: PermissionMatrixProps) => {
   // Parse permissions into components map
   const matrixData = useMemo(() => {
     const compMap: Record<string, Record<string, string>> = {};
@@ -110,19 +111,19 @@ export function PermissionMatrix({
                   return (
                     <td key={act.key} className="py-2 px-2 text-center">
                       <input
-                        type="checkbox"
                         checked={checked}
-                        onChange={() => togglePermission(permId)}
                         className="cursor-pointer accent-primary w-4 h-4 rounded border-border-primary"
+                        type="checkbox"
+                        onChange={() => togglePermission(permId)}
                       />
                     </td>
                   );
                 })}
                 <td className="py-2 px-2 text-center">
                   <button
+                    className="text-[0.7rem] font-medium text-primary hover:underline"
                     type="button"
                     onClick={() => toggleRow(comp)}
-                    className="text-[0.7rem] font-medium text-primary hover:underline"
                   >
                     {isRowFull ? "Deselect" : "Select All"}
                   </button>

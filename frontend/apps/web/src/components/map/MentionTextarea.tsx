@@ -18,6 +18,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+
 import {
   searchPeople,
   type PeopleSearchResult,
@@ -144,7 +145,7 @@ interface MentionTextareaProps {
   onSubmit?: () => void;
 }
 
-export function MentionTextarea({
+export const MentionTextarea = ({
   placeholder,
   rows = 3,
   className,
@@ -152,7 +153,7 @@ export function MentionTextarea({
   onTextChange,
   onMention,
   onSubmit,
-}: MentionTextareaProps) {
+}: MentionTextareaProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const ddRef = useRef<HTMLDivElement>(null);
 
@@ -347,27 +348,26 @@ export function MentionTextarea({
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning
-        role="textbox"
-        aria-multiline="true"
         aria-label={placeholder}
+        aria-multiline="true"
+        className={`${className ?? ""} cursor-text text-text-primary whitespace-pre-wrap break-words leading-[1.55] focus:outline-none`}
+        role="textbox"
+        style={{ minHeight: `${Math.max(rows, 2) * 20 + 16}px` }}
+        onClick={updateTrigger}
+        onKeyDown={onKeyDown}
+        onKeyUp={updateTrigger}
         onInput={(e) => {
           pushText(e.currentTarget);
           updateTrigger();
         }}
-        onKeyDown={onKeyDown}
-        onKeyUp={updateTrigger}
-        onClick={updateTrigger}
         onPaste={(e) => {
           e.preventDefault();
           const text = e.clipboardData.getData("text/plain");
           document.execCommand("insertText", false, text);
         }}
-        style={{ minHeight: `${Math.max(rows, 2) * 20 + 16}px` }}
-        className={`${className ?? ""} cursor-text text-text-primary whitespace-pre-wrap break-words leading-[1.55] focus:outline-none`}
       />
 
-      {isEmpty && placeholder && (
-        <span
+      {isEmpty && placeholder ? <span
           aria-hidden
           className="absolute pointer-events-none select-none text-[13px]"
           style={{
@@ -378,17 +378,15 @@ export function MentionTextarea({
           }}
         >
           {placeholder}
-        </span>
-      )}
+        </span> : null}
 
       {open &&
-        ddPos &&
-        createPortal(
+        ddPos ? createPortal(
           <div
             ref={ddRef}
-            role="listbox"
             aria-label="Mention a user"
             className="fixed z-[999] rounded-xl bg-elevated border border-border-primary shadow-xl overflow-hidden animate-fade-in"
+            role="listbox"
             style={{ left: ddPos.left, top: ddPos.top, width: DD_W }}
           >
             <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
@@ -405,18 +403,18 @@ export function MentionTextarea({
             ) : (
               <ul className="max-h-52 overflow-y-auto">
                 {results.map((u, i) => (
-                  <li key={u.id} role="option" aria-selected={i === hi}>
+                  <li key={u.id} aria-selected={i === hi} role="option">
                     <button
                       type="button"
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-left cursor-pointer transition-colors ${
+                        i === hi ? "bg-primary/10" : ""
+                      }`}
+                      onClick={() => pick(u)}
+                      onMouseEnter={() => setHi(i)}
                       onMouseDown={(e) => {
                         e.preventDefault(); // keep editor focus
                         setHi(i);
                       }}
-                      onMouseEnter={() => setHi(i)}
-                      onClick={() => pick(u)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-left cursor-pointer transition-colors ${
-                        i === hi ? "bg-primary/10" : ""
-                      }`}
                     >
                       <span className="w-7 h-7 rounded-full bg-primary/15 text-primary border border-primary/20 flex items-center justify-center text-[10px] font-bold shrink-0 select-none">
                         {initialsOf(displayName(u))}
@@ -436,7 +434,7 @@ export function MentionTextarea({
             )}
           </div>,
           document.body,
-        )}
+        ) : null}
     </div>
   );
 }

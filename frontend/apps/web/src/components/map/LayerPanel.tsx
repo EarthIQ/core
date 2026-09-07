@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import { LayerItem } from "@/types/map";
+import { Button, Tooltip } from "@packages/ui";
 import {
   Layers,
   ChevronDown,
@@ -7,15 +6,17 @@ import {
   ChevronRight,
   ChevronLeft,
 } from "lucide-react";
-import { Button, Tooltip } from "@packages/ui";
+import { useEffect, useRef, useState } from "react";
 
-export function LayerPanel({
+import { type LayerItem } from "@/types/map";
+
+export const LayerPanel = ({
   vectorLayers,
   rasterLayers,
-  onToggleVector,
-  onToggleRaster,
-  onOpenStyle,
-  onRemoveLayer,
+  _onToggleVector,
+  _onToggleRaster,
+  _onOpenStyle,
+  _onRemoveLayer,
   onOpenImport,
   canEdit,
   saving,
@@ -37,7 +38,7 @@ export function LayerPanel({
   statusMsg: string | null;
   isAvailableModule: (id: string) => boolean;
   aiOpen?: boolean;
-}) {
+}) => {
   const [minimized, setMinimized] = useState(false);
   const [layersMenuOpen, setLayersMenuOpen] = useState(false);
   const layersMenuRef = useRef<HTMLDivElement>(null);
@@ -68,23 +69,23 @@ export function LayerPanel({
 
   return (
     <div
+      style={leftStyle}
       className={`absolute top-16 z-20 flex flex-col bg-elevated border border-border-primary rounded-xl shadow-xl transition-all duration-300 ease-in-out ${
         minimized ? "w-10" : "w-64"
       }`}
-      style={leftStyle}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-1 py-1 border-b border-border-secondary shrink-0">
         {!minimized && (
-          <div className="relative flex items-center" ref={layersMenuRef}>
+          <div ref={layersMenuRef} className="relative flex items-center">
             {/* "Layers ▾" dropdown trigger */}
             <button
-              type="button"
-              id="layers-dropdown-trigger"
-              onClick={() => setLayersMenuOpen((v) => !v)}
               className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-surface-hover transition-colors group"
+              id="layers-dropdown-trigger"
+              type="button"
+              onClick={() => setLayersMenuOpen((v) => !v)}
             >
-              <Layers size={14} className="text-text-secondary" />
+              <Layers className="text-text-secondary" size={14} />
               <span className="text-xs font-bold text-text-primary">
                 Layers
               </span>
@@ -94,31 +95,30 @@ export function LayerPanel({
                 </span>
               )}
               <ChevronDown
-                size={12}
                 className={`text-text-quaternary transition-transform duration-200 ${layersMenuOpen ? "rotate-180" : ""}`}
+                size={12}
               />
             </button>
 
             {/* Layers dropdown menu */}
-            {layersMenuOpen && (
-              <div className="absolute left-0 top-full mt-1.5 w-48 bg-elevated border border-border-primary rounded-xl shadow-dropdown py-1.5 z-50 animate-fade-in">
+            {layersMenuOpen ? <div className="absolute left-0 top-full mt-1.5 w-48 bg-elevated border border-border-primary rounded-xl shadow-dropdown py-1.5 z-50 animate-fade-in">
                 <button
-                  type="button"
                   className="dropdown-item w-full gap-2.5"
+                  id="add-data-to-map"
+                  type="button"
                   onClick={() => {
                     setLayersMenuOpen(false);
                     onOpenImport();
                   }}
-                  id="add-data-to-map"
                 >
-                  <Plus size={13} className="text-primary" />
+                  <Plus className="text-primary" size={13} />
                   <span>Add Data</span>
                 </button>
 
                 {isAvailableModule("resource-module") && (
                   <button
-                    type="button"
                     className="dropdown-item w-full gap-2.5"
+                    type="button"
                     onClick={() => {
                       setLayersMenuOpen(false);
                       onOpenImport();
@@ -133,8 +133,8 @@ export function LayerPanel({
                   <>
                     <div className="h-px bg-border-secondary mx-2 my-1" />
                     <button
-                      type="button"
                       className="dropdown-item w-full gap-2 text-text-tertiary text-[0.72rem]"
+                      type="button"
                       onClick={() => {
                         setLayersMenuOpen(false);
                       }}
@@ -146,8 +146,7 @@ export function LayerPanel({
                     </button>
                   </>
                 )}
-              </div>
-            )}
+              </div> : null}
           </div>
         )}
 
@@ -157,9 +156,9 @@ export function LayerPanel({
         >
           <Button
             iconOnly
+            aria-label={minimized ? "Expand panel" : "Collapse panel"}
             id="layer-panel-toggle"
             onClick={() => setMinimized((v) => !v)}
-            aria-label={minimized ? "Expand panel" : "Collapse panel"}
           >
             {minimized ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </Button>
@@ -172,15 +171,15 @@ export function LayerPanel({
           {/* Empty state */}
           {totalLayers === 0 ? (
             <div className="flex flex-col items-center gap-2 py-5 text-center">
-              <Layers size={24} className="text-text-quaternary opacity-40" />
+              <Layers className="text-text-quaternary opacity-40" size={24} />
               <div className="text-[0.72rem] text-text-tertiary leading-snug">
                 No layers yet.
               </div>
               <button
-                type="button"
-                onClick={onOpenImport}
                 className="flex items-center gap-1.5 mt-1 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/25 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
                 id="add-first-layer"
+                type="button"
+                onClick={onOpenImport}
               >
                 <Plus size={13} />
                 Add Data
@@ -196,26 +195,22 @@ export function LayerPanel({
           )}
 
           {/* Save Button */}
-          {canEdit && (
-            <div className="flex flex-col gap-1.5 pt-1">
+          {canEdit ? <div className="flex flex-col gap-1.5 pt-1">
               <Button
-                variant="primary"
-                size="sm"
                 fullWidth
+                id="save-viewport-btn"
                 loading={saving}
                 loadingText="Saving…"
+                size="sm"
+                variant="primary"
                 onClick={onSave}
-                id="save-viewport-btn"
               >
                 💾 Save Viewport
               </Button>
-              {statusMsg && (
-                <div className="text-[0.7rem] text-primary text-center animate-fade-in">
+              {statusMsg ? <div className="text-[0.7rem] text-primary text-center animate-fade-in">
                   {statusMsg}
-                </div>
-              )}
-            </div>
-          )}
+                </div> : null}
+            </div> : null}
         </div>
       )}
     </div>

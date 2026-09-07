@@ -9,9 +9,10 @@
  * All calls go to ``/api/v1/profile/organizations…``.
  */
 import { useCallback, useEffect, useState } from "react";
+
 import { api } from "@/lib/api";
-import { initials, hueFrom } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
+import { initials, hueFrom } from "@/lib/format";
 
 interface Org {
   id: string;
@@ -296,8 +297,7 @@ export default function OrganizationSection() {
 
   return (
     <div className="grid gap-6">
-      {(flash || error) && (
-        <div
+      {(flash || error) ? <div
           className={`rounded-xl px-4 py-3 text-sm border ${
             flash
               ? "bg-success-subtle border-success/20 text-success"
@@ -305,8 +305,7 @@ export default function OrganizationSection() {
           }`}
         >
           {flash ?? error}
-        </div>
-      )}
+        </div> : null}
 
       {/* ── Create organization ── */}
       <div className="card p-6 flex flex-col gap-4">
@@ -321,27 +320,27 @@ export default function OrganizationSection() {
             <label className="form-label">Name</label>
             <input
               className="input"
+              placeholder="Rhine Basin Initiative"
               value={create.name}
               onChange={(e) => setCreate((c) => ({ ...c, name: e.target.value }))}
-              placeholder="Rhine Basin Initiative"
             />
           </div>
           <div className="form-field">
             <label className="form-label">Industry (optional)</label>
             <input
               className="input"
+              placeholder="Water utilities"
               value={create.industry}
               onChange={(e) => setCreate((c) => ({ ...c, industry: e.target.value }))}
-              placeholder="Water utilities"
             />
           </div>
           <div className="form-field sm:col-span-2">
             <label className="form-label">Description (optional)</label>
             <textarea
               className="input min-h-[3.5rem] resize-y"
+              placeholder="What is this organization about?"
               value={create.description}
               onChange={(e) => setCreate((c) => ({ ...c, description: e.target.value }))}
-              placeholder="What is this organization about?"
             />
           </div>
         </div>
@@ -389,9 +388,9 @@ export default function OrganizationSection() {
                 <div className="flex items-start gap-3">
                   {org.logo_url ? (
                     <img
-                      src={org.logo_url}
                       alt=""
                       className="w-10 h-10 rounded-lg object-cover border border-border-primary"
+                      src={org.logo_url}
                     />
                   ) : (
                     <div
@@ -406,7 +405,7 @@ export default function OrganizationSection() {
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold text-text-primary truncate flex items-center gap-1.5">
                       <span className="truncate">{org.name}</span>
-                      {org.is_primary && <span title="Primary organization">⭐</span>}
+                      {org.is_primary ? <span title="Primary organization">⭐</span> : null}
                     </div>
                     {org.my_role ? (
                       <span className={`badge ${ROLE_BADGE[org.my_role] ?? "badge-info"} mt-1`}>
@@ -419,12 +418,9 @@ export default function OrganizationSection() {
                     )}
                   </div>
                 </div>
-                {org.description && (
-                  <p className="text-xs text-text-secondary line-clamp-2">{org.description}</p>
-                )}
+                {org.description ? <p className="text-xs text-text-secondary line-clamp-2">{org.description}</p> : null}
                 <div className="flex items-center gap-2 flex-wrap mt-auto">
-                  {org.my_role && !org.is_primary && (
-                    <button
+                  {org.my_role && !org.is_primary ? <button
                       className="btn btn-ghost btn-sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -432,10 +428,8 @@ export default function OrganizationSection() {
                       }}
                     >
                       ⭐ Set primary
-                    </button>
-                  )}
-                  {org.my_role && (
-                    <>
+                    </button> : null}
+                  {org.my_role ? <>
                       <button
                         className="btn btn-ghost btn-sm"
                         onClick={(e) => {
@@ -445,8 +439,7 @@ export default function OrganizationSection() {
                       >
                         Leave
                       </button>
-                      {(org.my_role === "owner" || user?.is_superuser) && (
-                        <button
+                      {(org.my_role === "owner" || user?.is_superuser) ? <button
                           className="btn btn-ghost btn-sm text-error"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -454,10 +447,8 @@ export default function OrganizationSection() {
                           }}
                         >
                           Delete
-                        </button>
-                      )}
-                    </>
-                  )}
+                        </button> : null}
+                    </> : null}
                 </div>
               </div>
             ))}
@@ -466,8 +457,7 @@ export default function OrganizationSection() {
       </div>
 
       {/* ── Selected organization details ── */}
-      {selected && (
-        <div className="card p-6 flex flex-col gap-4">
+      {selected ? <div className="card p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-3">
               <div
@@ -482,7 +472,7 @@ export default function OrganizationSection() {
               <div>
                 <div className="text-sm font-semibold text-text-primary">
                   {selected.name}
-                  {selected.is_primary && <span className="ml-1.5">⭐</span>}
+                  {selected.is_primary ? <span className="ml-1.5">⭐</span> : null}
                 </div>
                 <div className="text-xs text-text-tertiary">
                   {selected.member_count} member{selected.member_count === 1 ? "" : "s"} ·
@@ -490,11 +480,9 @@ export default function OrganizationSection() {
                 </div>
               </div>
             </div>
-            {canManage && (
-              <button className="btn btn-primary btn-sm" disabled={saving} onClick={updateOrg}>
+            {canManage ? <button className="btn btn-primary btn-sm" disabled={saving} onClick={updateOrg}>
                 {saving ? "Saving…" : "Save changes"}
-              </button>
-            )}
+              </button> : null}
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
@@ -502,8 +490,8 @@ export default function OrganizationSection() {
               <label className="form-label">Name</label>
               <input
                 className="input"
-                value={edit.name}
                 disabled={!canManage}
+                value={edit.name}
                 onChange={(e) => setEdit((x) => ({ ...x, name: e.target.value }))}
               />
             </div>
@@ -511,8 +499,8 @@ export default function OrganizationSection() {
               <label className="form-label">Industry</label>
               <input
                 className="input"
-                value={edit.industry}
                 disabled={!canManage}
+                value={edit.industry}
                 onChange={(e) => setEdit((x) => ({ ...x, industry: e.target.value }))}
               />
             </div>
@@ -520,8 +508,8 @@ export default function OrganizationSection() {
               <label className="form-label">Website</label>
               <input
                 className="input"
-                value={edit.website}
                 disabled={!canManage}
+                value={edit.website}
                 onChange={(e) => setEdit((x) => ({ ...x, website: e.target.value }))}
               />
             </div>
@@ -529,8 +517,8 @@ export default function OrganizationSection() {
               <label className="form-label">Location</label>
               <input
                 className="input"
-                value={edit.location}
                 disabled={!canManage}
+                value={edit.location}
                 onChange={(e) => setEdit((x) => ({ ...x, location: e.target.value }))}
               />
             </div>
@@ -538,9 +526,9 @@ export default function OrganizationSection() {
               <label className="form-label">Accent color</label>
               <input
                 className="input"
-                value={edit.accent_color}
-                placeholder="#50aad1"
                 disabled={!canManage}
+                placeholder="#50aad1"
+                value={edit.accent_color}
                 onChange={(e) => setEdit((x) => ({ ...x, accent_color: e.target.value }))}
               />
             </div>
@@ -548,8 +536,8 @@ export default function OrganizationSection() {
               <label className="form-label">Description</label>
               <textarea
                 className="input min-h-[3.5rem] resize-y"
-                value={edit.description}
                 disabled={!canManage}
+                value={edit.description}
                 onChange={(e) => setEdit((x) => ({ ...x, description: e.target.value }))}
               />
             </div>
@@ -559,12 +547,10 @@ export default function OrganizationSection() {
               You are a viewer - ask an admin or the owner to edit organization details.
             </p>
           )}
-        </div>
-      )}
+        </div> : null}
 
       {/* ── Members of selected organization ── */}
-      {selected && (
-        <div className="card p-6 flex flex-col gap-4">
+      {selected ? <div className="card p-6 flex flex-col gap-4">
           <div>
             <h3 className="text-sm font-semibold text-text-primary">
               Members of {selected.name}
@@ -574,15 +560,14 @@ export default function OrganizationSection() {
             </p>
           </div>
 
-          {canManage && (
-            <div className="flex items-end gap-3 flex-wrap">
+          {canManage ? <div className="flex items-end gap-3 flex-wrap">
               <div className="form-field flex-1 min-w-[14rem]">
                 <label className="form-label">Add member by email</label>
                 <input
                   className="input"
+                  placeholder="teammate@company.com"
                   type="email"
                   value={addMemberDraft.email}
-                  placeholder="teammate@company.com"
                   onChange={(e) => setAddMemberDraft((a) => ({ ...a, email: e.target.value }))}
                   onKeyDown={(e) => e.key === "Enter" && addMember()}
                 />
@@ -608,8 +593,7 @@ export default function OrganizationSection() {
               >
                 {adding ? "Adding…" : "Add member"}
               </button>
-            </div>
-          )}
+            </div> : null}
 
           <div className="grid gap-2">
             {members.map((m) => (
@@ -619,9 +603,9 @@ export default function OrganizationSection() {
               >
                 {m.avatar_url ? (
                   <img
-                    src={m.avatar_url}
                     alt=""
                     className="w-8 h-8 rounded-full object-cover border border-border-primary"
+                    src={m.avatar_url}
                   />
                 ) : (
                   <div
@@ -642,10 +626,10 @@ export default function OrganizationSection() {
                 {canManage && m.user_id !== user?.id ? (
                   <>
                     <select
+                      aria-label={`Role for ${m.email}`}
                       className="input w-28"
                       value={m.role}
                       onChange={(e) => changeRole(m.user_id, e.target.value)}
-                      aria-label={`Role for ${m.email}`}
                     >
                       {ROLES.map((r) => (
                         <option key={r} value={r}>
@@ -672,21 +656,19 @@ export default function OrganizationSection() {
               </div>
             )}
           </div>
-        </div>
-      )}
+        </div> : null}
 
       {/* ── Confirm dialog ── */}
-      {confirm && (
-        <div
+      {confirm ? <div
           className="fixed inset-0 z-[900] flex items-center justify-center p-6"
           style={{ background: "var(--overlay)" }}
           onClick={() => setConfirm(null)}
         >
           <div
-            className="card w-full max-w-sm p-6 flex flex-col gap-4 animate-scale-in"
-            onClick={(e) => e.stopPropagation()}
-            role="alertdialog"
             aria-modal="true"
+            className="card w-full max-w-sm p-6 flex flex-col gap-4 animate-scale-in"
+            role="alertdialog"
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="text-sm font-semibold text-text-primary">{confirm.title}</div>
             <div className="text-xs text-text-secondary">{confirm.message}</div>
@@ -702,8 +684,7 @@ export default function OrganizationSection() {
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 }

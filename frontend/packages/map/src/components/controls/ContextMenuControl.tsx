@@ -1,13 +1,15 @@
+import { cn, useCopyToClipboard } from "@packages/ui";
 import { useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { cn, useCopyToClipboard } from "@packages/ui";
+
 import { useContextMenu } from "../../hooks/useContextMenu";
+import useMap from "../../hooks/useMap";
+
 import type {
   ContextMenuControlProps,
   ContextMenuItem,
   MapCoordinates,
 } from "../../types";
-import useMap from "../../hooks/useMap";
 
 // Coordinate formatting utilities
 function formatDecimal(value: number, precision: number): string {
@@ -37,14 +39,14 @@ const CopyIcon = () => (
   <svg
     className="h-4 w-4"
     fill="none"
-    viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    viewBox="0 0 24 24"
   >
     <path
+      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
     />
   </svg>
 );
@@ -53,19 +55,19 @@ const MarkerIcon = () => (
   <svg
     className="h-4 w-4"
     fill="none"
-    viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    viewBox="0 0 24 24"
   >
     <path
+      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
     />
     <path
+      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
     />
   </svg>
 );
@@ -74,14 +76,14 @@ const DirectionsIcon = () => (
   <svg
     className="h-4 w-4"
     fill="none"
-    viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    viewBox="0 0 24 24"
   >
     <path
+      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
     />
   </svg>
 );
@@ -90,14 +92,14 @@ const SearchIcon = () => (
   <svg
     className="h-4 w-4"
     fill="none"
-    viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    viewBox="0 0 24 24"
   >
     <path
+      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
     />
   </svg>
 );
@@ -106,46 +108,46 @@ const RulerIcon = () => (
   <svg
     className="h-4 w-4"
     fill="none"
-    viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    viewBox="0 0 24 24"
   >
     <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
       d="M6 6l12 12M6 6v4m0-4h4m8 12v-4m0 4h-4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
 
-const ZoomInIcon = () => (
+const _ZoomInIcon = () => (
   <svg
     className="h-4 w-4"
     fill="none"
-    viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    viewBox="0 0 24 24"
   >
     <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
       d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
 
-const ZoomOutIcon = () => (
+const _ZoomOutIcon = () => (
   <svg
     className="h-4 w-4"
     fill="none"
-    viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    viewBox="0 0 24 24"
   >
     <path
+      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"
     />
   </svg>
 );
@@ -154,14 +156,14 @@ const CenterIcon = () => (
   <svg
     className="h-4 w-4"
     fill="none"
-    viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    viewBox="0 0 24 24"
   >
     <path
+      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
     />
     <circle
       cx="12"
@@ -175,14 +177,14 @@ const CheckIcon = () => (
   <svg
     className="h-4 w-4 text-[var(--success)]"
     fill="none"
-    viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    viewBox="0 0 24 24"
   >
     <path
+      d="M5 13l4 4L19 7"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M5 13l4 4L19 7"
     />
   </svg>
 );
@@ -191,14 +193,14 @@ const ChevronRightIcon = () => (
   <svg
     className="h-3 w-3"
     fill="none"
-    viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    viewBox="0 0 24 24"
   >
     <path
+      d="M9 5l7 7-7 7"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M9 5l7 7-7 7"
     />
   </svg>
 );
@@ -217,7 +219,7 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
   className,
   disabled = false,
 }) => {
-  const { map, isLoaded } = useMap();
+  const { map, isLoaded: _isLoaded } = useMap();
   const { isOpen, position, coordinates, menuRef, close } = useContextMenu({
     map,
     disabled,
@@ -448,6 +450,8 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
   const menuContent = (
     <div
       ref={menuRef}
+      aria-orientation="vertical"
+      role="menu"
       style={{ ...menuStyle, zIndex: "var(--z-popover, 1060)" }}
       className={cn(
         "fixed",
@@ -458,12 +462,9 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
         "animate-scale-in origin-top-left",
         className
       )}
-      role="menu"
-      aria-orientation="vertical"
     >
       {/* Coordinates Section */}
-      {showCoordinates && (
-        <>
+      {showCoordinates ? <>
           <div className="px-3 py-2">
             <p className="mb-1 text-xs font-medium tracking-wider text-[var(--text-tertiary)] uppercase">
               Coordinates
@@ -473,7 +474,6 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
             {(coordinateFormat === "decimal" ||
               coordinateFormat === "both") && (
               <button
-                onClick={() => handleCopy("decimal")}
                 className={cn(
                   "-mx-2 flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5",
                   "text-sm text-[var(--text-primary)]",
@@ -481,6 +481,7 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
                   "transition-colors duration-[var(--transition-fast)]",
                   "group"
                 )}
+                onClick={() => handleCopy("decimal")}
               >
                 <span className="truncate font-mono text-xs">
                   {formattedCoords.decimal}
@@ -498,7 +499,6 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
             {/* DMS Format */}
             {(coordinateFormat === "dms" || coordinateFormat === "both") && (
               <button
-                onClick={() => handleCopy("dms")}
                 className={cn(
                   "-mx-2 flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5",
                   "text-sm text-[var(--text-primary)]",
@@ -506,6 +506,7 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
                   "transition-colors duration-[var(--transition-fast)]",
                   "group"
                 )}
+                onClick={() => handleCopy("dms")}
               >
                 <span className="truncate font-mono text-xs">
                   {formattedCoords.dms}
@@ -522,8 +523,7 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
           </div>
 
           <div className="my-1 h-px bg-[var(--divider)]" />
-        </>
-      )}
+        </> : null}
 
       {/* Menu Items */}
       <div className="py-1">
@@ -546,8 +546,8 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
           return (
             <button
               key={item.id}
-              onClick={onClick}
               disabled={item.disabled}
+              role="menuitem"
               className={cn(
                 "flex w-full items-center gap-3 px-3 py-2",
                 "text-left text-sm",
@@ -558,16 +558,13 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
                     ? "text-[var(--error)] hover:bg-[var(--error-bg)]"
                     : "text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
               )}
-              role="menuitem"
+              onClick={onClick}
             >
-              {item.icon && (
-                <span className="flex-shrink-0 text-[var(--text-tertiary)]">
+              {item.icon ? <span className="flex-shrink-0 text-[var(--text-tertiary)]">
                   {item.icon}
-                </span>
-              )}
+                </span> : null}
               <span className="flex-1">{item.label}</span>
-              {item.shortcut && (
-                <kbd
+              {item.shortcut ? <kbd
                   className={cn(
                     "rounded px-1.5 py-0.5 text-xs",
                     "bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]",
@@ -575,9 +572,8 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
                   )}
                 >
                   {item.shortcut}
-                </kbd>
-              )}
-              {item.children && <ChevronRightIcon />}
+                </kbd> : null}
+              {item.children ? <ChevronRightIcon /> : null}
             </button>
           );
         })}
@@ -590,7 +586,7 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
 };
 
 // Standalone coordinate display component
-export function CoordinateDisplay({
+export const CoordinateDisplay = ({
   coordinates,
   format = "decimal",
   precision = 6,
@@ -602,7 +598,7 @@ export function CoordinateDisplay({
   precision?: number;
   className?: string;
   onCopy?: () => void;
-}) {
+}) => {
   const { copy } = useCopyToClipboard();
   const [copied, setCopied] = useState(false);
 
@@ -628,7 +624,6 @@ export function CoordinateDisplay({
 
   return (
     <button
-      onClick={handleCopy}
       className={cn(
         "inline-flex items-center gap-2 rounded-md px-2 py-1",
         "bg-[var(--bg-tertiary)] hover:bg-[var(--surface-hover)]",
@@ -637,6 +632,7 @@ export function CoordinateDisplay({
         "group",
         className
       )}
+      onClick={handleCopy}
     >
       <span>{formatted}</span>
       {copied ? (

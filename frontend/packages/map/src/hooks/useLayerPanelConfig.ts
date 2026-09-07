@@ -1,13 +1,15 @@
 // src/hooks/useLayerPanelConfig.ts
 
 import { useState, useEffect, useCallback, useMemo, useRef, useContext } from "react";
-import { MapContext } from "../context/MapContext";
+
 import { useLayers } from "./useLayers";
+import { MapContext } from "../context/MapContext";
+
 import type {
   LayerPanelConfig,
   LayerConfig,
-  GroupConfig,
-  SubGroupConfig,
+  _GroupConfig,
+  _SubGroupConfig,
   ResolvedLayer,
   ResolvedSubGroup,
   ResolvedGroup,
@@ -53,7 +55,7 @@ function extractMapLayerColor(
           (v.startsWith("#") || v.startsWith("rgb") || v.startsWith("hsl"))
       );
     }
-  } catch {}
+  } catch { /* ignore parse errors */ }
   return undefined;
 }
 
@@ -94,7 +96,7 @@ function resolveLayer(
     ...(config.tags ? { tags: config.tags } : {}),
     ...(existsOnMap && mapLayer.minzoom !== undefined ? { minzoom: mapLayer.minzoom } : {}),
     ...(existsOnMap && mapLayer.maxzoom !== undefined ? { maxzoom: mapLayer.maxzoom } : {}),
-  } as ResolvedLayer;
+  };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -478,7 +480,8 @@ export function useLayerPanelConfig(
   const toggleGroupExpanded = useCallback((groupId: string) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
-      next.has(groupId) ? next.delete(groupId) : next.add(groupId);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
       return next;
     });
   }, []);
@@ -486,7 +489,8 @@ export function useLayerPanelConfig(
   const toggleSubGroupExpanded = useCallback((subGroupId: string) => {
     setExpandedSubGroups((prev) => {
       const next = new Set(prev);
-      next.has(subGroupId) ? next.delete(subGroupId) : next.add(subGroupId);
+      if (next.has(subGroupId)) next.delete(subGroupId);
+      else next.add(subGroupId);
       return next;
     });
   }, []);
@@ -669,7 +673,7 @@ export function useLayerPanelConfig(
         const spec = source as any;
         if (spec.bounds)
           map.fitBounds(spec.bounds, { padding: 50, duration: 1000 });
-      } catch {}
+      } catch { /* ignore bounds errors */ }
     },
     [map, isLoaded, rawLayers]
   );

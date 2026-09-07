@@ -85,5 +85,6 @@ export interface CookieConsentEventMap {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- empty extension of a global interface is the canonical pattern
   interface WindowEventMap extends CookieConsentEventMap {}
 }

@@ -1,11 +1,13 @@
 import { useCallback, useRef, useState } from "react";
+
 import {
   deleteDataset,
   downloadDataset,
   getVectorTileUrl,
   moveDataset,
   updateDataset,
-} from "../../lib/datasets";
+} from "@/lib/datasets";
+
 import type { DatasetItem, Toast } from "./types";
 
 /**

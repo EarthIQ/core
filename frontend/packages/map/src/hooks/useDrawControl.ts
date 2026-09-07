@@ -11,19 +11,21 @@ import {
   TerraDrawSelectMode,
 } from "terra-draw";
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
-import type { FeatureCollection, Feature } from "geojson";
+
 import { useMap } from "./useMap";
+
 import type {
   DrawMode,
   DrawState,
   DrawCallbacks,
   DrawOptions,
-  DrawCreateEvent,
-  DrawUpdateEvent,
-  DrawDeleteEvent,
-  DrawSelectionChangeEvent,
-  DrawModeChangeEvent,
+  _DrawCreateEvent,
+  _DrawUpdateEvent,
+  _DrawDeleteEvent,
+  _DrawSelectionChangeEvent,
+  _DrawModeChangeEvent,
 } from "../components/controls/DrawControl/types";
+import type { FeatureCollection, Feature as _Feature } from "geojson";
 
 // Mode mapping
 const MODE_MAP: Record<DrawMode, string> = {
@@ -35,7 +37,7 @@ const MODE_MAP: Record<DrawMode, string> = {
   freehand: "freehand",
 };
 
-const REVERSE_MODE_MAP: Record<string, DrawMode | null> = {
+const _REVERSE_MODE_MAP: Record<string, DrawMode | null> = {
   polygon: "polygon",
   rectangle: "rectangle",
   circle: "circle",
@@ -66,9 +68,9 @@ export function useDrawControl(
     if (!drawRef.current) return { type: "FeatureCollection", features: [] };
     const snap = drawRef.current.getSnapshot();
     if (Array.isArray(snap)) {
-      return { type: "FeatureCollection", features: snap as Feature[] };
+      return { type: "FeatureCollection", features: snap };
     }
-    return snap as unknown as FeatureCollection;
+    return snap;
   }, []);
 
   // Initialize TerraDraw

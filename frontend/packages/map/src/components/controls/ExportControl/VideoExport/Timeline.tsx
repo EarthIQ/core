@@ -1,5 +1,6 @@
 // src/components/video-export/Timeline.tsx
 
+import { Diamond, Trash2, Copy, MapPin } from "lucide-react";
 import React, {
   useCallback,
   useRef,
@@ -7,8 +8,8 @@ import React, {
   useMemo,
   useEffect,
 } from "react";
+
 import type { Keyframe, TimelineState } from "../../types/video-export";
-import { Diamond, Trash2, Copy, MapPin } from "lucide-react";
 
 interface TimelineProps {
   keyframes: Keyframe[];
@@ -30,7 +31,7 @@ function formatTime(seconds: number): string {
   return `${secs.toFixed(1)}s`;
 }
 
-export function Timeline({
+export const Timeline = ({
   keyframes,
   timeline,
   selectedKeyframeId,
@@ -41,7 +42,7 @@ export function Timeline({
   onKeyframeDuplicate,
   onKeyframeUpdateFromMap,
   onKeyframeUpdate,
-}: TimelineProps) {
+}: TimelineProps) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const [hoveredKeyframeId, setHoveredKeyframeId] = useState<string | null>(
     null
@@ -235,6 +236,9 @@ export function Timeline({
               key={kf.id}
               className={`group absolute top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize transition-transform duration-100 ${selectedKeyframeId === kf.id ? "scale-110" : ""} `}
               style={{ left: `${leftPct}%` }}
+              onContextMenu={(e) => handleContextMenu(e, kf.id)}
+              onMouseEnter={() => setHoveredKeyframeId(kf.id)}
+              onMouseLeave={() => setHoveredKeyframeId(null)}
               onPointerDown={(e) => {
                 if (index === 0) return; // Cannot drag the first keyframe (locked at 0s)
                 e.stopPropagation();
@@ -247,9 +251,6 @@ export function Timeline({
                   initialTotalDuration: totalDuration,
                 });
               }}
-              onContextMenu={(e) => handleContextMenu(e, kf.id)}
-              onMouseEnter={() => setHoveredKeyframeId(kf.id)}
-              onMouseLeave={() => setHoveredKeyframeId(null)}
             >
               <Diamond
                 size={18}
@@ -346,8 +347,7 @@ export function Timeline({
       </div>
 
       {/* Context menu */}
-      {contextMenu && (
-        <>
+      {contextMenu ? <>
           <div
             className="fixed inset-0 z-50"
             onClick={closeContextMenu}
@@ -383,22 +383,21 @@ export function Timeline({
               style={{ borderTop: "1px solid var(--divider)" }}
             />
             <ContextMenuItem
+              danger
               icon={<Trash2 size={14} />}
               label="Delete"
-              danger
               onClick={() => {
                 onKeyframeRemove(contextMenu.id);
                 closeContextMenu();
               }}
             />
           </div>
-        </>
-      )}
+        </> : null}
     </div>
   );
 }
 
-function ContextMenuItem({
+const ContextMenuItem = ({
   icon,
   label,
   danger,
@@ -408,11 +407,12 @@ function ContextMenuItem({
   label: string;
   danger?: boolean;
   onClick: () => void;
-}) {
+}) => {
   return (
     <button
       className="flex w-full items-center gap-2 px-3 py-1.5 text-xs transition-colors"
       style={{ color: danger ? "var(--error)" : "var(--text-primary)" }}
+      onClick={onClick}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.backgroundColor =
           "var(--surface-hover)";
@@ -420,7 +420,6 @@ function ContextMenuItem({
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLElement).style.backgroundColor = "transparent";
       }}
-      onClick={onClick}
     >
       {icon}
       {label}

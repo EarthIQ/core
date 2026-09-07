@@ -1,6 +1,8 @@
 // analysis/IsochroneTool.tsx
 import React, { useState, useCallback } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
 
 export interface IsochroneToolProps {
@@ -33,9 +35,9 @@ export const IsochroneTool: React.FC<IsochroneToolProps> = ({
   opacity = 0.4
 }) => {
   const { map, isLoaded } = useMap();
-  const [result, setResult] = useState<GeoJSON.FeatureCollection | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [_result, setResult] = useState<GeoJSON.FeatureCollection | null>(null);
+  const [_loading, setLoading] = useState(false);
+  const [_error, setError] = useState<Error | null>(null);
 
   const sourceId = 'isochrone-source';
 

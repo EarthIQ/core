@@ -29,4 +29,4 @@ export {
 export { cn } from './utils/cn';
 
 // Types
-export * from './types';
+export type * from './types';

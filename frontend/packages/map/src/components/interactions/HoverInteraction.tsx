@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
 
 export interface HoverInteractionProps {
@@ -45,7 +47,7 @@ export interface HoverInteractionProps {
 
 export const HoverInteraction: React.FC<HoverInteractionProps> = ({
   layers,
-  hoverStyle = {
+  _hoverStyle = {
     fillOpacity: 0.8,
     lineWidth: 3
   },

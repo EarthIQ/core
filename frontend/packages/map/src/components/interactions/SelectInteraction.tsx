@@ -1,6 +1,9 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export interface SelectInteractionProps {
   /** Layer IDs to enable selection on */
@@ -45,13 +48,13 @@ export const SelectInteraction: React.FC<SelectInteractionProps> = ({
   multiSelect = true,
   boxSelect = true,
   selectedIds: controlledSelectedIds,
-  selectionStyle = {
+  _selectionStyle = {
     color: '#3b82f6',
     width: 3,
     fillColor: '#3b82f6',
     fillOpacity: 0.3
   },
-  hoverStyle = {
+  _hoverStyle = {
     color: '#60a5fa',
     width: 2,
     fillOpacity: 0.2
@@ -85,7 +88,7 @@ export const SelectInteraction: React.FC<SelectInteractionProps> = ({
         features.forEach(feature => {
           const id = feature.id ?? feature.properties?.id;
           if (controlledSelectedIds.includes(id)) {
-            newSelected.set(id, feature as unknown as GeoJSON.Feature);
+            newSelected.set(id, feature);
           }
         });
       });
@@ -138,7 +141,7 @@ export const SelectInteraction: React.FC<SelectInteractionProps> = ({
     
     // Filter features if filter function provided
     const selectableFeatures = filter 
-      ? features?.filter(f => filter(f as unknown as GeoJSON.Feature))
+      ? features?.filter(f => filter(f))
       : features;
 
     if (!selectableFeatures || selectableFeatures.length === 0) {
@@ -326,7 +329,7 @@ export const SelectInteraction: React.FC<SelectInteractionProps> = ({
         selectableFeatures.forEach(feature => {
           const featureId = feature.id ?? feature.properties?.id;
           if (!maxSelection || newSelected.size < maxSelection) {
-            newSelected.set(featureId, feature as unknown as GeoJSON.Feature);
+            newSelected.set(featureId, feature);
           }
         });
 
@@ -379,12 +382,12 @@ export const SelectInteraction: React.FC<SelectInteractionProps> = ({
   }, [map, isLoaded, enabled, handleClick, handleMouseMove, boxSelect, handleMouseDown, handleMouseMoveBox, handleMouseUp]);
 
   // Expose methods via ref
-  const clearSelection = useCallback(() => {
+  const _clearSelection = useCallback(() => {
     setSelectedFeatures(new Map());
     onSelect?.([]);
   }, [onSelect]);
 
-  const selectAll = useCallback(() => {
+  const _selectAll = useCallback(() => {
     if (!map || !isLoaded) return;
 
     const allFeatures = new Map<string | number, GeoJSON.Feature>();
@@ -398,7 +401,7 @@ export const SelectInteraction: React.FC<SelectInteractionProps> = ({
       selectableFeatures.forEach(feature => {
         const featureId = feature.id ?? feature.properties?.id;
         if (!maxSelection || allFeatures.size < maxSelection) {
-          allFeatures.set(featureId, feature as unknown as GeoJSON.Feature);
+          allFeatures.set(featureId, feature);
         }
       });
     });

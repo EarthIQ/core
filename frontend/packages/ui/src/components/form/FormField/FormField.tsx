@@ -1,6 +1,7 @@
-import React, { type ReactNode } from "react";
-import { cn } from "../../../utils/cn";
 import { motion, AnimatePresence } from "framer-motion";
+import React, { type ReactNode } from "react";
+
+import { cn } from "../../../utils/cn";
 
 interface FormFieldWrapperProps {
   label?: string;
@@ -13,7 +14,7 @@ interface FormFieldWrapperProps {
   horizontal?: boolean;
 }
 
-export function FormFieldWrapper({
+export const FormFieldWrapper = ({
   label,
   description,
   error,
@@ -22,7 +23,7 @@ export function FormFieldWrapper({
   className,
   labelClassName,
   horizontal = false,
-}: FormFieldWrapperProps) {
+}: FormFieldWrapperProps) => {
   return (
     <div
       className={cn(
@@ -30,45 +31,39 @@ export function FormFieldWrapper({
         className
       )}
     >
-      {label && (
-        <label
+      {label ? <label
+          style={{ color: "var(--text-secondary)" }}
           className={cn(
             "block text-sm font-medium",
             horizontal && "w-1/3 pt-2.5",
             labelClassName
           )}
-          style={{ color: "var(--text-secondary)" }}
         >
           {label}
-          {required && (
-            <span
+          {required ? <span
               className="ml-1"
               style={{ color: "var(--error)" }}
             >
               *
-            </span>
-          )}
-        </label>
-      )}
+            </span> : null}
+        </label> : null}
 
       <div className={cn(horizontal && "flex-1")}>
         {children}
 
         <AnimatePresence mode="wait">
-          {(error || description) && (
-            <motion.p
+          {(error || description) ? <motion.p
               key={error ? "error" : "description"}
-              initial={{ opacity: 0, y: -5, height: 0 }}
               animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, y: -5, height: 0 }}
               className="mt-1.5 text-sm"
+              exit={{ opacity: 0, y: -5, height: 0 }}
+              initial={{ opacity: 0, y: -5, height: 0 }}
               style={{
                 color: error ? "var(--error-text)" : "var(--text-tertiary)",
               }}
             >
               {error || description}
-            </motion.p>
-          )}
+            </motion.p> : null}
         </AnimatePresence>
       </div>
     </div>

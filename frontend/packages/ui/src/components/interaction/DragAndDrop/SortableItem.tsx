@@ -2,7 +2,9 @@
 
 import React, { useRef } from "react";
 import { useDrag, useDrop } from "react-dnd";
+
 import { cn } from "../../../utils/cn";
+
 import type { SortableItemProps, DragItem } from "./types";
 
 export const SortableItem: React.FC<SortableItemProps> = ({
@@ -24,7 +26,7 @@ export const SortableItem: React.FC<SortableItemProps> = ({
     type,
     item: () => {
       onDragStart?.();
-      return { id, index, type } as DragItem;
+      return { id, index, type };
     },
     canDrag: !disabled,
     collect: (monitor) => ({
@@ -83,6 +85,13 @@ export const SortableItem: React.FC<SortableItemProps> = ({
   return (
     <div
       ref={ref}
+      aria-grabbed={isDragging}
+      aria-roledescription="sortable"
+      data-dragging={isDragging}
+      data-sortable-id={id}
+      data-sortable-index={index}
+      role="listitem"
+      tabIndex={disabled ? -1 : 0}
       className={cn(
         "transition-all duration-200",
         isDragging && "z-50 scale-[1.02] opacity-40 shadow-lg",
@@ -92,13 +101,6 @@ export const SortableItem: React.FC<SortableItemProps> = ({
         !disabled && "cursor-grab active:cursor-grabbing",
         className
       )}
-      data-sortable-id={id}
-      data-sortable-index={index}
-      data-dragging={isDragging}
-      role="listitem"
-      aria-grabbed={isDragging}
-      aria-roledescription="sortable"
-      tabIndex={disabled ? -1 : 0}
     >
       {typeof children === "function" ? children(dragState) : children}
     </div>

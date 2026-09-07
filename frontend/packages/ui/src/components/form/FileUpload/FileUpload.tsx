@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from "framer-motion";
 import React, {
   useState,
   useRef,
@@ -5,10 +6,10 @@ import React, {
   type ChangeEvent,
   type DragEvent,
 } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 import { cn } from "../../../utils/cn";
-import { Button } from "../../primitives/Button/Button";
 import { Progress } from "../../feedback/Progress/Progress";
+import { Button } from "../../primitives/Button/Button";
 
 interface FileInfo {
   file: File;
@@ -56,7 +57,7 @@ function getFileIcon(type: string): string {
   return "📎";
 }
 
-export function FileUpload({
+export const FileUpload = ({
   accept,
   multiple = false,
   maxSize = 10 * 1024 * 1024,
@@ -67,7 +68,7 @@ export function FileUpload({
   showPreview = true,
   variant = "default",
   className,
-}: FileUploadProps) {
+}: FileUploadProps) => {
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -224,19 +225,14 @@ export function FileUpload({
       <div className={cn("relative inline-block", className)}>
         <input
           ref={inputRef}
-          type="file"
           accept={accept || "image/*"}
-          onChange={handleInputChange}
-          disabled={disabled}
           className="hidden"
+          disabled={disabled}
+          type="file"
+          onChange={handleInputChange}
         />
 
         <div
-          onClick={() => !disabled && inputRef.current?.click()}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
           style={draggingBgStyle}
           className={cn(
             "h-24 w-24 overflow-hidden rounded-full",
@@ -250,60 +246,63 @@ export function FileUpload({
               "hover:border-[var(--border-primary)] hover:bg-[var(--surface-hover)]",
             disabled && "cursor-not-allowed opacity-60"
           )}
+          onClick={() => !disabled && inputRef.current?.click()}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
         >
           {currentFile?.preview ? (
             <img
-              src={currentFile.preview}
               alt="Avatar preview"
               className="h-full w-full object-cover"
+              src={currentFile.preview}
             />
           ) : (
             <svg
+              aria-hidden="true"
               className="h-8 w-8 text-[var(--text-tertiary)]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              aria-hidden="true"
             >
               <path
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={1.5}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
             </svg>
           )}
         </div>
 
-        {currentFile && (
-          <button
+        {currentFile ? <button
+            aria-label="Remove file"
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              removeFile(currentFile.id);
-            }}
             className={cn(
               "absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full",
               "bg-[var(--error)] text-[var(--text-on-primary)] transition-opacity hover:opacity-90"
             )}
-            aria-label="Remove file"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeFile(currentFile.id);
+            }}
           >
             <svg
+              aria-hidden="true"
               className="h-3 w-3"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              aria-hidden="true"
             >
               <path
+                d="M6 18L18 6M6 6l12 12"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
-        )}
+          </button> : null}
       </div>
     );
   }
@@ -314,35 +313,35 @@ export function FileUpload({
       <div className={cn("space-y-2", className)}>
         <input
           ref={inputRef}
-          type="file"
           accept={accept}
-          multiple={multiple}
-          onChange={handleInputChange}
-          disabled={disabled}
           className="hidden"
+          disabled={disabled}
+          multiple={multiple}
+          type="file"
+          onChange={handleInputChange}
         />
 
         <Button
+          disabled={disabled}
           type="button"
           variant="outline"
-          onClick={() => inputRef.current?.click()}
-          disabled={disabled}
           leftIcon={
             <svg
+              aria-hidden="true"
               className="h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              aria-hidden="true"
             >
               <path
+                d="M12 4v16m8-8H4"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M12 4v16m8-8H4"
               />
             </svg>
           }
+          onClick={() => inputRef.current?.click()}
         >
           Choose Files
         </Button>
@@ -357,23 +356,23 @@ export function FileUpload({
                 <span aria-hidden="true">{getFileIcon(file.file.type)}</span>
                 <span className="flex-1 truncate">{file.file.name}</span>
                 <button
+                  aria-label="Remove file"
+                  className="text-[var(--text-tertiary)] transition-colors hover:text-[var(--error)]"
                   type="button"
                   onClick={() => removeFile(file.id)}
-                  className="text-[var(--text-tertiary)] transition-colors hover:text-[var(--error)]"
-                  aria-label="Remove file"
                 >
                   <svg
+                    aria-hidden="true"
                     className="h-4 w-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
-                    aria-hidden="true"
                   >
                     <path
+                      d="M6 18L18 6M6 6l12 12"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
                     />
                   </svg>
                 </button>
@@ -390,21 +389,16 @@ export function FileUpload({
     <div className={cn("space-y-4", className)}>
       <input
         ref={inputRef}
-        type="file"
         accept={accept}
-        multiple={multiple}
-        onChange={handleInputChange}
-        disabled={disabled}
         className="hidden"
+        disabled={disabled}
+        multiple={multiple}
+        type="file"
+        onChange={handleInputChange}
       />
 
       {/* Drop Zone */}
       <div
-        onClick={() => !disabled && inputRef.current?.click()}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
         style={draggingBgStyle}
         className={cn(
           "relative cursor-pointer text-center",
@@ -417,21 +411,26 @@ export function FileUpload({
             "hover:border-[var(--border-primary)] hover:bg-[var(--surface-hover)]",
           disabled && "cursor-not-allowed opacity-60"
         )}
+        onClick={() => !disabled && inputRef.current?.click()}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
       >
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface-hover)]">
             <svg
+              aria-hidden="true"
               className="h-6 w-6 text-[var(--text-secondary)]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              aria-hidden="true"
             >
               <path
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={1.5}
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               />
             </svg>
           </div>
@@ -446,9 +445,9 @@ export function FileUpload({
           </div>
 
           <p className="text-xs text-[var(--text-tertiary)]">
-            {accept && `Accepted: ${accept}`}
-            {maxSize && ` • Max size: ${formatFileSize(maxSize)}`}
-            {multiple && maxFiles && ` • Max files: ${maxFiles}`}
+            {accept ? `Accepted: ${accept}` : null}
+            {maxSize ? ` • Max size: ${formatFileSize(maxSize)}` : null}
+            {multiple && maxFiles ? ` • Max files: ${maxFiles}` : null}
           </p>
         </div>
       </div>
@@ -457,17 +456,17 @@ export function FileUpload({
       <AnimatePresence>
         {files.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
             className="space-y-2"
+            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, height: 0 }}
           >
             {files.map((fileInfo) => (
               <motion.div
                 key={fileInfo.id}
-                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: -20 }}
                 className={cn(
                   "flex items-center gap-3 rounded-xl border p-3",
                   "border-[var(--border-secondary)] bg-[var(--surface)]",
@@ -478,9 +477,9 @@ export function FileUpload({
                 {/* Preview / Icon */}
                 {fileInfo.preview ? (
                   <img
-                    src={fileInfo.preview}
                     alt={fileInfo.file.name}
                     className="h-10 w-10 rounded-lg object-cover"
+                    src={fileInfo.preview}
                   />
                 ) : (
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface-hover)] text-lg">
@@ -498,18 +497,16 @@ export function FileUpload({
 
                   <p className="text-xs text-[var(--text-secondary)]">
                     {formatFileSize(fileInfo.file.size)}
-                    {fileInfo.error && (
-                      <span className="ml-2 text-[var(--error-text)]">
+                    {fileInfo.error ? <span className="ml-2 text-[var(--error-text)]">
                         {fileInfo.error}
-                      </span>
-                    )}
+                      </span> : null}
                   </p>
 
                   {fileInfo.status === "uploading" && (
                     <Progress
-                      value={fileInfo.progress}
-                      size="sm"
                       className="mt-2"
+                      size="sm"
+                      value={fileInfo.progress}
                     />
                   )}
                 </div>
@@ -519,17 +516,17 @@ export function FileUpload({
                   {fileInfo.status === "success" && (
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--success-bg)]">
                       <svg
+                        aria-hidden="true"
                         className="h-4 w-4 text-[var(--success)]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
-                        aria-hidden="true"
                       >
                         <path
+                          d="M5 13l4 4L19 7"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M5 13l4 4L19 7"
                         />
                       </svg>
                     </div>
@@ -538,44 +535,44 @@ export function FileUpload({
                   {fileInfo.status === "error" && (
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--error-bg)]">
                       <svg
+                        aria-hidden="true"
                         className="h-4 w-4 text-[var(--error)]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
-                        aria-hidden="true"
                       >
                         <path
+                          d="M6 18L18 6M6 6l12 12"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
                         />
                       </svg>
                     </div>
                   )}
 
                   <button
+                    aria-label="Remove file"
                     type="button"
-                    onClick={() => removeFile(fileInfo.id)}
                     className={cn(
                       "rounded-lg p-1 transition-colors",
                       "hover:bg-[var(--surface-hover)]",
                       "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
                     )}
-                    aria-label="Remove file"
+                    onClick={() => removeFile(fileInfo.id)}
                   >
                     <svg
+                      aria-hidden="true"
                       className="h-4 w-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
-                      aria-hidden="true"
                     >
                       <path
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                       />
                     </svg>
                   </button>

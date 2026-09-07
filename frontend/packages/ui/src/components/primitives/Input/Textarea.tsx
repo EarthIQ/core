@@ -1,5 +1,6 @@
-import React, { forwardRef, useState } from "react";
 import { cva } from "class-variance-authority";
+import React, { forwardRef, useState } from "react";
+
 import { cn } from "../../../utils/cn";
 
 const inputVariants = cva(
@@ -104,7 +105,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     ref
   ) => {
     const [internalValue, setInternalValue] = useState("");
-    const inputId = id || `textarea-${React.useId()}`;
+    const generatedId = React.useId();
+    const inputId = id || `textarea-${generatedId}`;
 
     const currentValue = value !== undefined ? String(value) : internalValue;
 
@@ -129,32 +131,27 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     return (
       <div className={cn("w-full", containerClassName)}>
-        {label && (
-          <label
-            htmlFor={inputId}
+        {label ? <label
             className={labelVariants({ size: inputSize })}
+            htmlFor={inputId}
           >
             {label}
-            {required && (
-              <span
-                className="ml-1 text-[var(--error)]"
+            {required ? <span
                 aria-hidden="true"
+                className="ml-1 text-[var(--error)]"
               >
                 *
-              </span>
-            )}
-          </label>
-        )}
+              </span> : null}
+          </label> : null}
 
         <textarea
           ref={ref}
-          id={inputId}
-          disabled={disabled}
-          required={required}
-          maxLength={maxLength}
-          value={value}
-          onChange={handleChange}
           aria-invalid={!!error}
+          disabled={disabled}
+          id={inputId}
+          maxLength={maxLength}
+          required={required}
+          value={value}
           aria-describedby={
             error
               ? `${inputId}-error`
@@ -171,38 +168,30 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             autoResize && "resize-none overflow-hidden",
             className
           )}
+          onChange={handleChange}
           {...props}
         />
 
         <div className="mt-1.5 flex items-start justify-between gap-2">
           <div className="flex-1">
-            {error && (
-              <p
-                id={`${inputId}-error`}
+            {error ? <p
                 className="text-sm text-[var(--error-text)]"
+                id={`${inputId}-error`}
                 role="alert"
               >
                 {error}
-              </p>
-            )}
-            {success && !error && (
-              <p className="text-sm text-[var(--success-text)]">{success}</p>
-            )}
-            {warning && !error && !success && (
-              <p className="text-sm text-[var(--warning-text)]">{warning}</p>
-            )}
-            {description && !error && !success && !warning && (
-              <p
-                id={`${inputId}-description`}
+              </p> : null}
+            {success && !error ? <p className="text-sm text-[var(--success-text)]">{success}</p> : null}
+            {warning && !error && !success ? <p className="text-sm text-[var(--warning-text)]">{warning}</p> : null}
+            {description && !error && !success && !warning ? <p
                 className="text-sm text-[var(--text-tertiary)]"
+                id={`${inputId}-description`}
               >
                 {description}
-              </p>
-            )}
+              </p> : null}
           </div>
 
-          {showCharCount && maxLength && (
-            <span
+          {showCharCount && maxLength ? <span
               className={cn(
                 "text-xs tabular-nums",
                 currentValue.length >= maxLength
@@ -213,8 +202,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
               )}
             >
               {currentValue.length}/{maxLength}
-            </span>
-          )}
+            </span> : null}
         </div>
       </div>
     );

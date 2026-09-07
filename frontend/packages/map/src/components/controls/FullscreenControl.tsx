@@ -1,6 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
 import * as maplibregl from "maplibre-gl";
+import { useEffect, useState, useCallback } from "react";
+
 import { useMap } from "../../hooks/useMap";
+
+import type React from "react";
+
 
 export interface FullscreenControlProps {
   /** Position on map */
@@ -17,7 +21,7 @@ export const FullscreenControl: React.FC<FullscreenControlProps> = ({
   onChange,
 }) => {
   const { map, isLoaded } = useMap();
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [_isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     if (!map || !isLoaded) return;

@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect as _useEffect } from "react";
 import { useDrag } from "react-dnd";
+
 import { cn } from "../../../utils/cn";
+
 import type { DraggableProps, DragItem } from "./types";
 
 export function Draggable<T = unknown>({
@@ -44,6 +46,12 @@ export function Draggable<T = unknown>({
   return (
     <div
       ref={ref}
+      aria-grabbed={isDragging}
+      aria-roledescription="draggable"
+      data-drag-id={id}
+      data-dragging={isDragging}
+      role="listitem"
+      tabIndex={disabled ? -1 : 0}
       className={cn(
         "transition-opacity duration-200",
         isDragging && "opacity-50",
@@ -52,12 +60,6 @@ export function Draggable<T = unknown>({
         !disabled && "cursor-grab active:cursor-grabbing",
         className
       )}
-      data-dragging={isDragging}
-      data-drag-id={id}
-      aria-grabbed={isDragging}
-      aria-roledescription="draggable"
-      role="listitem"
-      tabIndex={disabled ? -1 : 0}
     >
       {typeof children === "function" ? children(dragState) : children}
     </div>

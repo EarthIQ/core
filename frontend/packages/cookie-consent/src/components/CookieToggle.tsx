@@ -1,5 +1,5 @@
-import React from 'react';
 import { Check, X } from 'lucide-react';
+import React from 'react';
 
 export interface CookieToggleProps {
   checked: boolean;
@@ -18,18 +18,18 @@ export const CookieToggle: React.FC<CookieToggleProps> = ({
 }) => {
   return (
     <button
-      id={id}
-      role="switch"
-      type="button"
       aria-checked={checked}
       aria-label={ariaLabel}
       disabled={disabled}
-      onClick={() => !disabled && onChange(!checked)}
+      id={id}
+      role="switch"
+      type="button"
       className={`
         cc-toggle
         ${checked ? 'cc-toggle--checked' : ''}
         ${disabled ? 'cc-toggle--disabled' : ''}
       `}
+      onClick={() => !disabled && onChange(!checked)}
     >
       <span className="cc-sr-only">
         {checked ? 'Enabled' : 'Disabled'}

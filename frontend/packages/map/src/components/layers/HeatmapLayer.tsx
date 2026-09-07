@@ -1,7 +1,11 @@
-import React, { useEffect, useId } from 'react';
-import { useMap } from '../../hooks/useMap';
 import { HeatmapLayer as DeckHeatmapLayer } from '@deck.gl/aggregation-layers';
+import { useEffect, useId } from 'react';
+
+import { useMap } from '../../hooks/useMap';
+
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export interface HeatmapLayerProps {
   /** Unique layer ID */

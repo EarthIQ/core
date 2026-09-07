@@ -1,5 +1,8 @@
-import React, { useEffect, useId } from 'react';
+import { useEffect, useId } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
+import type React from 'react';
 
 export interface PathLayerProps {
   /** Unique layer ID */

@@ -12,7 +12,7 @@ export const FormatUtils = {
     try {
       // Point
       if (wktUpper.startsWith('POINT')) {
-        const match = wkt.match(/POINT\s*\(\s*([^\)]+)\s*\)/i);
+        const match = wkt.match(/POINT\s*\(\s*([^(]+)\s*\)/i);
         if (match) {
           const coords = match[1].trim().split(/\s+/).map(Number);
           return { type: 'Point', coordinates: coords };
@@ -104,35 +104,40 @@ export const FormatUtils = {
 
     switch (geometry.type) {
       case 'Point':
-        return `POINT (${formatCoords(geometry.coordinates as number[])})`;
+        return `POINT (${formatCoords(geometry.coordinates)})`;
       
-      case 'MultiPoint':
+      case 'MultiPoint': {
         const points = (geometry.coordinates as number[][])
           .map(c => `(${formatCoords(c)})`).join(', ');
         return `MULTIPOINT (${points})`;
+      }
       
       case 'LineString':
-        return `LINESTRING (${formatRing(geometry.coordinates as number[][])})`;
+        return `LINESTRING (${formatRing(geometry.coordinates)})`;
       
-      case 'MultiLineString':
+      case 'MultiLineString': {
         const lines = (geometry.coordinates as number[][][])
           .map(line => `(${formatRing(line)})`).join(', ');
         return `MULTILINESTRING (${lines})`;
+      }
       
-      case 'Polygon':
+      case 'Polygon': {
         const rings = (geometry.coordinates as number[][][])
           .map(ring => `(${formatRing(ring)})`).join(', ');
         return `POLYGON (${rings})`;
+      }
       
-      case 'MultiPolygon':
+      case 'MultiPolygon': {
         const polygons = (geometry.coordinates as number[][][][])
           .map(poly => `(${poly.map(ring => `(${formatRing(ring)})`).join(', ')})`).join(', ');
         return `MULTIPOLYGON (${polygons})`;
+      }
       
-      case 'GeometryCollection':
+      case 'GeometryCollection': {
         const geometries = geometry.geometries
           .map(g => FormatUtils.geoJSONToWKT(g)).join(', ');
         return `GEOMETRYCOLLECTION (${geometries})`;
+      }
       
       default:
         throw new Error(`Unsupported geometry type: ${(geometry as any).type}`);
@@ -498,7 +503,7 @@ export const FormatUtils = {
     } else if (fromFormat === 'wkb') {
       throw new Error('WKB parsing not implemented');
     } else {
-      throw new Error(`Unknown format: ${fromFormat}`);
+      throw new Error(`Unknown format: ${String(fromFormat)}`);
     }
 
     // Convert output
@@ -508,7 +513,7 @@ export const FormatUtils = {
       return FormatUtils.geoJSONToWKT(geometry);
     }
 
-    throw new Error(`Unknown format: ${toFormat}`);
+    throw new Error(`Unknown format: ${String(toFormat)}`);
   }
 };
 
@@ -563,10 +568,11 @@ function getCentroidCoordinates(geometry: GeoJSON.Geometry): [number, number] {
   switch (geometry.type) {
     case 'Point':
       return geometry.coordinates as [number, number];
-    case 'LineString':
+    case 'LineString': {
       const mid = Math.floor(geometry.coordinates.length / 2);
       return geometry.coordinates[mid] as [number, number];
-    case 'Polygon':
+    }
+    case 'Polygon': {
       // Simple centroid calculation
       const ring = geometry.coordinates[0];
       const n = ring.length - 1;
@@ -576,6 +582,7 @@ function getCentroidCoordinates(geometry: GeoJSON.Geometry): [number, number] {
         cy += coord[1];
       });
       return [cx / n, cy / n];
+    }
     default:
       return [0, 0];
   }

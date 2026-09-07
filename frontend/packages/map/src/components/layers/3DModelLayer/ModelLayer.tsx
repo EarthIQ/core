@@ -1,13 +1,15 @@
 // components/ModelLayer/ModelLayer.tsx
 
-import { useEffect, useRef, useMemo, useCallback } from "react";
-import { useMap } from "../../../hooks/useMap";
-import { useModelLoader } from "./useModelLoader";
+import { useEffect, useRef, useMemo, useCallback as _useCallback } from "react";
+
 import { ModelCustomLayer } from "./ModelCustomLayer";
+import { useModelLoader } from "./useModelLoader";
+import { useMap } from "../../../hooks/useMap";
+
 import type {
   ModelLayerProps,
-  ModelFeature,
-  ModelInteractionEvent,
+  _ModelFeature,
+  _ModelInteractionEvent,
 } from "./types";
 
 const DEFAULT_LAYER_ID = "model-3d-layer";
@@ -75,7 +77,7 @@ export const ModelLayer = ({
       const feature = data.features[featureIdx];
       if (!feature || !callbackRefs.current.onClick) return;
       callbackRefs.current.onClick({
-        feature: feature as ModelFeature,
+        feature: feature,
         point,
         lngLat,
         originalEvent,
@@ -91,7 +93,7 @@ export const ModelLayer = ({
       const feature = data.features[featureIdx];
       if (!feature) return;
       callbackRefs.current.onHover({
-        feature: feature as ModelFeature,
+        feature: feature,
         point,
         lngLat,
         originalEvent,
@@ -121,7 +123,7 @@ export const ModelLayer = ({
 
   useEffect(() => {
     if (!layerRef.current) return;
-    layerRef.current.updateFeatures(data.features as ModelFeature[]);
+    layerRef.current.updateFeatures(data.features);
   }, [data]);
 
   // ── Push definition changes (e.g., baseScale tweaks at runtime) ──────

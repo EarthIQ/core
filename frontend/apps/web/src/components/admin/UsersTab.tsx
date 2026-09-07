@@ -1,72 +1,73 @@
-import { type FormEvent, useState } from "react";
 import { Modal, Pagination } from "@packages/ui";
-import { UserForm } from "./UserForm";
+import { type FormEvent, useState } from "react";
+
 import {
   type GroupSummary,
   type UserFilterState,
   type UserFormState,
   type UserSummary,
 } from "./types";
+import { UserForm } from "./UserForm";
 
 // ── Icons ───────────────────────────────────────────────────────────────────
 
-function SearchIcon() {
+const SearchIcon = () => {
   return (
     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
+        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={2}
-        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
       />
     </svg>
   );
 }
 
-function PlusIcon() {
+const PlusIcon = () => {
   return (
     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+      <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
     </svg>
   );
 }
 
-function SortIcon({ active, order }: { active: boolean; order: "asc" | "desc" }) {
+const SortIcon = ({ active, order }: { active: boolean; order: "asc" | "desc" }) => {
   return (
     <svg
-      className={`inline-block h-3.5 w-3.5 transition-transform ${
-        active ? "text-primary opacity-100" : "opacity-30"
-      } ${active && order === "asc" ? "rotate-180" : ""}`}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
+      className={`inline-block h-3.5 w-3.5 transition-transform ${
+        active ? "text-primary opacity-100" : "opacity-30"
+      } ${active && order === "asc" ? "rotate-180" : ""}`}
     >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
     </svg>
   );
 }
 
-function EditIcon() {
+const EditIcon = () => {
   return (
     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
+        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={1.8}
-        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
       />
     </svg>
   );
 }
 
-function TrashIcon() {
+const TrashIcon = () => {
   return (
     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
+        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={1.8}
-        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
       />
     </svg>
   );
@@ -100,7 +101,7 @@ interface UsersTabProps {
   onDelete: (id: string) => void;
 }
 
-export function UsersTab({
+export const UsersTab = ({
   users,
   total,
   totalPages,
@@ -122,7 +123,7 @@ export function UsersTab({
   onEditStart,
   onEditCancel,
   onDelete,
-}: UsersTabProps) {
+}: UsersTabProps) => {
   const [deleteCandidate, setDeleteCandidate] = useState<UserSummary | null>(null);
 
   const handleSort = (field: "created_at" | "email" | "full_name") => {
@@ -161,19 +162,19 @@ export function UsersTab({
               <SearchIcon />
             </div>
             <input
-              type="text"
+              className="w-full rounded-xl border border-border-primary bg-surface-hover/60 py-2 pr-3.5 pl-9 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
               placeholder="Search by name or email…"
+              type="text"
               value={filters.search}
               onChange={(e) => onFilterChange({ search: e.target.value, page: 1 })}
-              className="w-full rounded-xl border border-border-primary bg-surface-hover/60 py-2 pr-3.5 pl-9 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
           {/* Role Filter */}
           <select
+            className="rounded-xl border border-border-primary bg-surface-hover/60 px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
             value={filters.is_superuser}
             onChange={(e) => onFilterChange({ is_superuser: e.target.value, page: 1 })}
-            className="rounded-xl border border-border-primary bg-surface-hover/60 px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="all">All Roles</option>
             <option value="true">Superusers Only</option>
@@ -182,9 +183,9 @@ export function UsersTab({
 
           {/* Group Filter */}
           <select
+            className="rounded-xl border border-border-primary bg-surface-hover/60 px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
             value={filters.group_id}
             onChange={(e) => onFilterChange({ group_id: e.target.value, page: 1 })}
-            className="rounded-xl border border-border-primary bg-surface-hover/60 px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="all">All Groups</option>
             {groups.map((g) => (
@@ -197,9 +198,9 @@ export function UsersTab({
 
         {/* Create Button */}
         <button
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90 active:scale-[0.98]"
           type="button"
           onClick={onOpenCreateModal}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90 active:scale-[0.98]"
         >
           <PlusIcon />
           <span>Add User</span>
@@ -213,8 +214,8 @@ export function UsersTab({
             <thead className="border-b border-border-primary bg-surface-hover/40 text-xs font-semibold uppercase tracking-wider text-text-secondary">
               <tr>
                 <th
-                  scope="col"
                   className="cursor-pointer px-6 py-3.5 transition select-none hover:text-text-primary"
+                  scope="col"
                   onClick={() => handleSort("full_name")}
                 >
                   <div className="flex items-center gap-1.5">
@@ -226,8 +227,8 @@ export function UsersTab({
                   </div>
                 </th>
                 <th
-                  scope="col"
                   className="cursor-pointer px-6 py-3.5 transition select-none hover:text-text-primary"
+                  scope="col"
                   onClick={() => handleSort("email")}
                 >
                   <div className="flex items-center gap-1.5">
@@ -238,15 +239,15 @@ export function UsersTab({
                     />
                   </div>
                 </th>
-                <th scope="col" className="px-6 py-3.5">
+                <th className="px-6 py-3.5" scope="col">
                   Role
                 </th>
-                <th scope="col" className="px-6 py-3.5">
+                <th className="px-6 py-3.5" scope="col">
                   Groups
                 </th>
                 <th
-                  scope="col"
                   className="cursor-pointer px-6 py-3.5 transition select-none hover:text-text-primary"
+                  scope="col"
                   onClick={() => handleSort("created_at")}
                 >
                   <div className="flex items-center gap-1.5">
@@ -257,7 +258,7 @@ export function UsersTab({
                     />
                   </div>
                 </th>
-                <th scope="col" className="px-6 py-3.5 text-right">
+                <th className="px-6 py-3.5 text-right" scope="col">
                   Actions
                 </th>
               </tr>
@@ -265,13 +266,13 @@ export function UsersTab({
             <tbody className="divide-y divide-border-primary">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-text-secondary">
+                  <td className="px-6 py-12 text-center text-text-secondary" colSpan={6}>
                     <div className="inline-flex items-center gap-2">
                       <svg
                         className="h-5 w-5 animate-spin text-primary"
-                        xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
                       >
                         <circle
                           className="opacity-25"
@@ -283,8 +284,8 @@ export function UsersTab({
                         />
                         <path
                           className="opacity-75"
-                          fill="currentColor"
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          fill="currentColor"
                         />
                       </svg>
                       <span>Loading users…</span>
@@ -293,7 +294,7 @@ export function UsersTab({
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-text-secondary">
+                  <td className="px-6 py-12 text-center text-text-secondary" colSpan={6}>
                     <div className="mx-auto max-w-sm space-y-2">
                       <p className="font-medium text-text-primary">No users found</p>
                       <p className="text-xs text-text-tertiary">
@@ -376,18 +377,18 @@ export function UsersTab({
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
+                          className="rounded-lg p-1.5 text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
+                          title="Edit User"
                           type="button"
                           onClick={() => onEditStart(userItem)}
-                          title="Edit User"
-                          className="rounded-lg p-1.5 text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
                         >
                           <EditIcon />
                         </button>
                         <button
+                          className="rounded-lg p-1.5 text-danger transition hover:bg-danger/10"
+                          title="Delete User"
                           type="button"
                           onClick={() => setDeleteCandidate(userItem)}
-                          title="Delete User"
-                          className="rounded-lg p-1.5 text-danger transition hover:bg-danger/10"
                         >
                           <TrashIcon />
                         </button>
@@ -410,11 +411,11 @@ export function UsersTab({
             <div className="flex items-center gap-1.5">
               <span>Per page:</span>
               <select
+                className="rounded-lg border border-border-primary bg-surface-hover/60 px-2 py-1 text-xs text-text-primary focus:border-primary focus:outline-none"
                 value={filters.page_size}
                 onChange={(e) =>
                   onFilterChange({ page_size: Number(e.target.value), page: 1 })
                 }
-                className="rounded-lg border border-border-primary bg-surface-hover/60 px-2 py-1 text-xs text-text-primary focus:border-primary focus:outline-none"
               >
                 <option value={10}>10</option>
                 <option value={20}>20</option>
@@ -434,75 +435,73 @@ export function UsersTab({
 
       {/* ── Create User Modal ── */}
       <Modal
-        isOpen={createModalOpen}
-        onClose={onCloseCreateModal}
-        title="Add New User"
         description="Create a new user profile and assign permissions and groups."
+        isOpen={createModalOpen}
         size="lg"
+        title="Add New User"
+        onClose={onCloseCreateModal}
       >
         <UserForm
+          passwordRequired
           form={createForm}
           groups={groups}
-          submitting={submitting}
           submitLabel="Create User"
-          passwordRequired
+          submitting={submitting}
+          onCancel={onCloseCreateModal}
           onChange={onCreateFormChange}
           onSubmit={onCreateSubmit}
-          onCancel={onCloseCreateModal}
         />
       </Modal>
 
       {/* ── Edit User Modal ── */}
       <Modal
-        isOpen={Boolean(editingId)}
-        onClose={onEditCancel}
-        title="Edit User"
         description="Update user credentials, roles, and group memberships."
+        isOpen={Boolean(editingId)}
         size="lg"
+        title="Edit User"
+        onClose={onEditCancel}
       >
         <UserForm
           form={editForm}
           groups={groups}
-          submitting={submitting}
-          submitLabel="Save Changes"
           passwordRequired={false}
+          submitLabel="Save Changes"
+          submitting={submitting}
+          onCancel={onEditCancel}
           onChange={onEditFormChange}
           onSubmit={onEditSubmit}
-          onCancel={onEditCancel}
         />
       </Modal>
 
       {/* ── Delete Confirmation Modal ── */}
       <Modal
-        isOpen={Boolean(deleteCandidate)}
-        onClose={() => setDeleteCandidate(null)}
-        title="Delete User"
         description="Are you sure you want to permanently delete this user? This action cannot be undone."
+        isOpen={Boolean(deleteCandidate)}
         size="md"
+        title="Delete User"
+        onClose={() => setDeleteCandidate(null)}
       >
         <div className="space-y-4 pt-2">
-          {deleteCandidate && (
-            <div className="rounded-xl border border-border-primary bg-surface-hover/60 p-3.5">
+          {deleteCandidate ? <div className="rounded-xl border border-border-primary bg-surface-hover/60 p-3.5">
               <div className="font-semibold text-text-primary">{deleteCandidate.email}</div>
               <div className="text-xs text-text-secondary">
                 {deleteCandidate.full_name || "No display name"} •{" "}
                 {deleteCandidate.is_superuser ? "Superuser" : "Standard User"}
               </div>
-            </div>
-          )}
+            </div> : null}
 
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
-              type="button"
               className="rounded-lg border border-border-primary px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
+              type="button"
               onClick={() => setDeleteCandidate(null)}
             >
               Cancel
             </button>
             <button
-              type="button"
-              disabled={submitting}
               className="rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:opacity-50"
+              disabled={submitting}
+              type="button"
               onClick={() => {
                 if (deleteCandidate) {
                   onDelete(deleteCandidate.id);

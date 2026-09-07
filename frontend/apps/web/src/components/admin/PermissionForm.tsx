@@ -1,4 +1,5 @@
 import { type FormEvent } from "react";
+
 import { type PermissionFormState } from "./types";
 
 interface PermissionFormProps {
@@ -11,7 +12,7 @@ interface PermissionFormProps {
   onCancel?: () => void;
 }
 
-export function PermissionForm({
+export const PermissionForm = ({
   title,
   form,
   submitting,
@@ -19,7 +20,7 @@ export function PermissionForm({
   onChange,
   onSubmit,
   onCancel,
-}: PermissionFormProps) {
+}: PermissionFormProps) => {
   const content = (
     <form className="space-y-4" onSubmit={onSubmit}>
       <div className="space-y-1.5">
@@ -27,12 +28,12 @@ export function PermissionForm({
           Permission Key <span className="text-danger">*</span>
         </label>
         <input
-          type="text"
-          placeholder="e.g. analytics:view, users:delete"
+          required
           className="input w-full rounded-lg border border-border-primary bg-surface px-3.5 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          placeholder="e.g. analytics:view, users:delete"
+          type="text"
           value={form.name}
           onChange={(e) => onChange({ ...form, name: e.target.value })}
-          required
         />
         <p className="text-xs text-text-tertiary">
           Best practice: Use <code>component:action</code> format (e.g. <code>dashboard:view</code>)
@@ -44,27 +45,25 @@ export function PermissionForm({
           Description
         </label>
         <textarea
-          placeholder="Describe what access this permission grants..."
           className="input min-h-[72px] w-full rounded-lg border border-border-primary bg-surface px-3.5 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          placeholder="Describe what access this permission grants..."
           value={form.description}
           onChange={(e) => onChange({ ...form, description: e.target.value })}
         />
       </div>
 
       <div className="mt-6 flex items-center justify-end gap-3 border-t border-border-primary pt-4">
-        {onCancel && (
-          <button
-            type="button"
+        {onCancel ? <button
             className="rounded-lg border border-border-primary px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
+            type="button"
             onClick={onCancel}
           >
             Cancel
-          </button>
-        )}
+          </button> : null}
         <button
-          type="submit"
           className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:opacity-50"
           disabled={submitting}
+          type="submit"
         >
           {submitting ? "Saving…" : submitLabel}
         </button>

@@ -73,7 +73,7 @@ export const useGeolocation = (options: UseGeolocationOptions = {}) => {
           PERMISSION_DENIED: 1,
           POSITION_UNAVAILABLE: 2,
           TIMEOUT: 3
-        } as GeolocationPositionError,
+        },
         loading: false
       }));
       return;

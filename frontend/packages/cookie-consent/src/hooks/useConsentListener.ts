@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+
 import type { CookiePreferences } from '../types';
 
 export type ConsentChangeCallback = (preferences: CookiePreferences) => void;

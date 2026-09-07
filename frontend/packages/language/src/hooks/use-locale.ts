@@ -1,6 +1,7 @@
 import { useContext } from "react";
 
 import { LanguageContext } from "../context";
+
 import type { Translations } from "../types";
 
 export interface UseLocaleReturn<T extends Translations = Translations> {
@@ -22,9 +23,9 @@ export function useLocale<
   const { locale, locales, setLocale, isLoading = false } = context;
 
   return {
-    locale: locale as keyof T & string,
-    locales: locales as (keyof T & string)[],
-    setLocale: setLocale as (locale: keyof T & string) => void,
+    locale: locale,
+    locales: locales,
+    setLocale: setLocale,
     isLoading,
   };
 }

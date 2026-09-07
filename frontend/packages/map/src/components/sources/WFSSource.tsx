@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
 
 export interface WFSSourceProps {
@@ -96,9 +98,9 @@ export const WFSSource: React.FC<WFSSourceProps> = ({
   children
 }) => {
   const { map, isLoaded } = useMap();
-  const [data, setData] = useState<GeoJSON.FeatureCollection | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [capabilities, setCapabilities] = useState<WFSCapabilities | null>(null);
+  const [_data, setData] = useState<GeoJSON.FeatureCollection | null>(null);
+  const [_loading, setLoading] = useState(false);
+  const [_capabilities, setCapabilities] = useState<WFSCapabilities | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout>();
   const abortControllerRef = useRef<AbortController>();
 
@@ -272,7 +274,7 @@ export const WFSSource: React.FC<WFSSourceProps> = ({
         responseData = await response.json();
       } else {
         // GML response - would need GML parser
-        const text = await response.text();
+        const _text = await response.text();
         // For now, throw error for non-JSON formats
         throw new Error('GML parsing not implemented. Use application/json outputFormat.');
       }
@@ -414,7 +416,7 @@ export const useWFSSource = (id: string) => {
 
   const getSource = useCallback(() => {
     if (!map || !isLoaded) return null;
-    return map.getSource(id) as maplibregl.GeoJSONSource | undefined;
+    return map.getSource(id);
   }, [map, isLoaded, id]);
 
   const getData = useCallback((): GeoJSON.FeatureCollection | null => {
@@ -590,7 +592,7 @@ function geometryToGML(geometry: GeoJSON.Geometry, srsName: string): string {
         <gml:coordinates>${geometry.coordinates.map(c => c.join(',')).join(' ')}</gml:coordinates>
       </gml:LineString>`;
     
-    case 'Polygon':
+    case 'Polygon': {
       const exterior = geometry.coordinates[0].map(c => c.join(',')).join(' ');
       const interiors = geometry.coordinates.slice(1).map(ring => 
         `<gml:innerBoundaryIs><gml:LinearRing><gml:coordinates>${ring.map(c => c.join(',')).join(' ')}</gml:coordinates></gml:LinearRing></gml:innerBoundaryIs>`
@@ -604,6 +606,7 @@ function geometryToGML(geometry: GeoJSON.Geometry, srsName: string): string {
         </gml:outerBoundaryIs>
         ${interiors}
       </gml:Polygon>`;
+    }
     
     default:
       throw new Error(`Unsupported geometry type: ${geometry.type}`);

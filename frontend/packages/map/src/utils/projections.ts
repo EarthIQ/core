@@ -67,7 +67,7 @@ export const ProjectionUtils = {
     const centralMeridian = (zone - 1) * 6 - 180 + 3;
     
     const k0 = 0.9996;
-    const e = WGS84.e;
+    const _e = WGS84.e;
     const e2 = WGS84.e2;
     const a = WGS84.a;
 
@@ -122,7 +122,7 @@ export const ProjectionUtils = {
     northing: number
   ): GeographicCoordinate {
     const k0 = 0.9996;
-    const e = WGS84.e;
+    const _e = WGS84.e;
     const e2 = WGS84.e2;
     const a = WGS84.a;
     const e1 = (1 - Math.sqrt(1 - e2)) / (1 + Math.sqrt(1 - e2));

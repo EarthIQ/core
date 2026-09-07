@@ -18,7 +18,6 @@
  *
  * Nothing in the shell hard-codes a builder name except this file.
  */
-import type { ComponentType } from "react";
 import {
   Map,
   BookOpen,
@@ -26,11 +25,14 @@ import {
   FileText,
   ClipboardList,
 } from "lucide-react";
-import MapPage from "@/pages/MapPage";
-import StoryMapBuilderPage from "@/pages/builders/StoryMapBuilderPage";
+
+import FormsBuilderPage from "@/pages/builders/FormsBuilderPage";
 import PresentationBuilderPage from "@/pages/builders/PresentationBuilderPage";
 import ReportBuilderPage from "@/pages/builders/ReportBuilderPage";
-import FormsBuilderPage from "@/pages/builders/FormsBuilderPage";
+import StoryMapBuilderPage from "@/pages/builders/StoryMapBuilderPage";
+import MapPage from "@/pages/MapPage";
+
+import type { ComponentType } from "react";
 
 /**
  * A constructor/icon component compatible with lucide-react icons.

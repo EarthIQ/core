@@ -1,7 +1,8 @@
 import React, { useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { PanelHeader } from "./PanelHeader";
+
 import { PanelFooter } from "./PanelFooter";
+import { PanelHeader } from "./PanelHeader";
 
 interface PanelProps {
   isOpen: boolean;
@@ -113,18 +114,18 @@ export const Panel: React.FC<PanelProps> = ({
     <>
       {/* Backdrop */}
       <div
-        className="animate-fade-in fixed inset-0 bg-black/20 backdrop-blur-sm"
         aria-hidden="true"
-        onClick={onClose}
+        className="animate-fade-in fixed inset-0 bg-black/20 backdrop-blur-sm"
         style={{ zIndex: 99998 }}
+        onClick={onClose}
       />
 
       {/* Panel */}
       <div
         ref={panelRef}
-        role="dialog"
-        aria-modal="true"
         aria-label={title}
+        aria-modal="true"
+        role="dialog"
         className={`
           animate-scale-in
           fixed bottom-4
@@ -144,12 +145,12 @@ export const Panel: React.FC<PanelProps> = ({
         }}
       >
         <PanelHeader
-          title={title}
-          subtitle={subtitle}
-          resetLabel={resetLabel}
           closeLabel={closeLabel}
-          onReset={onReset}
+          resetLabel={resetLabel}
+          subtitle={subtitle}
+          title={title}
           onClose={onClose}
+          onReset={onReset}
         />
 
         <div className="scrollbar-thin flex-1 overflow-y-auto p-4">

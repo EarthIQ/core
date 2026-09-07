@@ -6,6 +6,7 @@ import React, {
   type ReactNode,
   type FormEvent,
 } from "react";
+
 import { cn } from "../../../utils/cn";
 
 // Form Context
@@ -145,14 +146,14 @@ function validateField(
   return "";
 }
 
-export function Form({
+export const Form = ({
   children,
   initialValues = {},
   validationSchema,
   onSubmit,
   onChange,
   className,
-}: FormProps) {
+}: FormProps) => {
   const [values, setValues] = useState<Record<string, any>>(initialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouchedState] = useState<Record<string, boolean>>({});
@@ -273,8 +274,8 @@ export function Form({
       }}
     >
       <form
-        onSubmit={handleSubmit}
         className={cn("space-y-4", className)}
+        onSubmit={handleSubmit}
       >
         {children}
       </form>
@@ -288,7 +289,7 @@ interface FormFieldProps {
   children: (props: ReturnType<FormContextValue["getFieldProps"]>) => ReactNode;
 }
 
-export function FormField({ name, children }: FormFieldProps) {
+export const FormField = ({ name, children }: FormFieldProps) => {
   const { getFieldProps } = useFormContext();
   return <>{children(getFieldProps(name))}</>;
 }
@@ -299,13 +300,13 @@ interface FormSubmitProps {
   className?: string;
 }
 
-export function FormSubmit({ children, className }: FormSubmitProps) {
+export const FormSubmit = ({ children, className }: FormSubmitProps) => {
   const { isSubmitting } = useFormContext();
 
   return (
     <button
-      type="submit"
       disabled={isSubmitting}
+      type="submit"
       className={cn(
         "w-full rounded-[var(--radius-lg)] px-4 py-2.5 font-medium transition-colors",
         "border border-[var(--primary)] bg-[var(--primary)] text-[var(--text-on-primary)]",
@@ -318,23 +319,23 @@ export function FormSubmit({ children, className }: FormSubmitProps) {
       {isSubmitting ? (
         <span className="flex items-center justify-center gap-2">
           <svg
+            aria-hidden="true"
             className="h-4 w-4 animate-spin"
             viewBox="0 0 24 24"
-            aria-hidden="true"
           >
             <circle
               className="opacity-25"
               cx="12"
               cy="12"
+              fill="none"
               r="10"
               stroke="currentColor"
               strokeWidth="4"
-              fill="none"
             />
             <path
               className="opacity-75"
-              fill="currentColor"
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              fill="currentColor"
             />
           </svg>
           <span>Submitting...</span>

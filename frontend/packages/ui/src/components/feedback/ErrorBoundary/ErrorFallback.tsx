@@ -1,4 +1,5 @@
 import React from "react";
+
 import { cn } from "../../../utils/cn";
 import { Button } from "../../primitives/Button/Button";
 
@@ -14,7 +15,7 @@ interface ErrorFallbackProps {
   className?: string;
 }
 
-export function ErrorFallback({
+export const ErrorFallback = ({
   error,
   resetError,
   title = "Oops! Something went wrong",
@@ -24,43 +25,41 @@ export function ErrorFallback({
   homeUrl = "/",
   variant = "default",
   className,
-}: ErrorFallbackProps) {
+}: ErrorFallbackProps) => {
   if (variant === "minimal") {
     return (
       <div
+        role="alert"
         className={cn(
           "flex items-center gap-3 rounded-xl p-4",
           "border border-[var(--error-border)] bg-[var(--error-bg)]",
           className
         )}
-        role="alert"
       >
         <svg
+          aria-hidden="true"
           className="h-5 w-5 flex-shrink-0 text-[var(--error)]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          aria-hidden="true"
         >
           <path
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
         <span className="flex-1 text-sm text-[var(--error-text)]">
           {error.message || "An error occurred"}
         </span>
-        {resetError && (
-          <Button
+        {resetError ? <Button
             size="sm"
             variant="ghost"
             onClick={resetError}
           >
             Retry
-          </Button>
-        )}
+          </Button> : null}
       </div>
     );
   }
@@ -91,17 +90,17 @@ export function ErrorFallback({
               }}
             >
               <svg
+                aria-hidden="true"
                 className="h-12 w-12 text-[var(--error)]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
-                aria-hidden="true"
               >
                 <path
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={1.5}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                 />
               </svg>
             </div>
@@ -117,33 +116,27 @@ export function ErrorFallback({
           </p>
 
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
-            {resetError && (
-              <Button
-                variant="primary"
+            {resetError ? <Button
                 size="lg"
+                variant="primary"
                 onClick={resetError}
               >
                 Try Again
-              </Button>
-            )}
-            {showReload && (
-              <Button
-                variant="secondary"
+              </Button> : null}
+            {showReload ? <Button
                 size="lg"
+                variant="secondary"
                 onClick={() => window.location.reload()}
               >
                 Reload Page
-              </Button>
-            )}
-            {showHome && (
-              <Button
-                variant="ghost"
+              </Button> : null}
+            {showHome ? <Button
                 size="lg"
+                variant="ghost"
                 onClick={() => (window.location.href = homeUrl)}
               >
                 Go Home
-              </Button>
-            )}
+              </Button> : null}
           </div>
         </div>
       </div>
@@ -153,12 +146,12 @@ export function ErrorFallback({
   // Default variant
   return (
     <div
+      role="alert"
       className={cn(
         "card p-6",
         "border-[var(--error-border)] bg-[var(--error-bg)]",
         className
       )}
-      role="alert"
     >
       <div className="flex flex-col items-center text-center">
         <div
@@ -169,17 +162,17 @@ export function ErrorFallback({
           }}
         >
           <svg
+            aria-hidden="true"
             className="h-6 w-6 text-[var(--error)]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
-            aria-hidden="true"
           >
             <path
+              d="M6 18L18 6M6 6l12 12"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
             />
           </svg>
         </div>
@@ -192,24 +185,20 @@ export function ErrorFallback({
         </p>
 
         <div className="flex gap-3">
-          {resetError && (
-            <Button
-              variant="primary"
+          {resetError ? <Button
               size="sm"
+              variant="primary"
               onClick={resetError}
             >
               Try Again
-            </Button>
-          )}
-          {showReload && (
-            <Button
-              variant="ghost"
+            </Button> : null}
+          {showReload ? <Button
               size="sm"
+              variant="ghost"
               onClick={() => window.location.reload()}
             >
               Reload
-            </Button>
-          )}
+            </Button> : null}
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
+import { type LngLatBounds } from 'maplibre-gl';
 import { useState, useEffect, useCallback } from 'react';
+
 import { useMap } from './useMap';
-import { LngLatBounds } from 'maplibre-gl';
 
 export interface MapBoundsState {
   bounds: LngLatBounds | null;

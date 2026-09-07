@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
 import { Button, Input, Modal, ModalFooter, Textarea } from "@packages/ui";
+import { useEffect, useState } from "react";
+
 import type { DatasetItem } from "./types";
 
 interface Props {
@@ -53,31 +54,31 @@ export default function EditModal({
   return (
     <Modal
       isOpen
-      onClose={() => !saving && onClose()}
       closeOnOverlayClick={!saving}
-      title="Edit Dataset Metadata"
       description={dataset.name}
       size="md"
+      title="Edit Dataset Metadata"
+      onClose={() => !saving && onClose()}
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <Input
+          required
           label="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          required
         />
         <Textarea
+          autoResize
           label="Description"
+          placeholder="What is this dataset?"
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
-          placeholder="What is this dataset?"
-          autoResize
         />
         <Input
           label="Source / Provenance"
+          placeholder="e.g. Copernicus, USGS"
           value={source}
           onChange={(e) => setSource(e.target.value)}
-          placeholder="e.g. Copernicus, USGS"
         />
         <Input
           label="CRS"
@@ -86,20 +87,20 @@ export default function EditModal({
         />
         <Input
           label="Tags (comma-separated)"
+          placeholder="e.g. hydrology, elevation, 2026"
           value={tags}
           onChange={(e) => setTags(e.target.value)}
-          placeholder="e.g. hydrology, elevation, 2026"
         />
 
         <ModalFooter>
           <Button
-            variant="ghost"
             disabled={saving}
+            variant="ghost"
             onClick={() => !saving && onClose()}
           >
             Cancel
           </Button>
-          <Button type="submit" loading={saving} loadingText="Saving…">
+          <Button loading={saving} loadingText="Saving…" type="submit">
             Save Changes
           </Button>
         </ModalFooter>

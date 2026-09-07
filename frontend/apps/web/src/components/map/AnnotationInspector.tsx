@@ -1,9 +1,3 @@
-import { useMapEditor } from "@/lib/mapEditor/store";
-import type {
-  Annotation,
-  PointAnnotation,
-  ShapeAnnotation,
-} from "@/lib/mapEditor/types";
 import {
   Trash2,
   X,
@@ -19,7 +13,13 @@ import {
   Link2,
   Play,
 } from "lucide-react";
-import { POINT_KINDS } from "@/lib/mapEditor/types";
+
+import { useMapEditor } from "@/lib/mapEditor/store";
+import { POINT_KINDS ,type 
+  _Annotation,type 
+  PointAnnotation,type 
+  ShapeAnnotation,
+} from "@/lib/mapEditor/types";
 
 const KIND_META: Record<string, { label: string; icon: any }> = {
   marker: { label: "Marker", icon: Pen },
@@ -50,7 +50,7 @@ interface FieldProps {
   label: string;
   children: React.ReactNode;
 }
-function Field({ label, children }: FieldProps) {
+const Field = ({ label, children }: FieldProps) => {
   return (
     <label className="block">
       <span className="block text-[11px] font-semibold uppercase tracking-wide text-text-tertiary mb-1.5">
@@ -61,13 +61,13 @@ function Field({ label, children }: FieldProps) {
   );
 }
 
-export function AnnotationInspector({
-  mapRef,
-  mapReady,
+export const AnnotationInspector = ({
+  _mapRef,
+  _mapReady,
 }: {
   mapRef: React.RefObject<any>;
   mapReady: boolean;
-}) {
+}) => {
   const ann = useMapEditor((s) =>
     s.annotations.find((a) => a.id === s.selectionId),
   );
@@ -85,11 +85,11 @@ export function AnnotationInspector({
   const shape = ann as ShapeAnnotation;
 
   function patch(p: Record<string, unknown>) {
-    updateAnnotation(ann!.id, p as any);
+    updateAnnotation(ann.id, p);
   }
 
   function handleRemove() {
-    removeAnnotation(ann!.id);
+    removeAnnotation(ann.id);
     setActiveTool({ groupId: "navigate", variantId: "select" });
   }
 
@@ -98,16 +98,16 @@ export function AnnotationInspector({
       {/* header */}
       <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border-primary">
         <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
-          <Icon size={16} className="text-primary" />
+          <Icon className="text-primary" size={16} />
         </span>
         <span className="text-sm font-semibold text-text-primary flex-1">
           {meta.label}
         </span>
         <button
+          aria-label="Close inspector"
+          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
           type="button"
           onClick={() => setSelectionId(null)}
-          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
-          aria-label="Close inspector"
         >
           <X size={15} />
         </button>
@@ -115,11 +115,9 @@ export function AnnotationInspector({
 
       {/* body */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {isPoint && (
-          <div className="text-xs text-text-tertiary font-mono bg-surface-hover rounded-md px-2 py-1">
+        {isPoint ? <div className="text-xs text-text-tertiary font-mono bg-surface-hover rounded-md px-2 py-1">
             {point.lngLat.map((n) => n.toFixed(5)).join(", ")}
-          </div>
-        )}
+          </div> : null}
 
         {(ann.kind === "text" || ann.kind === "note") && (
           <Field label={ann.kind === "text" ? "Text" : "Note"}>
@@ -148,8 +146,8 @@ export function AnnotationInspector({
           >
             <input
               className="w-full px-3 py-2 text-sm rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
-              value={point.url ?? ""}
               placeholder="https://…"
+              value={point.url ?? ""}
               onChange={(e) => patch({ url: e.target.value })}
             />
           </Field>
@@ -160,13 +158,13 @@ export function AnnotationInspector({
           <Field label="Radius">
             <div className="flex items-center gap-2">
               <input
-                type="range"
-                min={10}
+                className="flex-1 accent-[var(--primary)]"
                 max={100000}
+                min={10}
                 step={10}
+                type="range"
                 value={shape.radius ?? 100}
                 onChange={(e) => patch({ radius: Number(e.target.value) })}
-                className="flex-1 accent-[var(--primary)]"
               />
               <span className="text-xs text-text-tertiary w-16 text-right tabular-nums">
                 {formatRadius(shape.radius ?? 100)}
@@ -181,13 +179,13 @@ export function AnnotationInspector({
             ann.kind === "shape") && (
             <Field label="Fill opacity">
               <input
-                type="range"
-                min={0}
+                className="w-full accent-[var(--primary)]"
                 max={1}
+                min={0}
                 step={0.05}
+                type="range"
                 value={shape.opacity ?? 0.45}
                 onChange={(e) => patch({ opacity: Number(e.target.value) })}
-                className="w-full accent-[var(--primary)]"
               />
             </Field>
           )}
@@ -195,13 +193,13 @@ export function AnnotationInspector({
         {!isPoint && ann.kind === "line" && (
           <Field label="Line width">
             <input
-              type="range"
-              min={1}
+              className="w-full accent-[var(--primary)]"
               max={24}
+              min={1}
               step={1}
+              type="range"
               value={shape.lineWidth ?? 4}
               onChange={(e) => patch({ lineWidth: Number(e.target.value) })}
-              className="w-full accent-[var(--primary)]"
             />
           </Field>
         )}
@@ -212,21 +210,21 @@ export function AnnotationInspector({
             {SWATCHES.map((c) => (
               <button
                 key={c}
+                aria-label={`Set color ${c}`}
+                style={{ background: c }}
                 type="button"
-                onClick={() => patch({ color: c })}
                 className={`w-6 h-6 rounded-full transition-transform hover:scale-110 ${
                   ann.color === c ? "ring-2 ring-offset-2 ring-primary" : ""
                 }`}
-                style={{ background: c }}
-                aria-label={`Set color ${c}`}
+                onClick={() => patch({ color: c })}
               />
             ))}
             <input
+              aria-label="Custom color"
+              className="w-6 h-6 rounded-full cursor-pointer border border-border-primary bg-transparent"
               type="color"
               value={toHex(ann.color)}
               onChange={(e) => patch({ color: e.target.value })}
-              className="w-6 h-6 rounded-full cursor-pointer border border-border-primary bg-transparent"
-              aria-label="Custom color"
             />
           </div>
         </Field>
@@ -235,9 +233,9 @@ export function AnnotationInspector({
       {/* footer */}
       <div className="px-4 py-3 border-t border-border-primary">
         <button
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg text-error hover:bg-error-subtle transition-colors"
           type="button"
           onClick={handleRemove}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg text-error hover:bg-error-subtle transition-colors"
         >
           <Trash2 size={15} />
           Delete annotation

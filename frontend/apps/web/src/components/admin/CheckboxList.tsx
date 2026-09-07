@@ -10,12 +10,12 @@ interface CheckboxListProps {
   onChange: (id: string) => void;
 }
 
-export function CheckboxList({
+export const CheckboxList = ({
   options,
   selected,
   emptyMessage,
   onChange,
-}: CheckboxListProps) {
+}: CheckboxListProps) => {
   return (
     <div className="max-h-40 space-y-2 overflow-y-auto rounded-xl border border-border-primary bg-surface-hover p-3">
       {options.length === 0 ? (
@@ -27,8 +27,8 @@ export function CheckboxList({
             className="flex cursor-pointer items-center gap-2 text-sm text-text-secondary hover:text-text-primary"
           >
             <input
-              type="checkbox"
               checked={selected.includes(option.id)}
+              type="checkbox"
               onChange={() => onChange(option.id)}
             />
             {option.label}

@@ -1,7 +1,11 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useMap } from '../../hooks/useMap';
-import type { GeoJSON } from 'geojson';
 import * as turf from '@turf/turf';
+import { useEffect, useState, useCallback, useRef } from 'react';
+
+import { useMap } from '../../hooks/useMap';
+
+import type { GeoJSON } from 'geojson';
+import type React from 'react';
+
 
 export interface DragInteractionProps {
   /** Layer IDs to enable dragging on */
@@ -128,7 +132,7 @@ export const DragInteraction: React.FC<DragInteractionProps> = ({
     deltaLng: number,
     deltaLat: number
   ): GeoJSON.Feature => {
-    const translated = turf.transformTranslate(
+    const _translated = turf.transformTranslate(
       feature,
       Math.sqrt(deltaLng * deltaLng + deltaLat * deltaLat) * 111000, // Convert to meters roughly
       Math.atan2(deltaLng, deltaLat) * (180 / Math.PI),
@@ -248,7 +252,7 @@ export const DragInteraction: React.FC<DragInteractionProps> = ({
         
         if (snappedPosition) {
           const originalCenter = turf.center(draggedFeature);
-          const originalCoords = (originalCenter.geometry as GeoJSON.Point).coordinates;
+          const originalCoords = (originalCenter.geometry).coordinates;
           
           deltaLng = snappedPosition[0] - originalCoords[0];
           deltaLat = snappedPosition[1] - originalCoords[1];
@@ -367,7 +371,7 @@ function findSnapPoint(
   features.forEach(feature => {
     const coords = getCoordinatesFromGeometry(feature.geometry as GeoJSON.Geometry);
     coords.forEach(coord => {
-      const projected = map.project(coord as [number, number]);
+      const projected = map.project(coord);
       const distance = Math.sqrt(
         Math.pow(projected.x - point.x, 2) +
         Math.pow(projected.y - point.y, 2)
@@ -385,10 +389,10 @@ function findSnapPoint(
 function getCoordinatesFromGeometry(geometry: GeoJSON.Geometry): number[][] {
   switch (geometry.type) {
     case 'Point':
-      return [geometry.coordinates as number[]];
+      return [geometry.coordinates];
     case 'LineString':
     case 'MultiPoint':
-      return geometry.coordinates as number[][];
+      return geometry.coordinates;
     case 'Polygon':
     case 'MultiLineString':
       return (geometry.coordinates as number[][][]).flat();

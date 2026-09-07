@@ -1,6 +1,9 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export interface RoutingToolProps {
   /** Waypoints as [lng, lat] arrays */
@@ -53,7 +56,7 @@ export const RoutingTool: React.FC<RoutingToolProps> = ({
   profile = 'driving',
   serviceUrl = 'https://router.project-osrm.org/route/v1',
   showInstructions = true,
-  optimize = false,
+  _optimize = false,
   alternatives = 0,
   routeStyle = {
     color: '#3b82f6',
@@ -64,8 +67,8 @@ export const RoutingTool: React.FC<RoutingToolProps> = ({
   onError
 }) => {
   const { map, isLoaded } = useMap();
-  const [route, setRoute] = useState<RouteResult | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [_route, setRoute] = useState<RouteResult | null>(null);
+  const [_loading, setLoading] = useState(false);
 
   const sourceId = 'route-source';
   const layerId = 'route-layer';

@@ -427,7 +427,7 @@ export const StyleUtils = {
     property: string,
     breaks: number[],
     colors: string[],
-    styleType: "fill-color" | "circle-color" | "line-color" = "fill-color"
+    _styleType: "fill-color" | "circle-color" | "line-color" = "fill-color"
   ): any[] {
     if (breaks.length !== colors.length + 1) {
       console.warn("Number of colors should be one less than number of breaks");

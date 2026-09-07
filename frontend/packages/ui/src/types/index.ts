@@ -1,4 +1,4 @@
-import type { ReactNode, HTMLAttributes, ButtonHTMLAttributes, InputHTMLAttributes } from 'react';
+import type { ReactNode } from 'react';
 
 export type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export type Variant = 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'ghost' | 'outline';

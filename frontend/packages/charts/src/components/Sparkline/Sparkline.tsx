@@ -1,3 +1,4 @@
+import { cn } from "@packages/ui";
 import React from "react";
 import {
   LineChart,
@@ -8,8 +9,9 @@ import {
   Area,
   ResponsiveContainer,
 } from "recharts";
-import { cn } from "@packages/ui";
+
 import { getColor } from "../../utils/colors";
+
 import type { SparklineProps } from "../../types";
 
 export const Sparkline: React.FC<SparklineProps> = ({
@@ -62,8 +64,8 @@ export const Sparkline: React.FC<SparklineProps> = ({
               <linearGradient
                 id="sparkline-gradient"
                 x1="0"
-                y1="0"
                 x2="0"
+                y1="0"
                 y2="1"
               >
                 <stop
@@ -79,12 +81,12 @@ export const Sparkline: React.FC<SparklineProps> = ({
               </linearGradient>
             </defs>
             <Area
-              type="monotone"
               dataKey={dataKey}
-              stroke={chartColor}
-              strokeWidth={1.5}
               fill="url(#sparkline-gradient)"
               isAnimationActive={false}
+              stroke={chartColor}
+              strokeWidth={1.5}
+              type="monotone"
             />
           </AreaChart>
         );
@@ -93,12 +95,12 @@ export const Sparkline: React.FC<SparklineProps> = ({
         return (
           <LineChart data={normalizedData}>
             <Line
-              type="monotone"
               dataKey={dataKey}
-              stroke={chartColor}
-              strokeWidth={1.5}
               dot={false}
               isAnimationActive={false}
+              stroke={chartColor}
+              strokeWidth={1.5}
+              type="monotone"
             />
           </LineChart>
         );
@@ -109,17 +111,15 @@ export const Sparkline: React.FC<SparklineProps> = ({
     <div className={cn("inline-flex items-center gap-2", className)}>
       <div style={{ width, height }}>
         <ResponsiveContainer
-          width="100%"
           height="100%"
+          width="100%"
         >
           {renderChart()}
         </ResponsiveContainer>
       </div>
-      {showValue && (
-        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+      {showValue ? <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
           {formatValue(lastValue)}
-        </span>
-      )}
+        </span> : null}
     </div>
   );
 };

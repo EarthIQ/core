@@ -1,6 +1,8 @@
-import React, { useState, useCallback, useMemo } from 'react';
 import * as turf from '@turf/turf';
+import React, { useState, useCallback, useMemo } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { Feature, FeatureCollection, Polygon, MultiPolygon } from 'geojson';
 
 export interface ClipToolProps {
@@ -82,7 +84,7 @@ export const ClipTool: React.FC<ClipToolProps> = ({
   }, [clipMask, map]);
 
   // Perform clip
-  const executeClip = useCallback(async () => {
+  const executeClip = useCallback(() => {
     setIsProcessing(true);
     setError(null);
 
@@ -153,7 +155,7 @@ export const ClipTool: React.FC<ClipToolProps> = ({
       // Add to map
       if (map && showResult) {
         if (map.getSource(outputLayerId)) {
-          (map.getSource(outputLayerId) as any).setData(resultCollection);
+          (map.getSource(outputLayerId)).setData(resultCollection);
         } else {
           map.addSource(outputLayerId, {
             type: 'geojson',
@@ -252,9 +254,9 @@ export const ClipTool: React.FC<ClipToolProps> = ({
       }}
     >
       <div style={{ fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <line x1="9" y1="3" x2="9" y2="21" />
+        <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
+          <rect height="18" rx="2" width="18" x="3" y="3" />
+          <line x1="9" x2="9" y1="3" y2="21" />
         </svg>
         Clip Tool
       </div>
@@ -265,7 +267,6 @@ export const ClipTool: React.FC<ClipToolProps> = ({
         </label>
         <div style={{ display: 'flex', gap: 8 }}>
           <button
-            onClick={() => setClipMode('inside')}
             style={{
               flex: 1,
               padding: '6px 12px',
@@ -276,11 +277,11 @@ export const ClipTool: React.FC<ClipToolProps> = ({
               cursor: 'pointer',
               fontSize: 12
             }}
+            onClick={() => setClipMode('inside')}
           >
             Inside
           </button>
           <button
-            onClick={() => setClipMode('outside')}
             style={{
               flex: 1,
               padding: '6px 12px',
@@ -291,6 +292,7 @@ export const ClipTool: React.FC<ClipToolProps> = ({
               cursor: 'pointer',
               fontSize: 12
             }}
+            onClick={() => setClipMode('outside')}
           >
             Outside
           </button>
@@ -299,7 +301,6 @@ export const ClipTool: React.FC<ClipToolProps> = ({
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <button
-          onClick={executeClip}
           disabled={isProcessing || !isLoaded}
           style={{
             flex: 1,
@@ -311,13 +312,12 @@ export const ClipTool: React.FC<ClipToolProps> = ({
             cursor: isProcessing ? 'not-allowed' : 'pointer',
             fontSize: 13
           }}
+          onClick={executeClip}
         >
           {isProcessing ? 'Processing...' : 'Execute Clip'}
         </button>
 
-        {result && (
-          <button
-            onClick={clearResult}
+        {result ? <button
             style={{
               padding: '8px 12px',
               backgroundColor: '#e74c3c',
@@ -327,23 +327,22 @@ export const ClipTool: React.FC<ClipToolProps> = ({
               cursor: 'pointer',
               fontSize: 13
             }}
+            onClick={clearResult}
           >
             Clear
-          </button>
-        )}
+          </button> : null}
       </div>
 
       <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
         <input
-          type="checkbox"
           checked={showResult}
+          type="checkbox"
           onChange={(e) => setShowResult(e.target.checked)}
         />
         Show result on map
       </label>
 
-      {error && (
-        <div style={{
+      {error ? <div style={{
           marginTop: 12,
           padding: 8,
           backgroundColor: '#fee',
@@ -352,11 +351,9 @@ export const ClipTool: React.FC<ClipToolProps> = ({
           fontSize: 12
         }}>
           {error.message}
-        </div>
-      )}
+        </div> : null}
 
-      {result && (
-        <div style={{
+      {result ? <div style={{
           marginTop: 12,
           padding: 8,
           backgroundColor: '#e8f5e9',
@@ -364,8 +361,7 @@ export const ClipTool: React.FC<ClipToolProps> = ({
           fontSize: 12
         }}>
           <strong>Result:</strong> {result.features.length} features clipped
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 };

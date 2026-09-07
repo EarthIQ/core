@@ -84,18 +84,17 @@ export const OpacitySlider: React.FC<OpacitySliderProps> = ({
 
         <input
           ref={inputRef}
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          disabled={disabled}
-          onChange={handleChange}
           aria-label={label}
-          aria-valuemin={min}
           aria-valuemax={max}
+          aria-valuemin={min}
           aria-valuenow={value}
           aria-valuetext={`${percentage}%`}
+          disabled={disabled}
+          max={max}
+          min={min}
+          step={step}
+          type="range"
+          value={value}
           style={{
             position: "absolute",
             left: 0,
@@ -108,12 +107,12 @@ export const OpacitySlider: React.FC<OpacitySliderProps> = ({
             top: "-8px",
             height: "20px",
           }}
+          onChange={handleChange}
         />
       </div>
 
       {/* Percentage readout */}
-      {showValue && (
-        <span
+      {showValue ? <span
           aria-hidden="true"
           style={{
             fontSize: "11px",
@@ -125,8 +124,7 @@ export const OpacitySlider: React.FC<OpacitySliderProps> = ({
           }}
         >
           {percentage}%
-        </span>
-      )}
+        </span> : null}
     </div>
   );
 };

@@ -1,21 +1,20 @@
 // src/components/video-export/ExportSettings.tsx
 
-import React, { useState } from "react";
-import type {
-  ExportSettings as ExportSettingsType,
-  ExportProgress,
-} from "../../types/video-export";
+import { Modal } from "@packages/ui";
 import {
   Download,
   Film,
   Image,
-  Settings,
-  X,
   Loader2,
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import { Modal } from "@packages/ui";
+import React, { useState } from "react";
+
+import type {
+  ExportSettings as ExportSettingsType,
+  ExportProgress,
+} from "../../types/video-export";
 
 interface ExportSettingsPanelProps {
   isOpen: boolean;
@@ -39,7 +38,7 @@ const RESOLUTION_PRESETS = [
 
 const FPS_OPTIONS = [12, 15, 24, 30, 60];
 
-export function ExportSettingsPanel({
+export const ExportSettingsPanel = ({
   isOpen,
   onClose,
   onExport,
@@ -48,7 +47,7 @@ export function ExportSettingsPanel({
   progress,
   totalDuration,
   keyframeCount,
-}: ExportSettingsPanelProps) {
+}: ExportSettingsPanelProps) => {
   const [settings, setSettings] = useState<ExportSettingsType>({
     format: "webm",
     width: 1920,
@@ -91,10 +90,10 @@ export function ExportSettingsPanel({
 
   return (
     <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Export Settings"
       className="w-full max-w-md"
+      isOpen={isOpen}
+      title="Export Settings"
+      onClose={onClose}
     >
       <div
         className="h-full w-full overflow-y-auto"
@@ -218,12 +217,12 @@ export function ExportSettingsPanel({
                     Width
                   </label>
                   <input
-                    type="number"
                     className="input !py-1 font-mono !text-xs"
-                    value={settings.width}
-                    min={320}
                     max={7680}
+                    min={320}
                     step={2}
+                    type="number"
+                    value={settings.width}
                     onChange={(e) => {
                       setSettings((s) => ({
                         ...s,
@@ -241,12 +240,12 @@ export function ExportSettingsPanel({
                     Height
                   </label>
                   <input
-                    type="number"
                     className="input !py-1 font-mono !text-xs"
-                    value={settings.height}
-                    min={240}
                     max={4320}
+                    min={240}
                     step={2}
+                    type="number"
+                    value={settings.height}
                     onChange={(e) => {
                       setSettings((s) => ({
                         ...s,
@@ -312,15 +311,15 @@ export function ExportSettingsPanel({
                 </span>
               </div>
               <input
-                type="range"
                 className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
+                max={1}
+                min={0.1}
+                step={0.05}
+                type="range"
+                value={settings.quality}
                 style={{
                   background: `linear-gradient(to right, var(--primary) ${settings.quality * 100}%, var(--bg-tertiary) ${settings.quality * 100}%)`,
                 }}
-                min={0.1}
-                max={1}
-                step={0.05}
-                value={settings.quality}
                 onChange={(e) =>
                   setSettings((s) => ({
                     ...s,
@@ -358,8 +357,8 @@ export function ExportSettingsPanel({
                 Filename
               </label>
               <input
-                type="text"
                 className="input !py-1.5 !text-xs"
+                type="text"
                 value={settings.filename}
                 onChange={(e) =>
                   setSettings((s) => ({ ...s, filename: e.target.value }))
@@ -444,13 +443,13 @@ export function ExportSettingsPanel({
   );
 }
 
-function ExportProgressView({
+const ExportProgressView = ({
   progress,
   onCancel,
 }: {
   progress: ExportProgress;
   onCancel: () => void;
-}) {
+}) => {
   return (
     <div className="space-y-4 p-6">
       <div className="flex flex-col items-center gap-3">
@@ -466,8 +465,8 @@ function ExportProgressView({
           />
         ) : (
           <Loader2
-            size={32}
             className="animate-spin"
+            size={32}
             style={{ color: "var(--primary)" }}
           />
         )}

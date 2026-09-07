@@ -1,5 +1,6 @@
-import React, { type ReactNode } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import React, { type ReactNode } from "react";
+
 import { cn } from "../../../utils/cn";
 
 const badgeVariants = cva(
@@ -78,7 +79,7 @@ const dotColors = {
   error: "bg-[--error]",
 };
 
-export function Badge({
+export const Badge = ({
   children,
   className,
   variant,
@@ -90,26 +91,23 @@ export function Badge({
   onRemove,
   dot,
   dotColor = "primary",
-}: BadgeProps) {
+}: BadgeProps) => {
   return (
     <span className={cn(badgeVariants({ variant, size, glow }), className)}>
-      {dot && (
-        <span
+      {dot ? <span
           className={cn(
             "h-1.5 w-1.5 animate-pulse rounded-full",
             dotColors[dotColor]
           )}
-        />
-      )}
+        /> : null}
       {leftIcon}
       {children}
       {rightIcon}
-      {removable && (
-        <button
+      {removable ? <button
+          aria-label="Remove"
+          className="ml-1 rounded-full p-0.5 transition-colors hover:bg-[--surface-hover]"
           type="button"
           onClick={onRemove}
-          className="ml-1 rounded-full p-0.5 transition-colors hover:bg-[--surface-hover]"
-          aria-label="Remove"
         >
           <svg
             className="h-3 w-3"
@@ -118,14 +116,13 @@ export function Badge({
             viewBox="0 0 24 24"
           >
             <path
+              d="M6 18L18 6M6 6l12 12"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
             />
           </svg>
-        </button>
-      )}
+        </button> : null}
     </span>
   );
 }

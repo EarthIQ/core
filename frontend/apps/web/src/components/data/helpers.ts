@@ -11,7 +11,9 @@ import {
   Table2,
   type LucideIcon,
 } from "lucide-react";
+
 import { INGESTED_FORMATS, STORED_FORMATS, TYPES } from "./constants";
+
 import type { DatasetFormat, DatasetItem } from "./types";
 
 /** Lucide icon for a dataset format (replaces the old emoji map). */

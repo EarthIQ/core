@@ -1,6 +1,8 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useMap } from "../../hooks/useMap";
 import { Card, Stack, Text } from "@packages/ui";
+import React, { useState, useCallback, useRef, useEffect } from "react";
+
+import { useMap } from "../../hooks/useMap";
+
 import type {
   StyleSpecification,
   LayerSpecification,
@@ -123,7 +125,7 @@ export const PREDEFINED_BASEMAPS: BasemapOption[] = [
           source: "esri-satellite",
         },
       ],
-    } as StyleSpecification,
+    },
     category: "satellite",
     attribution: "© Esri",
   },
@@ -272,7 +274,7 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
 
       preservedDataRef.current = preserved;
 
-      console.debug("Preserved layers:", {
+      console.warn("Preserved layers:", {
         sources: Object.keys(preserved.sources),
         layers: preserved.layers.map((l) => l.id),
         images: preserved.images,
@@ -311,7 +313,7 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
         }
       });
 
-      console.debug("Restored layers successfully");
+      console.warn("Restored layers successfully");
     } catch (error) {
       console.error("Error restoring layers:", error);
     }
@@ -326,7 +328,7 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
       }
 
       if (basemapId === activeBasemap) {
-        console.debug("Same basemap selected, skipping");
+        console.warn("Same basemap selected, skipping");
         return;
       }
 
@@ -374,7 +376,7 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
               clearTimeout(timeoutId);
               map.off("style.load", handleStyleLoad);
               map.off("error", handleError);
-              reject(e.error);
+              reject(new Error(e.error?.message ?? 'Style load failed'));
             }
           };
 
@@ -473,7 +475,7 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
                 "visibility",
                 show ? "visible" : "none"
               );
-            } catch (err) {
+            } catch (_err) {
               // Layer might not exist, ignore
             }
           }
@@ -519,10 +521,10 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
         }}
       >
         <input
-          type="checkbox"
           checked={showLabels}
-          onChange={(e) => handleLabelsToggle(e.target.checked)}
           style={{ cursor: "pointer" }}
+          type="checkbox"
+          onChange={(e) => handleLabelsToggle(e.target.checked)}
         />
         Show labels
       </label>
@@ -541,9 +543,8 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
         {!isExpanded ? (
           // Collapsed: show current basemap thumbnail
           <button
-            onClick={() => setIsExpanded(true)}
-            disabled={isChanging}
             aria-label="Open basemap selector"
+            disabled={isChanging}
             style={{
               width: thumbnailSizes[thumbnailSize].width,
               height: thumbnailSizes[thumbnailSize].height,
@@ -566,6 +567,7 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
               opacity: isChanging ? 0.7 : 1,
               transition: "opacity 0.2s",
             }}
+            onClick={() => setIsExpanded(true)}
           >
             {!activeBasemapData?.thumbnail && (
               <Text
@@ -597,13 +599,12 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
               }}
             >
               <Text
-                weight="bold"
                 size="sm"
+                weight="bold"
               >
                 Basemap
               </Text>
               <button
-                onClick={() => setIsExpanded(false)}
                 aria-label="Close basemap selector"
                 style={{
                   background: "none",
@@ -613,6 +614,7 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
                   padding: 4,
                   lineHeight: 1,
                 }}
+                onClick={() => setIsExpanded(false)}
               >
                 ✕
               </button>
@@ -629,14 +631,14 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
                 <BasemapThumbnail
                   key={basemap.id}
                   basemap={basemap}
+                  disabled={isChanging}
                   isActive={basemap.id === activeBasemap}
+                  isLoading={isChanging ? basemap.id !== activeBasemap : null}
                   size={thumbnailSizes.sm}
                   onClick={() => {
                     handleBasemapChange(basemap.id);
                     if (!isChanging) setIsExpanded(false);
                   }}
-                  isLoading={isChanging && basemap.id !== activeBasemap}
-                  disabled={isChanging}
                 />
               ))}
             </div>
@@ -670,9 +672,7 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
             }}
           >
             <Text weight="bold">Basemap</Text>
-            {collapsible && (
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
+            {collapsible ? <button
                 aria-label={isExpanded ? "Collapse" : "Expand"}
                 style={{
                   background: "none",
@@ -681,26 +681,23 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
                   fontSize: 18,
                   padding: 4,
                 }}
+                onClick={() => setIsExpanded(!isExpanded)}
               >
                 {isExpanded ? "−" : "+"}
-              </button>
-            )}
+              </button> : null}
           </div>
 
-          {isExpanded && (
-            <>
+          {isExpanded ? <>
               {Object.entries(groupedBasemaps).map(
                 ([category, categoryBasemaps]) => (
                   <div key={category}>
-                    {groupByCategory && category !== "all" && (
-                      <Text
-                        size="xs"
+                    {groupByCategory && category !== "all" ? <Text
                         color="muted"
+                        size="xs"
                         style={{ marginBottom: 8, textTransform: "uppercase" }}
                       >
                         {categoryLabels[category] || category}
-                      </Text>
-                    )}
+                      </Text> : null}
                     <div
                       style={{
                         display: "grid",
@@ -711,13 +708,13 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
                       {categoryBasemaps.map((basemap) => (
                         <BasemapThumbnail
                           key={basemap.id}
+                          showName
                           basemap={basemap}
+                          disabled={isChanging}
                           isActive={basemap.id === activeBasemap}
+                          isLoading={isChanging ? basemap.id !== activeBasemap : null}
                           size={thumbnailSizes[thumbnailSize]}
                           onClick={() => handleBasemapChange(basemap.id)}
-                          showName
-                          isLoading={isChanging && basemap.id !== activeBasemap}
-                          disabled={isChanging}
                         />
                       ))}
                     </div>
@@ -726,8 +723,7 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
               )}
 
               <LabelsToggle />
-            </>
-          )}
+            </> : null}
         </Stack>
       </Card>
     );
@@ -741,10 +737,9 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
         style={containerStyle}
       >
         <select
-          value={activeBasemap}
-          onChange={(e) => handleBasemapChange(e.target.value)}
-          disabled={isChanging}
           aria-label="Select basemap"
+          disabled={isChanging}
+          value={activeBasemap}
           style={{
             padding: "8px 12px",
             borderRadius: 6,
@@ -755,6 +750,7 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
             minWidth: 150,
             opacity: isChanging ? 0.7 : 1,
           }}
+          onChange={(e) => handleBasemapChange(e.target.value)}
         >
           {groupByCategory
             ? Object.entries(groupedBasemaps).map(
@@ -796,9 +792,9 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
       >
         <div style={{ position: "relative" }}>
           <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            disabled={isChanging}
             aria-label="Toggle basemap selector"
+            disabled={isChanging}
+            title="Change basemap"
             style={{
               width: 36,
               height: 36,
@@ -815,13 +811,12 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
               opacity: isChanging ? 0.7 : 1,
               transition: "opacity 0.2s",
             }}
-            title="Change basemap"
+            onClick={() => setIsExpanded(!isExpanded)}
           >
             🗺️
           </button>
 
-          {isExpanded && (
-            <Card
+          {isExpanded ? <Card
               style={{
                 position: "absolute",
                 bottom: position.includes("bottom") ? 44 : "auto",
@@ -838,10 +833,6 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
                 {basemaps.map((basemap) => (
                   <button
                     key={basemap.id}
-                    onClick={() => {
-                      handleBasemapChange(basemap.id);
-                      if (!isChanging) setIsExpanded(false);
-                    }}
                     disabled={isChanging}
                     style={{
                       display: "flex",
@@ -861,19 +852,21 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
                         isChanging && basemap.id !== activeBasemap ? 0.6 : 1,
                       transition: "all 0.2s",
                     }}
+                    onClick={() => {
+                      handleBasemapChange(basemap.id);
+                      if (!isChanging) setIsExpanded(false);
+                    }}
                   >
-                    {showThumbnails && basemap.thumbnail && (
-                      <img
-                        src={basemap.thumbnail}
+                    {showThumbnails && basemap.thumbnail ? <img
                         alt=""
+                        src={basemap.thumbnail}
                         style={{
                           width: 24,
                           height: 24,
                           borderRadius: 4,
                           objectFit: "cover",
                         }}
-                      />
-                    )}
+                      /> : null}
                     <span style={{ fontSize: 13 }}>{basemap.name}</span>
                     {basemap.id === activeBasemap && (
                       <span style={{ marginLeft: "auto", color: "#3b82f6" }}>
@@ -885,8 +878,7 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
 
                 <LabelsToggle />
               </Stack>
-            </Card>
-          )}
+            </Card> : null}
         </div>
       </div>
     );
@@ -919,10 +911,9 @@ const BasemapThumbnail: React.FC<BasemapThumbnailProps> = ({
 
   return (
     <button
-      onClick={onClick}
-      disabled={disabled || isActive}
       aria-label={`Select ${basemap.name} basemap`}
       aria-pressed={isActive}
+      disabled={disabled || isActive}
       style={{
         cursor: disabled ? "wait" : isActive ? "default" : "pointer",
         opacity: isLoading ? 0.6 : 1,
@@ -931,6 +922,7 @@ const BasemapThumbnail: React.FC<BasemapThumbnailProps> = ({
         border: "none",
         padding: 0,
       }}
+      onClick={onClick}
     >
       <div
         style={{
@@ -954,17 +946,14 @@ const BasemapThumbnail: React.FC<BasemapThumbnailProps> = ({
         }}
       >
         {/* Hidden image to detect load errors */}
-        {basemap.thumbnail && (
-          <img
-            src={basemap.thumbnail}
+        {basemap.thumbnail ? <img
             alt=""
-            onError={() => setImageError(true)}
+            src={basemap.thumbnail}
             style={{ display: "none" }}
-          />
-        )}
+            onError={() => setImageError(true)}
+          /> : null}
 
-        {(!basemap.thumbnail || imageError) && (
-          <Text
+        {(!basemap.thumbnail || imageError) ? <Text
             size="xs"
             style={{
               color: basemap.category === "dark" ? "white" : "black",
@@ -972,11 +961,9 @@ const BasemapThumbnail: React.FC<BasemapThumbnailProps> = ({
             }}
           >
             {basemap.name.substring(0, 2).toUpperCase()}
-          </Text>
-        )}
+          </Text> : null}
 
-        {isLoading && (
-          <div
+        {isLoading ? <div
             style={{
               position: "absolute",
               inset: 0,
@@ -996,11 +983,9 @@ const BasemapThumbnail: React.FC<BasemapThumbnailProps> = ({
                 animation: "spin 1s linear infinite",
               }}
             />
-          </div>
-        )}
+          </div> : null}
 
-        {isActive && !isLoading && (
-          <div
+        {isActive && !isLoading ? <div
             style={{
               position: "absolute",
               bottom: 2,
@@ -1017,12 +1002,10 @@ const BasemapThumbnail: React.FC<BasemapThumbnailProps> = ({
             }}
           >
             ✓
-          </div>
-        )}
+          </div> : null}
       </div>
 
-      {showName && (
-        <Text
+      {showName ? <Text
           size="xs"
           style={{
             marginTop: 4,
@@ -1035,8 +1018,7 @@ const BasemapThumbnail: React.FC<BasemapThumbnailProps> = ({
           }}
         >
           {basemap.name}
-        </Text>
-      )}
+        </Text> : null}
     </button>
   );
 };

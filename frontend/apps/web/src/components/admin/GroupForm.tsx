@@ -1,12 +1,13 @@
 import { type FormEvent } from "react";
+
 import { CheckboxList } from "./CheckboxList";
+import { toggleSelection } from "./helpers";
 import { PermissionMatrix } from "./PermissionMatrix";
 import {
   type GroupFormState,
   type PermissionSummary,
   type UserSummary,
 } from "./types";
-import { toggleSelection } from "./helpers";
 
 interface GroupFormProps {
   title?: string;
@@ -20,7 +21,7 @@ interface GroupFormProps {
   onCancel?: () => void;
 }
 
-export function GroupForm({
+export const GroupForm = ({
   title,
   form,
   users,
@@ -30,7 +31,7 @@ export function GroupForm({
   onChange,
   onSubmit,
   onCancel,
-}: GroupFormProps) {
+}: GroupFormProps) => {
   const content = (
     <form className="space-y-4" onSubmit={onSubmit}>
       <div className="space-y-1.5">
@@ -38,12 +39,12 @@ export function GroupForm({
           Group Name <span className="text-danger">*</span>
         </label>
         <input
-          type="text"
-          placeholder="e.g. Editors, Analysts, Managers"
+          required
           className="input w-full rounded-lg border border-border-primary bg-surface px-3.5 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          placeholder="e.g. Editors, Analysts, Managers"
+          type="text"
           value={form.name}
           onChange={(e) => onChange({ ...form, name: e.target.value })}
-          required
         />
       </div>
 
@@ -52,8 +53,8 @@ export function GroupForm({
           Description
         </label>
         <textarea
-          placeholder="Brief description of the group's purpose and responsibilities..."
           className="input min-h-[72px] w-full rounded-lg border border-border-primary bg-surface px-3.5 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          placeholder="Brief description of the group's purpose and responsibilities..."
           value={form.description}
           onChange={(e) => onChange({ ...form, description: e.target.value })}
         />
@@ -78,12 +79,12 @@ export function GroupForm({
         </label>
         <div className="max-h-40 overflow-y-auto rounded-lg border border-border-primary bg-surface p-3">
           <CheckboxList
+            emptyMessage="No users available yet."
+            selected={form.user_ids}
             options={users.map((u) => ({
               id: u.id,
               label: u.full_name ? `${u.full_name} (${u.email})` : u.email,
             }))}
-            selected={form.user_ids}
-            emptyMessage="No users available yet."
             onChange={(id) =>
               onChange({
                 ...form,
@@ -95,19 +96,17 @@ export function GroupForm({
       </div>
 
       <div className="mt-6 flex items-center justify-end gap-3 border-t border-border-primary pt-4">
-        {onCancel && (
-          <button
-            type="button"
+        {onCancel ? <button
             className="rounded-lg border border-border-primary px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
+            type="button"
             onClick={onCancel}
           >
             Cancel
-          </button>
-        )}
+          </button> : null}
         <button
-          type="submit"
           className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:opacity-50"
           disabled={submitting}
+          type="submit"
         >
           {submitting ? "Saving…" : submitLabel}
         </button>

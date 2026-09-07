@@ -1,5 +1,3 @@
-import React, { useState, useMemo } from "react";
-import { useMap } from "../../hooks/useMap";
 import { useDraggablePosition, cn } from "@packages/ui";
 import {
   ChevronDown,
@@ -11,6 +9,9 @@ import {
   MapPin,
   Palette,
 } from "lucide-react";
+import React, { useState, useMemo } from "react";
+
+import { useMap } from "../../hooks/useMap";
 
 export interface LegendItem {
   /** Unique identifier */
@@ -216,10 +217,10 @@ export const LegendControl: React.FC<LegendControlProps> = ({
         }}
       >
         <button
-          onClick={() => setIsCollapsed(false)}
-          className="mb-6 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border-primary)]/80 bg-[var(--surface)]/90 text-[var(--text-secondary)] shadow-lg backdrop-blur-md transition-all hover:bg-[var(--surface-hover)] active:scale-95"
           aria-label="Open Legend"
+          className="mb-6 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border-primary)]/80 bg-[var(--surface)]/90 text-[var(--text-secondary)] shadow-lg backdrop-blur-md transition-all hover:bg-[var(--surface-hover)] active:scale-95"
           style={{ marginLeft: "10px" }}
+          onClick={() => setIsCollapsed(false)}
         >
           <Palette className="h-4 w-4" />
         </button>
@@ -259,9 +260,7 @@ export const LegendControl: React.FC<LegendControlProps> = ({
         onMouseDown={isDraggable ? handleMouseDown : undefined}
         onTouchStart={isDraggable ? handleTouchStart : undefined}
       >
-        {isDraggable && (
-          <GripVertical className="h-4 w-4 flex-shrink-0 text-[var(--text-tertiary)]" />
-        )}
+        {isDraggable ? <GripVertical className="h-4 w-4 flex-shrink-0 text-[var(--text-tertiary)]" /> : null}
 
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <Layers className="h-4 w-4 flex-shrink-0 text-[var(--primary)]" />
@@ -270,15 +269,14 @@ export const LegendControl: React.FC<LegendControlProps> = ({
           </span>
         </div>
 
-        {collapsible && (
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
+        {collapsible ? <button
             className={cn(
               "flex h-6 w-6 items-center justify-center rounded-md",
               "text-[var(--text-tertiary)]",
               "hover:bg-[var(--surface-hover)] hover:text-[var(--text-secondary)]",
               "transition-colors duration-[var(--transition-fast)]"
             )}
+            onClick={() => setIsCollapsed(!isCollapsed)}
           >
             <ChevronDown
               className={cn(
@@ -286,40 +284,39 @@ export const LegendControl: React.FC<LegendControlProps> = ({
                 isCollapsed && "-rotate-90"
               )}
             />
-          </button>
-        )}
+          </button> : null}
       </div>
 
       {/* Body */}
       <div
+        style={{ maxHeight: isCollapsed ? 0 : maxHeight }}
         className={cn(
           "transition-all duration-[var(--transition-slow)] ease-out",
           isCollapsed ? "max-h-0 overflow-hidden opacity-0" : "opacity-100"
         )}
-        style={{ maxHeight: isCollapsed ? 0 : maxHeight }}
       >
         <div
+          style={{ maxHeight: maxHeight - 50 }}
           className={cn(
             "space-y-1 overflow-y-auto p-2",
             orientation === "horizontal" && "flex flex-wrap gap-2 space-y-0"
           )}
-          style={{ maxHeight: maxHeight - 50 }}
         >
           {items.map((item) => (
             <LegendItemCard
               key={item.id}
-              item={item}
+              expandedItems={expandedItems}
               isExpanded={expandedItems.has(item.id)}
-              onToggleExpand={() => toggleExpanded(item.id)}
-              showVisibilityToggle={showVisibilityToggle}
               isVisible={visibility[item.id] ?? true}
+              item={item}
+              showVisibilityToggle={showVisibilityToggle}
+              visibility={visibility}
+              onChildVisibilityChange={handleVisibilityChange}
+              onToggleChildExpand={toggleExpanded}
+              onToggleExpand={() => toggleExpanded(item.id)}
               onVisibilityChange={(visible) =>
                 handleVisibilityChange(item.id, visible)
               }
-              expandedItems={expandedItems}
-              onToggleChildExpand={toggleExpanded}
-              visibility={visibility}
-              onChildVisibilityChange={handleVisibilityChange}
             />
           ))}
         </div>
@@ -377,13 +374,13 @@ const LegendItemCard: React.FC<LegendItemCardProps> = ({
         {/* Expand/Collapse Button */}
         {hasExpandableContent ? (
           <button
-            onClick={onToggleExpand}
             className={cn(
               "flex h-5 w-5 items-center justify-center rounded",
               "text-[var(--text-tertiary)]",
               "hover:bg-[var(--surface-active)] hover:text-[var(--text-secondary)]",
               "transition-all duration-[var(--transition-fast)]"
             )}
+            onClick={onToggleExpand}
           >
             <ChevronDown
               className={cn(
@@ -405,9 +402,7 @@ const LegendItemCard: React.FC<LegendItemCardProps> = ({
         </span>
 
         {/* Visibility Toggle */}
-        {showVisibilityToggle && (
-          <button
-            onClick={() => onVisibilityChange(!isVisible)}
+        {showVisibilityToggle ? <button
             title={isVisible ? "Hide layer" : "Show layer"}
             className={cn(
               "flex h-5 w-5 items-center justify-center rounded",
@@ -415,14 +410,14 @@ const LegendItemCard: React.FC<LegendItemCardProps> = ({
               "hover:bg-[var(--surface-active)] hover:text-[var(--text-secondary)]",
               "transition-colors duration-[var(--transition-fast)]"
             )}
+            onClick={() => onVisibilityChange(!isVisible)}
           >
             {isVisible ? (
               <Eye className="h-3.5 w-3.5" />
             ) : (
               <EyeOff className="h-3.5 w-3.5" />
             )}
-          </button>
-        )}
+          </button> : null}
       </div>
 
       {/* Expanded Content */}
@@ -434,52 +429,44 @@ const LegendItemCard: React.FC<LegendItemCardProps> = ({
       >
         <div className="px-2 pb-2">
           {/* Gradient */}
-          {item.type === "gradient" && item.colorStops && (
-            <GradientLegend
+          {item.type === "gradient" && item.colorStops ? <GradientLegend
               colorStops={item.colorStops}
               range={item.range}
               unit={item.unit}
-            />
-          )}
+            /> : null}
 
           {/* Category */}
-          {item.type === "category" && item.categories && (
-            <CategoryLegend categories={item.categories} />
-          )}
+          {item.type === "category" && item.categories ? <CategoryLegend categories={item.categories} /> : null}
 
           {/* Proportional */}
-          {item.type === "proportional" && item.sizeRange && (
-            <ProportionalLegend
-              sizeRange={item.sizeRange}
-              range={item.range}
+          {item.type === "proportional" && item.sizeRange ? <ProportionalLegend
               color={item.color as string}
+              range={item.range}
+              sizeRange={item.sizeRange}
               unit={item.unit}
-            />
-          )}
+            /> : null}
 
           {/* Nested Children */}
-          {item.children && item.children.length > 0 && (
-            <div className="mt-1 space-y-1">
+          {item.children && item.children.length > 0 ? <div className="mt-1 space-y-1">
               {item.children.map((child) => (
                 <LegendItemCard
                   key={child.id}
-                  item={child}
+                  depth={depth + 1}
+                  expandedItems={expandedItems}
                   isExpanded={expandedItems.has(child.id)}
-                  onToggleExpand={() => onToggleChildExpand(child.id)}
-                  showVisibilityToggle={showVisibilityToggle}
                   isVisible={visibility[child.id] ?? true}
+                  item={child}
+                  showVisibilityToggle={showVisibilityToggle}
+                  visibility={visibility}
+                  onChildVisibilityChange={onChildVisibilityChange}
+                  onToggleChildExpand={onToggleChildExpand}
+                  onToggleExpand={() => onToggleChildExpand(child.id)}
                   onVisibilityChange={(visible) =>
                     onChildVisibilityChange(child.id, visible)
                   }
-                  depth={depth + 1}
-                  expandedItems={expandedItems}
-                  onToggleChildExpand={onToggleChildExpand}
-                  visibility={visibility}
-                  onChildVisibilityChange={onChildVisibilityChange}
                 />
               ))}
-            </div>
-          )}
+            </div> : null}
         </div>
       </div>
     </div>
@@ -519,7 +506,7 @@ const LegendSymbol: React.FC<{ item: LegendItem }> = ({ item }) => {
         </div>
       );
 
-    case "circle":
+    case "circle": {
       const circleSize = Math.min((item.size as number) || 12, 16);
       return (
         <div
@@ -535,14 +522,15 @@ const LegendSymbol: React.FC<{ item: LegendItem }> = ({ item }) => {
           }}
         />
       );
+    }
 
     case "symbol":
       if (item.icon) {
         return (
           <img
-            src={item.icon}
             alt={item.label}
             className={cn(baseClass, "h-4 w-4 object-contain")}
+            src={item.icon}
           />
         );
       }
@@ -626,11 +614,9 @@ const GradientLegend: React.FC<{
         <span className="text-[10px] font-medium text-[var(--text-tertiary)] tabular-nums">
           {colorStops[0].label ?? range?.[0] ?? colorStops[0].value}
         </span>
-        {unit && (
-          <span className="text-[10px] text-[var(--text-tertiary)]">
+        {unit ? <span className="text-[10px] text-[var(--text-tertiary)]">
             {unit}
-          </span>
-        )}
+          </span> : null}
         <span className="text-[10px] font-medium text-[var(--text-tertiary)] tabular-nums">
           {colorStops[colorStops.length - 1].label ??
             range?.[1] ??
@@ -650,11 +636,9 @@ const GradientLegend: React.FC<{
                 className="h-2 w-2 rounded-full border border-black/10 dark:border-white/10"
                 style={{ backgroundColor: stop.color }}
               />
-              {stop.label && (
-                <span className="mt-0.5 text-[9px] text-[var(--text-tertiary)]">
+              {stop.label ? <span className="mt-0.5 text-[9px] text-[var(--text-tertiary)]">
                   {stop.label}
-                </span>
-              )}
+                </span> : null}
             </div>
           ))}
         </div>
@@ -740,13 +724,11 @@ const ProportionalLegend: React.FC<{
           </div>
         ))}
       </div>
-      {unit && (
-        <div className="text-center">
+      {unit ? <div className="text-center">
           <span className="text-[10px] text-[var(--text-tertiary)]">
             {unit}
           </span>
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 };

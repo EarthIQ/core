@@ -1,7 +1,8 @@
 import { Building } from "lucide-react";
+import { useState } from "react";
+
 import { ControlButton } from "./MapControlButton";
 import useMap from "../../hooks/useMap";
-import { useState } from "react";
 
 interface BuildingControlProps {
   icon?: React.ReactNode;
@@ -109,9 +110,9 @@ export const BuildingControl: React.FC<BuildingControlProps> = ({
 
   return (
     <ControlButton
+      active={isActive}
       icon={icon}
       label={label}
-      active={isActive}
       onClick={toggleBuildings}
     />
   );

@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
 import { Card, Stack, Text, Input, Button, Tabs } from '@packages/ui';
+import React, { useState, useMemo } from 'react';
+
 import type { GeoJSON } from 'geojson';
 
 export interface AttributePanelProps {
@@ -155,32 +156,28 @@ export const AttributePanel: React.FC<AttributePanelProps> = ({
           alignItems: 'center'
         }}>
           <Text weight="bold">{title}</Text>
-          {onDelete && (
-            <Button
+          {onDelete ? <Button
               size="sm"
+              style={{ color: '#ef4444' }}
               variant="ghost"
               onClick={() => onDelete(feature)}
-              style={{ color: '#ef4444' }}
             >
               Delete
-            </Button>
-          )}
+            </Button> : null}
         </div>
       )}
 
       {/* Tabs */}
-      {showGeometry && (
-        <div style={{ borderBottom: '1px solid #e5e7eb' }}>
+      {showGeometry ? <div style={{ borderBottom: '1px solid #e5e7eb' }}>
           <Tabs
             value={activeTab}
-            onChange={(tab) => setActiveTab(tab as any)}
             tabs={[
               { value: 'properties', label: 'Properties' },
               { value: 'geometry', label: 'Geometry' }
             ]}
+            onChange={(tab) => setActiveTab(tab)}
           />
-        </div>
-      )}
+        </div> : null}
 
       {/* Content */}
       <div style={{ padding: 16 }}>
@@ -188,15 +185,15 @@ export const AttributePanel: React.FC<AttributePanelProps> = ({
           <Stack spacing="sm">
             {displayProperties.map(({ key, value, config }) => (
               <div key={key}>
-                <Text size="xs" color="muted" style={{ marginBottom: 4 }}>
+                <Text color="muted" size="xs" style={{ marginBottom: 4 }}>
                   {config.label || formatLabel(key)}
                 </Text>
                 
                 {editable && config.editable !== false ? (
                   <PropertyInput
+                    options={config.options}
                     type={config.type || 'text'}
                     value={value}
-                    options={config.options}
                     onChange={(v) => handlePropertyChange(key, v)}
                   />
                 ) : (
@@ -215,11 +212,10 @@ export const AttributePanel: React.FC<AttributePanelProps> = ({
           </Stack>
         )}
 
-        {activeTab === 'geometry' && geometryInfo && (
-          <Stack spacing="sm">
+        {activeTab === 'geometry' && geometryInfo ? <Stack spacing="sm">
             {Object.entries(geometryInfo).map(([key, value]) => (
               <div key={key}>
-                <Text size="xs" color="muted" style={{ marginBottom: 4 }}>
+                <Text color="muted" size="xs" style={{ marginBottom: 4 }}>
                   {formatLabel(key)}
                 </Text>
                 <Text>
@@ -230,24 +226,20 @@ export const AttributePanel: React.FC<AttributePanelProps> = ({
               </div>
             ))}
 
-            {showCoordinates && feature.geometry.type === 'Point' && (
-              <div>
-                <Text size="xs" color="muted" style={{ marginBottom: 4 }}>
+            {showCoordinates && feature.geometry.type === 'Point' ? <div>
+                <Text color="muted" size="xs" style={{ marginBottom: 4 }}>
                   Coordinates (lat, lng)
                 </Text>
                 <Text style={{ fontFamily: 'monospace' }}>
-                  {(feature.geometry as GeoJSON.Point).coordinates[1].toFixed(6)},{' '}
-                  {(feature.geometry as GeoJSON.Point).coordinates[0].toFixed(6)}
+                  {(feature.geometry).coordinates[1].toFixed(6)},{' '}
+                  {(feature.geometry).coordinates[0].toFixed(6)}
                 </Text>
-              </div>
-            )}
-          </Stack>
-        )}
+              </div> : null}
+          </Stack> : null}
       </div>
 
       {/* Footer with save/reset buttons */}
-      {editable && hasChanges && (
-        <div style={{ 
+      {editable && hasChanges ? <div style={{ 
           padding: '12px 16px', 
           borderTop: '1px solid #e5e7eb',
           display: 'flex',
@@ -260,8 +252,7 @@ export const AttributePanel: React.FC<AttributePanelProps> = ({
           <Button size="sm" onClick={handleSave}>
             Save
           </Button>
-        </div>
-      )}
+        </div> : null}
 
       {footer}
     </Card>
@@ -286,35 +277,35 @@ const PropertyInput: React.FC<PropertyInputProps> = ({
     case 'boolean':
       return (
         <input
-          type="checkbox"
           checked={!!value}
+          type="checkbox"
           onChange={(e) => onChange(e.target.checked)}
         />
       );
     case 'number':
       return (
         <Input
+          size="sm"
           type="number"
           value={value ?? ''}
           onChange={(e) => onChange(parseFloat(e.target.value))}
-          size="sm"
         />
       );
     case 'date':
       return (
         <Input
+          size="sm"
           type="date"
           value={value ? new Date(value).toISOString().split('T')[0] : ''}
           onChange={(e) => onChange(e.target.value)}
-          size="sm"
         />
       );
     case 'select':
       return (
         <select
+          style={{ width: '100%', padding: '6px 8px' }}
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
-          style={{ width: '100%', padding: '6px 8px' }}
         >
           <option value="">Select...</option>
           {options?.map(opt => (
@@ -333,10 +324,10 @@ const PropertyInput: React.FC<PropertyInputProps> = ({
     default:
       return (
         <Input
+          size="sm"
           type="text"
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
-          size="sm"
         />
       );
   }

@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { Icons } from '../Icons';
+
 import type { Profile, TranslationKey } from '../../types';
 
 interface ProfileCardProps {
@@ -20,8 +22,9 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 }) => {
   return (
     <button
+      aria-label={`${t(profile.nameKey)} profile: ${isActive ? 'Active' : 'Inactive'}`}
+      aria-pressed={isActive}
       type="button"
-      onClick={onClick}
       className={`
         group relative flex flex-col items-center
         rounded-2xl p-4 text-center
@@ -31,8 +34,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
           : 'border border-[var(--border-primary)] bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'
         }
       `}
-      aria-pressed={isActive}
-      aria-label={`${t(profile.nameKey)} profile: ${isActive ? 'Active' : 'Inactive'}`}
+      onClick={onClick}
     >
       <span className="mb-2 text-3xl">{profile.icon}</span>
       <div className="text-sm font-semibold">{t(profile.nameKey)}</div>
@@ -44,11 +46,9 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
       >
         {t(profile.descKey)}
       </div>
-      {isActive && (
-        <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-md">
-          <span className="text-green-500">{<Icons.check />}</span>
-        </div>
-      )}
+      {isActive ? <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-md">
+          <span className="text-green-500"><Icons.check /></span>
+        </div> : null}
     </button>
   );
 };

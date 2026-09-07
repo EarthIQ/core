@@ -1,6 +1,7 @@
-import type { AccessibilitySettings, Locale } from '../types';
 import { defaultSettings } from '../constants/defaults';
 import { translations } from '../constants/translations';
+
+import type { AccessibilitySettings, Locale } from '../types';
 
 const SETTINGS_KEY = 'accessibility-settings';
 

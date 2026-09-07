@@ -1,4 +1,4 @@
-import { useContext, useCallback, useEffect, useState } from 'react';
+import { useContext as _useContext, useCallback, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
 type ResolvedTheme = 'light' | 'dark';

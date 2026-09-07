@@ -3,7 +3,7 @@ interface AlertBannerProps {
   message: string;
 }
 
-export function AlertBanner({ type, message }: AlertBannerProps) {
+export const AlertBanner = ({ type, message }: AlertBannerProps) => {
   const styles =
     type === "error"
       ? "border-danger/30 bg-danger/10 text-danger"

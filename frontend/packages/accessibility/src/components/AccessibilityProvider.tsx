@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
+
+import { AccessibilityWidget } from './AccessibilityWidget';
+import { defaultSettings } from '../constants/defaults';
 import { AccessibilityContext } from '../context/AccessibilityContext';
 import { useAccessibilitySettings } from '../hooks/useAccessibilitySettings';
-import { defaultSettings } from '../constants/defaults';
 import { useLocale } from '../hooks/useLocale';
-import { AccessibilityWidget } from './AccessibilityWidget';
 import { ReadingGuide } from './ReadingAids/ReadingGuide';
 import { ReadingMask } from './ReadingAids/ReadingMask';
+
 import type { AccessibilityProviderProps } from '../types';
 
 /**

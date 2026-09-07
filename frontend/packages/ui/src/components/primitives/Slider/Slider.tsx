@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import React, {
   useState,
   useRef,
@@ -5,7 +6,7 @@ import React, {
   type MouseEvent,
   type KeyboardEvent,
 } from "react";
-import { motion } from "framer-motion";
+
 import { cn } from "../../../utils/cn";
 
 interface SliderProps {
@@ -23,7 +24,7 @@ interface SliderProps {
   size?: "sm" | "md" | "lg";
 }
 
-export function Slider({
+export const Slider = ({
   value = 0,
   onChange,
   min = 0,
@@ -36,7 +37,7 @@ export function Slider({
   formatValue,
   showMinMax = false,
   size = "md",
-}: SliderProps) {
+}: SliderProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -148,21 +149,17 @@ export function Slider({
   return (
     <div className={cn("w-full select-none", className)}>
       {/* Label Row */}
-      {(label || showValue) && (
-        <div className="mb-3 flex items-center justify-between">
-          {label && (
-            <label
+      {(label || showValue) ? <div className="mb-3 flex items-center justify-between">
+          {label ? <label
               className="text-sm font-medium"
               style={{ color: "var(--text-primary)" }}
             >
               {label}
-            </label>
-          )}
-          {showValue && (
-            <motion.span
+            </label> : null}
+          {showValue ? <motion.span
               key={value}
-              initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.15 }}
               className={cn(
                 "rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums",
@@ -176,22 +173,20 @@ export function Slider({
               }}
             >
               {displayValue}
-            </motion.span>
-          )}
-        </div>
-      )}
+            </motion.span> : null}
+        </div> : null}
 
       {/* Track Container */}
       <div className="relative flex items-center py-2">
         <div
           ref={trackRef}
-          onMouseDown={handleMouseDown}
+          style={{ backgroundColor: "var(--border-primary)" }}
           className={cn(
             "relative w-full rounded-full",
             trackHeightClass,
             disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
           )}
-          style={{ backgroundColor: "var(--border-primary)" }}
+          onMouseDown={handleMouseDown}
         >
           {/* Filled Track */}
           <motion.div
@@ -210,20 +205,17 @@ export function Slider({
           {/* Thumb */}
           <motion.div
             ref={thumbRef}
-            role="slider"
-            aria-valuemin={min}
-            aria-valuemax={max}
-            aria-valuenow={value}
-            aria-label={label}
             aria-disabled={disabled}
+            aria-label={label}
+            aria-valuemax={max}
+            aria-valuemin={min}
+            aria-valuenow={value}
+            role="slider"
             tabIndex={disabled ? -1 : 0}
-            onKeyDown={handleKeyDown}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
             animate={{
               scale: isDragging ? 1.25 : isFocused ? 1.1 : 1,
             }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
             className={cn(
               "absolute top-1/2 -translate-y-1/2 rounded-full",
               "outline-none",
@@ -244,6 +236,9 @@ export function Slider({
               transition:
                 "border-color var(--transition-fast) ease, box-shadow var(--transition-fast) ease",
             }}
+            onBlur={() => setIsFocused(false)}
+            onFocus={() => setIsFocused(true)}
+            onKeyDown={handleKeyDown}
           >
             {/* Inner dot for visual polish */}
             <div
@@ -263,8 +258,7 @@ export function Slider({
       </div>
 
       {/* Min / Max Labels */}
-      {showMinMax && (
-        <div className="mt-1 flex justify-between">
+      {showMinMax ? <div className="mt-1 flex justify-between">
           <span
             className="text-xs"
             style={{ color: "var(--text-tertiary)" }}
@@ -277,8 +271,7 @@ export function Slider({
           >
             {formatValue ? formatValue(max) : max}
           </span>
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 }

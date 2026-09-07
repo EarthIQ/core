@@ -1,7 +1,11 @@
-import React, { useEffect, useId, useState, useCallback } from 'react';
-import { useMap } from '../../hooks/useMap';
 import { ScatterplotLayer as DeckScatterplotLayer } from '@deck.gl/layers';
+import { useEffect, useId, useState, useCallback as _useCallback } from 'react';
+
+import { useMap } from '../../hooks/useMap';
+
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export interface ScatterplotLayerProps {
   /** Unique layer ID */

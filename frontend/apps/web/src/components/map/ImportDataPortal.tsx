@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { resources, type Resource } from "@modules/resources";
 import { Search, Database, X } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import {
   listDatasets,
-  GeoDatasetOut,
+  type GeoDatasetOut,
   getVectorTileUrl,
   getGeometrySummaries,
-  GeometrySummary,
+  type GeometrySummary,
 } from "@/lib/datasets";
+
 import { nextLayerColor, type NewLayerInput } from "./layer-panel/useLayerTree";
-import { resources, type Resource } from "@modules/resources";
+
 
 interface ImportDataPortalProps {
   onClose: () => void;
@@ -20,13 +23,13 @@ interface ImportDataPortalProps {
 
 type TypeFilter = "all" | "vector" | "raster";
 
-export function ImportDataPortal({
+export const ImportDataPortal = ({
   onClose,
   onImport,
   isAvailableModule,
   folders,
   initialFolderId = null,
-}: ImportDataPortalProps) {
+}: ImportDataPortalProps) => {
   const [datasets, setDatasets] = useState<GeoDatasetOut[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +98,8 @@ export function ImportDataPortal({
   function toggleSelect(id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }
@@ -131,7 +135,8 @@ export function ImportDataPortal({
     const key = resKey(r);
     setResSelected((prev) => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }
@@ -200,7 +205,7 @@ export function ImportDataPortal({
           name: r.name,
           layerType: "raster",
           visible: true,
-          tileUrl: r.service!.tile_url,
+          tileUrl: r.service.tile_url,
           color: nextLayerColor(),
           opacity: r.suggested_opacity ?? 0.8,
           source: "resource",
@@ -231,7 +236,7 @@ export function ImportDataPortal({
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-border-secondary shrink-0">
           <div className="flex items-center gap-2.5">
-            <Database size={18} className="text-primary" />
+            <Database className="text-primary" size={18} />
             <div>
               <div className="text-sm font-bold text-text-primary">
                 Import Data to Map
@@ -242,42 +247,40 @@ export function ImportDataPortal({
             </div>
           </div>
           <button
+            className="p-1.5 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors"
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors"
           >
             <X size={16} />
           </button>
         </div>
 
-        {hasResourceModule && (
-          <div className="flex gap-1 px-5 pt-3 shrink-0">
+        {hasResourceModule ? <div className="flex gap-1 px-5 pt-3 shrink-0">
             {(["catalog", "resource"] as const).map((t) => (
               <button
                 key={t}
                 type="button"
-                onClick={() => setTab(t)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   tab === t
                     ? "bg-primary/15 text-primary border border-primary/30"
                     : "text-text-secondary hover:bg-surface-hover"
                 }`}
+                onClick={() => setTab(t)}
               >
                 {t === "catalog" ? "📦 Data Catalog" : "🧩 Resource Module"}
               </button>
             ))}
-          </div>
-        )}
+          </div> : null}
 
         <div className="px-5 pt-3 pb-2 shrink-0 flex flex-col gap-2">
           <div className="flex items-center gap-2 bg-surface-hover border border-border-secondary rounded-lg px-3 py-1.5">
-            <Search size={14} className="text-text-tertiary shrink-0" />
+            <Search className="text-text-tertiary shrink-0" size={14} />
             <input
-              type="text"
+              className="bg-transparent border-none outline-none text-xs text-text-primary placeholder:text-text-quaternary w-full"
               placeholder="Search datasets…"
+              type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-transparent border-none outline-none text-xs text-text-primary placeholder:text-text-quaternary w-full"
             />
           </div>
           <div className="flex items-center gap-1.5">
@@ -285,12 +288,12 @@ export function ImportDataPortal({
               <button
                 key={t}
                 type="button"
-                onClick={() => setTypeFilter(t)}
                 className={`px-2.5 py-1 rounded-full text-[0.68rem] font-semibold capitalize transition-colors ${
                   typeFilter === t
                     ? "bg-primary/15 text-primary border border-primary/30"
                     : "text-text-tertiary border border-transparent hover:bg-surface-hover"
                 }`}
+                onClick={() => setTypeFilter(t)}
               >
                 {t}
               </button>
@@ -299,18 +302,18 @@ export function ImportDataPortal({
             {tab === "resource" ? (
               filteredRes.length > 0 && (
                 <button
+                  className="text-[0.68rem] text-primary underline"
                   type="button"
                   onClick={toggleResAll}
-                  className="text-[0.68rem] text-primary underline"
                 >
                   {allResSelected ? "Deselect all" : "Select all"}
                 </button>
               )
             ) : filtered.length > 0 ? (
               <button
+                className="text-[0.68rem] text-primary underline"
                 type="button"
                 onClick={toggleSelectAll}
-                className="text-[0.68rem] text-primary underline"
               >
                 {allFilteredSelected ? "Deselect all" : "Select all"}
               </button>
@@ -357,12 +360,12 @@ export function ImportDataPortal({
                     <button
                       key={r.id}
                       type="button"
-                      onClick={() => toggleRes(r)}
                       className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl border text-left transition-all ${
                         isSelected
                           ? "bg-primary/10 border-primary/40 text-text-primary"
                           : "bg-transparent border-border-secondary hover:bg-surface-hover text-text-secondary"
                       }`}
+                      onClick={() => toggleRes(r)}
                     >
                       <div
                         className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${
@@ -371,22 +374,20 @@ export function ImportDataPortal({
                             : "border-border-primary"
                         }`}
                       >
-                        {isSelected && (
-                          <svg
-                            width="10"
+                        {isSelected ? <svg
+                            fill="none"
                             height="10"
                             viewBox="0 0 10 10"
-                            fill="none"
+                            width="10"
                           >
                             <path
                               d="M2 5l2.5 2.5L8 3"
                               stroke="currentColor"
-                              strokeWidth="1.5"
                               strokeLinecap="round"
                               strokeLinejoin="round"
+                              strokeWidth="1.5"
                             />
-                          </svg>
-                        )}
+                          </svg> : null}
                       </div>
                       <span className="text-base shrink-0">🗺️</span>
                       <div className="flex-1 min-w-0">
@@ -430,7 +431,7 @@ export function ImportDataPortal({
             <div className="py-8 text-center text-xs text-text-tertiary">
               <span className="text-2xl block mb-2">📭</span>
               No datasets found.{" "}
-              <a href="/data" className="text-primary underline">
+              <a className="text-primary underline" href="/data">
                 Upload one in Data Hub →
               </a>
             </div>
@@ -442,12 +443,12 @@ export function ImportDataPortal({
                   <button
                     key={ds.id}
                     type="button"
-                    onClick={() => toggleSelect(ds.id)}
                     className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl border text-left transition-all ${
                       isSelected
                         ? "bg-primary/10 border-primary/40 text-text-primary"
                         : "bg-transparent border-border-secondary hover:bg-surface-hover text-text-secondary"
                     }`}
+                    onClick={() => toggleSelect(ds.id)}
                   >
                     <div
                       className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${
@@ -456,22 +457,20 @@ export function ImportDataPortal({
                           : "border-border-primary"
                       }`}
                     >
-                      {isSelected && (
-                        <svg
-                          width="10"
+                      {isSelected ? <svg
+                          fill="none"
                           height="10"
                           viewBox="0 0 10 10"
-                          fill="none"
+                          width="10"
                         >
                           <path
                             d="M2 5l2.5 2.5L8 3"
                             stroke="currentColor"
-                            strokeWidth="1.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
+                            strokeWidth="1.5"
                           />
-                        </svg>
-                      )}
+                        </svg> : null}
                     </div>
                     <span className="text-base shrink-0">
                       {formatIcon(ds.format)}
@@ -525,9 +524,9 @@ export function ImportDataPortal({
             </span>
             {folders.length > 0 && (
               <select
+                className="flex-1 min-w-0 text-[0.7rem] bg-surface-hover border border-border-secondary rounded-lg px-2 py-1.5 text-text-secondary outline-none"
                 value={destFolder}
                 onChange={(e) => setDestFolder(e.target.value)}
-                className="flex-1 min-w-0 text-[0.7rem] bg-surface-hover border border-border-secondary rounded-lg px-2 py-1.5 text-text-secondary outline-none"
               >
                 <option value="">📍 Root (no folder)</option>
                 {folders.map((f) => (
@@ -540,21 +539,21 @@ export function ImportDataPortal({
           </div>
           <div className="flex gap-2 shrink-0">
             <button
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-text-secondary hover:bg-surface-hover border border-border-secondary transition-colors"
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-text-secondary hover:bg-surface-hover border border-border-secondary transition-colors"
             >
               Cancel
             </button>
             <button
-              type="button"
               disabled={totalSelected === 0}
-              onClick={handleImport}
+              type="button"
               className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 totalSelected === 0
                   ? "bg-surface-hover text-text-quaternary cursor-not-allowed"
                   : "bg-primary text-bg-primary hover:opacity-90"
               }`}
+              onClick={handleImport}
             >
               Add to Map ({totalSelected})
             </button>

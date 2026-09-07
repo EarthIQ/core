@@ -1,6 +1,8 @@
 import React from 'react';
+
 import { ProfileCard } from './ProfileCard';
 import { profiles } from '../../constants/profiles';
+
 import type { TranslationKey } from '../../types';
 
 interface ProfilesSectionProps {
@@ -22,10 +24,10 @@ export const ProfilesSection: React.FC<ProfilesSectionProps> = ({
       {profiles.map(profile => (
         <ProfileCard
           key={profile.id}
-          profile={profile}
           isActive={activeProfile === profile.id}
-          onClick={() => onSelectProfile(profile.id)}
+          profile={profile}
           t={t}
+          onClick={() => onSelectProfile(profile.id)}
         />
       ))}
     </div>

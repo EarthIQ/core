@@ -1,6 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
+
 import { Button } from "./Button";
+
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta<typeof Button> = {
   title: "Components/Forms/Button",
@@ -72,10 +74,10 @@ const PlusIcon = () => (
     viewBox="0 0 24 24"
   >
     <path
+      d="M12 4v16m8-8H4"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M12 4v16m8-8H4"
     />
   </svg>
 );
@@ -88,10 +90,10 @@ const ArrowRightIcon = () => (
     viewBox="0 0 24 24"
   >
     <path
+      d="M14 5l7 7m0 0l-7 7m7-7H3"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M14 5l7 7m0 0l-7 7m7-7H3"
     />
   </svg>
 );
@@ -104,10 +106,10 @@ const DownloadIcon = () => (
     viewBox="0 0 24 24"
   >
     <path
+      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
     />
   </svg>
 );
@@ -120,10 +122,10 @@ const TrashIcon = () => (
     viewBox="0 0 24 24"
   >
     <path
+      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
     />
   </svg>
 );
@@ -136,10 +138,10 @@ const CheckIcon = () => (
     viewBox="0 0 24 24"
   >
     <path
+      d="M5 13l4 4L19 7"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M5 13l4 4L19 7"
     />
   </svg>
 );
@@ -152,16 +154,16 @@ const SettingsIcon = () => (
     viewBox="0 0 24 24"
   >
     <path
+      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
     />
     <path
+      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
     />
   </svg>
 );
@@ -174,10 +176,10 @@ const HeartIcon = () => (
     viewBox="0 0 24 24"
   >
     <path
+      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
     />
   </svg>
 );
@@ -343,26 +345,26 @@ export const IconOnly: Story = {
   render: () => (
     <div className="flex items-center gap-4">
       <Button
-        variant="default"
         size="sm"
+        variant="default"
       >
         <PlusIcon />
       </Button>
       <Button
-        variant="primary"
         size="md"
+        variant="primary"
       >
         <SettingsIcon />
       </Button>
       <Button
-        variant="error"
         size="md"
+        variant="error"
       >
         <TrashIcon />
       </Button>
       <Button
-        variant="outline"
         size="lg"
+        variant="outline"
       >
         <HeartIcon />
       </Button>
@@ -392,28 +394,28 @@ export const LoadingVariants: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-4">
       <Button
-        variant="primary"
         loading
+        variant="primary"
       >
         Primary
       </Button>
       <Button
-        variant="secondary"
         loading
         loadingText="Loading..."
+        variant="secondary"
       >
         Secondary
       </Button>
       <Button
-        variant="success"
         loading
+        variant="success"
       >
         Success
       </Button>
       <Button
-        variant="outline"
         loading
         loadingText="Please wait..."
+        variant="outline"
       >
         Outline
       </Button>
@@ -433,32 +435,32 @@ export const DisabledVariants: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-4">
       <Button
-        variant="default"
         disabled
+        variant="default"
       >
         Default
       </Button>
       <Button
-        variant="primary"
         disabled
+        variant="primary"
       >
         Primary
       </Button>
       <Button
-        variant="secondary"
         disabled
+        variant="secondary"
       >
         Secondary
       </Button>
       <Button
-        variant="outline"
         disabled
+        variant="outline"
       >
         Outline
       </Button>
       <Button
-        variant="ghost"
         disabled
+        variant="ghost"
       >
         Ghost
       </Button>
@@ -499,11 +501,11 @@ export const Interactive: Story = {
 
     return (
       <Button
-        variant={success ? "success" : "primary"}
+        leftIcon={success ? <CheckIcon /> : undefined}
         loading={loading}
         loadingText="Saving..."
+        variant={success ? "success" : "primary"}
         onClick={handleClick}
-        leftIcon={success ? <CheckIcon /> : undefined}
       >
         {success ? "Saved!" : "Save Changes"}
       </Button>
@@ -516,20 +518,20 @@ export const ButtonGroup: Story = {
   render: () => (
     <div className="flex">
       <Button
-        variant="outline"
         className="rounded-r-none border-r-0"
+        variant="outline"
       >
         Left
       </Button>
       <Button
-        variant="outline"
         className="rounded-none"
+        variant="outline"
       >
         Center
       </Button>
       <Button
-        variant="outline"
         className="rounded-l-none border-l-0"
+        variant="outline"
       >
         Right
       </Button>
@@ -560,8 +562,8 @@ export const CommonUseCases: Story = {
         <div className="flex gap-3">
           <Button variant="outline">Cancel</Button>
           <Button
-            variant="error"
             leftIcon={<TrashIcon />}
+            variant="error"
           >
             Delete Account
           </Button>
@@ -574,9 +576,9 @@ export const CommonUseCases: Story = {
           Call to Action
         </p>
         <Button
-          variant="primary"
-          size="lg"
           rightIcon={<ArrowRightIcon />}
+          size="lg"
+          variant="primary"
         >
           Get Started Free
         </Button>
@@ -589,14 +591,14 @@ export const CommonUseCases: Story = {
         </p>
         <div className="flex gap-3">
           <Button
-            variant="outline"
             leftIcon={<HeartIcon />}
+            variant="outline"
           >
             Like
           </Button>
           <Button
-            variant="default"
             leftIcon={<DownloadIcon />}
+            variant="default"
           >
             Download
           </Button>
@@ -633,20 +635,20 @@ export const AllStates: Story = {
       {/* With Icon */}
       <div className="flex items-center text-sm text-white/70">With Icon</div>
       <Button
+        leftIcon={<PlusIcon />}
         variant="default"
-        leftIcon={<PlusIcon />}
       >
         Button
       </Button>
       <Button
+        leftIcon={<PlusIcon />}
         variant="primary"
-        leftIcon={<PlusIcon />}
       >
         Button
       </Button>
       <Button
-        variant="outline"
         leftIcon={<PlusIcon />}
+        variant="outline"
       >
         Button
       </Button>
@@ -654,20 +656,20 @@ export const AllStates: Story = {
       {/* Loading */}
       <div className="flex items-center text-sm text-white/70">Loading</div>
       <Button
+        loading
         variant="default"
-        loading
       >
         Button
       </Button>
       <Button
+        loading
         variant="primary"
-        loading
       >
         Button
       </Button>
       <Button
-        variant="outline"
         loading
+        variant="outline"
       >
         Button
       </Button>
@@ -675,20 +677,20 @@ export const AllStates: Story = {
       {/* Disabled */}
       <div className="flex items-center text-sm text-white/70">Disabled</div>
       <Button
+        disabled
         variant="default"
-        disabled
       >
         Button
       </Button>
       <Button
+        disabled
         variant="primary"
-        disabled
       >
         Button
       </Button>
       <Button
-        variant="outline"
         disabled
+        variant="outline"
       >
         Button
       </Button>

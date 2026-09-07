@@ -1,17 +1,12 @@
+import { Layers, Eye, EyeOff, ChevronsUpDown, X, Filter } from "lucide-react";
+import { Map } from "maplibre-gl";
 import React, { useState, useCallback } from "react";
-import {
-  Layers,
-  Eye,
-  EyeOff,
-  ChevronsUpDown,
-  X,
-  Filter,
-  FolderOpen,
-} from "lucide-react";
-import { useLayerPanelConfig } from "../../../hooks/useLayerPanelConfig";
-import { SearchBar } from "./SearchBar";
+
 import { LayerGroupComponent } from "./LayerGroup";
-import { LayerItem } from "./LayerItem";
+import { LayerItem as _LayerItem } from "./LayerItem";
+import { SearchBar } from "./SearchBar";
+import { useLayerPanelConfig } from "../../../hooks/useLayerPanelConfig";
+
 import type { LayerPanelConfig } from "./types";
 
 interface LayerPanelProps {
@@ -34,7 +29,7 @@ interface LayerPanelProps {
   /** Callback when a layer opacity is changed */
   onLayerOpacityChange?: (layerId: string, opacity: number) => void;
   /** Optional map instance to use instead of context */
-  map?: maplibregl.Map | null;
+  map?: Map | null;
 }
 
 export const LayerPanel: React.FC<LayerPanelProps> = ({
@@ -131,11 +126,11 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   if (isCollapsed) {
     return (
       <button
-        onClick={handleToggleCollapsed}
+        aria-expanded="false"
+        aria-label="Open layer panel"
         className={`flex items-center gap-2 rounded-xl border border-[var(--border-primary)] bg-[var(--surface)] px-3 py-2.5 shadow-lg transition-all hover:bg-[var(--surface-hover)] hover:shadow-xl ${className}`}
         style={style}
-        aria-label="Open layer panel"
-        aria-expanded="false"
+        onClick={handleToggleCollapsed}
       >
         <Layers className="h-5 w-5 text-[var(--primary)]" />
         <span className="text-sm font-semibold text-[var(--text-primary)]">
@@ -151,10 +146,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   // ── Expanded ──
   return (
     <div
-      className={`flex flex-col overflow-hidden rounded-xl border border-[var(--border-primary)] bg-[var(--surface)] shadow-lg ${!className.includes("max-h-") ? "max-h-[80vh]" : ""} ${!className.includes("w-") ? "w-80" : ""} ${className}`}
-      style={style}
-      role="region"
       aria-label={config.title || "Layer panel"}
+      className={`flex flex-col overflow-hidden rounded-xl border border-[var(--border-primary)] bg-[var(--surface)] shadow-lg ${!className.includes("max-h-") ? "max-h-[80vh]" : ""} ${!className.includes("w-") ? "w-80" : ""} ${className}`}
+      role="region"
+      style={style}
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[var(--border-primary)] bg-[var(--bg-secondary)] px-3 py-2.5">
@@ -170,37 +165,38 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
 
         <div className="flex items-center gap-0.5">
           <button
-            onClick={() => toggleAllVisibility(true)}
+            aria-label="Show all layers"
             className="rounded-lg p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
             title="Show all"
-            aria-label="Show all layers"
+            onClick={() => toggleAllVisibility(true)}
           >
             <Eye className="h-4 w-4 text-[var(--text-secondary)]" />
           </button>
           <button
-            onClick={() => toggleAllVisibility(false)}
+            aria-label="Hide all layers"
             className="rounded-lg p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
             title="Hide all"
-            aria-label="Hide all layers"
+            onClick={() => toggleAllVisibility(false)}
           >
             <EyeOff className="h-4 w-4 text-[var(--text-secondary)]" />
           </button>
           <button
-            onClick={() => {
-              const allExpanded = groups.every((g) => g.expanded);
-              allExpanded ? collapseAll() : expandAll();
-            }}
+            aria-label="Toggle expand all"
             className="rounded-lg p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
             title="Expand/Collapse all"
-            aria-label="Toggle expand all"
+            onClick={() => {
+              const allExpanded = groups.every((g) => g.expanded);
+              if (allExpanded) collapseAll();
+              else expandAll();
+            }}
           >
             <ChevronsUpDown className="h-4 w-4 text-[var(--text-secondary)]" />
           </button>
           <button
-            onClick={onClose}
+            aria-label="Close layer panel"
             className="rounded-lg p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
             title="Close"
-            aria-label="Close layer panel"
+            onClick={onClose}
           >
             <X className="h-4 w-4 text-[var(--text-secondary)]" />
           </button>
@@ -210,30 +206,30 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
       {/* Search */}
       {config.showSearch !== false && (
         <SearchBar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
           filterMode={filterMode}
-          onFilterModeChange={setFilterMode}
+          searchQuery={searchQuery}
+          showFilters={config.showFilters !== false}
+          totalCount={counts.total}
           resultCount={
             groups.reduce((s, g) => s + g.totalCount, 0) +
             unmatchedLayers.length
           }
-          totalCount={counts.total}
-          showFilters={config.showFilters !== false}
+          onFilterModeChange={setFilterMode}
+          onSearchChange={setSearchQuery}
         />
       )}
 
       {/* Layer List */}
       <div
+        aria-label="Layer list"
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
         role="tree"
-        aria-label="Layer list"
       >
         {!hasResults ? (
           <EmptyState
             hasFilters={hasActiveFilters}
-            onClear={clearFilters}
             hasTotalLayers={counts.total > 0}
+            onClear={clearFilters}
           />
         ) : (
           <>
@@ -241,22 +237,22 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             {groups.map((group) => (
               <LayerGroupComponent
                 key={group.id}
+                allowDelete={Boolean(config.allowDelete !== false)}
+                allowReorder={Boolean(config.allowReorder !== false)}
                 group={group}
+                selectedLayerId={selectedLayerId}
+                showTypeBadges={Boolean(config.showTypeBadges !== false)}
+                onLayerDelete={handleDeleteLayer}
+                onLayerMoveDown={handleMoveDown}
+                onLayerMoveUp={handleMoveUp}
+                onLayerOpacityChange={setLayerOpacity}
+                onLayerVisibilityChange={handleLayerVisibilityChange}
+                onLayerZoomTo={zoomToLayer}
+                onSelectLayer={handleSelectLayer}
                 onToggleExpanded={toggleGroupExpanded}
-                onToggleVisibility={toggleGroupVisibility}
                 onToggleSubGroupExpanded={toggleSubGroupExpanded}
                 onToggleSubGroupVisibility={toggleSubGroupVisibility}
-                selectedLayerId={selectedLayerId}
-                onSelectLayer={handleSelectLayer}
-                onLayerVisibilityChange={handleLayerVisibilityChange}
-                onLayerOpacityChange={setLayerOpacity}
-                onLayerDelete={handleDeleteLayer}
-                onLayerZoomTo={zoomToLayer}
-                onLayerMoveUp={handleMoveUp}
-                onLayerMoveDown={handleMoveDown}
-                showTypeBadges={Boolean(config.showTypeBadges !== false)}
-                allowReorder={Boolean(config.allowReorder !== false)}
-                allowDelete={Boolean(config.allowDelete !== false)}
+                onToggleVisibility={toggleGroupVisibility}
               />
             ))}
 
@@ -337,14 +333,14 @@ const EmptyState: React.FC<{
         ? "Try adjusting your search or filters"
         : "Add layers to your map to see them here"}
     </p>
-    {hasFilters && (
+    {hasFilters ? (
       <button
-        onClick={onClear}
         className="mt-2 rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+        onClick={onClear}
       >
         Clear filters
       </button>
-    )}
+    ) : null}
   </div>
 );
 

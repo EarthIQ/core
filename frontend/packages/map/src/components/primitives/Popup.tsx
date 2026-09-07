@@ -1,7 +1,11 @@
-import React, { useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+
 import { useMap } from '../../hooks/useMap';
+
+import type React from 'react';
+
 
 export interface PopupProps {
   /** Longitude position */

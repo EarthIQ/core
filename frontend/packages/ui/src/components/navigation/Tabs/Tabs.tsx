@@ -1,10 +1,11 @@
+import { motion } from "framer-motion";
 import React, {
   useState,
   createContext,
   useContext,
   type ReactNode,
 } from "react";
-import { motion } from "framer-motion";
+
 import { cn } from "../../../utils/cn";
 
 // Context for compound component pattern
@@ -81,7 +82,7 @@ interface ScrollableTabListProps {
   className?: string;
 }
 
-function ScrollableTabList({ children, className }: ScrollableTabListProps) {
+const ScrollableTabList = ({ children, className }: ScrollableTabListProps) => {
   return (
     <div
       className={cn(
@@ -105,7 +106,7 @@ function ScrollableTabList({ children, className }: ScrollableTabListProps) {
 
 // ============ Main Tabs Component ============
 
-export function Tabs(props: TabsProps) {
+export const Tabs = (props: TabsProps) => {
   const {
     variant = "default",
     size = "md",
@@ -118,29 +119,29 @@ export function Tabs(props: TabsProps) {
   if (isItemsPattern) {
     return (
       <TabsWithItems
-        {...(props as TabsItemsProps)}
-        variant={variant}
-        size={size}
-        fullWidth={fullWidth}
+        {...(props)}
         className={className}
+        fullWidth={fullWidth}
+        size={size}
+        variant={variant}
       />
     );
   }
 
   return (
     <TabsCompound
-      {...(props as TabsCompoundProps)}
-      variant={variant}
-      size={size}
-      fullWidth={fullWidth}
+      {...(props)}
       className={className}
+      fullWidth={fullWidth}
+      size={size}
+      variant={variant}
     />
   );
 }
 
 // ============ Items Pattern Component ============
 
-function TabsWithItems({
+const TabsWithItems = ({
   items,
   defaultActiveKey,
   activeKey: controlledActiveKey,
@@ -149,7 +150,7 @@ function TabsWithItems({
   size = "md",
   fullWidth = false,
   className,
-}: TabsItemsProps) {
+}: TabsItemsProps) => {
   const [internalActiveKey, setInternalActiveKey] = useState(
     defaultActiveKey || items[0]?.key
   );
@@ -195,14 +196,14 @@ function TabsWithItems({
             return (
               <TabButton
                 key={item.key}
-                isActive={isActive}
                 disabled={item.disabled}
-                variant={variant}
-                size={size}
                 fullWidth={fullWidth}
-                layoutIdSuffix="items"
-                onClick={() => !item.disabled && handleTabClick(item.key)}
                 icon={item.icon}
+                isActive={isActive}
+                layoutIdSuffix="items"
+                size={size}
+                variant={variant}
+                onClick={() => !item.disabled && handleTabClick(item.key)}
               >
                 {item.label}
               </TabButton>
@@ -214,8 +215,8 @@ function TabsWithItems({
       <div className="mt-4">
         <motion.div
           key={activeKey}
-          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 10 }}
           transition={{ duration: 0.2 }}
         >
           {activeTab?.content}
@@ -240,7 +241,7 @@ interface TabButtonProps {
   className?: string;
 }
 
-function TabButton({
+const TabButton = ({
   isActive,
   disabled = false,
   variant,
@@ -251,10 +252,9 @@ function TabButton({
   icon,
   children,
   className,
-}: TabButtonProps) {
+}: TabButtonProps) => {
   return (
     <button
-      onClick={onClick}
       disabled={disabled}
       className={cn(
         "relative flex cursor-pointer items-center justify-center gap-2 font-medium",
@@ -294,33 +294,30 @@ function TabButton({
         ],
         className
       )}
+      onClick={onClick}
     >
       {icon}
       {children}
 
-      {isActive && variant === "default" && (
-        <motion.div
-          layoutId={`activeTab-${layoutIdSuffix}`}
+      {isActive && variant === "default" ? <motion.div
           className="absolute inset-0 rounded-[var(--radius-md)] bg-[var(--surface-active)]"
+          layoutId={`activeTab-${layoutIdSuffix}`}
           style={{ zIndex: -1 }}
           transition={{ type: "spring", duration: 0.3 }}
-        />
-      )}
+        /> : null}
 
-      {isActive && variant === "underline" && (
-        <motion.div
-          layoutId={`activeTabUnderline-${layoutIdSuffix}`}
+      {isActive && variant === "underline" ? <motion.div
           className="absolute right-0 bottom-0 left-0 h-0.5 bg-[var(--primary)]"
+          layoutId={`activeTabUnderline-${layoutIdSuffix}`}
           transition={{ type: "spring", duration: 0.3 }}
-        />
-      )}
+        /> : null}
     </button>
   );
 }
 
 // ============ Compound Pattern Component ============
 
-function TabsCompound({
+const TabsCompound = ({
   children,
   defaultValue,
   value: controlledValue,
@@ -328,7 +325,7 @@ function TabsCompound({
   variant = "default",
   size = "md",
   className,
-}: TabsCompoundProps) {
+}: TabsCompoundProps) => {
   const [internalValue, setInternalValue] = useState(defaultValue || "");
 
   const activeKey = controlledValue ?? internalValue;
@@ -357,11 +354,11 @@ interface TabsListProps {
   fullWidth?: boolean;
 }
 
-export function TabsList({
+export const TabsList = ({
   children,
   className,
   fullWidth = false,
-}: TabsListProps) {
+}: TabsListProps) => {
   const { variant } = useTabsContext();
 
   return (
@@ -398,26 +395,26 @@ interface TabsTriggerProps {
   className?: string;
 }
 
-export function TabsTrigger({
+export const TabsTrigger = ({
   value,
   children,
   icon,
   disabled = false,
   className,
-}: TabsTriggerProps) {
+}: TabsTriggerProps) => {
   const { activeKey, onTabChange, variant, size } = useTabsContext();
   const isActive = value === activeKey;
 
   return (
     <TabButton
-      isActive={isActive}
-      disabled={disabled}
-      variant={variant}
-      size={size}
-      layoutIdSuffix="compound"
-      onClick={() => !disabled && onTabChange(value)}
-      icon={icon}
       className={className}
+      disabled={disabled}
+      icon={icon}
+      isActive={isActive}
+      layoutIdSuffix="compound"
+      size={size}
+      variant={variant}
+      onClick={() => !disabled && onTabChange(value)}
     >
       {children}
     </TabButton>
@@ -433,12 +430,12 @@ interface TabsContentProps {
   forceMount?: boolean;
 }
 
-export function TabsContent({
+export const TabsContent = ({
   value,
   children,
   className,
   forceMount = false,
-}: TabsContentProps) {
+}: TabsContentProps) => {
   const { activeKey } = useTabsContext();
   const isActive = value === activeKey;
 
@@ -448,10 +445,10 @@ export function TabsContent({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 10 }}
-      transition={{ duration: 0.2 }}
       className={cn("mt-4", !isActive && "hidden", className)}
+      initial={{ opacity: 0, y: 10 }}
+      transition={{ duration: 0.2 }}
     >
       {children}
     </motion.div>

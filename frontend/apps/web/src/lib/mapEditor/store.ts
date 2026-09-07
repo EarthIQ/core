@@ -1,17 +1,17 @@
 import { create } from "zustand";
-import type {
-  ActiveTool,
-  Annotation,
-  AnnotationKind,
-  Bookmark,
-  CommentMessage,
-  CommentThread,
-  DrawnFeature,
-  DrawSession,
-  PointAnnotation,
+
+import { POINT_KINDS ,type 
+  ActiveTool,type 
+  Annotation,type 
+  AnnotationKind,type 
+  Bookmark,type 
+  CommentMessage,type 
+  CommentThread,type 
+  DrawnFeature,type 
+  DrawSession,type 
+  PointAnnotation,type 
   ShapeAnnotation,
 } from "./types";
-import { POINT_KINDS } from "./types";
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Helpers                                                                  */
@@ -38,7 +38,7 @@ export function defaultAnnotationFor(
       ...base,
       lngLat: seed.lngLat ?? [0, 0],
       kind,
-    } as PointAnnotation;
+    };
   }
 
   return {
@@ -48,7 +48,7 @@ export function defaultAnnotationFor(
     radius: seed.radius ?? 100,
     opacity: 0.45,
     lineWidth: 4,
-  } as ShapeAnnotation;
+  };
 }
 
 /**
@@ -73,7 +73,7 @@ function migrateComments(raw: unknown): CommentThread[] {
 
     if (Array.isArray(c.messages)) {
       // Current threaded format
-      const messages: CommentMessage[] = (c.messages as any[])
+      const messages: CommentMessage[] = (c.messages)
         .filter((m) => m && typeof m.body === "string" && m.body.trim())
         .map((m) => ({
           id: typeof m.id === "string" ? m.id : uid("msg"),
@@ -312,7 +312,7 @@ export const useMapEditor = create<MapEditorState>((set) => ({
     set((s) => ({
       ...pushHistory(s),
       annotations: s.annotations.map((a) =>
-        a.id === id ? ({ ...a, ...patch } as Annotation) : a,
+        a.id === id ? ({ ...a, ...patch }) : a,
       ),
     })),
 

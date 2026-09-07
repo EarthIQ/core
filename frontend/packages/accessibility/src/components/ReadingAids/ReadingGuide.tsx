@@ -26,12 +26,12 @@ export const ReadingGuide: React.FC<ReadingGuideProps> = ({ enabled }) => {
 
   return (
     <div
+      aria-hidden="true"
+      style={{ top: position.y - 24 }}
       className="
         pointer-events-none fixed left-0 right-0 z-[9998]
         h-12 border-y-2 border-primary/60 bg-primary/10
       "
-      style={{ top: position.y - 24 }}
-      aria-hidden="true"
     />
   );
 };

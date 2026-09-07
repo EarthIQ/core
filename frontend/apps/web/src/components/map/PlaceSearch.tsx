@@ -9,10 +9,11 @@
  * Usage policy: debounced (450ms), ≥ 3 chars, in-flight requests are aborted,
  * and the required OSM attribution is shown in the dropdown footer.
  */
-import { useEffect, useRef, useState } from "react";
+import { Spinner } from "@packages/ui";
 import { Search, X, MapPin } from "lucide-react";
 import { Marker, Popup } from "maplibre-gl";
-import { Spinner } from "@packages/ui";
+import { useEffect, useRef, useState } from "react";
+
 import { searchPlaces, type PlaceResult } from "@/lib/geocode";
 
 interface PlaceSearchProps {
@@ -23,7 +24,7 @@ interface PlaceSearchProps {
   className?: string;
 }
 
-export function PlaceSearch({ mapRef, mapReady, className }: PlaceSearchProps) {
+export const PlaceSearch = ({ mapRef, mapReady, className }: PlaceSearchProps) => {
   const [value, setValue] = useState("");
   const [results, setResults] = useState<PlaceResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -129,37 +130,34 @@ export function PlaceSearch({ mapRef, mapReady, className }: PlaceSearchProps) {
   return (
     <div ref={boxRef} className={`relative w-full ${className ?? ""}`}>
       <div className="relative flex items-center gap-2 bg-surface-hover/50 border border-border-secondary rounded-lg pl-3 pr-2 py-1.5 hover:border-border-primary focus-within:border-[var(--input-focus-border)] transition-colors">
-        <Search size={15} className="shrink-0 text-[var(--text-tertiary)]" aria-hidden />
+        <Search aria-hidden className="shrink-0 text-[var(--text-tertiary)]" size={15} />
         <input
           ref={inputRef}
+          aria-expanded={open}
+          aria-label="Search locations"
+          className="flex-1 min-w-0 bg-transparent text-xs text-[var(--text-primary)] outline-none border-none p-0"
+          placeholder="Search locations…"
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder="Search locations…"
-          aria-label="Search locations"
-          aria-expanded={open}
-          className="flex-1 min-w-0 bg-transparent text-xs text-[var(--text-primary)] outline-none border-none p-0"
         />
-        {searching && <Spinner size="xs" />}
-        {value && (
-          <button
+        {searching ? <Spinner size="xs" /> : null}
+        {value ? <button
+            aria-label="Clear location search"
+            className="p-0.5 rounded-md text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer shrink-0"
             type="button"
             onClick={() => {
               setValue("");
               inputRef.current?.focus();
             }}
-            aria-label="Clear location search"
-            className="p-0.5 rounded-md text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer shrink-0"
           >
             <X size={13} />
-          </button>
-        )}
+          </button> : null}
       </div>
 
       {/* Results dropdown */}
-      {open && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-elevated border border-border-primary rounded-xl shadow-xl animate-fade-in-up z-50 overflow-hidden">
+      {open ? <div className="absolute top-full left-0 right-0 mt-2 bg-elevated border border-border-primary rounded-xl shadow-xl animate-fade-in-up z-50 overflow-hidden">
           <div className="max-h-80 overflow-y-auto py-1">
             {searching && results.length === 0 ? (
               <div className="flex items-center gap-2.5 px-3.5 py-4 text-xs text-[var(--text-tertiary)]">
@@ -175,14 +173,14 @@ export function PlaceSearch({ mapRef, mapReady, className }: PlaceSearchProps) {
                 <button
                   key={p.place_id}
                   type="button"
+                  className={`flex w-full items-start gap-2.5 px-3 py-2.5 text-left transition-colors cursor-pointer ${
+                    i === active ? "bg-surface-hover" : ""
+                  }`}
+                  onMouseEnter={() => setActive(i)}
                   onMouseDown={(e) => {
                     e.preventDefault();
                     selectPlace(p);
                   }}
-                  onMouseEnter={() => setActive(i)}
-                  className={`flex w-full items-start gap-2.5 px-3 py-2.5 text-left transition-colors cursor-pointer ${
-                    i === active ? "bg-surface-hover" : ""
-                  }`}
                 >
                   <MapPin
                     size={14}
@@ -202,11 +200,9 @@ export function PlaceSearch({ mapRef, mapReady, className }: PlaceSearchProps) {
                     >
                       {p.name}
                     </span>
-                    {p.detail && (
-                      <span className="block truncate text-[0.65rem] text-[var(--text-tertiary)]">
+                    {p.detail ? <span className="block truncate text-[0.65rem] text-[var(--text-tertiary)]">
                         {p.detail}
-                      </span>
-                    )}
+                      </span> : null}
                   </span>
                   {!mapReady && (
                     <span className="shrink-0 self-center text-[0.6rem] text-[var(--text-tertiary)]">
@@ -226,8 +222,7 @@ export function PlaceSearch({ mapRef, mapReady, className }: PlaceSearchProps) {
               ↑↓ navigate · ↵ fly to
             </span>
           </div>
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 }

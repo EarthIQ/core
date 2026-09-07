@@ -8,7 +8,9 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+
 import { isVectorized } from "./helpers";
+
 import type { DatasetItem } from "./types";
 
 interface Props {
@@ -85,16 +87,16 @@ export default function RowActions({
 
   return (
     <Dropdown
+      items={items}
       placement="bottom-end"
       trigger={
         <IconButton
           icon={<MoreHorizontal size={16} />}
           label={`Actions for ${d.name}`}
-          variant="ghost"
           size="sm"
+          variant="ghost"
         />
       }
-      items={items}
     />
   );
 }

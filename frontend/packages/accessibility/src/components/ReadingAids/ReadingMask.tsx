@@ -30,22 +30,22 @@ export const ReadingMask: React.FC<ReadingMaskProps> = ({ enabled }) => {
     <>
       {/* Top mask */}
       <div
+        aria-hidden="true"
+        style={{ height: Math.max(0, position.y - maskHeight) }}
         className="
           pointer-events-none fixed top-0 left-0 right-0 z-[9998]
           bg-black/80 transition-all duration-75
         "
-        style={{ height: Math.max(0, position.y - maskHeight) }}
-        aria-hidden="true"
       />
       
       {/* Bottom mask */}
       <div
+        aria-hidden="true"
+        style={{ top: position.y + maskHeight }}
         className="
           pointer-events-none fixed left-0 right-0 bottom-0 z-[9998]
           bg-black/80 transition-all duration-75
         "
-        style={{ top: position.y + maskHeight }}
-        aria-hidden="true"
       />
     </>
   );

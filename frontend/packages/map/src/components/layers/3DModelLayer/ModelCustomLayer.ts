@@ -1,14 +1,15 @@
 // components/ModelLayer/ModelCustomLayer.ts
 
-import * as THREE from "three";
 import * as maplibregl from "maplibre-gl";
+import * as THREE from "three";
+
 import {
-  ModelFeature,
-  ModelDefinition,
-  LightingConfig,
-  PerformanceConfig,
-  AnchorPoint,
-  RotationUnit,
+  type ModelFeature,
+  type ModelDefinition,
+  type LightingConfig,
+  type PerformanceConfig,
+  type AnchorPoint,
+  type RotationUnit,
 } from "./types";
 
 // ── Helpers ──────────────────────────────────────────────────────────────

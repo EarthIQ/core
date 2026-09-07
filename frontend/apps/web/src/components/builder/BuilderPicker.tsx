@@ -1,7 +1,8 @@
+import { cn, useClickOutside } from "@packages/ui";
+import { ChevronRight } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
-import { cn, useClickOutside } from "@packages/ui";
+
 import {
   ENABLED_BUILDERS,
   buildBuilderUrl,
@@ -32,13 +33,13 @@ interface BuilderPickerProps {
  * `?projectId=`. Because it renders from `ENABLED_BUILDERS`, new builders
  * declared in `lib/builders.tsx` appear here automatically.
  */
-export function BuilderPicker({
+export const BuilderPicker = ({
   projectId,
   hostId,
   trigger,
   footer,
   className,
-}: BuilderPickerProps) {
+}: BuilderPickerProps) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useClickOutside<HTMLDivElement>(
@@ -54,7 +55,11 @@ export function BuilderPicker({
   return (
     <div
       ref={containerRef}
+      aria-expanded={isOpen}
+      aria-haspopup="menu"
       className="relative inline-block"
+      role="button"
+      tabIndex={0}
       onClick={() => setIsOpen((v) => !v)}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -63,17 +68,12 @@ export function BuilderPicker({
         }
         if (e.key === "Escape") setIsOpen(false);
       }}
-      role="button"
-      tabIndex={0}
-      aria-haspopup="menu"
-      aria-expanded={isOpen}
     >
       {trigger}
 
-      {isOpen && (
-        <div
-          role="menu"
+      {isOpen ? <div
           aria-label="Project builders"
+          role="menu"
           className={cn(
             "absolute right-0 top-full z-50 mt-2 w-80",
             "rounded-2xl border border-[var(--border-primary)]",
@@ -101,18 +101,18 @@ export function BuilderPicker({
               return (
                 <button
                   key={builder.id}
-                  type="button"
                   role="menuitem"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSelect(builder);
-                  }}
+                  type="button"
                   className={cn(
                     "flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left",
                     "transition-colors duration-150 cursor-pointer",
                     "hover:bg-[var(--surface-hover)]",
                     isActive && "bg-[var(--surface-active)]",
                   )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelect(builder);
+                  }}
                 >
                   <span
                     className={cn(
@@ -139,8 +139,8 @@ export function BuilderPicker({
                   </span>
 
                   <ChevronRight
-                    size={15}
                     className="shrink-0 text-[var(--text-tertiary)]"
+                    size={15}
                   />
                 </button>
               );
@@ -148,13 +148,10 @@ export function BuilderPicker({
           </div>
 
           {/* Optional footer slot */}
-          {footer && (
-            <div className="border-t border-[var(--border-primary)] px-1.5 py-1.5">
+          {footer ? <div className="border-t border-[var(--border-primary)] px-1.5 py-1.5">
               {footer}
-            </div>
-          )}
-        </div>
-      )}
+            </div> : null}
+        </div> : null}
     </div>
   );
 }

@@ -1,6 +1,7 @@
-import React from "react";
-import type { Keyframe, EasingType } from "../../types/video-export";
 import { MapPin, Compass, ZoomIn, Mountain, Timer } from "lucide-react";
+import React from "react";
+
+import type { Keyframe, EasingType } from "../../types/video-export";
 
 interface KeyframePropertiesProps {
   keyframe: Keyframe;
@@ -18,14 +19,14 @@ const easingOptions: { value: EasingType; label: string }[] = [
   { value: "ease-in-out", label: "InOut" },
 ];
 
-export function KeyframeProperties({
+export const KeyframeProperties = ({
   keyframe,
   keyframeIndex,
   keyframeTime,
   isLast,
   onUpdate,
   onUpdateFromMap,
-}: KeyframePropertiesProps) {
+}: KeyframePropertiesProps) => {
   return (
     <div
       className="space-y-2 rounded-lg p-2"
@@ -52,24 +53,24 @@ export function KeyframeProperties({
           {keyframeTime.toFixed(1)}s
         </span>
         <input
-          type="text"
           className="input min-w-0 flex-1 !px-2 !py-0.5 !text-[11px]"
           placeholder="Label..."
+          type="text"
           value={keyframe.label || ""}
           onChange={(e) => onUpdate(keyframe.id, { label: e.target.value })}
         />
         <button
           className="shrink-0 rounded px-1.5 py-0.5 text-[9px] font-medium transition-colors"
+          title="Sync from current map view"
           style={{
             backgroundColor: "var(--info-bg)",
             color: "var(--info-text)",
           }}
           onClick={() => onUpdateFromMap(keyframe.id)}
-          title="Sync from current map view"
         >
           <MapPin
-            size={9}
             className="inline"
+            size={9}
           />{" "}
           Sync
         </button>
@@ -80,32 +81,32 @@ export function KeyframeProperties({
         <CompactInput
           icon={<ZoomIn size={9} />}
           label="Z"
-          value={keyframe.zoom}
-          min={0}
           max={22}
+          min={0}
           step={0.1}
+          value={keyframe.zoom}
           width="w-14"
           onChange={(v) => onUpdate(keyframe.id, { zoom: v })}
         />
         <CompactInput
           icon={<Mountain size={9} />}
           label="P"
-          value={keyframe.pitch}
-          min={0}
           max={85}
+          min={0}
           step={1}
           suffix="°"
+          value={keyframe.pitch}
           width="w-12"
           onChange={(v) => onUpdate(keyframe.id, { pitch: v })}
         />
         <CompactInput
           icon={<Compass size={9} />}
           label="B"
-          value={keyframe.bearing}
-          min={-180}
           max={180}
+          min={-180}
           step={1}
           suffix="°"
+          value={keyframe.bearing}
           width="w-14"
           onChange={(v) => onUpdate(keyframe.id, { bearing: v })}
         />
@@ -115,16 +116,16 @@ export function KeyframeProperties({
             style={{ color: "var(--text-tertiary)" }}
           />
           <input
-            type="number"
             className="input !w-20 !px-1.5 !py-0.5 font-mono !text-[10px]"
-            value={Number(keyframe.center[0].toFixed(4))}
             step={0.001}
+            title="Longitude"
+            type="number"
+            value={Number(keyframe.center[0].toFixed(4))}
             onChange={(e) =>
               onUpdate(keyframe.id, {
                 center: [parseFloat(e.target.value) || 0, keyframe.center[1]],
               })
             }
-            title="Longitude"
           />
           <span
             className="text-[9px]"
@@ -133,16 +134,16 @@ export function KeyframeProperties({
             ,
           </span>
           <input
-            type="number"
             className="input !w-20 !px-1.5 !py-0.5 font-mono !text-[10px]"
-            value={Number(keyframe.center[1].toFixed(4))}
             step={0.001}
+            title="Latitude"
+            type="number"
+            value={Number(keyframe.center[1].toFixed(4))}
             onChange={(e) =>
               onUpdate(keyframe.id, {
                 center: [keyframe.center[0], parseFloat(e.target.value) || 0],
               })
             }
-            title="Latitude"
           />
         </div>
       </div>
@@ -155,11 +156,11 @@ export function KeyframeProperties({
             style={{ color: "var(--text-tertiary)" }}
           />
           <input
-            type="number"
             className="input !w-12 !px-1.5 !py-0.5 font-mono !text-[10px]"
-            value={keyframe.duration}
             min={0.5}
             step={0.5}
+            type="number"
+            value={keyframe.duration}
             onChange={(e) =>
               onUpdate(keyframe.id, {
                 duration: Math.max(0.5, parseFloat(e.target.value) || 1),
@@ -177,6 +178,7 @@ export function KeyframeProperties({
               <button
                 key={opt.value}
                 className="rounded px-1.5 py-0.5 text-[9px] font-medium transition-all"
+                title={opt.value}
                 style={{
                   backgroundColor:
                     keyframe.easing === opt.value
@@ -189,7 +191,6 @@ export function KeyframeProperties({
                   border: `1px solid ${keyframe.easing === opt.value ? "var(--primary)" : "var(--border-secondary)"}`,
                 }}
                 onClick={() => onUpdate(keyframe.id, { easing: opt.value })}
-                title={opt.value}
               >
                 {opt.label}
               </button>
@@ -221,7 +222,7 @@ export function KeyframeProperties({
   );
 }
 
-function CompactInput({
+const CompactInput = ({
   icon,
   label,
   value,
@@ -241,7 +242,7 @@ function CompactInput({
   suffix?: string;
   width?: string;
   onChange: (value: number) => void;
-}) {
+}) => {
   return (
     <div className="flex items-center gap-1">
       <span
@@ -253,22 +254,20 @@ function CompactInput({
       </span>
       <div className="relative">
         <input
-          type="number"
           className={`input ${width} !px-1.5 !py-0.5 font-mono !text-[10px] ${suffix ? "!pr-4" : ""}`}
-          value={value}
-          min={min}
           max={max}
+          min={min}
           step={step}
+          type="number"
+          value={value}
           onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
         />
-        {suffix && (
-          <span
+        {suffix ? <span
             className="pointer-events-none absolute top-1/2 right-1 -translate-y-1/2 text-[8px]"
             style={{ color: "var(--text-quaternary)" }}
           >
             {suffix}
-          </span>
-        )}
+          </span> : null}
       </div>
     </div>
   );

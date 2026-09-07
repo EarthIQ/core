@@ -8,8 +8,9 @@
  *   const { collaborators, isConnected, sendCursor } = useCollaboration(projectId, mapRef);
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { MutableRefObject } from "react";
+
 import type * as maplibregl from "maplibre-gl";
+import type { MutableRefObject } from "react";
 
 const TOKEN_KEY = "eq_token";
 const THROTTLE_MS = 100; // max 10 cursor updates/sec
@@ -128,8 +129,8 @@ export function useCollaboration(
             return [
               ...prev,
               {
-                user_id: msg.user_id!,
-                email: msg.email!,
+                user_id: msg.user_id,
+                email: msg.email,
                 full_name: msg.full_name ?? null,
                 cursor: null,
                 viewport: null,

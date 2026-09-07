@@ -1,8 +1,9 @@
-import React, { type ReactNode, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import React, { type ReactNode, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { cn } from "../../../utils/cn";
+
 import { useEscapeKey } from "../../../hooks/useKeyboard";
+import { cn } from "../../../utils/cn";
 import { IconButton } from "../../primitives/Button/IconButton";
 
 type DrawerPosition = "left" | "right" | "top" | "bottom";
@@ -59,7 +60,7 @@ const slideVariants: Record<
   },
 };
 
-export function Drawer({
+export const Drawer = ({
   isOpen,
   onClose,
   children,
@@ -69,7 +70,7 @@ export function Drawer({
   closeOnOverlayClick = true,
   showCloseButton = true,
   className,
-}: DrawerProps) {
+}: DrawerProps) => {
   useEscapeKey(onClose, isOpen);
 
   useEffect(() => {
@@ -85,16 +86,15 @@ export function Drawer({
 
   return createPortal(
     <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50">
+      {isOpen ? <div className="fixed inset-0 z-50">
           {/* Backdrop */}
           <motion.div
-            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closeOnOverlayClick ? onClose : undefined}
             className="absolute inset-0"
+            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
             style={{ backgroundColor: "var(--overlay)" }}
+            onClick={closeOnOverlayClick ? onClose : undefined}
           />
 
           {/* Drawer Content */}
@@ -131,16 +131,16 @@ export function Drawer({
               className="flex items-center justify-between border-b p-4"
               style={{ borderColor: "var(--border-primary)" }}
             >
-              {title && (
-                <h2
+              {title ? <h2
                   className="text-lg font-semibold"
                   style={{ color: "var(--text-primary)" }}
                 >
                   {title}
-                </h2>
-              )}
-              {showCloseButton && (
-                <IconButton
+                </h2> : null}
+              {showCloseButton ? <IconButton
+                  label="Close drawer"
+                  size="sm"
+                  variant="ghost"
                   icon={
                     <svg
                       className="h-5 w-5"
@@ -149,19 +149,15 @@ export function Drawer({
                       viewBox="0 0 24 24"
                     >
                       <path
+                        d="M6 18L18 6M6 6l12 12"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
                       />
                     </svg>
                   }
-                  label="Close drawer"
-                  variant="ghost"
-                  size="sm"
                   onClick={onClose}
-                />
-              )}
+                /> : null}
             </div>
 
             {/* Body */}
@@ -169,8 +165,7 @@ export function Drawer({
               {children}
             </div>
           </motion.div>
-        </div>
-      )}
+        </div> : null}
     </AnimatePresence>,
     document.body
   );

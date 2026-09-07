@@ -19,20 +19,20 @@ export default function BulkActionBar({
       </div>
       <div className="flex items-center gap-2">
         <button
-          onClick={onAddToProject}
           className="btn btn-xs bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
+          onClick={onAddToProject}
         >
           + Add to Project
         </button>
         <button
-          onClick={onDelete}
           className="btn btn-xs bg-error/10 text-error border border-error/20 hover:bg-error/20"
+          onClick={onDelete}
         >
           🗑️ Delete
         </button>
         <button
-          onClick={onClear}
           className="btn btn-ghost btn-xs text-text-tertiary"
+          onClick={onClear}
         >
           Clear
         </button>

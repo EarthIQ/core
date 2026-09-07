@@ -1,8 +1,8 @@
 import { useEffect, useCallback, useMemo } from 'react';
-import { useCookieConsentStore } from '../stores/cookieConsentStore';
-import type { CookieCategory, CookieConsentConfig, CookiePreferences } from '../types';
 
-import type { CookieCategoryConfig } from '../types';
+import { useCookieConsentStore } from '../stores/cookieConsentStore';
+import { type CookieCategory, type CookieConsentConfig, type CookiePreferences ,type  CookieCategoryConfig } from '../types';
+
 
 export interface UseCookieConsentReturn {
   // State

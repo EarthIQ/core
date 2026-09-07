@@ -1,4 +1,5 @@
 import { type ReactNode, type HTMLAttributes } from 'react';
+
 import { cn } from '../../../utils/cn';
 
 interface StackProps extends HTMLAttributes<HTMLDivElement> {
@@ -80,7 +81,7 @@ const justifyClasses = {
  *   <div>Item 2</div>
  * </Stack>
  */
-export function Stack({
+export const Stack = ({
   children,
   direction = 'column',
   gap = 'md',
@@ -89,7 +90,7 @@ export function Stack({
   wrap = false,
   className,
   ...props
-}: StackProps) {
+}: StackProps) => {
   return (
     <div
       className={cn(
@@ -112,7 +113,7 @@ export function Stack({
  * Horizontal Stack. A shorthand for `<Stack direction="row" />`.
  * Arranges items in a horizontal line.
  */
-export function HStack(props: Omit<StackProps, 'direction'>) {
+export const HStack = (props: Omit<StackProps, 'direction'>) => {
   return <Stack direction="row" {...props} />;
 }
 
@@ -120,6 +121,6 @@ export function HStack(props: Omit<StackProps, 'direction'>) {
  * Vertical Stack. A shorthand for `<Stack direction="column" />`.
  * Arranges items in a vertical column.
  */
-export function VStack(props: Omit<StackProps, 'direction'>) {
+export const VStack = (props: Omit<StackProps, 'direction'>) => {
   return <Stack direction="column" {...props} />;
 }

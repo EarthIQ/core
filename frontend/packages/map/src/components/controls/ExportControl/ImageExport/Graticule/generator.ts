@@ -1,6 +1,6 @@
-/* eslint-disable no-unused-vars */
-import distance from "@turf/distance";
+ 
 import destination from "@turf/destination";
+import distance from "@turf/distance";
 
 type graticuleJson = {
   meridians: GeoJSON.Feature<GeoJSON.LineString>[];
@@ -114,7 +114,7 @@ export function getGraticule(
   latitudePosition: string
 ): graticuleJson {
   const earthCircumference = Math.ceil(
-    // @ts-ignore
+    // @ts-ignore -- distance() overloads drift with @turf/distance types
     distance([0, 0], [180, 0], { units }) * 2
   );
   const maxColumns = Math.floor(earthCircumference / graticuleWidth);
@@ -123,7 +123,7 @@ export function getGraticule(
     to: GeoJSON.Position,
     options: { units: any }
   ) => number = (from, to, options): number => {
-    // @ts-ignore
+    // @ts-ignore -- distance() overloads drift with @turf/distance types
     const dist = distance(from, to, options);
     if (Math.abs(to[0] - from[0]) >= 180) {
       return earthCircumference - dist;

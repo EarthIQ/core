@@ -1,7 +1,8 @@
+import { Button } from "@packages/ui";
+import { Download, FileText, List, Map } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Download, FileText, List, Map } from "lucide-react";
-import { Button } from "@packages/ui";
+
 import { BuilderScaffold } from "@/components/builder/BuilderScaffold";
 import {
   BuilderWorkspace,
@@ -57,28 +58,6 @@ export default function ReportBuilderPage() {
   return (
     <BuilderScaffold builder={builder} projectId={projectId}>
       <BuilderWorkspace
-        sidebar={
-          <>
-            <SidebarHeader
-              icon={FileText}
-              title="Sections"
-              addLabel="Add"
-              onAdd={addSection}
-            />
-            <div className="flex flex-col gap-0.5">
-              {sections.map((section) => (
-                <SidebarItem
-                  key={section.id}
-                  icon={section.icon}
-                  title={section.title}
-                  subtitle="Report section"
-                  active={section.id === activeId}
-                  onClick={() => setActiveId(section.id)}
-                />
-              ))}
-            </div>
-          </>
-        }
         main={
           <div className="flex flex-col gap-4">
             {/* Document preview */}
@@ -125,6 +104,28 @@ export default function ReportBuilderPage() {
               </div>
             </div>
           </div>
+        }
+        sidebar={
+          <>
+            <SidebarHeader
+              addLabel="Add"
+              icon={FileText}
+              title="Sections"
+              onAdd={addSection}
+            />
+            <div className="flex flex-col gap-0.5">
+              {sections.map((section) => (
+                <SidebarItem
+                  key={section.id}
+                  active={section.id === activeId}
+                  icon={section.icon}
+                  subtitle="Report section"
+                  title={section.title}
+                  onClick={() => setActiveId(section.id)}
+                />
+              ))}
+            </div>
+          </>
         }
       />
     </BuilderScaffold>

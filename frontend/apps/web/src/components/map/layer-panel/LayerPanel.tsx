@@ -1,10 +1,4 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+import { Button, Tooltip, Dropdown } from "@packages/ui";
 import {
   ChevronRight,
   ChevronLeft,
@@ -16,9 +10,17 @@ import {
   X,
   Puzzle,
 } from "lucide-react";
-import { Button, Tooltip, Dropdown } from "@packages/ui";
-import { LayerTree } from "./LayerTree";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+
 import { useLayerDnd } from "./dndContext";
+import { LayerTree } from "./LayerTree";
+
 import type { TreeNode } from "./types";
 
 interface LayerPanelProps {
@@ -45,39 +47,39 @@ interface LayerPanelProps {
   aiOpen?: boolean;
 }
 
-function RootDropZone({
+const RootDropZone = ({
   onMoveToRoot,
 }: {
   onMoveToRoot: (id: string) => void;
-}) {
+}) => {
   const { draggingId, reset } = useLayerDnd();
   const [over, setOver] = useState(false);
   if (!draggingId) return null;
   return (
     <div
+      className={`h-8 rounded-md border border-dashed flex items-center justify-center text-[0.65rem] transition-colors animate-fade-in ${
+        over
+          ? "border-primary/60 bg-primary/5 text-primary"
+          : "border-border-secondary/50 text-subtle"
+      }`}
+      onDragLeave={() => setOver(false)}
       onDragOver={(e) => {
         e.preventDefault();
         setOver(true);
       }}
-      onDragLeave={() => setOver(false)}
       onDrop={(e) => {
         e.preventDefault();
         setOver(false);
         onMoveToRoot(draggingId);
         reset();
       }}
-      className={`h-8 rounded-md border border-dashed flex items-center justify-center text-[0.65rem] transition-colors animate-fade-in ${
-        over
-          ? "border-primary/60 bg-primary/5 text-primary"
-          : "border-border-secondary/50 text-subtle"
-      }`}
     >
       Drop here to move to root
     </div>
   );
 }
 
-export function LayerPanel({
+export const LayerPanel = ({
   nodes,
   childrenOf,
   descendantLayers,
@@ -91,10 +93,10 @@ export function LayerPanel({
   onAddFolder,
   onOpenImport,
   onOpenImportForFolder,
-  canEdit,
+  _canEdit,
   isAvailableModule,
   aiOpen,
-}: LayerPanelProps) {
+}: LayerPanelProps) => {
   const [minimized, setMinimized] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -224,10 +226,10 @@ export function LayerPanel({
   return (
     <div
       ref={panelRef}
+      style={panelStyle}
       className={`absolute z-20 flex flex-col bg-elevated border border-border-primary rounded-xl shadow-elevated ${
         dragging ? "" : "transition-all duration-300 ease-in-out"
       } ${minimized ? "w-12" : "w-72"}`}
-      style={panelStyle}
     >
       {/* ── Header ───────────────────────────────────────────────────────── */}
       <div
@@ -236,10 +238,10 @@ export function LayerPanel({
             ? "justify-center px-0 py-2"
             : "cursor-grab active:cursor-grabbing touch-none select-none px-2.5 pt-2.5 pb-2"
         }`}
+        onPointerCancel={endHeaderDrag}
         onPointerDown={onHeaderPointerDown}
         onPointerMove={onHeaderPointerMove}
         onPointerUp={endHeaderDrag}
-        onPointerCancel={endHeaderDrag}
       >
         {!minimized && (
           <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -249,16 +251,6 @@ export function LayerPanel({
             <div className="min-w-0">
               <div className="flex items-center gap-0.5">
                 <Dropdown
-                  trigger={
-                    <button
-                      type="button"
-                      className="p-1 rounded-md text-text-tertiary hover:bg-primary/10 hover:text-primary transition-colors flex items-center"
-                      aria-haspopup="menu"
-                      aria-label="Add layer or folder"
-                    >
-                      Layers <ChevronDown className="ml-1 h-4 w-4" />
-                    </button>
-                  }
                   placement="bottom-start"
                   items={[
                     {
@@ -284,6 +276,16 @@ export function LayerPanel({
                         ]
                       : []),
                   ]}
+                  trigger={
+                    <button
+                      aria-haspopup="menu"
+                      aria-label="Add layer or folder"
+                      className="p-1 rounded-md text-text-tertiary hover:bg-primary/10 hover:text-primary transition-colors flex items-center"
+                      type="button"
+                    >
+                      Layers <ChevronDown className="ml-1 h-4 w-4" />
+                    </button>
+                  }
                 />
               </div>
               <div className="text-[0.62rem] text-subtle leading-tight truncate">
@@ -302,9 +304,9 @@ export function LayerPanel({
         >
           <Button
             iconOnly
+            aria-label={minimized ? "Expand panel" : "Collapse panel"}
             variant="ghost"
             onClick={() => setMinimized((v) => !v)}
-            aria-label={minimized ? "Expand panel" : "Collapse panel"}
           >
             {minimized ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </Button>
@@ -315,24 +317,22 @@ export function LayerPanel({
       {!minimized && (
         <div className="px-2.5 pt-2.5 shrink-0">
           <div className="flex items-center gap-2 bg-surface-hover border border-border-secondary rounded-lg px-2.5 py-1.5 focus-within:border-primary/50 transition-colors">
-            <Search size={13} className="text-text-tertiary shrink-0" />
+            <Search className="text-text-tertiary shrink-0" size={13} />
             <input
-              type="text"
+              className="flex-1 min-w-0 bg-transparent border-none outline-none text-xs text-text-primary placeholder:text-text-quaternary"
               placeholder="Filter layers…"
+              type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 min-w-0 bg-transparent border-none outline-none text-xs text-text-primary placeholder:text-text-quaternary"
             />
-            {search && (
-              <button
+            {search ? <button
+                aria-label="Clear filter"
+                className="p-0.5 rounded text-text-quaternary hover:text-text-primary transition-colors"
                 type="button"
                 onClick={() => setSearch("")}
-                className="p-0.5 rounded text-text-quaternary hover:text-text-primary transition-colors"
-                aria-label="Clear filter"
               >
                 <X size={12} />
-              </button>
-            )}
+              </button> : null}
           </div>
         </div>
       )}
@@ -341,22 +341,22 @@ export function LayerPanel({
         <div className="flex flex-col gap-3 p-3 pt-2.5 overflow-y-auto max-h-[calc(100vh-14rem)] scrollbar-thin">
           {rootNodes.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-5 text-center">
-              <Layers size={24} className="text-subtle opacity-40" />
+              <Layers className="text-subtle opacity-40" size={24} />
               <div className="text-[0.72rem] text-subtle leading-snug">
                 No layers yet.
               </div>
               <div className="flex gap-1.5 mt-1">
                 <button
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/25 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
                   type="button"
                   onClick={onOpenImport}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/25 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
                 >
                   <Plus size={13} /> Add Data
                 </button>
                 <button
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/10 border border-warning/25 text-xs font-semibold text-warning hover:bg-warning/20 transition-colors"
                   type="button"
                   onClick={() => onAddFolder(null)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/10 border border-warning/25 text-xs font-semibold text-warning hover:bg-warning/20 transition-colors"
                 >
                   <FolderPlus size={13} /> New Folder
                 </button>
@@ -364,14 +364,14 @@ export function LayerPanel({
             </div>
           ) : filterIds && matchedLayers === 0 ? (
             <div className="flex flex-col items-center gap-2 py-5 text-center">
-              <Search size={22} className="text-subtle opacity-40" />
+              <Search className="text-subtle opacity-40" size={22} />
               <div className="text-[0.72rem] text-subtle leading-snug">
                 No layers match “{search.trim()}”.
               </div>
               <button
+                className="mt-1 text-[0.7rem] text-primary underline"
                 type="button"
                 onClick={() => setSearch("")}
-                className="mt-1 text-[0.7rem] text-primary underline"
               >
                 Clear filter
               </button>
@@ -380,16 +380,16 @@ export function LayerPanel({
             <LayerTree
               childrenOf={childrenOf}
               descendantLayers={descendantLayers}
-              onToggleVisibility={onToggleVisibility}
-              onToggleCollapse={onToggleCollapse}
-              onOpenStyle={onOpenStyle}
+              filterIds={filterIds}
+              onAddDataToFolder={onOpenImportForFolder}
+              onAddFolderInside={(parentId) => onAddFolder(parentId)}
               onEditLayer={onEditLayer}
+              onMove={onMoveNode}
+              onOpenStyle={onOpenStyle}
               onRemove={onRemoveNode}
               onRename={onRenameNode}
-              onMove={onMoveNode}
-              onAddFolderInside={(parentId) => onAddFolder(parentId)}
-              onAddDataToFolder={onOpenImportForFolder}
-              filterIds={filterIds}
+              onToggleCollapse={onToggleCollapse}
+              onToggleVisibility={onToggleVisibility}
             />
           )}
 

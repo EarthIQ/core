@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import { cn } from "../../../utils/cn";
 
 interface AvatarProps {
@@ -53,7 +54,7 @@ function getColorFromName(name: string): string {
   return colors[index % colors.length];
 }
 
-export function Avatar({
+export const Avatar = ({
   src,
   alt,
   name,
@@ -61,7 +62,7 @@ export function Avatar({
   status,
   bordered = false,
   className,
-}: AvatarProps) {
+}: AvatarProps) => {
   const [imageError, setImageError] = useState(false);
   const showImage = src && !imageError;
   const initials = name ? getInitials(name) : "?";
@@ -80,10 +81,10 @@ export function Avatar({
       >
         {showImage ? (
           <img
-            src={src}
             alt={alt || name || "Avatar"}
-            onError={() => setImageError(true)}
             className="h-full w-full object-cover"
+            src={src}
+            onError={() => setImageError(true)}
           />
         ) : (
           <span className="font-medium text-[var(--text-on-primary)]">
@@ -92,12 +93,10 @@ export function Avatar({
         )}
       </div>
 
-      {status && (
-        <StatusIndicator
-          status={status}
+      {status ? <StatusIndicator
           size={size}
-        />
-      )}
+          status={status}
+        /> : null}
     </div>
   );
 }
@@ -105,13 +104,13 @@ export function Avatar({
 // Separate component to use inline styles for status colors
 // since CSS custom properties can't be used directly in bg-* utilities
 // without arbitrary value syntax for dynamic values
-function StatusIndicator({
+const StatusIndicator = ({
   status,
   size,
 }: {
   status: NonNullable<AvatarProps["status"]>;
   size: NonNullable<AvatarProps["size"]>;
-}) {
+}) => {
   const statusVar = {
     online: "var(--success)",
     offline: "var(--text-tertiary)",
@@ -121,11 +120,11 @@ function StatusIndicator({
 
   return (
     <span
+      style={{ backgroundColor: statusVar }}
       className={cn(
         "absolute right-0 bottom-0 rounded-full ring-2 ring-[var(--ring-offset)]",
         statusSizes[size]
       )}
-      style={{ backgroundColor: statusVar }}
     />
   );
 }
@@ -138,12 +137,12 @@ interface AvatarGroupProps {
   className?: string;
 }
 
-export function AvatarGroup({
+export const AvatarGroup = ({
   avatars,
   max = 4,
   size = "md",
   className,
-}: AvatarGroupProps) {
+}: AvatarGroupProps) => {
   const visibleAvatars = avatars.slice(0, max);
   const remainingCount = avatars.length - max;
 
@@ -153,9 +152,9 @@ export function AvatarGroup({
         <Avatar
           key={index}
           {...avatar}
-          size={size}
           bordered
           className="transition-transform hover:z-10 hover:scale-110"
+          size={size}
         />
       ))}
 

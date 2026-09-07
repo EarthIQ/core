@@ -1,7 +1,8 @@
-import { isFolder, type TreeNode } from "./types";
-import { LayerRow } from "./LayerRow";
-import { FolderRow } from "./FolderRow";
 import { useLayerDnd } from "./dndContext";
+import { FolderRow } from "./FolderRow";
+import { LayerRow } from "./LayerRow";
+import { isFolder, type TreeNode } from "./types";
+
 import type { DropPos } from "./dnd";
 
 interface LayerTreeProps {
@@ -21,7 +22,7 @@ interface LayerTreeProps {
   filterIds?: Set<string> | null;
 }
 
-export function LayerTree({
+export const LayerTree = ({
   childrenOf,
   descendantLayers,
   onToggleVisibility,
@@ -34,7 +35,7 @@ export function LayerTree({
   onAddFolderInside,
   onAddDataToFolder,
   filterIds = null,
-}: LayerTreeProps) {
+}: LayerTreeProps) => {
   const { draggingId, setDraggingId, dropTarget, setDropTarget, reset } =
     useLayerDnd();
 
@@ -68,29 +69,29 @@ export function LayerTree({
         return (
           <div key={node.id}>
           <FolderRow
-            folder={node}
-            depth={depth}
-            childCount={childrenOf(node.id).length}
             anyVisible={descendantLayers(node.id).some((l: any) => l.visible)}
+            childCount={childrenOf(node.id).length}
+            depth={depth}
+            folder={node}
             isDragging={draggingId === node.id}
             isDropTarget={dropTarget?.id === node.id}
             dropPosition={
               dropTarget?.id === node.id ? dropTarget.position : null
             }
-            onToggleCollapse={() => onToggleCollapse(node.id)}
-            onToggleVisibility={() => onToggleVisibility(node.id)}
+            onAddDataHere={() => onAddDataToFolder(node.id)}
+            onAddSubfolder={() => onAddFolderInside(node.id)}
+            onDragEnd={reset}
+            onDragStart={() => setDraggingId(node.id)}
+            onDrop={(pos) => handleDrop(node, pos)}
             onRemove={() => onRemove(node.id)}
             onRename={(name) => onRename(node.id, name)}
-            onAddSubfolder={() => onAddFolderInside(node.id)}
-            onAddDataHere={() => onAddDataToFolder(node.id)}
-            onDragStart={() => setDraggingId(node.id)}
-            onDragEnd={reset}
+            onToggleCollapse={() => onToggleCollapse(node.id)}
+            onToggleVisibility={() => onToggleVisibility(node.id)}
             onDragOverRow={(pos) =>
               setDropTarget({ id: node.id, position: pos })
             }
-            onDrop={(pos) => handleDrop(node, pos)}
           >
-            {expanded && renderLevel(node.id, depth + 1)}
+            {expanded ? renderLevel(node.id, depth + 1) : null}
             </FolderRow>
           </div>
         );
@@ -99,24 +100,24 @@ export function LayerTree({
       return (
         <LayerRow
           key={node.id}
-          layer={node}
           depth={depth}
+          dropPosition={dropTarget?.id === node.id ? dropTarget.position : null}
           isDragging={draggingId === node.id}
           isDropTarget={dropTarget?.id === node.id}
-          dropPosition={dropTarget?.id === node.id ? dropTarget.position : null}
-          onToggle={() => onToggleVisibility(node.id)}
+          layer={node}
+          onDragEnd={reset}
+          onDragOverRow={(pos) => setDropTarget({ id: node.id, position: pos })}
+          onDragStart={() => setDraggingId(node.id)}
+          onDrop={(pos) => handleDrop(node, pos)}
           onOpenStyle={() => onOpenStyle(node)}
           onRemove={() => onRemove(node.id)}
           onRename={(name) => onRename(node.id, name)}
+          onToggle={() => onToggleVisibility(node.id)}
           onEditLayer={
             onEditLayer && !node.pending
               ? () => onEditLayer(node)
               : undefined
           }
-          onDragStart={() => setDraggingId(node.id)}
-          onDragEnd={reset}
-          onDragOverRow={(pos) => setDropTarget({ id: node.id, position: pos })}
-          onDrop={(pos) => handleDrop(node, pos)}
         />
       );
     });

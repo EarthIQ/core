@@ -1,11 +1,13 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
 import React, { useState } from "react";
+
 import { DndProvider } from "./DndProvider";
 import { Draggable } from "./Draggable";
+import { DragOverlay } from "./DragOverlay";
 import { Droppable } from "./Droppable";
 import { SortableList } from "./SortableList";
-import { DragOverlay } from "./DragOverlay";
 import { useDragAndDrop } from "./useDragAndDrop";
+
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta = {
   title: "Interaction/DragAndDrop",
@@ -52,9 +54,8 @@ export const Sortable: StoryObj = {
       <div className="mx-auto max-w-md">
         <h3 className="mb-4 text-lg font-semibold">Task Priority</h3>
         <SortableList
-          items={items}
-          onReorder={handleReorder}
           gap={8}
+          items={items}
           renderItem={(task, _index, { isDragging }) => (
             <div
               className={`flex items-center justify-between rounded-lg border bg-white p-3 shadow-sm dark:bg-gray-800 ${
@@ -72,6 +73,7 @@ export const Sortable: StoryObj = {
               </span>
             </div>
           )}
+          onReorder={handleReorder}
         />
       </div>
     );

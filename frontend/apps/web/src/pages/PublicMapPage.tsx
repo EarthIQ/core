@@ -1,12 +1,14 @@
+import { Globe, Layers, ZoomIn, ZoomOut, Compass, LogIn } from "lucide-react";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "maplibre-gl/dist/maplibre-gl.css";
-import { fetchMapById, MapItem } from "@/lib/maps";
-import { BASEMAP_STYLES } from "@/hooks/useMapLibre";
-import { Globe, Layers, ZoomIn, ZoomOut, Compass, LogIn } from "lucide-react";
-import { useAuth } from "@/lib/auth";
-import { ApiError } from "@/lib/api";
+
 import { AccessRequestCard } from "@/components/map/share/AccessRequestCard";
+import { BASEMAP_STYLES } from "@/hooks/useMapLibre";
+import { ApiError } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { fetchMapById, type MapItem } from "@/lib/maps";
+
 
 export default function PublicMapPage() {
   const { mapId } = useParams<{ mapId: string }>();
@@ -171,7 +173,7 @@ export default function PublicMapPage() {
   if (loading || (denied && authLoading)) {
     return (
       <div className="w-screen h-screen flex flex-col items-center justify-center bg-bg-primary text-text-primary">
-        <Globe size={40} className="text-primary animate-spin mb-4" />
+        <Globe className="text-primary animate-spin mb-4" size={40} />
         <span className="text-sm font-semibold tracking-wider animate-pulse">
           Loading map dashboard...
         </span>
@@ -186,7 +188,7 @@ export default function PublicMapPage() {
     if (isAuthenticated) {
       return (
         <div className="w-screen h-screen flex items-center justify-center bg-bg-primary p-6">
-          <AccessRequestCard entityType="map" entityId={mapId ?? ""} />
+          <AccessRequestCard entityId={mapId ?? ""} entityType="map" />
         </div>
       );
     }
@@ -202,11 +204,11 @@ export default function PublicMapPage() {
           owner.
         </p>
         <button
+          className="btn btn-primary btn-md mt-6 inline-flex items-center gap-2"
           type="button"
           onClick={() =>
             navigate("/login", { state: { from: { pathname: from } } })
           }
-          className="btn btn-primary btn-md mt-6 inline-flex items-center gap-2"
         >
           <LogIn size={15} /> Sign in
         </button>
@@ -223,7 +225,7 @@ export default function PublicMapPage() {
           {errorMsg ||
             "This published map has been restricted or removed by the administrator."}
         </p>
-        <a href="/projects" className="btn btn-primary btn-md mt-6">
+        <a className="btn btn-primary btn-md mt-6" href="/projects">
           Back to Dashboard
         </a>
       </div>
@@ -241,30 +243,25 @@ export default function PublicMapPage() {
       />
 
       {/* Title Card Widget */}
-      {widgets.titleCard && (
-        <div className="absolute top-4 left-4 z-10 max-w-sm bg-elevated border border-border-primary rounded-xl p-4 shadow-xl animate-fade-in flex flex-col gap-1.5">
+      {widgets.titleCard ? <div className="absolute top-4 left-4 z-10 max-w-sm bg-elevated border border-border-primary rounded-xl p-4 shadow-xl animate-fade-in flex flex-col gap-1.5">
           <h1 className="text-sm font-bold text-text-primary tracking-wide">
             {mapData.title}
           </h1>
-          {mapData.description && (
-            <p className="text-[11px] text-text-secondary leading-relaxed">
+          {mapData.description ? <p className="text-[11px] text-text-secondary leading-relaxed">
               {mapData.description}
-            </p>
-          )}
+            </p> : null}
           <div className="flex items-center gap-1.5 mt-1">
             <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
             <span className="text-[9px] font-mono tracking-widest text-success uppercase font-bold">
               Published View
             </span>
           </div>
-        </div>
-      )}
+        </div> : null}
 
       {/* Layer Toggle Widget */}
-      {widgets.layerList && layersList.filter((l) => l.url).length > 0 && (
-        <div className="absolute top-4 right-4 z-10 w-60 bg-elevated border border-border-primary rounded-xl p-3.5 shadow-xl animate-fade-in flex flex-col gap-2">
+      {widgets.layerList && layersList.filter((l) => l.url).length > 0 ? <div className="absolute top-4 right-4 z-10 w-60 bg-elevated border border-border-primary rounded-xl p-3.5 shadow-xl animate-fade-in flex flex-col gap-2">
           <div className="flex items-center gap-1.5 border-b border-border-secondary/60 pb-1.5 mb-1">
-            <Layers size={13} className="text-primary" />
+            <Layers className="text-primary" size={13} />
             <span className="text-xs font-bold text-text-primary">
               Map Layers
             </span>
@@ -278,55 +275,49 @@ export default function PublicMapPage() {
               >
                 <div className="flex items-center gap-2">
                   <input
-                    type="checkbox"
                     checked={!!layer.visible}
-                    onChange={() => toggleLayerVisibility(layer.id)}
                     className="w-3.5 h-3.5 accent-primary rounded cursor-pointer"
+                    type="checkbox"
+                    onChange={() => toggleLayerVisibility(layer.id)}
                   />
                   <span className="truncate max-w-[140px]">{layer.name}</span>
                 </div>
-                {layer.style?.color && (
-                  <span
+                {layer.style?.color ? <span
                     className="w-2.5 h-2.5 rounded-full border border-border-primary shrink-0"
                     style={{ backgroundColor: layer.style.color }}
-                  />
-                )}
+                  /> : null}
               </label>
             ))}
           </div>
-        </div>
-      )}
+        </div> : null}
 
       {/* Zoom Controls Widget */}
-      {widgets.zoomControls && (
-        <div className="absolute bottom-6 right-6 z-10 flex flex-col gap-1.5">
+      {widgets.zoomControls ? <div className="absolute bottom-6 right-6 z-10 flex flex-col gap-1.5">
           <button
-            onClick={handleZoomIn}
             className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
             title="Zoom In"
+            onClick={handleZoomIn}
           >
             <ZoomIn size={15} />
           </button>
           <button
-            onClick={handleZoomOut}
             className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
             title="Zoom Out"
+            onClick={handleZoomOut}
           >
             <ZoomOut size={15} />
           </button>
           <button
-            onClick={handleResetNorth}
             className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
             title="Reset North"
+            onClick={handleResetNorth}
           >
             <Compass size={15} />
           </button>
-        </div>
-      )}
+        </div> : null}
 
       {/* Scale Bar Widget */}
-      {widgets.scaleBar && (
-        <div className="absolute bottom-6 left-6 z-10 flex items-center gap-1.5">
+      {widgets.scaleBar ? <div className="absolute bottom-6 left-6 z-10 flex items-center gap-1.5">
           <div className="w-24 h-0.5 bg-text-secondary/50 rounded relative">
             <div className="absolute left-0 top-[-2px] w-0.5 h-2 bg-text-secondary/50" />
             <div className="absolute right-0 top-[-2px] w-0.5 h-2 bg-text-secondary/50" />
@@ -334,17 +325,14 @@ export default function PublicMapPage() {
           <span className="text-[10px] text-text-tertiary font-medium">
             ~10 km
           </span>
-        </div>
-      )}
+        </div> : null}
 
       {/* Footer Branding / Attribution */}
-      {(widgets.attribution || true) && (
-        <div className="absolute bottom-3 left-4 z-10 text-[9px] text-text-quaternary select-none">
-          {widgets.attribution && <span>© OpenStreetMap © CARTO | </span>}
+      <div className="absolute bottom-3 left-4 z-10 text-[9px] text-text-quaternary select-none">
+          {widgets.attribution ? <span>© OpenStreetMap © CARTO | </span> : null}
           Powered by{" "}
           <span className="font-bold text-primary">EarthIQ Core</span>
         </div>
-      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { Dropdown } from "@packages/ui";
 import {
   MoreHorizontal,
   Pencil,
@@ -15,10 +15,11 @@ import {
   Shapes,
   type LucideIcon,
 } from "lucide-react";
-import { Dropdown } from "@packages/ui";
+import { useRef, useState } from "react";
+
+import { getDropPosition ,type  DropPos } from "./dnd";
+
 import type { LayerTreeNode, GeometryType } from "./types";
-import type { DropPos } from "./dnd";
-import { getDropPosition } from "./dnd";
 
 interface LayerRowProps {
   layer: LayerTreeNode;
@@ -45,16 +46,16 @@ const TYPE_ICONS: Record<GeometryType, LucideIcon> = {
   polygon: Hexagon,
 };
 
-function TypeIcon({ layer }: { layer: LayerTreeNode }) {
+const TypeIcon = ({ layer }: { layer: LayerTreeNode }) => {
   const Icon =
     layer.layerType === "raster"
       ? Grid3x3
       : (layer.geometryType && TYPE_ICONS[layer.geometryType]) || Layers;
   return (
     <Icon
+      className="shrink-0"
       size={15}
       strokeWidth={1.75}
-      className="shrink-0"
       style={{
         color: layer.color ?? "#22d3a0",
         opacity: layer.visible ? 1 : 0.35,
@@ -64,7 +65,7 @@ function TypeIcon({ layer }: { layer: LayerTreeNode }) {
 }
 
 /** Raster style strip shown under the layer name (no "raster" tag). */
-function RasterStyleLine({ layer }: { layer: LayerTreeNode }) {
+const RasterStyleLine = ({ layer }: { layer: LayerTreeNode }) => {
   const color = layer.color ?? "#22d3a0";
   const opacity = layer.opacity ?? 0.8;
   const brightness = layer.brightness ?? 1;
@@ -91,7 +92,7 @@ function RasterStyleLine({ layer }: { layer: LayerTreeNode }) {
   );
 }
 
-export function LayerRow({
+export const LayerRow = ({
   layer,
   depth,
   isDragging,
@@ -106,7 +107,7 @@ export function LayerRow({
   onDragEnd,
   onDragOverRow,
   onDrop,
-}: LayerRowProps) {
+}: LayerRowProps) => {
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState(layer.name);
   const rowRef = useRef<HTMLDivElement>(null);
@@ -121,10 +122,10 @@ export function LayerRow({
     <div
       ref={rowRef}
       draggable
-      onDragStart={(e) => {
-        e.stopPropagation();
-        onDragStart();
-      }}
+      style={{ paddingLeft: 4 + depth * 14 }}
+      className={`group relative flex items-center gap-1.5 py-1.5 pr-1 rounded-lg cursor-grab active:cursor-grabbing transition-colors duration-150 ${
+        isDragging ? "opacity-40" : "hover:bg-surface-hover"
+      } ${!layer.visible ? "opacity-80" : ""}`}
       onDragEnd={onDragEnd}
       onDragOver={(e) => {
         e.preventDefault();
@@ -132,27 +133,23 @@ export function LayerRow({
         if (!rowRef.current) return;
         onDragOverRow(getDropPosition(e, rowRef.current, false));
       }}
+      onDragStart={(e) => {
+        e.stopPropagation();
+        onDragStart();
+      }}
       onDrop={(e) => {
         e.preventDefault();
         e.stopPropagation();
         if (!rowRef.current) return;
         onDrop(getDropPosition(e, rowRef.current, false));
       }}
-      className={`group relative flex items-center gap-1.5 py-1.5 pr-1 rounded-lg cursor-grab active:cursor-grabbing transition-colors duration-150 ${
-        isDragging ? "opacity-40" : "hover:bg-surface-hover"
-      } ${!layer.visible ? "opacity-80" : ""}`}
-      style={{ paddingLeft: 4 + depth * 14 }}
     >
-      {isDropTarget && dropPosition === "before" && (
-        <div className="absolute left-2 right-2 -top-0.5 h-0.5 bg-primary rounded-full" />
-      )}
-      {isDropTarget && dropPosition === "after" && (
-        <div className="absolute left-2 right-2 -bottom-0.5 h-0.5 bg-primary rounded-full" />
-      )}
+      {isDropTarget && dropPosition === "before" ? <div className="absolute left-2 right-2 -top-0.5 h-0.5 bg-primary rounded-full" /> : null}
+      {isDropTarget && dropPosition === "after" ? <div className="absolute left-2 right-2 -bottom-0.5 h-0.5 bg-primary rounded-full" /> : null}
 
       <GripVertical
-        size={11}
         className="opacity-35 text-text-quaternary shrink-0"
+        size={11}
       />
 
       <TypeIcon layer={layer} />
@@ -161,9 +158,10 @@ export function LayerRow({
         {editing ? (
           <input
             autoFocus
+            className="w-full bg-surface-hover border border-primary/40 rounded px-1.5 py-0.5 text-xs text-text-primary outline-none"
             value={nameDraft}
-            onChange={(e) => setNameDraft(e.target.value)}
             onBlur={commitRename}
+            onChange={(e) => setNameDraft(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") commitRename();
               if (e.key === "Escape") {
@@ -171,17 +169,16 @@ export function LayerRow({
                 setEditing(false);
               }
             }}
-            className="w-full bg-surface-hover border border-primary/40 rounded px-1.5 py-0.5 text-xs text-text-primary outline-none"
           />
         ) : (
           <span
+            title={layer.name}
             className={`block truncate text-xs leading-tight ${
               layer.visible
                 ? "text-text-primary"
                 : "text-text-tertiary decoration-text-quaternary"
             }`}
             onDoubleClick={() => setEditing(true)}
-            title={layer.name}
           >
             {layer.name}
           </span>
@@ -189,8 +186,7 @@ export function LayerRow({
         {!editing && layer.layerType === "raster" && (
           <RasterStyleLine layer={layer} />
         )}
-        {!editing && layer.pending && (
-          <div className="mt-1 flex items-center gap-1.5 min-w-0">
+        {!editing && layer.pending ? <div className="mt-1 flex items-center gap-1.5 min-w-0">
             <span
               className="h-1.5 w-1.5 rounded-full animate-pulse shrink-0"
               style={{ background: "var(--warning)" }}
@@ -201,36 +197,25 @@ export function LayerRow({
             >
               unsaved
             </span>
-          </div>
-        )}
+          </div> : null}
       </div>
 
       {/* ── Right-side controls: always visible ──────────────────────────── */}
       <button
-        type="button"
-        onClick={onToggle}
-        title={layer.visible ? "Hide layer" : "Show layer"}
         aria-label={layer.visible ? `Hide ${layer.name}` : `Show ${layer.name}`}
+        title={layer.visible ? "Hide layer" : "Show layer"}
+        type="button"
         className={`p-1.5 rounded-md transition-colors shrink-0 ${
           layer.visible
             ? "text-text-secondary hover:text-text-primary"
             : "text-text-quaternary hover:text-text-primary"
         } hover:bg-surface-hover`}
+        onClick={onToggle}
       >
         {layer.visible ? <Eye size={14} /> : <EyeOff size={14} />}
       </button>
 
       <Dropdown
-        trigger={
-          <button
-            type="button"
-            className="p-1.5 rounded-md text-text-quaternary hover:text-text-primary hover:bg-surface-hover transition-colors border-none bg-transparent cursor-pointer"
-            title="Layer options"
-            aria-label="Layer options"
-          >
-            <MoreHorizontal size={14} />
-          </button>
-        }
         placement="bottom-end"
         items={[
           {
@@ -270,6 +255,16 @@ export function LayerRow({
             onClick: onRemove,
           },
         ]}
+        trigger={
+          <button
+            aria-label="Layer options"
+            className="p-1.5 rounded-md text-text-quaternary hover:text-text-primary hover:bg-surface-hover transition-colors border-none bg-transparent cursor-pointer"
+            title="Layer options"
+            type="button"
+          >
+            <MoreHorizontal size={14} />
+          </button>
+        }
       />
     </div>
   );

@@ -16,7 +16,7 @@ export function useDragAndDrop<T extends { id: string | number }>({
   const [isDragging, setIsDragging] = useState(false);
 
   const handleReorder = useCallback(
-    (reorderedItems: T[], fromIndex: number, toIndex: number) => {
+    (reorderedItems: T[], _fromIndex: number, _toIndex: number) => {
       setItems(reorderedItems);
       onReorder?.(reorderedItems);
     },

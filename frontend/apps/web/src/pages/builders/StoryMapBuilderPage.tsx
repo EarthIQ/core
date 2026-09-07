@@ -1,7 +1,8 @@
+import { Button } from "@packages/ui";
+import { BookOpen, Map } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { BookOpen, Map } from "lucide-react";
-import { Button } from "@packages/ui";
+
 import { BuilderScaffold } from "@/components/builder/BuilderScaffold";
 import {
   BuilderWorkspace,
@@ -54,22 +55,43 @@ export default function StoryMapBuilderPage() {
   return (
     <BuilderScaffold builder={builder} projectId={projectId}>
       <BuilderWorkspace
+        main={
+          <EditorPlaceholder
+            icon={BookOpen}
+            title={activeScene?.title ?? "Story Map"}
+            actions={
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                <Button size="sm" onClick={addScene}>
+                  Add scene
+                </Button>
+                <Button disabled size="sm" variant="ghost">
+                  Preview story
+                </Button>
+              </div>
+            }
+            description={
+              activeScene
+                ? "This is where scene content will be edited - embed map views, add text blocks, images and media, then connect scenes into a guided narrative."
+                : "Add a scene to start building your story map."
+            }
+          />
+        }
         sidebar={
           <>
             <SidebarHeader
+              addLabel="Add"
               icon={BookOpen}
               title="Scenes"
-              addLabel="Add"
               onAdd={addScene}
             />
             <div className="flex flex-col gap-0.5">
               {scenes.map((scene) => (
                 <SidebarItem
                   key={scene.id}
-                  icon={Map}
-                  title={scene.title}
-                  subtitle="Empty scene"
                   active={scene.id === activeId}
+                  icon={Map}
+                  subtitle="Empty scene"
+                  title={scene.title}
                   onClick={() => setActiveId(scene.id)}
                   onDelete={
                     scenes.length > 1 ? () => removeScene(scene.id) : undefined
@@ -78,27 +100,6 @@ export default function StoryMapBuilderPage() {
               ))}
             </div>
           </>
-        }
-        main={
-          <EditorPlaceholder
-            icon={BookOpen}
-            title={activeScene?.title ?? "Story Map"}
-            description={
-              activeScene
-                ? "This is where scene content will be edited - embed map views, add text blocks, images and media, then connect scenes into a guided narrative."
-                : "Add a scene to start building your story map."
-            }
-            actions={
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                <Button size="sm" onClick={addScene}>
-                  Add scene
-                </Button>
-                <Button size="sm" variant="ghost" disabled>
-                  Preview story
-                </Button>
-              </div>
-            }
-          />
         }
       />
     </BuilderScaffold>

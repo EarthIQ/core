@@ -6,7 +6,6 @@ export default defineConfig({
     "src/base.ts",
     "src/node.ts",
     "src/react.ts",
-    "src/next.ts",
   ],
   format: ["cjs", "esm"],
   dts: true,

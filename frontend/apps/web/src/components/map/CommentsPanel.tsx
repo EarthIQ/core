@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Check,
   MapPin,
@@ -7,9 +6,12 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useMapEditor } from "@/lib/mapEditor/store";
-import { useAuth } from "@/lib/auth";
+import { useState } from "react";
+
 import { renderBody } from "@/components/map/CommentPins";
+import { useAuth } from "@/lib/auth";
+import { useMapEditor } from "@/lib/mapEditor/store";
+
 import type { CommentThread } from "@/lib/mapEditor/types";
 
 function initials(name: string) {
@@ -29,13 +31,13 @@ function formatWhen(ts: number) {
 }
 
 /** One row in the comments history list. */
-function ThreadRow({
+const ThreadRow = ({
   thread,
   onJump,
 }: {
   thread: CommentThread;
   onJump: (t: CommentThread) => void;
-}) {
+}) => {
   const { user } = useAuth();
   const setThreadResolved = useMapEditor((s) => s.setThreadResolved);
   const removeThread = useMapEditor((s) => s.removeThread);
@@ -95,45 +97,41 @@ function ThreadRow({
       </div>
 
       <div className="mt-1.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        {thread.lngLat && (
-          <button
+        {thread.lngLat ? <button
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-text-secondary hover:bg-surface-hover hover:text-primary transition-colors"
             type="button"
             onClick={() => onJump(thread)}
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-text-secondary hover:bg-surface-hover hover:text-primary transition-colors"
           >
             <MapPin size={11} />
             Show on map
-          </button>
-        )}
+          </button> : null}
         {thread.resolved ? (
           <button
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-text-secondary hover:bg-surface-hover transition-colors"
             type="button"
             onClick={() => setThreadResolved(thread.id, false)}
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-text-secondary hover:bg-surface-hover transition-colors"
           >
             <RotateCcw size={11} />
             Reopen
           </button>
         ) : (
           <button
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-text-secondary hover:bg-success/10 hover:text-success transition-colors"
             type="button"
             onClick={() => setThreadResolved(thread.id, true, myId, me)}
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-text-secondary hover:bg-success/10 hover:text-success transition-colors"
           >
             <Check size={11} />
             Resolve
           </button>
         )}
-        {canDelete && (
-          <button
+        {canDelete ? <button
+            aria-label="Delete thread"
+            className="ml-auto flex items-center justify-center w-6 h-6 rounded-md text-text-tertiary hover:text-error hover:bg-error/10 transition-colors"
             type="button"
             onClick={() => removeThread(thread.id)}
-            className="ml-auto flex items-center justify-center w-6 h-6 rounded-md text-text-tertiary hover:text-error hover:bg-error/10 transition-colors"
-            aria-label="Delete thread"
           >
             <Trash2 size={12} />
-          </button>
-        )}
+          </button> : null}
       </div>
     </div>
   );
@@ -144,13 +142,13 @@ function ThreadRow({
  * Lists open and resolved discussion threads; jumping to one flies the map
  * to the pin and opens its card on the map.
  */
-export function CommentsPanel({
+export const CommentsPanel = ({
   mapRef,
-  mapReady,
+  _mapReady,
 }: {
   mapRef: React.RefObject<any>;
   mapReady: boolean;
-}) {
+}) => {
   const open = useMapEditor((s) => s.commentsOpen);
   const setOpen = useMapEditor((s) => s.setCommentsOpen);
   const comments = useMapEditor((s) => s.comments);
@@ -174,7 +172,7 @@ export function CommentsPanel({
     <div className="absolute right-4 top-16 z-30 w-[320px] max-h-[calc(100%-6rem)] flex flex-col bg-elevated border border-border-primary rounded-2xl shadow-xl overflow-hidden animate-fade-in-up">
       <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border-primary">
         <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
-          <MessageSquare size={16} className="text-primary" />
+          <MessageSquare className="text-primary" size={16} />
         </span>
         <span className="text-sm font-semibold text-text-primary flex-1">
           Comments
@@ -183,10 +181,10 @@ export function CommentsPanel({
           </span>
         </span>
         <button
+          aria-label="Close"
+          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
           type="button"
           onClick={() => setOpen(false)}
-          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
-          aria-label="Close"
         >
           <X size={15} />
         </button>
@@ -196,23 +194,23 @@ export function CommentsPanel({
       <div className="flex px-3 pt-2 gap-1">
         <button
           type="button"
-          onClick={() => setTab("open")}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             tab === "open"
               ? "bg-primary/10 text-primary"
               : "text-text-secondary hover:bg-surface-hover"
           }`}
+          onClick={() => setTab("open")}
         >
           Open ({openThreads.length})
         </button>
         <button
           type="button"
-          onClick={() => setTab("resolved")}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             tab === "resolved"
               ? "bg-primary/10 text-primary"
               : "text-text-secondary hover:bg-surface-hover"
           }`}
+          onClick={() => setTab("resolved")}
         >
           Resolved ({resolvedThreads.length})
         </button>

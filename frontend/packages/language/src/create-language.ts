@@ -1,15 +1,3 @@
-import type {
-  CurrencyFormatOptions,
-  DateFormatOptions,
-  InterpolationValues,
-  LanguageConfig,
-  LanguageInstance,
-  NestedTranslations,
-  NumberFormatOptions,
-  TranslateFunction,
-  TranslateOptions,
-  Translations,
-} from "./types";
 import {
   formatCurrency as formatCurrencyUtil,
   formatDate as formatDateUtil,
@@ -23,6 +11,19 @@ import {
   parsePluralString,
   pluralize,
 } from "./utils";
+
+import type {
+  CurrencyFormatOptions,
+  DateFormatOptions,
+  InterpolationValues,
+  LanguageConfig,
+  LanguageInstance,
+  NestedTranslations,
+  NumberFormatOptions,
+  TranslateFunction,
+  TranslateOptions,
+  Translations,
+} from "./types";
 
 export function createLanguage<T extends Translations>(
   config: LanguageConfig<T>

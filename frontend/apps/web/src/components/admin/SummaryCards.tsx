@@ -7,7 +7,7 @@ interface SummaryCardsProps {
   cards: SummaryCard[];
 }
 
-export function SummaryCards({ cards }: SummaryCardsProps) {
+export const SummaryCards = ({ cards }: SummaryCardsProps) => {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       {cards.map((card) => (

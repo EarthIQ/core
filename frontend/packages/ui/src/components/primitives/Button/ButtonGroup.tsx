@@ -1,4 +1,5 @@
 import React, { type ReactNode } from 'react';
+
 import { cn } from '../../../utils/cn';
 
 interface ButtonGroupProps {
@@ -8,14 +9,15 @@ interface ButtonGroupProps {
   attached?: boolean;
 }
 
-export function ButtonGroup({
+export const ButtonGroup = ({
   children,
   className,
   orientation = 'horizontal',
   attached = false,
-}: ButtonGroupProps) {
+}: ButtonGroupProps) => {
   return (
     <div
+      role="group"
       className={cn(
         'inline-flex',
         orientation === 'vertical' ? 'flex-col' : 'flex-row',
@@ -24,7 +26,6 @@ export function ButtonGroup({
         !attached && 'gap-2',
         className
       )}
-      role="group"
     >
       {children}
     </div>

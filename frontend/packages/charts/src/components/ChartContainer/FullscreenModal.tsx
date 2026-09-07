@@ -1,6 +1,7 @@
+import { cn } from "@packages/ui";
 import React, { useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { cn } from "@packages/ui";
+
 import { ExitFullscreenIcon } from "../../icons";
 
 interface FullscreenModalProps {
@@ -41,11 +42,11 @@ export const FullscreenModal: React.FC<FullscreenModalProps> = ({
 
   return createPortal(
     <div
-      className="bg-surface animate-fade-in fixed inset-0"
-      style={{ zIndex: "var(--z-modal)" }}
-      role="dialog"
-      aria-modal="true"
       aria-labelledby="fullscreen-modal-title"
+      aria-modal="true"
+      className="bg-surface animate-fade-in fixed inset-0"
+      role="dialog"
+      style={{ zIndex: "var(--z-modal)" }}
     >
       {/* Header */}
       <header
@@ -58,15 +59,15 @@ export const FullscreenModal: React.FC<FullscreenModalProps> = ({
         )}
       >
         <h2
-          id="fullscreen-modal-title"
           className="text-base text-lg font-semibold"
+          id="fullscreen-modal-title"
         >
           {title || "Chart View"}
         </h2>
         <button
-          onClick={onClose}
-          className="btn btn-ghost flex items-center gap-2"
           aria-label="Exit fullscreen"
+          className="btn btn-ghost flex items-center gap-2"
+          onClick={onClose}
         >
           <ExitFullscreenIcon size={16} />
           <span className="text-sm">Exit Fullscreen</span>

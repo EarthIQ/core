@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useFloating, offset, flip, shift } from "@floating-ui/react";
-import { cn } from "../../../utils/cn";
+import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useMemo } from "react";
+
 import { useClickOutside } from "../../../hooks/useClickOutside";
+import { cn } from "../../../utils/cn";
 import { IconButton } from "../../primitives/Button/IconButton";
 
 interface DatePickerProps {
@@ -57,7 +58,7 @@ function formatDate(date: Date): string {
   });
 }
 
-export function DatePicker({
+export const DatePicker = ({
   value,
   onChange,
   placeholder = "Select date",
@@ -67,7 +68,7 @@ export function DatePicker({
   minDate,
   maxDate,
   className,
-}: DatePickerProps) {
+}: DatePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(value || new Date());
 
@@ -131,19 +132,16 @@ export function DatePicker({
       ref={containerRef}
       className={cn("w-full", className)}
     >
-      {label && (
-        <label className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">
+      {label ? <label className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">
           {label}
-        </label>
-      )}
+        </label> : null}
 
       <div ref={refs.setReference}>
         <button
-          type="button"
-          onClick={() => !disabled && setIsOpen((v) => !v)}
-          disabled={disabled}
-          aria-haspopup="dialog"
           aria-expanded={isOpen}
+          aria-haspopup="dialog"
+          disabled={disabled}
+          type="button"
           className={cn(
             "flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left",
             "rounded-[var(--radius-md)] border transition-colors",
@@ -155,6 +153,7 @@ export function DatePicker({
                 ? "border-[var(--primary)]"
                 : "border-[var(--input-border)]"
           )}
+          onClick={() => !disabled && setIsOpen((v) => !v)}
         >
           <span
             className={cn(
@@ -168,60 +167,57 @@ export function DatePicker({
           </span>
 
           <svg
+            aria-hidden="true"
             className="h-5 w-5 shrink-0 text-[var(--text-tertiary)]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
-            aria-hidden="true"
           >
             <path
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
         </button>
       </div>
 
-      {error && (
-        <p className="mt-1.5 text-sm text-[var(--error-text)]">{error}</p>
-      )}
+      {error ? <p className="mt-1.5 text-sm text-[var(--error-text)]">{error}</p> : null}
 
       <AnimatePresence>
-        {isOpen && (
-          <motion.div
+        {isOpen ? <motion.div
             ref={refs.setFloating}
-            style={floatingStyles}
-            role="dialog"
-            aria-label={label ? `${label} calendar` : "Calendar"}
-            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            aria-label={label ? `${label} calendar` : "Calendar"}
             className={cn("z-[var(--z-popover)] w-72 p-4", "card-elevated")}
+            exit={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -10 }}
+            role="dialog"
+            style={floatingStyles}
           >
             {/* Header */}
             <div className="mb-4 flex items-center justify-between">
               <IconButton
+                label="Previous month"
+                size="sm"
+                variant="ghost"
                 icon={
                   <svg
+                    aria-hidden="true"
                     className="h-4 w-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
-                    aria-hidden="true"
                   >
                     <path
+                      d="M15 19l-7-7 7-7"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
                     />
                   </svg>
                 }
-                label="Previous month"
-                variant="ghost"
-                size="sm"
                 onClick={previousMonth}
               />
 
@@ -230,25 +226,25 @@ export function DatePicker({
               </span>
 
               <IconButton
+                label="Next month"
+                size="sm"
+                variant="ghost"
                 icon={
                   <svg
+                    aria-hidden="true"
                     className="h-4 w-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
-                    aria-hidden="true"
                   >
                     <path
+                      d="M9 5l7 7-7 7"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M9 5l7 7-7 7"
                     />
                   </svg>
                 }
-                label="Next month"
-                variant="ghost"
-                size="sm"
                 onClick={nextMonth}
               />
             </div>
@@ -274,9 +270,8 @@ export function DatePicker({
                 >
                   {day !== null && (
                     <button
-                      type="button"
-                      onClick={() => !isDateDisabled(day) && selectDate(day)}
                       disabled={isDateDisabled(day)}
+                      type="button"
                       className={cn(
                         "h-full w-full rounded-lg text-sm font-medium transition-colors",
                         "text-[var(--text-primary)]",
@@ -289,6 +284,7 @@ export function DatePicker({
                         isDateDisabled(day) &&
                           "cursor-not-allowed opacity-40 hover:bg-transparent"
                       )}
+                      onClick={() => !isDateDisabled(day) && selectDate(day)}
                     >
                       {day}
                     </button>
@@ -300,6 +296,7 @@ export function DatePicker({
             {/* Today Button */}
             <div className="mt-4 border-t border-[var(--border-secondary)] pt-3">
               <button
+                className="w-full text-sm text-[var(--primary)] transition-colors hover:text-[var(--primary-dark)]"
                 type="button"
                 onClick={() => {
                   const today = new Date();
@@ -307,13 +304,11 @@ export function DatePicker({
                   onChange?.(today);
                   setIsOpen(false);
                 }}
-                className="w-full text-sm text-[var(--primary)] transition-colors hover:text-[var(--primary-dark)]"
               >
                 Today
               </button>
             </div>
-          </motion.div>
-        )}
+          </motion.div> : null}
       </AnimatePresence>
     </div>
   );

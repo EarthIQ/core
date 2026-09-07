@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { cn } from "@packages/ui";
 import {
   Check,
   ChevronDown,
@@ -16,8 +16,10 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { cn } from "@packages/ui";
-import { formatBytes, type DataFolder } from "../../lib/datasets";
+import { useMemo, useState } from "react";
+
+import { formatBytes, type DataFolder } from "@/lib/datasets";
+
 import { TYPES } from "./constants";
 import { typeLabel, typeLucide } from "./helpers";
 
@@ -63,7 +65,7 @@ function buildTree(folders: DataFolder[]): TreeFolder[] {
   const roots: TreeFolder[] = [];
   map.forEach((node) => {
     if (node.parent_id && map.has(node.parent_id)) {
-      map.get(node.parent_id)!.children.push(node);
+      map.get(node.parent_id).children.push(node);
     } else {
       roots.push(node);
     }
@@ -164,32 +166,32 @@ export default function FolderTree({
         className="flex items-center gap-1.5 py-1"
         style={{ paddingLeft: `${10 + indent * 16}px` }}
       >
-        <FolderPlus size={14} className="shrink-0 text-text-tertiary" />
+        <FolderPlus className="shrink-0 text-text-tertiary" size={14} />
         <input
           autoFocus
+          aria-label="New folder name"
+          className="flex-1 min-w-0 h-7 rounded-md border border-input-border bg-input-bg px-2 text-xs text-text-primary outline-none focus:border-input-focus-border"
+          placeholder="Folder name…"
           value={creatingName}
           onChange={(e) => setCreatingName(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") commitCreate();
             if (e.key === "Escape") setCreating(null);
           }}
-          placeholder="Folder name…"
-          aria-label="New folder name"
-          className="flex-1 min-w-0 h-7 rounded-md border border-input-border bg-input-bg px-2 text-xs text-text-primary outline-none focus:border-input-focus-border"
         />
         <button
-          type="button"
-          onClick={commitCreate}
           aria-label="Create folder"
           className="shrink-0 rounded-md p-1 text-success hover:bg-success/10 cursor-pointer"
+          type="button"
+          onClick={commitCreate}
         >
           <Check size={14} />
         </button>
         <button
-          type="button"
-          onClick={() => setCreating(null)}
           aria-label="Cancel new folder"
           className="shrink-0 rounded-md p-1 text-text-tertiary hover:bg-surface-hover cursor-pointer"
+          type="button"
+          onClick={() => setCreating(null)}
         >
           <X size={14} />
         </button>
@@ -207,7 +209,14 @@ export default function FolderTree({
       <div key={node.id}>
         <div
           role="button"
+          style={{ paddingLeft: `${10 + depth * 16}px` }}
           tabIndex={0}
+          className={cn(
+            "group flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 cursor-pointer transition-colors select-none",
+            active
+              ? "bg-primary/[0.1] text-primary"
+              : "text-text-secondary hover:bg-surface-hover hover:text-text-primary",
+          )}
           onClick={() => {
             if (renaming === node.id) return;
             onNavigate({ folderId: node.id, type: "all" });
@@ -217,23 +226,16 @@ export default function FolderTree({
             if (e.key === "Enter" && renaming !== node.id)
               onNavigate({ folderId: node.id, type: "all" });
           }}
-          className={cn(
-            "group flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 cursor-pointer transition-colors select-none",
-            active
-              ? "bg-primary/[0.1] text-primary"
-              : "text-text-secondary hover:bg-surface-hover hover:text-text-primary",
-          )}
-          style={{ paddingLeft: `${10 + depth * 16}px` }}
         >
           {hasChildren ? (
             <button
-              type="button"
               aria-label={isOpen ? "Collapse" : "Expand"}
+              className="shrink-0 rounded p-0.5 text-text-tertiary hover:text-text-primary cursor-pointer"
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleExpand(node.id);
               }}
-              className="shrink-0 rounded p-0.5 text-text-tertiary hover:text-text-primary cursor-pointer"
             >
               {isOpen ? (
                 <ChevronDown size={13} />
@@ -248,13 +250,13 @@ export default function FolderTree({
           <span className="shrink-0">
             {isOpen && hasChildren ? (
               <FolderOpen
-                size={15}
                 className={active ? "text-primary" : "text-secondary"}
+                size={15}
               />
             ) : (
               <Folder
-                size={15}
                 className={active ? "text-primary" : "text-secondary"}
+                size={15}
               />
             )}
           </span>
@@ -262,17 +264,17 @@ export default function FolderTree({
           {renaming === node.id ? (
             <input
               autoFocus
+              aria-label="Rename folder"
+              className="flex-1 min-w-0 h-6 rounded-md border border-input-border bg-input-bg px-1.5 text-xs text-text-primary outline-none focus:border-input-focus-border"
               value={renameValue}
-              onClick={(e) => e.stopPropagation()}
+              onBlur={commitRename}
               onChange={(e) => setRenameValue(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
               onKeyDown={(e) => {
                 e.stopPropagation();
                 if (e.key === "Enter") commitRename();
                 if (e.key === "Escape") setRenaming(null);
               }}
-              onBlur={commitRename}
-              aria-label="Rename folder"
-              className="flex-1 min-w-0 h-6 rounded-md border border-input-border bg-input-bg px-1.5 text-xs text-text-primary outline-none focus:border-input-focus-border"
             />
           ) : (
             <span className="flex-1 truncate text-xs font-medium">{node.name}</span>
@@ -289,29 +291,29 @@ export default function FolderTree({
               onClick={(e) => e.stopPropagation()}
             >
               <button
-                type="button"
-                title="New subfolder"
                 aria-label={`New subfolder in ${node.name}`}
-                onClick={() => startCreate(node.id)}
                 className="rounded p-0.5 text-text-tertiary hover:text-text-primary cursor-pointer"
+                title="New subfolder"
+                type="button"
+                onClick={() => startCreate(node.id)}
               >
                 <Plus size={13} />
               </button>
               <button
-                type="button"
-                title="Rename"
                 aria-label={`Rename ${node.name}`}
-                onClick={() => startRename(node)}
                 className="rounded p-0.5 text-text-tertiary hover:text-text-primary cursor-pointer"
+                title="Rename"
+                type="button"
+                onClick={() => startRename(node)}
               >
                 <Pencil size={12} />
               </button>
               <button
-                type="button"
-                title="Delete"
                 aria-label={`Delete ${node.name}`}
-                onClick={() => onDeleteFolder({ id: node.id, name: node.name })}
                 className="rounded p-0.5 text-text-tertiary hover:text-error cursor-pointer"
+                title="Delete"
+                type="button"
+                onClick={() => onDeleteFolder({ id: node.id, name: node.name })}
               >
                 <Trash2 size={12} />
               </button>
@@ -320,12 +322,10 @@ export default function FolderTree({
         </div>
 
         {/* Children */}
-        {isOpen && (
-          <div>
+        {isOpen ? <div>
             {creating?.parentId === node.id && renderCreateInput(depth + 1)}
             {node.children.map((child) => renderFolder(child, depth + 1))}
-          </div>
-        )}
+          </div> : null}
       </div>
     );
   }
@@ -333,48 +333,48 @@ export default function FolderTree({
   return (
     <div className="card bg-surface border border-border-primary rounded-xl overflow-hidden shadow-xs">
       <nav
-        className="p-3 flex flex-col gap-4 max-h-[calc(100vh-16rem)] overflow-y-auto scrollbar-thin pr-1"
         aria-label="Data catalog folders"
+        className="p-3 flex flex-col gap-4 max-h-[calc(100vh-16rem)] overflow-y-auto scrollbar-thin pr-1"
       >
         {/* ── All data / ungrouped ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-1">
           <div
+            aria-current={isAllActive ? "true" : undefined}
             role="button"
             tabIndex={0}
-            aria-current={isAllActive ? "true" : undefined}
-            onClick={() => onNavigate({ folderId: null, type: "all" })}
-            onKeyDown={(e) =>
-              e.key === "Enter" && onNavigate({ folderId: null, type: "all" })
-            }
             className={cn(
               "flex items-center gap-2 rounded-lg px-2.5 py-2 cursor-pointer transition-colors select-none",
               isAllActive
                 ? "bg-primary/[0.1] text-primary"
                 : "text-text-primary hover:bg-surface-hover",
             )}
+            onClick={() => onNavigate({ folderId: null, type: "all" })}
+            onKeyDown={(e) =>
+              e.key === "Enter" && onNavigate({ folderId: null, type: "all" })
+            }
           >
             <Database
-              size={16}
               className={isAllActive ? "text-primary" : "text-secondary"}
+              size={16}
             />
             <span className="flex-1 text-sm font-semibold">All Data</span>
           </div>
 
           <div
+            aria-current={isUngroupedActive ? "true" : undefined}
             role="button"
             tabIndex={0}
-            aria-current={isUngroupedActive ? "true" : undefined}
-            onClick={() => onNavigate({ folderId: ROOT_UNGROUPED, type: "all" })}
-            onKeyDown={(e) =>
-              e.key === "Enter" &&
-              onNavigate({ folderId: ROOT_UNGROUPED, type: "all" })
-            }
             className={cn(
               "flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors select-none",
               isUngroupedActive
                 ? "bg-primary/[0.1] text-primary"
                 : "text-text-secondary hover:bg-surface-hover hover:text-text-primary",
             )}
+            onClick={() => onNavigate({ folderId: ROOT_UNGROUPED, type: "all" })}
+            onKeyDown={(e) =>
+              e.key === "Enter" &&
+              onNavigate({ folderId: ROOT_UNGROUPED, type: "all" })
+            }
           >
             <FolderX
               size={14}
@@ -390,29 +390,27 @@ export default function FolderTree({
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-1.5">
-              <Sparkles size={11} className="text-secondary" />
+              <Sparkles className="text-secondary" size={11} />
               <span className="text-[0.65rem] font-bold uppercase tracking-wider text-text-tertiary">
                 Folders
               </span>
             </div>
             <button
-              type="button"
-              title="New folder"
               aria-label="New folder"
-              onClick={() => startCreate(null)}
               className="rounded-md p-1 text-text-tertiary hover:bg-surface-hover hover:text-primary cursor-pointer"
+              title="New folder"
+              type="button"
+              onClick={() => startCreate(null)}
             >
               <Plus size={14} />
             </button>
           </div>
 
-          {loading && (
-            <div className="px-2 py-1" aria-busy="true">
+          {loading ? <div aria-busy="true" className="px-2 py-1">
               <div className="skeleton h-6 rounded-md" />
               <div className="skeleton h-6 rounded-md mt-1.5" />
               <div className="skeleton h-6 rounded-md mt-1.5 w-4/5" />
-            </div>
-          )}
+            </div> : null}
 
           {!loading && tree.map((node) => renderFolder(node, 0))}
 
@@ -430,7 +428,7 @@ export default function FolderTree({
         {/* ── Types (quick filter) ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-1">
           <div className="px-2.5 pb-1 text-[0.65rem] font-bold uppercase tracking-wider text-text-tertiary flex items-center gap-1.5">
-            <Layers size={11} className="text-secondary" />
+            <Layers className="text-secondary" size={11} />
             <span>Types</span>
           </div>
           {TYPES.map((t) => {
@@ -439,9 +437,15 @@ export default function FolderTree({
             return (
               <div
                 key={t.value}
+                aria-current={active ? "true" : undefined}
                 role="button"
                 tabIndex={0}
-                aria-current={active ? "true" : undefined}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors select-none",
+                  active
+                    ? "bg-primary/[0.1] text-primary"
+                    : "text-text-secondary hover:bg-surface-hover hover:text-text-primary",
+                )}
                 onClick={() =>
                   onNavigate({
                     folderId: null,
@@ -452,16 +456,10 @@ export default function FolderTree({
                   e.key === "Enter" &&
                   onNavigate({ folderId: null, type: active ? "all" : t.value })
                 }
-                className={cn(
-                  "flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors select-none",
-                  active
-                    ? "bg-primary/[0.1] text-primary"
-                    : "text-text-secondary hover:bg-surface-hover hover:text-text-primary",
-                )}
               >
                 <TIcon
-                  size={14}
                   className={active ? "text-primary" : "text-text-tertiary"}
+                  size={14}
                 />
                 <span className="text-xs font-medium">{typeLabel(t.value)}</span>
               </div>
@@ -474,7 +472,7 @@ export default function FolderTree({
       <div className="rounded-b-xl border-t border-border-secondary bg-surface-hover/40 p-3 flex flex-col gap-2">
         <div className="flex items-center justify-between text-xs font-semibold text-text-primary">
           <div className="flex items-center gap-1.5">
-            <HardDrive size={13} className="text-primary shrink-0" />
+            <HardDrive className="text-primary shrink-0" size={13} />
             <span>Catalog Usage</span>
           </div>
           <span className="text-[0.7rem] text-text-tertiary font-mono">

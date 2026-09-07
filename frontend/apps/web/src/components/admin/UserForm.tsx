@@ -1,7 +1,8 @@
 import { type FormEvent } from "react";
+
 import { CheckboxList } from "./CheckboxList";
-import { type GroupSummary, type UserFormState } from "./types";
 import { toggleSelection } from "./helpers";
+import { type GroupSummary, type UserFormState } from "./types";
 
 interface UserFormProps {
   title?: string;
@@ -15,7 +16,7 @@ interface UserFormProps {
   onCancel?: () => void;
 }
 
-export function UserForm({
+export const UserForm = ({
   title,
   form,
   groups,
@@ -25,7 +26,7 @@ export function UserForm({
   onChange,
   onSubmit,
   onCancel,
-}: UserFormProps) {
+}: UserFormProps) => {
   const content = (
     <form className="space-y-4" onSubmit={onSubmit}>
       <div className="space-y-1.5">
@@ -33,19 +34,19 @@ export function UserForm({
           Email address <span className="text-danger">*</span>
         </label>
         <input
-          type="email"
-          placeholder="name@example.com"
+          required
           className="input w-full rounded-lg border border-border-primary bg-surface px-3.5 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          placeholder="name@example.com"
+          type="email"
           value={form.email}
           onChange={(e) => onChange({ ...form, email: e.target.value })}
-          required
         />
       </div>
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <label className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
-            Password {passwordRequired && <span className="text-danger">*</span>}
+            Password {passwordRequired ? <span className="text-danger">*</span> : null}
           </label>
           {!passwordRequired && (
             <span className="text-xs text-text-tertiary">
@@ -54,12 +55,12 @@ export function UserForm({
           )}
         </div>
         <input
-          type="password"
-          placeholder={passwordRequired ? "••••••••" : "Leave blank to keep unchanged"}
           className="input w-full rounded-lg border border-border-primary bg-surface px-3.5 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          placeholder={passwordRequired ? "••••••••" : "Leave blank to keep unchanged"}
+          required={passwordRequired}
+          type="password"
           value={form.password}
           onChange={(e) => onChange({ ...form, password: e.target.value })}
-          required={passwordRequired}
         />
       </div>
 
@@ -68,9 +69,9 @@ export function UserForm({
           Full name
         </label>
         <input
-          type="text"
-          placeholder="e.g. Jane Doe"
           className="input w-full rounded-lg border border-border-primary bg-surface px-3.5 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          placeholder="e.g. Jane Doe"
+          type="text"
           value={form.full_name}
           onChange={(e) => onChange({ ...form, full_name: e.target.value })}
         />
@@ -79,9 +80,9 @@ export function UserForm({
       <div className="rounded-lg border border-border-primary bg-surface-hover/50 p-3">
         <label className="flex cursor-pointer items-start gap-2.5 text-sm text-text-primary">
           <input
-            type="checkbox"
-            className="mt-0.5 h-4 w-4 rounded border-border-primary text-primary focus:ring-primary"
             checked={form.is_superuser}
+            className="mt-0.5 h-4 w-4 rounded border-border-primary text-primary focus:ring-primary"
+            type="checkbox"
             onChange={(e) =>
               onChange({ ...form, is_superuser: e.target.checked })
             }
@@ -101,9 +102,9 @@ export function UserForm({
         </label>
         <div className="max-h-48 overflow-y-auto rounded-lg border border-border-primary bg-surface p-3">
           <CheckboxList
+            emptyMessage="No groups available. Create a group first to assign it."
             options={groups.map((g) => ({ id: g.id, label: g.name }))}
             selected={form.groups}
-            emptyMessage="No groups available. Create a group first to assign it."
             onChange={(id) =>
               onChange({ ...form, groups: toggleSelection(form.groups, id) })
             }
@@ -112,19 +113,17 @@ export function UserForm({
       </div>
 
       <div className="mt-6 flex items-center justify-end gap-3 border-t border-border-primary pt-4">
-        {onCancel && (
-          <button
-            type="button"
+        {onCancel ? <button
             className="rounded-lg border border-border-primary px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
+            type="button"
             onClick={onCancel}
           >
             Cancel
-          </button>
-        )}
+          </button> : null}
         <button
-          type="submit"
           className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:opacity-50"
           disabled={submitting}
+          type="submit"
         >
           {submitting ? "Saving…" : submitLabel}
         </button>

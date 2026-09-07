@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 export type ThemeMode = "dark" | "light" | "system";
 export type ActiveTheme = "dark" | "light";
@@ -14,11 +14,11 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const STORAGE_KEY = "earthiq-theme-mode";
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === "dark" || saved === "light" || saved === "system") {
-      return saved as ThemeMode;
+      return saved;
     }
     return "dark"; // Default to dark geospatial theme
   });

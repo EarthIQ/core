@@ -1,10 +1,11 @@
+import { cva, type VariantProps } from "class-variance-authority";
+import { motion, type HTMLMotionProps } from "framer-motion";
 import React, {
   forwardRef,
   type ButtonHTMLAttributes,
   type ReactNode,
 } from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { motion, type HTMLMotionProps } from "framer-motion";
+
 import { cn } from "../../../utils/cn";
 import { Spinner } from "../../feedback/Spinner/Spinner";
 
@@ -300,39 +301,35 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <motion.button
         ref={ref}
+        aria-busy={loading}
+        aria-disabled={isDisabled}
+        disabled={isDisabled}
         type={type}
         className={cn(
           "cursor-pointer select-none",
           buttonVariants({ variant, size, fullWidth, iconOnly }),
           className
         )}
-        disabled={isDisabled}
-        aria-disabled={isDisabled}
-        aria-busy={loading}
         {...motionProps}
         {...(props as unknown as HTMLMotionProps<"button">)}
       >
         {loading ? (
           <>
             <Spinner
-              size={spinnerSize}
               className="flex-shrink-0"
+              size={spinnerSize}
             />
             <span>{loadingText ?? children}</span>
           </>
         ) : (
           <>
-            {leftIcon && (
-              <span className="inline-flex flex-shrink-0 items-center justify-center">
+            {leftIcon ? <span className="inline-flex flex-shrink-0 items-center justify-center">
                 {leftIcon}
-              </span>
-            )}
-            {children && <span>{children}</span>}
-            {rightIcon && (
-              <span className="inline-flex flex-shrink-0 items-center justify-center">
+              </span> : null}
+            {children ? <span>{children}</span> : null}
+            {rightIcon ? <span className="inline-flex flex-shrink-0 items-center justify-center">
                 {rightIcon}
-              </span>
-            )}
+              </span> : null}
           </>
         )}
       </motion.button>

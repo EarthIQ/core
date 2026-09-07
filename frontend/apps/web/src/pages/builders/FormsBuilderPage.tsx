@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Button } from "@packages/ui";
 import {
   Calendar,
   CheckSquare,
@@ -9,7 +8,9 @@ import {
   MapPin,
   Type,
 } from "lucide-react";
-import { Button } from "@packages/ui";
+import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
+
 import { BuilderScaffold } from "@/components/builder/BuilderScaffold";
 import {
   BuilderWorkspace,
@@ -65,28 +66,6 @@ export default function FormsBuilderPage() {
   return (
     <BuilderScaffold builder={builder} projectId={projectId}>
       <BuilderWorkspace
-        sidebar={
-          <>
-            <SidebarHeader
-              icon={ClipboardList}
-              title="Forms"
-              addLabel="New"
-              onAdd={addForm}
-            />
-            <div className="flex flex-col gap-0.5">
-              {forms.map((form) => (
-                <SidebarItem
-                  key={form.id}
-                  icon={ClipboardList}
-                  title={form.title}
-                  subtitle="0 fields · draft"
-                  active={form.id === activeId}
-                  onClick={() => setActiveId(form.id)}
-                />
-              ))}
-            </div>
-          </>
-        }
         main={
           <div className="flex flex-col gap-4">
             {/* Field type palette */}
@@ -100,9 +79,9 @@ export default function FormsBuilderPage() {
                   return (
                     <button
                       key={field.label}
-                      type="button"
                       disabled
                       className="flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-dashed border-[var(--border-primary)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-tertiary)] opacity-70"
+                      type="button"
                     >
                       <FieldIcon size={13} />
                       {field.label}
@@ -114,12 +93,12 @@ export default function FormsBuilderPage() {
 
             {/* Form canvas */}
             <EditorPlaceholder
+              description="Design your form right here: choose a field type from the palette, add questions, and responses will be stored on this project."
               icon={ClipboardList}
               title={activeForm?.title ?? "New form"}
-              description="Design your form right here: choose a field type from the palette, add questions, and responses will be stored on this project."
               actions={
                 <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                  <Button size="sm" disabled>
+                  <Button disabled size="sm">
                     Responses (0)
                   </Button>
                   <Button size="sm" variant="ghost" onClick={addForm}>
@@ -129,6 +108,28 @@ export default function FormsBuilderPage() {
               }
             />
           </div>
+        }
+        sidebar={
+          <>
+            <SidebarHeader
+              addLabel="New"
+              icon={ClipboardList}
+              title="Forms"
+              onAdd={addForm}
+            />
+            <div className="flex flex-col gap-0.5">
+              {forms.map((form) => (
+                <SidebarItem
+                  key={form.id}
+                  active={form.id === activeId}
+                  icon={ClipboardList}
+                  subtitle="0 fields · draft"
+                  title={form.title}
+                  onClick={() => setActiveId(form.id)}
+                />
+              ))}
+            </div>
+          </>
         }
       />
     </BuilderScaffold>

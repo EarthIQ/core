@@ -1,5 +1,7 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { FeatureCollection } from 'geojson';
 
 export interface ChartData {
@@ -146,7 +148,7 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
     const barHeight = Math.max(20, (height - 40) / chartData.length - 4);
     
     return (
-      <svg width={width - 32} height={height}>
+      <svg height={height} width={width - 32}>
         {chartData.map((data, index) => {
           const barWidth = (data.value / maxValue) * (width - 120);
           const y = index * (barHeight + 4) + 10;
@@ -155,42 +157,40 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
           return (
             <g
               key={data.label}
+              style={{ cursor: onSegmentClick ? 'pointer' : 'default' }}
+              onClick={() => onSegmentClick?.(data, index)}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
-              onClick={() => onSegmentClick?.(data, index)}
-              style={{ cursor: onSegmentClick ? 'pointer' : 'default' }}
             >
               {/* Bar */}
               <rect
-                x={80}
-                y={y}
-                width={barWidth}
-                height={barHeight}
                 fill={data.color}
+                height={barHeight}
                 opacity={isHovered ? 1 : 0.8}
                 rx={2}
+                width={barWidth}
+                x={80}
+                y={y}
               />
               {/* Label */}
               <text
+                fill="#333"
+                fontSize={11}
+                textAnchor="end"
                 x={75}
                 y={y + barHeight / 2 + 4}
-                textAnchor="end"
-                fontSize={11}
-                fill="#333"
               >
                 {data.label.length > 10 ? `${data.label.slice(0, 10)}...` : data.label}
               </text>
               {/* Value */}
-              {showValues && (
-                <text
+              {showValues ? <text
+                  fill="#666"
+                  fontSize={10}
                   x={85 + barWidth}
                   y={y + barHeight / 2 + 4}
-                  fontSize={10}
-                  fill="#666"
                 >
                   {data.value.toLocaleString(undefined, { maximumFractionDigits: 1 })}
-                </text>
-              )}
+                </text> : null}
             </g>
           );
         })}
@@ -208,7 +208,7 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
     let currentAngle = -Math.PI / 2;
 
     return (
-      <svg width={width - 32} height={height}>
+      <svg height={height} width={width - 32}>
         {chartData.map((data, index) => {
           const sliceAngle = (data.value / total) * Math.PI * 2;
           const startAngle = currentAngle;
@@ -258,31 +258,29 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
           return (
             <g
               key={data.label}
+              style={{ cursor: onSegmentClick ? 'pointer' : 'default' }}
+              onClick={() => onSegmentClick?.(data, index)}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
-              onClick={() => onSegmentClick?.(data, index)}
-              style={{ cursor: onSegmentClick ? 'pointer' : 'default' }}
             >
               <path
                 d={path}
                 fill={data.color}
+                opacity={isHovered ? 1 : 0.9}
                 stroke="white"
                 strokeWidth={2}
-                opacity={isHovered ? 1 : 0.9}
               />
-              {showValues && sliceAngle > 0.3 && (
-                <text
+              {showValues && sliceAngle > 0.3 ? <text
+                  dominantBaseline="middle"
+                  fill="white"
+                  fontSize={10}
+                  fontWeight="bold"
+                  textAnchor="middle"
                   x={labelX}
                   y={labelY}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize={10}
-                  fill="white"
-                  fontWeight="bold"
                 >
                   {((data.value / total) * 100).toFixed(0)}%
-                </text>
-              )}
+                </text> : null}
             </g>
           );
         })}
@@ -290,13 +288,13 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
         {/* Center text for donut */}
         {type === 'donut' && (
           <text
-            x={centerX}
-            y={centerY}
-            textAnchor="middle"
             dominantBaseline="middle"
+            fill="#333"
             fontSize={14}
             fontWeight="bold"
-            fill="#333"
+            textAnchor="middle"
+            x={centerX}
+            y={centerY}
           >
             {total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </text>
@@ -323,26 +321,26 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
     const areaPath = `${linePath} L ${points[points.length - 1]?.x || 0} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`;
 
     return (
-      <svg width={width - 32} height={height}>
+      <svg height={height} width={width - 32}>
         {/* Grid lines */}
         {[0, 0.25, 0.5, 0.75, 1].map(ratio => {
           const y = padding.top + chartHeight * (1 - ratio);
           return (
             <g key={ratio}>
               <line
-                x1={padding.left}
-                y1={y}
-                x2={padding.left + chartWidth}
-                y2={y}
                 stroke="#eee"
                 strokeWidth={1}
+                x1={padding.left}
+                x2={padding.left + chartWidth}
+                y1={y}
+                y2={y}
               />
               <text
+                fill="#999"
+                fontSize={9}
+                textAnchor="end"
                 x={padding.left - 5}
                 y={y + 4}
-                textAnchor="end"
-                fontSize={9}
-                fill="#999"
               >
                 {(maxValue * ratio).toFixed(0)}
               </text>
@@ -371,26 +369,26 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
         {points.map((point, index) => (
           <g
             key={index}
+            style={{ cursor: onSegmentClick ? 'pointer' : 'default' }}
+            onClick={() => onSegmentClick?.(point.data, index)}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
-            onClick={() => onSegmentClick?.(point.data, index)}
-            style={{ cursor: onSegmentClick ? 'pointer' : 'default' }}
           >
             <circle
               cx={point.x}
               cy={point.y}
-              r={hoveredIndex === index ? 6 : 4}
               fill={colors[0]}
+              r={hoveredIndex === index ? 6 : 4}
               stroke="white"
               strokeWidth={2}
             />
             {hoveredIndex === index && (
               <text
+                fill="#333"
+                fontSize={10}
+                textAnchor="middle"
                 x={point.x}
                 y={point.y - 10}
-                textAnchor="middle"
-                fontSize={10}
-                fill="#333"
               >
                 {point.data.value.toFixed(1)}
               </text>
@@ -402,12 +400,12 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
         {points.map((point, index) => (
           <text
             key={index}
+            fill="#666"
+            fontSize={9}
+            textAnchor="middle"
+            transform={`rotate(-45, ${point.x}, ${height - 5})`}
             x={point.x}
             y={height - 5}
-            textAnchor="middle"
-            fontSize={9}
-            fill="#666"
-            transform={`rotate(-45, ${point.x}, ${height - 5})`}
           >
             {point.data.label.slice(0, 8)}
           </text>
@@ -453,7 +451,7 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
         padding: '8px 0',
         borderTop: '1px solid #eee'
       }}>
-        {chartData.slice(0, 8).map((data, index) => (
+        {chartData.slice(0, 8).map((data, _index) => (
           <div
             key={data.label}
             style={{
@@ -514,8 +512,7 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
       }}
     >
       {/* Header */}
-      {title && (
-        <div
+      {title ? <div
           style={{
             padding: '10px 16px',
             backgroundColor: '#f8f9fa',
@@ -528,17 +525,14 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
           onClick={() => collapsible && setIsCollapsed(!isCollapsed)}
         >
           <span style={{ fontWeight: 600, fontSize: 13 }}>{title}</span>
-          {collapsible && (
-            <span style={{
+          {collapsible ? <span style={{
               transform: isCollapsed ? 'rotate(180deg)' : 'none',
               transition: 'transform 0.2s',
               fontSize: 10
             }}>
               ▼
-            </span>
-          )}
-        </div>
-      )}
+            </span> : null}
+        </div> : null}
 
       {/* Chart content */}
       {!isCollapsed && (

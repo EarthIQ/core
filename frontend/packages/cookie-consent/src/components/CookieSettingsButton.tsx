@@ -1,5 +1,6 @@
-import React from 'react';
 import { Cookie } from 'lucide-react';
+import React from 'react';
+
 import { useCookieConsentStore } from '../stores/cookieConsentStore';
 
 export interface CookieSettingsButtonProps {
@@ -19,11 +20,11 @@ export const CookieSettingsButton: React.FC<CookieSettingsButtonProps> = ({
 
   return (
     <button
+      aria-label={ariaLabel}
+      className={`cc-settings-btn cc-settings-btn--${position} ${className}`}
+      title={ariaLabel}
       type="button"
       onClick={openSettings}
-      className={`cc-settings-btn cc-settings-btn--${position} ${className}`}
-      aria-label={ariaLabel}
-      title={ariaLabel}
     >
       <Cookie className="cc-icon" />
     </button>

@@ -1,6 +1,8 @@
-import React, { useState, useCallback, useMemo } from 'react';
 import * as turf from '@turf/turf';
+import React, { useState, useCallback, useMemo } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { Feature, FeatureCollection, Polygon, MultiPolygon } from 'geojson';
 
 export interface IntersectToolProps {
@@ -51,7 +53,8 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
     
     const mapSource = map.getSource(source);
     if (mapSource && mapSource.type === 'geojson') {
-      // @ts-ignore - accessing internal data
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- intentional ts-ignore for internal _data access
+      // @ts-ignore
       return (mapSource as any)._data as FeatureCollection;
     }
     
@@ -59,7 +62,7 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
   }, [map]);
 
   // Perform intersection
-  const executeIntersect = useCallback(async () => {
+  const executeIntersect = useCallback(() => {
     setIsProcessing(true);
     setError(null);
 
@@ -112,7 +115,7 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
       // Add to map if available
       if (map && showResult) {
         if (map.getSource(outputLayerId)) {
-          (map.getSource(outputLayerId) as any).setData(resultCollection);
+          (map.getSource(outputLayerId)).setData(resultCollection);
         } else {
           map.addSource(outputLayerId, {
             type: 'geojson',
@@ -191,7 +194,7 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
       }}
     >
       <div style={{ fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
           <circle cx="9" cy="9" r="7" />
           <circle cx="15" cy="15" r="7" />
         </svg>
@@ -205,7 +208,6 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <button
-          onClick={executeIntersect}
           disabled={isProcessing || !isLoaded}
           style={{
             flex: 1,
@@ -217,13 +219,12 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
             cursor: isProcessing ? 'not-allowed' : 'pointer',
             fontSize: 13
           }}
+          onClick={executeIntersect}
         >
           {isProcessing ? 'Processing...' : 'Execute Intersect'}
         </button>
 
-        {result && (
-          <button
-            onClick={clearResult}
+        {result ? <button
             style={{
               padding: '8px 12px',
               backgroundColor: '#e74c3c',
@@ -233,23 +234,22 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
               cursor: 'pointer',
               fontSize: 13
             }}
+            onClick={clearResult}
           >
             Clear
-          </button>
-        )}
+          </button> : null}
       </div>
 
       <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
         <input
-          type="checkbox"
           checked={showResult}
+          type="checkbox"
           onChange={(e) => setShowResult(e.target.checked)}
         />
         Show result on map
       </label>
 
-      {error && (
-        <div style={{
+      {error ? <div style={{
           marginTop: 12,
           padding: 8,
           backgroundColor: '#fee',
@@ -258,11 +258,9 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
           fontSize: 12
         }}>
           {error.message}
-        </div>
-      )}
+        </div> : null}
 
-      {result && (
-        <div style={{
+      {result ? <div style={{
           marginTop: 12,
           padding: 8,
           backgroundColor: '#e8f5e9',
@@ -270,8 +268,7 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
           fontSize: 12
         }}>
           <strong>Result:</strong> {result.features.length} features
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 };

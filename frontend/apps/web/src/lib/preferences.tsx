@@ -23,6 +23,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+
 import { api } from "./api";
 import { useAuth } from "./auth";
 import { useTheme, type ThemeMode } from "./theme";
@@ -182,7 +183,7 @@ function writeLocal(prefs: UIPreferences): void {
 
 // ── Provider ───────────────────────────────────────────────────────────────────
 
-export function PreferencesProvider({ children }: { children: ReactNode }) {
+export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, user } = useAuth();
   const { theme, setTheme } = useTheme();
 

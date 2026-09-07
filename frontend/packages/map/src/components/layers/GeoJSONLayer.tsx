@@ -1,12 +1,15 @@
-import React, { useEffect, useId, useCallback, useRef } from "react";
+import { useEffect, useId, useCallback, useRef } from "react";
+
 import { useMap } from "../../hooks/useMap";
+
 import type { GeoJSON, Feature } from "geojson";
 import type {
-  Map as MapLibreMap,
-  GeoJSONSource,
+  Map as _MapLibreMap,
+  _GeoJSONSource,
   MapMouseEvent,
   MapGeoJSONFeature,
 } from "maplibre-gl";
+import type React from "react";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -327,7 +330,7 @@ function toGeoJSONFeature(feature?: MapGeoJSONFeature): Feature {
       id: feature?.id,
       properties: feature?.properties,
       geometry: feature?.geometry,
-    } as Feature);
+    });
 }
 
 // ============================================================================
@@ -382,23 +385,6 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
   // -------------------------------------------------------------------------
   // HOOKS & REFS
   // -------------------------------------------------------------------------
-  console.log("Rendering GeoJSONLayer with props:", {
-    id: propId,
-    data,
-    type,
-    paint,
-    layout,
-    filter,
-    minZoom,
-    maxZoom,
-    beforeId,
-    visible,
-    hoverable,
-    selectable,
-    cursor,
-    hoverOpacity,
-  });
-
   const { map, isLoaded } = useMap();
   const autoId = useId();
 
@@ -535,7 +521,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
     // Safety check: Ensure map is not removed/partially destroyed
     try {
       if (!map.getContainer()) return;
-    } catch (e) {
+    } catch (_e) {
       return;
     }
 
@@ -616,7 +602,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
                 { source: sourceId, id: hoveredFeatureIdRef.current },
                 { hover: false }
               );
-            } catch (e) {
+            } catch (_e) {
               // ignore if source already gone
             }
             hoveredFeatureIdRef.current = null;
@@ -627,14 +613,14 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
                 { source: sourceId, id: selectedFeatureIdRef.current },
                 { selected: false }
               );
-            } catch (e) {
+            } catch (_e) {
               // ignore
             }
             selectedFeatureIdRef.current = null;
           }
           map.removeSource(sourceId);
         }
-      } catch (err) {
+      } catch (_err) {
         // Silent catch for cleanup
       }
     };
@@ -667,11 +653,11 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
     try {
       if (!map || !isLoaded || !data || !map.getContainer()) return;
 
-      const source = map.getSource(sourceId) as GeoJSONSource | undefined;
+      const source = map.getSource(sourceId);
       if (source) {
         source.setData(typeof data === "string" ? data : data);
       }
-    } catch (e) {
+    } catch (_e) {
       // Map might be in a removed state, ignore
     }
   }, [data, map, isLoaded, sourceId]);
@@ -687,7 +673,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
   useEffect(() => {
     try {
       if (!map || !isLoaded || !map.getContainer() || !map.getLayer(id)) return;
-    } catch (e) {
+    } catch (_e) {
       return;
     }
 
@@ -740,7 +726,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
   useEffect(() => {
     try {
       if (!map || !isLoaded || !map.getContainer() || !map.getLayer(id)) return;
-    } catch (e) {
+    } catch (_e) {
       return;
     }
     try {
@@ -767,7 +753,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
   useEffect(() => {
     try {
       if (!map || !isLoaded || !map.getContainer() || !map.getLayer(id)) return;
-    } catch (e) {
+    } catch (_e) {
       return;
     }
 
@@ -786,7 +772,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
       }
     });
 
-    if (outlineLayer && outlineLayer.paint) {
+    if (outlineLayer?.paint) {
       Object.entries(outlineLayer.paint).forEach(([property, value]) => {
         try {
           if (map.getLayer(`${id}-outline`)) {
@@ -809,7 +795,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
   useEffect(() => {
     try {
       if (!map || !isLoaded || !map.getContainer() || !map.getLayer(id)) return;
-    } catch (e) {
+    } catch (_e) {
       return;
     }
     try {

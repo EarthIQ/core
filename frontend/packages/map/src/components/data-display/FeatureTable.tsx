@@ -1,6 +1,8 @@
+import { Input, Pagination, Button, Stack } from '@packages/ui';
 import React, { useState, useMemo, useCallback } from 'react';
+
 import { useMap } from '../../hooks/useMap';
-import { Table, Input, Select, Pagination, Button, Stack } from '@packages/ui';
+
 import type { GeoJSON } from 'geojson';
 
 export interface FeatureTableProps {
@@ -182,7 +184,7 @@ export const FeatureTable: React.FC<FeatureTableProps> = ({
     // Zoom to feature
     if (zoomOnClick && map && isLoaded && feature.geometry) {
       const bounds = getBounds(feature.geometry);
-      map.fitBounds(bounds as any, { padding: 50, maxZoom: 16 });
+      map.fitBounds(bounds, { padding: 50, maxZoom: 16 });
     }
   }, [zoomOnClick, map, isLoaded, onRowClick]);
 
@@ -236,9 +238,9 @@ export const FeatureTable: React.FC<FeatureTableProps> = ({
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <Input
             placeholder="Search all columns..."
+            style={{ width: 250 }}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: 250 }}
           />
           
           <span style={{ color: '#6b7280', fontSize: 14 }}>
@@ -246,44 +248,39 @@ export const FeatureTable: React.FC<FeatureTableProps> = ({
             {selectedIds.size > 0 && ` (${selectedIds.size} selected)`}
           </span>
 
-          {exportable && (
-            <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+          {exportable ? <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
               <Button size="sm" variant="outline" onClick={exportToCSV}>
                 Export CSV
               </Button>
               <Button size="sm" variant="outline" onClick={exportToGeoJSON}>
                 Export GeoJSON
               </Button>
-            </div>
-          )}
+            </div> : null}
         </div>
 
         {/* Column filters */}
-        {filterable && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {filterable ? <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {columns.filter(c => c.filterable !== false).slice(0, 4).map(col => (
               <Input
                 key={col.key}
                 placeholder={`Filter ${col.header}...`}
                 size="sm"
+                style={{ width: 150 }}
                 value={filters[col.key] || ''}
                 onChange={(e) => setFilters(prev => ({ ...prev, [col.key]: e.target.value }))}
-                style={{ width: 150 }}
               />
             ))}
-          </div>
-        )}
+          </div> : null}
       </Stack>
 
       {/* Table */}
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
         <thead>
           <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-            {selectable && (
-              <th style={{ padding: 8, width: 40 }}>
+            {selectable ? <th style={{ padding: 8, width: 40 }}>
                 <input
-                  type="checkbox"
                   checked={selectedIds.size === processedData.length && processedData.length > 0}
+                  type="checkbox"
                   onChange={(e) => {
                     if (e.target.checked) {
                       setSelectedIds(new Set(processedData.map(f => f.id || f.properties?.id)));
@@ -292,8 +289,7 @@ export const FeatureTable: React.FC<FeatureTableProps> = ({
                     }
                   }}
                 />
-              </th>
-            )}
+              </th> : null}
             {columns.map(col => (
               <th
                 key={col.key}
@@ -329,15 +325,13 @@ export const FeatureTable: React.FC<FeatureTableProps> = ({
                 }}
                 onClick={() => handleRowClick(feature)}
               >
-                {selectable && (
-                  <td style={{ padding: 8 }} onClick={e => e.stopPropagation()}>
+                {selectable ? <td style={{ padding: 8 }} onClick={e => e.stopPropagation()}>
                     <input
-                      type="checkbox"
                       checked={selectedIds.has(id)}
+                      type="checkbox"
                       onChange={(e) => handleRowSelect(feature, e.target.checked)}
                     />
-                  </td>
-                )}
+                  </td> : null}
                 {columns.map(col => (
                   <td key={col.key} style={{ padding: 8 }}>
                     {col.render 
@@ -353,15 +347,13 @@ export const FeatureTable: React.FC<FeatureTableProps> = ({
       </table>
 
       {/* Pagination */}
-      {pagination && totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+      {pagination && totalPages > 1 ? <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
           />
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 };

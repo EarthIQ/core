@@ -1,7 +1,10 @@
-import React, { useEffect, useId } from 'react';
+import { useEffect, useId } from 'react';
+
 import { useMap } from '../../hooks/useMap';
 import { useMapImage } from '../../hooks/useMapImage';
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export interface IconLayerProps {
   /** Unique layer ID */

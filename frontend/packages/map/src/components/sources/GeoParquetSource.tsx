@@ -1,6 +1,10 @@
-import React, { useEffect, useId } from "react";
-import { useMap } from "../../hooks/useMap";
 import { parquetRead } from "hyparquet";
+import { useEffect, useId } from "react";
+
+import { useMap } from "../../hooks/useMap";
+
+import type React from "react";
+
 
 export interface GeoParquetSourceProps {
   /** Unique source ID */
@@ -218,10 +222,10 @@ function getCoordinates(geometry: GeoJSON.Geometry): number[][] {
   // Flatten coordinates for bbox check
   switch (geometry.type) {
     case "Point":
-      return [geometry.coordinates as number[]];
+      return [geometry.coordinates];
     case "LineString":
     case "MultiPoint":
-      return geometry.coordinates as number[][];
+      return geometry.coordinates;
     case "Polygon":
     case "MultiLineString":
       return (geometry.coordinates as number[][][]).flat();

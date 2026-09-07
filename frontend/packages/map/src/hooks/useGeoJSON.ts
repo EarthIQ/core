@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+
 import type { GeoJSON } from 'geojson';
 
 export interface UseGeoJSONOptions {
@@ -64,7 +65,7 @@ export const useGeoJSON = (
             return;
           }
         }
-      } catch {}
+      } catch { /* ignore cache read errors */ }
     }
 
     setLoading(true);
@@ -119,7 +120,7 @@ export const useGeoJSON = (
             data: geojson,
             timestamp: Date.now()
           }));
-        } catch {}
+        } catch { /* ignore cache write errors */ }
       }
 
       setData(geojson);

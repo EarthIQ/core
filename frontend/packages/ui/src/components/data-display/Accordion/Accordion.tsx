@@ -1,5 +1,6 @@
-import React, { useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, type ReactNode } from "react";
+
 import { cn } from "../../../utils/cn";
 
 interface AccordionItem {
@@ -19,14 +20,14 @@ interface AccordionProps {
   className?: string;
 }
 
-export function Accordion({
+export const Accordion = ({
   items,
   defaultActiveKeys = [],
   activeKeys: controlledActiveKeys,
   onChange,
   allowMultiple = false,
   className,
-}: AccordionProps) {
+}: AccordionProps) => {
   const [internalActiveKeys, setInternalActiveKeys] =
     useState<string[]>(defaultActiveKeys);
 
@@ -61,20 +62,18 @@ export function Accordion({
             )}
           >
             <button
-              onClick={() => !item.disabled && handleToggle(item.key)}
               disabled={item.disabled}
               className={cn(
                 "flex w-full items-center justify-between p-4 text-left transition-colors",
                 "hover:bg-[var(--surface-hover)] focus:bg-[var(--surface-hover)] focus:outline-none",
                 item.disabled && "cursor-not-allowed"
               )}
+              onClick={() => !item.disabled && handleToggle(item.key)}
             >
               <div className="flex items-center gap-3">
-                {item.icon && (
-                  <span className="text-[var(--text-secondary)]">
+                {item.icon ? <span className="text-[var(--text-secondary)]">
                     {item.icon}
-                  </span>
-                )}
+                  </span> : null}
                 <span className="font-medium text-[var(--text-primary)]">
                   {item.title}
                 </span>
@@ -82,37 +81,35 @@ export function Accordion({
 
               <motion.svg
                 animate={{ rotate: isActive ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
                 className="h-5 w-5 shrink-0 text-[var(--text-tertiary)]"
                 fill="none"
                 stroke="currentColor"
+                transition={{ duration: 0.2 }}
                 viewBox="0 0 24 24"
               >
                 <path
+                  d="M19 9l-7 7-7-7"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
                 />
               </motion.svg>
             </button>
 
             <AnimatePresence initial={false}>
-              {isActive && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
+              {isActive ? <motion.div
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  initial={{ height: 0, opacity: 0 }}
                   style={{ overflow: "hidden" }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
                 >
                   <div className="border-t border-[var(--border-secondary)] px-4 pb-4">
                     <div className="pt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
                       {item.content}
                     </div>
                   </div>
-                </motion.div>
-              )}
+                </motion.div> : null}
             </AnimatePresence>
           </div>
         );

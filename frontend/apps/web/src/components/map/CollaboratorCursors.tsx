@@ -8,9 +8,10 @@
  * to pixel coordinates using map.project().
  */
 import { useEffect, useRef, useState } from "react";
-import type { MutableRefObject } from "react";
-import type * as maplibregl from "maplibre-gl";
+
 import type { CollaboratorState } from "@/lib/useCollaboration";
+import type * as maplibregl from "maplibre-gl";
+import type { MutableRefObject } from "react";
 
 // Deterministic color from email string
 const AVATAR_COLORS = [
@@ -45,10 +46,10 @@ interface CollaboratorCursorsProps {
   mapRef: MutableRefObject<maplibregl.Map | null>;
 }
 
-export function CollaboratorCursors({
+export const CollaboratorCursors = ({
   collaborators,
   mapRef,
-}: CollaboratorCursorsProps) {
+}: CollaboratorCursorsProps) => {
   const [, forceUpdate] = useState(0);
   const frameRef = useRef<number>(0);
 
@@ -80,7 +81,7 @@ export function CollaboratorCursors({
     collaborators
       .filter((c) => c.cursor !== null)
       .map((c) => {
-        const lngLat = c.cursor!;
+        const lngLat = c.cursor;
         const px = map.project([lngLat.lng, lngLat.lat]);
         // Check whether cursor is inside the current viewport
         const inView =
@@ -95,8 +96,8 @@ export function CollaboratorCursors({
 
   return (
     <div
-      className="absolute inset-0 pointer-events-none z-10"
       aria-hidden="true"
+      className="absolute inset-0 pointer-events-none z-10"
     >
       {projected.map(({ user_id, email, full_name, px }) => {
         if (!px.visible) return null;
@@ -112,18 +113,18 @@ export function CollaboratorCursors({
           >
             {/* Cursor arrow */}
             <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
               fill="none"
+              height="20"
               style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))" }}
+              viewBox="0 0 20 20"
+              width="20"
             >
               <path
                 d="M3 2L17 10L10 12L7 18L3 2Z"
                 fill={color}
                 stroke="white"
-                strokeWidth="1.5"
                 strokeLinejoin="round"
+                strokeWidth="1.5"
               />
             </svg>
 

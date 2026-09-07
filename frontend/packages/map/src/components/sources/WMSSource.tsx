@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+
 import { useMap } from '../../hooks/useMap';
 
 export interface WMSSourceProps {
@@ -274,7 +275,7 @@ export const useWMSSource = (id: string) => {
 
   const getSource = useCallback(() => {
     if (!map || !isLoaded) return null;
-    return map.getSource(id) as maplibregl.RasterTileSource | undefined;
+    return map.getSource(id);
   }, [map, isLoaded, id]);
 
   const setOpacity = useCallback((opacity: number) => {
@@ -286,14 +287,16 @@ export const useWMSSource = (id: string) => {
     }
   }, [map, isLoaded, id]);
 
-  const getFeatureInfo = useCallback(async (
-    lngLat: { lng: number; lat: number },
-    options: {
-      layers?: string[];
-      infoFormat?: string;
-      featureCount?: number;
-    } = {}
-  ): Promise<any> => {
+  const getFeatureInfo = useCallback(
+     
+    (
+      lngLat: { lng: number; lat: number },
+      _options: {
+        layers?: string[];
+        infoFormat?: string;
+        featureCount?: number;
+      } = {}
+    ): any => {
     // Implementation would require the WMS URL and parameters
     // This is a placeholder for the GetFeatureInfo request
     console.warn('getFeatureInfo requires WMS URL context');
@@ -321,7 +324,7 @@ export interface WMSFeatureInfoProps {
 }
 
 export const WMSFeatureInfo: React.FC<WMSFeatureInfoProps> = ({
-  sourceId,
+  _sourceId,
   url,
   layers,
   version = '1.1.1',

@@ -1,6 +1,9 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
 import type { GeoJSON } from 'geojson';
+import type React from 'react';
 
 export interface BoxSelectInteractionProps {
   /** Layer IDs to enable box selection on */
@@ -161,7 +164,7 @@ export const BoxSelectInteraction: React.FC<BoxSelectInteractionProps> = ({
       };
 
       features = features.filter(feature => {
-        const coords = getCoordinatesFromGeometry(feature.geometry as GeoJSON.Geometry);
+        const coords = getCoordinatesFromGeometry(feature.geometry);
         return coords.every(coord => 
           coord[0] >= boxBounds.minLng &&
           coord[0] <= boxBounds.maxLng &&
@@ -176,7 +179,7 @@ export const BoxSelectInteraction: React.FC<BoxSelectInteractionProps> = ({
     features.forEach(feature => {
       const id = feature.id ?? feature.properties?.id ?? JSON.stringify(feature.geometry);
       if (!uniqueFeatures.has(id)) {
-        uniqueFeatures.set(id, feature as unknown as GeoJSON.Feature);
+        uniqueFeatures.set(id, feature);
       }
     });
 
@@ -322,10 +325,10 @@ export const BoxSelectInteraction: React.FC<BoxSelectInteractionProps> = ({
 function getCoordinatesFromGeometry(geometry: GeoJSON.Geometry): number[][] {
   switch (geometry.type) {
     case 'Point':
-      return [geometry.coordinates as number[]];
+      return [geometry.coordinates];
     case 'LineString':
     case 'MultiPoint':
-      return geometry.coordinates as number[][];
+      return geometry.coordinates;
     case 'Polygon':
     case 'MultiLineString':
       return (geometry.coordinates as number[][][]).flat();

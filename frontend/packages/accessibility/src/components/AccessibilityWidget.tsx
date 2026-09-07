@@ -1,12 +1,13 @@
 import React, { useRef, useMemo } from "react";
-import { useAccessibility } from "../hooks/useAccessibility";
-import { TriggerButton } from "./TriggerButton";
-import { Panel } from "./Panel";
+
 import { Accordion, AccordionItem } from "./Accordion";
+import { Icons } from "./Icons";
+import { Panel } from "./Panel";
 import { ProfilesSection } from "./Profiles";
 import { SettingsSection } from "./Settings";
+import { TriggerButton } from "./TriggerButton";
 import { defaultSettings } from "../constants/defaults";
-import { Icons } from "./Icons";
+import { useAccessibility } from "../hooks/useAccessibility";
 
 export interface AccessibilityWidgetProps {
   /**
@@ -80,26 +81,26 @@ export const AccessibilityWidget: React.FC<AccessibilityWidgetProps> = ({
         ) : (
           <TriggerButton
             ref={buttonRef}
-            isOpen={isOpen}
             hasActiveSettings={hasActiveSettings}
+            isOpen={isOpen}
             label={t("title")}
             onClick={() => setIsOpen(!isOpen)}
           />
         ))}
 
       <Panel
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        onReset={resetSettings}
-        title={t("title")}
-        subtitle={t("subtitle")}
-        resetLabel={t("reset")}
+        buttonRef={buttonRef}
         closeLabel={t("close")}
         footerText={t("settingsSaved")}
-        buttonRef={buttonRef}
+        isOpen={isOpen}
         position={position}
+        resetLabel={t("reset")}
+        subtitle={t("subtitle")}
+        title={t("title")}
+        onClose={() => setIsOpen(false)}
+        onReset={resetSettings}
       >
-        <Accordion defaultOpen={["settings"]} allowMultiple={false}>
+        <Accordion allowMultiple={false} defaultOpen={["settings"]}>
           {/* Profiles Section */}
           <AccordionItem
             id="profiles"
@@ -107,18 +108,16 @@ export const AccessibilityWidget: React.FC<AccessibilityWidgetProps> = ({
               <div className="flex w-full items-center gap-2">
                 <Icons.accessibility className="h-5 w-5" />
                 <span>{t("profiles")}</span>
-                {settings.activeProfile && (
-                  <span className="ml-auto text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                {settings.activeProfile ? <span className="ml-auto text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
                     Active
-                  </span>
-                )}
+                  </span> : null}
               </div>
             }
           >
             <ProfilesSection
               activeProfile={settings.activeProfile}
-              onSelectProfile={applyProfile}
               t={t}
+              onSelectProfile={applyProfile}
             />
           </AccordionItem>
 
@@ -133,10 +132,10 @@ export const AccessibilityWidget: React.FC<AccessibilityWidgetProps> = ({
             }
           >
             <SettingsSection
-              settings={settings}
-              updateSetting={updateSetting}
-              t={t}
               getOptions={getOptions}
+              settings={settings}
+              t={t}
+              updateSetting={updateSetting}
             />
           </AccordionItem>
         </Accordion>

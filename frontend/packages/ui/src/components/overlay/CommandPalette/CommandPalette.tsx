@@ -1,3 +1,5 @@
+import { motion, AnimatePresence } from "framer-motion";
+import { Search } from "lucide-react";
 import React, {
   useState,
   useEffect,
@@ -5,11 +7,10 @@ import React, {
   useRef,
   type ReactNode,
 } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
-import { Search } from "lucide-react";
-import { cn } from "../../../utils/cn";
+
 import { useKeyboard, useEscapeKey } from "../../../hooks/useKeyboard";
+import { cn } from "../../../utils/cn";
 
 interface CommandItem {
   id: string;
@@ -32,7 +33,7 @@ interface CommandPaletteProps {
   maxResults?: number;
 }
 
-export function CommandPalette({
+export const CommandPalette = ({
   isOpen,
   onClose,
   items,
@@ -40,7 +41,7 @@ export function CommandPalette({
   emptyMessage = "No results found",
   recentItems = [],
   maxResults = 10,
-}: CommandPaletteProps) {
+}: CommandPaletteProps) => {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -146,32 +147,31 @@ export function CommandPalette({
 
   return createPortal(
     <AnimatePresence>
-      {isOpen && (
-        <div
-          className="fixed inset-0 flex items-start justify-center pt-[15vh]"
-          style={{ zIndex: "var(--z-modal)" }}
-          role="dialog"
-          aria-modal="true"
+      {isOpen ? <div
           aria-labelledby="command-palette-title"
+          aria-modal="true"
+          className="fixed inset-0 flex items-start justify-center pt-[15vh]"
+          role="dialog"
+          style={{ zIndex: "var(--z-modal)" }}
         >
           {/* Backdrop */}
           <motion.div
-            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            aria-hidden="true"
+            className="overlay absolute inset-0"
             exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             onClick={onClose}
-            className="overlay absolute inset-0"
-            aria-hidden="true"
           />
 
           {/* Command Palette */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
             className="card-elevated relative w-full max-w-xl overflow-hidden"
+            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             style={{
               borderRadius: "var(--radius-xl)",
               boxShadow: "var(--shadow-2xl)",
@@ -180,20 +180,20 @@ export function CommandPalette({
             {/* Search Input */}
             <div className="border-base flex items-center gap-3 border-b px-4">
               <Search
-                size={20}
                 className="text-subtle flex-shrink-0"
+                size={20}
               />
               <input
                 ref={inputRef}
+                className="placeholder:text-subtle flex-1 bg-transparent py-4 text-base focus:outline-none"
+                id="command-palette-title"
+                placeholder={placeholder}
                 type="text"
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
                   setActiveIndex(0);
                 }}
-                placeholder={placeholder}
-                className="placeholder:text-subtle flex-1 bg-transparent py-4 text-base focus:outline-none"
-                id="command-palette-title"
               />
               <kbd
                 className="text-subtle hidden rounded px-2 py-1 text-xs sm:inline-flex"
@@ -227,12 +227,9 @@ export function CommandPalette({
                       return (
                         <button
                           key={item.id}
+                          aria-selected={isActive}
                           data-index={globalIndex}
-                          onClick={() => {
-                            item.onSelect();
-                            onClose();
-                          }}
-                          onMouseEnter={() => setActiveIndex(globalIndex)}
+                          role="option"
                           className={cn(
                             "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors",
                             isActive
@@ -246,26 +243,24 @@ export function CommandPalette({
                                 }
                               : undefined
                           }
-                          role="option"
-                          aria-selected={isActive}
+                          onMouseEnter={() => setActiveIndex(globalIndex)}
+                          onClick={() => {
+                            item.onSelect();
+                            onClose();
+                          }}
                         >
-                          {item.icon && (
-                            <span className="text-muted h-5 w-5 flex-shrink-0">
+                          {item.icon ? <span className="text-muted h-5 w-5 flex-shrink-0">
                               {item.icon}
-                            </span>
-                          )}
+                            </span> : null}
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-base text-sm font-medium">
                               {item.label}
                             </p>
-                            {item.description && (
-                              <p className="text-muted truncate text-xs">
+                            {item.description ? <p className="text-muted truncate text-xs">
                                 {item.description}
-                              </p>
-                            )}
+                              </p> : null}
                           </div>
-                          {item.shortcut && (
-                            <div className="flex flex-shrink-0 items-center gap-1">
+                          {item.shortcut ? <div className="flex flex-shrink-0 items-center gap-1">
                               {item.shortcut.map((key, i) => (
                                 <kbd
                                   key={i}
@@ -277,8 +272,7 @@ export function CommandPalette({
                                   {key}
                                 </kbd>
                               ))}
-                            </div>
-                          )}
+                            </div> : null}
                         </button>
                       );
                     })}
@@ -318,8 +312,7 @@ export function CommandPalette({
               </span>
             </div>
           </motion.div>
-        </div>
-      )}
+        </div> : null}
     </AnimatePresence>,
     document.body
   );

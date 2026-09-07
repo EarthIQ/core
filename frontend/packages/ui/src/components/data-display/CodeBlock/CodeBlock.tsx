@@ -1,7 +1,8 @@
-import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "../../../utils/cn";
+import React, { useState } from "react";
+
 import { useCopyToClipboard } from "../../../hooks/useCopyToClipboard";
+import { cn } from "../../../utils/cn";
 
 interface CodeBlockProps {
   code: string;
@@ -14,7 +15,7 @@ interface CodeBlockProps {
   className?: string;
 }
 
-export function CodeBlock({
+export const CodeBlock = ({
   code,
   language = "plaintext",
   showLineNumbers = true,
@@ -23,7 +24,7 @@ export function CodeBlock({
   showCopy = true,
   maxHeight,
   className,
-}: CodeBlockProps) {
+}: CodeBlockProps) => {
   const { copy } = useCopyToClipboard();
   const [isCopied, setIsCopied] = useState(false);
 
@@ -44,8 +45,7 @@ export function CodeBlock({
       }}
     >
       {/* Header */}
-      {(title || language || showCopy) && (
-        <div
+      {(title || language || showCopy) ? <div
           className="flex items-center justify-between px-3 py-2"
           style={{
             borderBottom: "1px solid var(--border-primary)",
@@ -69,35 +69,31 @@ export function CodeBlock({
               />
             </div>
 
-            {title && (
-              <span
+            {title ? <span
                 className="text-sm font-medium"
                 style={{ color: "var(--text-secondary)" }}
               >
                 {title}
-              </span>
-            )}
+              </span> : null}
           </div>
 
           <div className="flex items-center gap-2">
-            {language && (
-              <span
+            {language ? <span
                 className="text-xs font-medium uppercase"
                 style={{ color: "var(--text-tertiary)" }}
               >
                 {language}
-              </span>
-            )}
+              </span> : null}
 
-            {showCopy && (
-              <button
-                type="button"
-                onClick={handleCopy}
+            {showCopy ? <button
                 className="cursor-pointer rounded-md p-1.5 transition-all duration-200 focus:outline-none"
+                title={isCopied ? "Copied!" : "Copy to clipboard"}
+                type="button"
                 style={{
                   color: isCopied ? "var(--success)" : "var(--text-secondary)",
                   backgroundColor: "transparent",
                 }}
+                onClick={handleCopy}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor =
                     "var(--surface-hover)";
@@ -105,52 +101,49 @@ export function CodeBlock({
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "transparent";
                 }}
-                title={isCopied ? "Copied!" : "Copy to clipboard"}
               >
                 <AnimatePresence mode="wait">
                   {isCopied ? (
                     <motion.svg
                       key="check"
-                      initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
                       className="h-4 w-4"
+                      exit={{ scale: 0 }}
                       fill="none"
+                      initial={{ scale: 0 }}
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
                       <path
+                        d="M5 13l4 4L19 7"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M5 13l4 4L19 7"
                       />
                     </motion.svg>
                   ) : (
                     <motion.svg
                       key="copy"
-                      initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
                       className="h-4 w-4"
+                      exit={{ scale: 0 }}
                       fill="none"
+                      initial={{ scale: 0 }}
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
                       <path
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                       />
                     </motion.svg>
                   )}
                 </AnimatePresence>
-              </button>
-            )}
+              </button> : null}
           </div>
-        </div>
-      )}
+        </div> : null}
 
       {/* Code Content */}
       <div
@@ -176,14 +169,12 @@ export function CodeBlock({
                     : undefined
                 }
               >
-                {showLineNumbers && (
-                  <span
+                {showLineNumbers ? <span
                     className="w-8 flex-shrink-0 pr-4 text-right select-none"
                     style={{ color: "var(--text-tertiary)" }}
                   >
                     {index + 1}
-                  </span>
-                )}
+                  </span> : null}
                 <span
                   className="flex-1"
                   style={{ color: "var(--text-primary)" }}
@@ -207,7 +198,7 @@ interface CopyButtonProps {
   children?: React.ReactNode;
 }
 
-export function CopyButton({ text, className, children }: CopyButtonProps) {
+export const CopyButton = ({ text, className, children }: CopyButtonProps) => {
   const { copy } = useCopyToClipboard();
   const [isCopied, setIsCopied] = useState(false);
 
@@ -220,7 +211,6 @@ export function CopyButton({ text, className, children }: CopyButtonProps) {
   return (
     <button
       type="button"
-      onClick={handleCopy}
       className={cn(
         "inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium",
         "cursor-pointer rounded-md transition-all duration-200 focus:outline-none",
@@ -231,6 +221,7 @@ export function CopyButton({ text, className, children }: CopyButtonProps) {
         border: "1px solid var(--border-primary)",
         color: isCopied ? "var(--success)" : "var(--text-secondary)",
       }}
+      onClick={handleCopy}
       onMouseEnter={(e) => {
         e.currentTarget.style.backgroundColor = "var(--surface-hover)";
         e.currentTarget.style.borderColor = "var(--border-hover)";
@@ -246,37 +237,37 @@ export function CopyButton({ text, className, children }: CopyButtonProps) {
         {isCopied ? (
           <motion.svg
             key="check"
-            initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
             className="h-4 w-4"
+            exit={{ scale: 0 }}
             fill="none"
+            initial={{ scale: 0 }}
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path
+              d="M5 13l4 4L19 7"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M5 13l4 4L19 7"
             />
           </motion.svg>
         ) : (
           <motion.svg
             key="copy"
-            initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
             className="h-4 w-4"
+            exit={{ scale: 0 }}
             fill="none"
+            initial={{ scale: 0 }}
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
             />
           </motion.svg>
         )}

@@ -1,5 +1,6 @@
-import React, { type ReactNode } from "react";
 import { motion } from "framer-motion";
+import React, { type ReactNode } from "react";
+
 import { cn } from "../../../utils/cn";
 
 interface Step {
@@ -43,7 +44,7 @@ const sizeConfig = {
 
 type StepStatus = "completed" | "current" | "pending";
 
-export function Stepper({
+export const Stepper = ({
   steps,
   currentStep,
   onStepClick,
@@ -51,7 +52,7 @@ export function Stepper({
   size = "md",
   clickable = false,
   className,
-}: StepperProps) {
+}: StepperProps) => {
   const config = sizeConfig[size];
 
   const getStepStatus = (index: number): StepStatus => {
@@ -108,6 +109,7 @@ export function Stepper({
                 <div className="relative flex flex-col items-center">
                   <motion.div
                     initial={false}
+                    style={getStepStyles(status)}
                     animate={{
                       scale: status === "current" ? 1.1 : 1,
                     }}
@@ -115,7 +117,6 @@ export function Stepper({
                       "flex items-center justify-center rounded-full border-2 font-medium",
                       config.circle
                     )}
-                    style={getStepStyles(status)}
                   >
                     {status === "completed" ? (
                       <svg
@@ -125,10 +126,10 @@ export function Stepper({
                         viewBox="0 0 24 24"
                       >
                         <path
+                          d="M5 13l4 4L19 7"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M5 13l4 4L19 7"
                         />
                       </svg>
                     ) : step.icon ? (
@@ -166,23 +167,19 @@ export function Stepper({
                     >
                       {step.title}
                     </h4>
-                    {step.optional && (
-                      <span
+                    {step.optional ? <span
                         className="text-xs"
                         style={{ color: "var(--text-tertiary)" }}
                       >
                         (Optional)
-                      </span>
-                    )}
+                      </span> : null}
                   </div>
-                  {step.description && (
-                    <p
+                  {step.description ? <p
                       className={cn("mt-0.5", config.description)}
                       style={{ color: "var(--text-secondary)" }}
                     >
                       {step.description}
-                    </p>
-                  )}
+                    </p> : null}
                 </div>
               </div>
             </div>
@@ -215,6 +212,7 @@ export function Stepper({
               {/* Circle */}
               <motion.div
                 initial={false}
+                style={getStepStyles(status)}
                 animate={{
                   scale: status === "current" ? 1.1 : 1,
                 }}
@@ -222,7 +220,6 @@ export function Stepper({
                   "relative z-10 flex items-center justify-center rounded-full border-2 font-medium",
                   config.circle
                 )}
-                style={getStepStyles(status)}
               >
                 {status === "completed" ? (
                   <svg
@@ -232,10 +229,10 @@ export function Stepper({
                     viewBox="0 0 24 24"
                   >
                     <path
+                      d="M5 13l4 4L19 7"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M5 13l4 4L19 7"
                     />
                   </svg>
                 ) : step.icon ? (
@@ -259,23 +256,19 @@ export function Stepper({
                   >
                     {step.title}
                   </h4>
-                  {step.optional && (
-                    <span
+                  {step.optional ? <span
                       className="text-xs"
                       style={{ color: "var(--text-tertiary)" }}
                     >
                       (Optional)
-                    </span>
-                  )}
+                    </span> : null}
                 </div>
-                {step.description && (
-                  <p
+                {step.description ? <p
                     className={cn("mt-0.5", config.description)}
                     style={{ color: "var(--text-secondary)" }}
                   >
                     {step.description}
-                  </p>
-                )}
+                  </p> : null}
               </div>
             </div>
 

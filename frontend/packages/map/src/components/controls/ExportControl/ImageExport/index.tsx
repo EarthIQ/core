@@ -1,6 +1,6 @@
-import { useState, useCallback, useRef, useEffect } from "react";
 import { cn } from "@packages/ui";
-import { Map } from "maplibre-gl";
+import { type Map } from "maplibre-gl";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -73,83 +73,83 @@ function formatBytes(bytes: number): string {
 
 // ─── Icons ────────────────────────────────────────────────────────────
 
-function DownloadIcon({ className }: { className?: string }) {
+const DownloadIcon = ({ className }: { className?: string }) => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
+      className={cn("h-4 w-4", className)}
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={cn("h-4 w-4", className)}
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />
       <line
         x1="12"
-        y1="15"
         x2="12"
+        y1="15"
         y2="3"
       />
     </svg>
   );
 }
 
-function CheckIcon({ className }: { className?: string }) {
+const CheckIcon = ({ className }: { className?: string }) => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
+      className={cn("h-4 w-4", className)}
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={cn("h-4 w-4", className)}
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
     >
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
 }
 
-function LoaderIcon({ className }: { className?: string }) {
+const LoaderIcon = ({ className }: { className?: string }) => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
+      className={cn("h-4 w-4 animate-spin", className)}
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={cn("h-4 w-4 animate-spin", className)}
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
   );
 }
 
-function ImageIcon({ className }: { className?: string }) {
+const ImageIcon = ({ className }: { className?: string }) => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
+      className={cn("h-4 w-4", className)}
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={cn("h-4 w-4", className)}
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
     >
       <rect
-        x="3"
-        y="3"
-        width="18"
         height="18"
         rx="2"
         ry="2"
+        width="18"
+        x="3"
+        y="3"
       />
       <circle
         cx="8.5"
@@ -161,28 +161,28 @@ function ImageIcon({ className }: { className?: string }) {
   );
 }
 
-function XIcon({ className }: { className?: string }) {
+const XIcon = ({ className }: { className?: string }) => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
+      className={cn("h-4 w-4", className)}
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={cn("h-4 w-4", className)}
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
     >
       <line
         x1="18"
-        y1="6"
         x2="6"
+        y1="6"
         y2="18"
       />
       <line
         x1="6"
-        y1="6"
         x2="18"
+        y1="6"
         y2="18"
       />
     </svg>
@@ -191,13 +191,13 @@ function XIcon({ className }: { className?: string }) {
 
 // ─── Main Component ───────────────────────────────────────────────────
 
-function ImageExport({
+const ImageExport = ({
   map,
   onClose,
 }: {
   map: Map | null;
   onClose: () => void;
-}) {
+}) => {
   const [options, setOptions] = useState<ExportOptions>(DEFAULT_OPTIONS);
   const [exporting, setExporting] = useState(false);
   const [exported, setExported] = useState(false);
@@ -272,7 +272,7 @@ function ImageExport({
   }, []);
 
   // ── Export logic ────────────────────────────────────────────
-  const handleExport = useCallback(async () => {
+  const handleExport = useCallback(() => {
     if (!map || exporting) return;
     setExporting(true);
     setExported(false);
@@ -379,10 +379,10 @@ function ImageExport({
           </div>
         </div>
         <button
-          type="button"
-          onClick={onClose}
           className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
           style={{ color: "var(--text-tertiary)" }}
+          type="button"
+          onClick={onClose}
           onMouseEnter={(e) =>
             (e.currentTarget.style.backgroundColor = "var(--surface-hover)")
           }
@@ -414,9 +414,9 @@ function ImageExport({
             >
               {previewUrl ? (
                 <img
-                  src={previewUrl}
                   alt="Map preview"
                   className="h-full w-full object-cover"
+                  src={previewUrl}
                 />
               ) : (
                 <div
@@ -465,9 +465,8 @@ function ImageExport({
                   return (
                     <button
                       key={fmt}
-                      type="button"
-                      onClick={() => updateOption("format", fmt)}
                       className="relative flex flex-col items-center gap-0.5 rounded-xl border py-3 transition-all"
+                      type="button"
                       style={{
                         borderColor: selected
                           ? "var(--primary)"
@@ -477,6 +476,7 @@ function ImageExport({
                           : "transparent",
                         borderRadius: "var(--radius-lg)",
                       }}
+                      onClick={() => updateOption("format", fmt)}
                     >
                       <span
                         className="text-xs font-bold"
@@ -516,7 +516,6 @@ function ImageExport({
                     <button
                       key={size}
                       type="button"
-                      onClick={() => updateOption("size", size)}
                       className={cn(
                         "flex flex-col items-start rounded-xl border px-3 py-2.5 text-left transition-all",
                         size === "custom" && "col-span-2"
@@ -530,6 +529,7 @@ function ImageExport({
                           : "transparent",
                         borderRadius: "var(--radius-lg)",
                       }}
+                      onClick={() => updateOption("size", size)}
                     >
                       <span
                         className="text-xs font-semibold"
@@ -568,23 +568,23 @@ function ImageExport({
                         {key === "customWidth" ? "Width" : "Height"}
                       </span>
                       <input
+                        className="w-full rounded-lg px-3 py-2 font-mono text-sm"
+                        max={7680}
+                        min={100}
                         type="number"
                         value={options[key]}
-                        onChange={(e) =>
-                          updateOption(
-                            key,
-                            Math.max(100, parseInt(e.target.value) || 100)
-                          )
-                        }
-                        min={100}
-                        max={7680}
-                        className="w-full rounded-lg px-3 py-2 font-mono text-sm"
                         style={{
                           backgroundColor: "var(--input-bg)",
                           border: "1px solid var(--input-border)",
                           color: "var(--text-primary)",
                           borderRadius: "var(--radius-md)",
                         }}
+                        onChange={(e) =>
+                          updateOption(
+                            key,
+                            Math.max(100, parseInt(e.target.value) || 100)
+                          )
+                        }
                       />
                     </div>
                   ))}
@@ -610,14 +610,12 @@ function ImageExport({
                   </span>
                 </div>
                 <input
-                  type="range"
-                  min={0.1}
                   max={1}
+                  min={0.1}
                   step={0.05}
+                  style={{ backgroundColor: "var(--toggle-bg-off)" }}
+                  type="range"
                   value={options.quality}
-                  onChange={(e) =>
-                    updateOption("quality", parseFloat(e.target.value))
-                  }
                   className={cn(
                     "h-1.5 w-full cursor-pointer appearance-none rounded-full",
                     "[&::-webkit-slider-thumb]:appearance-none",
@@ -630,7 +628,9 @@ function ImageExport({
                     "[&::-moz-range-thumb]:border-0",
                     "[&::-moz-range-thumb]:cursor-pointer"
                   )}
-                  style={{ backgroundColor: "var(--toggle-bg-off)" }}
+                  onChange={(e) =>
+                    updateOption("quality", parseFloat(e.target.value))
+                  }
                 />
                 <style>{`
                   input[type="range"]::-webkit-slider-thumb { background-color: var(--primary); }
@@ -640,8 +640,7 @@ function ImageExport({
             )}
 
             {/* Map Info */}
-            {map && (
-              <div className="space-y-2.5">
+            {map ? <div className="space-y-2.5">
                 <label
                   className="text-[11px] font-semibold tracking-wider uppercase"
                   style={{ color: "var(--text-tertiary)" }}
@@ -684,8 +683,7 @@ function ImageExport({
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              </div> : null}
           </div>
         </div>
       </div>
@@ -716,15 +714,15 @@ function ImageExport({
 
         <div className="flex items-center gap-2.5">
           <button
-            type="button"
-            onClick={onClose}
             className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
+            type="button"
             style={{
               borderColor: "var(--border-primary)",
               color: "var(--text-primary)",
               backgroundColor: "var(--surface)",
               borderRadius: "var(--radius-md)",
             }}
+            onClick={onClose}
             onMouseEnter={(e) =>
               (e.currentTarget.style.backgroundColor = "var(--surface-hover)")
             }
@@ -736,16 +734,16 @@ function ImageExport({
           </button>
 
           <button
-            type="button"
-            onClick={handleExport}
-            disabled={exporting || !map}
             className="flex items-center gap-2 rounded-lg px-6 py-2 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={exporting || !map}
+            type="button"
             style={{
               backgroundColor: exported ? "var(--success)" : "var(--primary)",
               color: "var(--text-on-primary)",
               borderRadius: "var(--radius-md)",
               boxShadow: "var(--shadow-primary)",
             }}
+            onClick={handleExport}
             onMouseEnter={(e) => {
               if (!exported && !exporting)
                 e.currentTarget.style.backgroundColor = "var(--primary-dark)";

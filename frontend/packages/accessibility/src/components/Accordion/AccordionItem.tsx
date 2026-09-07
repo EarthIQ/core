@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Icons } from '../Icons';
 
 export interface AccordionItemProps {
@@ -28,19 +29,17 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
     >
       {/* Header */}
       <button
+        aria-controls={`accordion-content-${id}`}
+        aria-expanded={isOpen}
+        className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-[var(--surface-hover)]"
+        id={`accordion-header-${id}`}
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-[var(--surface-hover)]"
-        aria-expanded={isOpen}
-        aria-controls={`accordion-content-${id}`}
-        id={`accordion-header-${id}`}
       >
         <div className="flex flex-1 items-center gap-3">
-          {icon && (
-            <span className="text-[var(--text-secondary)]">
+          {icon ? <span className="text-[var(--text-secondary)]">
               {icon}
-            </span>
-          )}
+            </span> : null}
           {typeof title === 'string' ? (
             <span className="font-medium text-[var(--text-primary)]">
               {title}
@@ -63,17 +62,15 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
       </button>
 
       {/* Content - using display instead of max-height for reliability */}
-      {isOpen && (
-        <div
+      {isOpen ? <div
+          aria-labelledby={`accordion-header-${id}`}
           id={`accordion-content-${id}`}
           role="region"
-          aria-labelledby={`accordion-header-${id}`}
         >
           <div className="border-t border-[var(--border-primary)] p-4">
             {children}
           </div>
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 };

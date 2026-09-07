@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Badge,
@@ -27,6 +26,8 @@ import {
   Table2,
   type LucideIcon,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+
 import {
   formatBytes,
   getGeometrySummary,
@@ -35,6 +36,8 @@ import {
   type DatasetPreview,
   type GeometrySummary,
 } from "@/lib/datasets";
+
+import AskAIPanel from "./AskAIPanel";
 import {
   featureCountLabel,
   formatColor,
@@ -44,7 +47,7 @@ import {
   typeLabel,
   typeLucide,
 } from "./helpers";
-import AskAIPanel from "./AskAIPanel";
+
 import type { DatasetItem } from "./types";
 
 type Tab = "rows" | "schema" | "ask-ai" | "raw";
@@ -82,7 +85,7 @@ function geometryIcon(dominant: string | null): LucideIcon {
   return Globe;
 }
 
-function FactTile({
+const FactTile = ({
   icon: Icon,
   label,
   value,
@@ -92,7 +95,7 @@ function FactTile({
   label: string;
   value: string;
   accent?: boolean;
-}) {
+}) => {
   const c = accent
     ? { bg: "bg-primary/10", text: "text-primary", border: "border-primary/25" }
     : formatColor("default");
@@ -242,7 +245,7 @@ export default function PreviewModal({
               <th className="px-3 py-2.5 text-left text-[0.68rem] font-semibold uppercase tracking-wide text-subtle">
                 #
               </th>
-              {data!.columns.map((c) => (
+              {data.columns.map((c) => (
                 <th
                   key={c.field}
                   className="whitespace-nowrap px-3 py-2.5 text-left text-[0.68rem] font-semibold uppercase tracking-wide text-subtle"
@@ -253,10 +256,10 @@ export default function PreviewModal({
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border-secondary)]">
-            {data!.rows.map((r, i) => (
+            {data.rows.map((r, i) => (
               <tr key={i} className="transition-colors hover:bg-surface-hover">
                 <td className="px-3 py-2 text-xs text-subtle tabular-nums">{i + 1}</td>
-                {data!.columns.map((c) => (
+                {data.columns.map((c) => (
                   <td
                     key={c.field}
                     className="max-w-[16rem] truncate px-3 py-2 text-[var(--text-secondary)]"
@@ -272,10 +275,10 @@ export default function PreviewModal({
           </tbody>
         </table>
       </div>
-      {data!.row_count != null && data!.row_count > data!.rows.length && (
+      {data.row_count != null && data.row_count > data.rows.length && (
         <div className="border-t border-subtle px-3 py-2 text-xs text-subtle">
-          Showing first {data!.rows.length} of{" "}
-          {data!.row_count.toLocaleString()} rows.
+          Showing first {data.rows.length} of{" "}
+          {data.row_count.toLocaleString()} rows.
         </div>
       )}
     </div>
@@ -327,7 +330,7 @@ export default function PreviewModal({
                     {a.field}
                   </td>
                   <td className="px-3 py-2">
-                    <Badge variant={typeVariant(a.type)} size="sm">
+                    <Badge size="sm" variant={typeVariant(a.type)}>
                       {a.type || "unknown"}
                     </Badge>
                   </td>
@@ -353,11 +356,11 @@ export default function PreviewModal({
           <FileText size={13} /> Raw asset metadata
         </span>
         <button
-          onClick={copyRaw}
           className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-subtle transition-colors hover:bg-surface-hover hover:text-primary"
+          onClick={copyRaw}
         >
           {copiedRaw ? (
-            <Check size={12} className="text-success" />
+            <Check className="text-success" size={12} />
           ) : (
             <Copy size={12} />
           )}
@@ -376,15 +379,15 @@ export default function PreviewModal({
   return (
     <Modal
       isOpen
-      onClose={onClose}
-      title="Dataset Preview & Schema"
       description={`${dataset.name} · ${dataset.format} · ${typeLabel(dataset.type)}`}
       size="full"
+      title="Dataset Preview & Schema"
+      onClose={onClose}
     >
       <div className="flex flex-col gap-4">
         {/* Facts grid */}
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
-          <FactTile icon={FormatIcon} label="Format" value={dataset.format} accent />
+          <FactTile accent icon={FormatIcon} label="Format" value={dataset.format} />
           <FactTile icon={TypeIcon} label="Type" value={typeLabel(dataset.type)} />
           <FactTile icon={Globe} label="CRS" value={dataset.crs || "unknown"} />
           <FactTile
@@ -404,13 +407,13 @@ export default function PreviewModal({
             <span className="truncate">{dataset.tags?.length ? dataset.tags.join(", ") : "no tags"}</span>
           </span>
           <button
-            type="button"
-            onClick={() => onCopyId(dataset.id)}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-subtle bg-surface-hover px-2 py-1 text-xs text-subtle transition-colors hover:text-primary"
             title="Copy dataset ID"
+            type="button"
+            onClick={() => onCopyId(dataset.id)}
           >
             {idCopied ? (
-              <Check size={12} className="text-success" />
+              <Check className="text-success" size={12} />
             ) : (
               <Copy size={12} />
             )}
@@ -418,11 +421,9 @@ export default function PreviewModal({
           </button>
         </div>
 
-        {loadError && (
-          <Alert variant="error" title="Preview unavailable">
+        {loadError ? <Alert title="Preview unavailable" variant="error">
             {loadError}
-          </Alert>
-        )}
+          </Alert> : null}
 
         {loading ? (
           <div className="flex flex-col gap-2 py-4">
@@ -433,29 +434,29 @@ export default function PreviewModal({
           </div>
         ) : (
           <Tabs
-            variant="underline"
             size="sm"
             value={tab}
+            variant="underline"
             onValueChange={(k) => setTab(k as Tab)}
           >
             <TabsList>
-              <TabsTrigger value="rows" icon={<Table2 size={14} />}>
+              <TabsTrigger icon={<Table2 size={14} />} value="rows">
                 Rows
               </TabsTrigger>
-              <TabsTrigger value="schema" icon={<Boxes size={14} />}>
+              <TabsTrigger icon={<Boxes size={14} />} value="schema">
                 Schema
               </TabsTrigger>
-              <TabsTrigger value="ask-ai" icon={<Sparkles size={14} />}>
+              <TabsTrigger icon={<Sparkles size={14} />} value="ask-ai">
                 Ask AI
               </TabsTrigger>
-              <TabsTrigger value="raw" icon={<FileText size={14} />}>
+              <TabsTrigger icon={<FileText size={14} />} value="raw">
                 Raw
               </TabsTrigger>
             </TabsList>
             <TabsContent value="rows">{rowsContent}</TabsContent>
             <TabsContent value="schema">{schemaContent}</TabsContent>
-            <TabsContent value="ask-ai" forceMount>
-              <AskAIPanel dataset={dataset} preview={data} addToast={addToast} />
+            <TabsContent forceMount value="ask-ai">
+              <AskAIPanel addToast={addToast} dataset={dataset} preview={data} />
             </TabsContent>
             <TabsContent value="raw">{rawContent}</TabsContent>
           </Tabs>
@@ -464,8 +465,8 @@ export default function PreviewModal({
         <ModalFooter>
           {isVectorized(dataset) && (
             <Button
-              variant="secondary"
               leftIcon={<Map size={16} />}
+              variant="secondary"
               onClick={() => {
                 onClose();
                 onOpenTileUrl(dataset);
@@ -475,8 +476,8 @@ export default function PreviewModal({
             </Button>
           )}
           <Button
-            variant="secondary"
             leftIcon={<Download size={16} />}
+            variant="secondary"
             onClick={() => onDownload(dataset)}
           >
             Download

@@ -1,6 +1,10 @@
-import React, { useEffect } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import { useEffect } from 'react';
+
 import { useMap } from '../../hooks/useMap';
+
+import type React from 'react';
+
 
 export interface NavigationControlProps {
   /** Position on map */

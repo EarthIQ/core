@@ -8,8 +8,9 @@ import {
   PackageOpen,
   type LucideIcon,
 } from "lucide-react";
-import { formatBytes } from "../../lib/datasets";
-import RowActions from "./RowActions";
+
+import { formatBytes } from "@/lib/datasets";
+
 import {
   featureCountLabel,
   formatColor,
@@ -19,6 +20,8 @@ import {
   typeLabel,
   typeLucide,
 } from "./helpers";
+import RowActions from "./RowActions";
+
 import type { DatasetItem } from "./types";
 
 interface Props {
@@ -35,7 +38,7 @@ interface Props {
   onMove?: (ds: DatasetItem) => void;
 }
 
-function MetaTile({
+const MetaTile = ({
   icon: Icon,
   label,
   value,
@@ -43,10 +46,10 @@ function MetaTile({
   icon: LucideIcon;
   label: string;
   value: string;
-}) {
+}) => {
   return (
     <div className="flex items-center gap-1.5 min-w-0 bg-surface-hover/50 px-2.5 py-1.5 rounded-lg border border-border-secondary">
-      <Icon size={12} className="shrink-0 text-text-tertiary" />
+      <Icon className="shrink-0 text-text-tertiary" size={12} />
       <span className="text-[0.68rem] text-text-tertiary shrink-0">{label}:</span>
       <span className="truncate text-xs text-text-primary font-semibold" title={value}>
         {value}
@@ -92,22 +95,22 @@ export default function DatasetGrid({
       ) : items.length === 0 ? (
         <div className="col-span-full card p-8 bg-surface border border-border-primary rounded-xl">
           <EmptyState
+            icon={<Database className="text-primary" size={28} />}
             size="md"
-            icon={<Database size={28} className="text-primary" />}
-            title={
+            action={
               activeFilterCount > 0
-                ? "No matching datasets found"
-                : "Your catalog is empty"
+                ? { label: "Clear all filters", onClick: onClearFilters }
+                : { label: "Upload dataset", onClick: onAddData }
             }
             description={
               activeFilterCount > 0
                 ? "Try adjusting or clearing your filters to see more datasets."
                 : "Upload your first geospatial file to start building your catalog."
             }
-            action={
+            title={
               activeFilterCount > 0
-                ? { label: "Clear all filters", onClick: onClearFilters }
-                : { label: "Upload dataset", onClick: onAddData }
+                ? "No matching datasets found"
+                : "Your catalog is empty"
             }
           />
         </div>
@@ -122,10 +125,10 @@ export default function DatasetGrid({
           return (
             <div
               key={d.id}
-              onClick={() => onInspect(d)}
               className={`card p-4 flex flex-col justify-between gap-3 bg-surface border border-border-primary hover:border-border-hover hover:shadow-md transition-all duration-200 rounded-xl cursor-pointer group ${
                 d._optimistic ? "opacity-60" : ""
               }`}
+              onClick={() => onInspect(d)}
             >
               <div className="flex flex-col gap-2.5">
                 {/* Header */}
@@ -139,13 +142,13 @@ export default function DatasetGrid({
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <button
+                          className="font-bold text-text-primary text-sm truncate max-w-full hover:text-primary transition-colors cursor-pointer text-left block"
+                          title={d.name}
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             onInspect(d);
                           }}
-                          className="font-bold text-text-primary text-sm truncate max-w-full hover:text-primary transition-colors cursor-pointer text-left block"
-                          title={d.name}
                         >
                           {d.name}
                         </button>
@@ -168,51 +171,42 @@ export default function DatasetGrid({
                   <div onClick={(e) => e.stopPropagation()}>
                     <RowActions
                       d={d}
-                      onInspect={onInspect}
-                      onEdit={onEdit}
                       onDownload={onDownload}
+                      onEdit={onEdit}
+                      onInspect={onInspect}
+                      onMove={onMove}
                       onOpenTileUrl={onOpenTileUrl}
                       onRequestDelete={onRequestDelete}
-                      onMove={onMove}
                     />
                   </div>
                 </div>
 
                 {/* Description */}
-                {d.description && (
-                  <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed">
+                {d.description ? <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed">
                     {d.description}
-                  </p>
-                )}
+                  </p> : null}
 
                 {/* Badges row: Stored / Tiled / Tags */}
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {stored && (
-                    <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-info/10 text-info border border-info/20">
+                  {stored ? <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-info/10 text-info border border-info/20">
                       <PackageOpen size={10} />
                       Stored
-                    </span>
-                  )}
-                  {vectorized && (
-                    <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-accent/10 text-accent border border-accent/20">
+                    </span> : null}
+                  {vectorized ? <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-accent/10 text-accent border border-accent/20">
                       <Layers size={10} />
                       Tiled MVT
-                    </span>
-                  )}
-                  {d.tags &&
-                    d.tags.slice(0, 3).map((t) => (
+                    </span> : null}
+                  {d.tags ? d.tags.slice(0, 3).map((t) => (
                       <span
                         key={t}
                         className="text-[0.65rem] font-medium px-1.5 py-0.5 rounded bg-surface-hover text-text-secondary border border-border-secondary"
                       >
                         #{t}
                       </span>
-                    ))}
-                  {d.tags && d.tags.length > 3 && (
-                    <span className="text-[0.65rem] text-text-tertiary">
+                    )) : null}
+                  {d.tags && d.tags.length > 3 ? <span className="text-[0.65rem] text-text-tertiary">
                       +{d.tags.length - 3}
-                    </span>
-                  )}
+                    </span> : null}
                 </div>
               </div>
 

@@ -1,7 +1,8 @@
 import React, { type ReactNode } from "react";
+
 import { cn } from "../../../utils/cn";
-import { Checkbox } from "../../primitives/Checkbox/Checkbox";
 import { Skeleton } from "../../feedback/Skeleton/Skeleton";
+import { Checkbox } from "../../primitives/Checkbox/Checkbox";
 
 // =========================================
 // Types
@@ -71,14 +72,14 @@ const TableCell = ({
   onClick?: (e: React.MouseEvent<HTMLTableCellElement>) => void;
 }) => (
   <td
-    onClick={onClick}
+    style={{ color: "var(--text-secondary)" }}
     className={cn(
       "px-4 py-3 text-sm",
       align === "center" && "text-center",
       align === "right" && "text-right",
       className
     )}
-    style={{ color: "var(--text-secondary)" }}
+    onClick={onClick}
   >
     {children}
   </td>
@@ -93,8 +94,8 @@ const EmptyRow = ({
 }) => (
   <tr>
     <td
-      colSpan={colSpan}
       className="px-4 py-16 text-center text-sm"
+      colSpan={colSpan}
       style={{ color: "var(--text-tertiary)" }}
     >
       {emptyText}
@@ -117,15 +118,13 @@ const SkeletonRows = ({
         key={index}
         style={{ borderBottom: "1px solid var(--border-secondary)" }}
       >
-        {selectable && (
-          <td className="px-4 py-3">
+        {selectable ? <td className="px-4 py-3">
             <Skeleton
+              height={16}
               variant="rounded"
               width={16}
-              height={16}
             />
-          </td>
-        )}
+          </td> : null}
         {Array.from({ length: columnCount }).map((_, colIndex) => (
           <td
             key={colIndex}
@@ -142,7 +141,7 @@ const SkeletonRows = ({
 // =========================================
 // Main Component
 // =========================================
-export function Table<T extends Record<string, any>>({
+export const Table = <T extends Record<string, any>>({
   columns,
   data,
   rowKey,
@@ -155,7 +154,7 @@ export function Table<T extends Record<string, any>>({
   className,
   striped = false,
   hoverable = true,
-}: TableProps<T>) {
+}: TableProps<T>) => {
   // ---- Helpers ----
   const getRowKey = (record: T): string => {
     if (typeof rowKey === "function") return rowKey(record);
@@ -196,8 +195,7 @@ export function Table<T extends Record<string, any>>({
         {/* ---- Head ---- */}
         <thead>
           <tr style={{ backgroundColor: "var(--bg-tertiary)" }}>
-            {selectable && (
-              <th
+            {selectable ? <th
                 className="w-12 px-4 py-3"
                 style={{ borderBottom: "1px solid var(--border-primary)" }}
               >
@@ -206,8 +204,7 @@ export function Table<T extends Record<string, any>>({
                   indeterminate={someSelected}
                   onChange={handleSelectAll}
                 />
-              </th>
-            )}
+              </th> : null}
             {columns.map((column) => (
               <TableHeader
                 key={column.key}
@@ -224,8 +221,8 @@ export function Table<T extends Record<string, any>>({
         <tbody>
           {loading ? (
             <SkeletonRows
-              count={5}
               columnCount={columns.length}
+              count={5}
               selectable={selectable}
             />
           ) : data.length === 0 ? (
@@ -242,7 +239,6 @@ export function Table<T extends Record<string, any>>({
               return (
                 <tr
                   key={key}
-                  onClick={() => onRowClick?.(record)}
                   className={cn(
                     "transition-colors duration-150",
                     hoverable && onRowClick && "cursor-pointer"
@@ -255,10 +251,11 @@ export function Table<T extends Record<string, any>>({
                         ? "var(--bg-tertiary)"
                         : "transparent",
                   }}
+                  onClick={() => onRowClick?.(record)}
                   onMouseEnter={(e) => {
                     if (hoverable) {
                       (
-                        e.currentTarget as HTMLTableRowElement
+                        e.currentTarget
                       ).style.backgroundColor = isSelected
                         ? "color-mix(in oklch, var(--primary) 12%, transparent)"
                         : "var(--surface-hover)";
@@ -266,7 +263,7 @@ export function Table<T extends Record<string, any>>({
                   }}
                   onMouseLeave={(e) => {
                     (
-                      e.currentTarget as HTMLTableRowElement
+                      e.currentTarget
                     ).style.backgroundColor = isSelected
                       ? "color-mix(in oklch, var(--primary) 8%, transparent)"
                       : isEvenStripe
@@ -274,14 +271,12 @@ export function Table<T extends Record<string, any>>({
                         : "transparent";
                   }}
                 >
-                  {selectable && (
-                    <TableCell onClick={(e) => e.stopPropagation()}>
+                  {selectable ? <TableCell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={isSelected}
                         onChange={() => handleSelectRow(key)}
                       />
-                    </TableCell>
-                  )}
+                    </TableCell> : null}
                   {columns.map((column) => {
                     const value = column.dataIndex
                       ? record[column.dataIndex]

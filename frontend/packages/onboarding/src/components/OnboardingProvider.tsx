@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext as _useContext, useState, useCallback, useEffect } from 'react';
 import Joyride, { type CallBackProps, STATUS, type Step, type StoreHelpers } from 'react-joyride';
+
 import { CustomTooltip } from './CustomTooltip';
 
 interface OnboardingContextType {
@@ -64,15 +65,15 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({
   return (
     <OnboardingContext.Provider value={{ startTour, stopTour, isRunning, setSteps: setStepsState }}>
       <Joyride
-        callback={handleJoyrideCallback}
         continuous
         hideCloseButton
-        run={isRunning}
         scrollToFirstStep
-        showProgress={false} // We show progress in our custom tooltip
         showSkipButton
-        steps={steps}
+        callback={handleJoyrideCallback}
         getHelpers={getHelpers}
+        run={isRunning}
+        showProgress={false} // We show progress in our custom tooltip
+        steps={steps}
         tooltipComponent={CustomTooltip}
         floaterProps={{
           disableAnimation: true, // We handle animation in CustomTooltip

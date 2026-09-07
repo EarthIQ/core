@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Card, Stack, Text, Input, Select, Button, Checkbox } from '@packages/ui';
+import { Card, Stack, Text, Input, Select, Button, Checkbox as _Checkbox } from '@packages/ui';
+import React, { useState, useCallback, useMemo, useEffect as _useEffect } from 'react';
+
 import type { GeoJSON } from 'geojson';
 
 export interface FilterDefinition {
@@ -217,8 +218,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Text weight="bold">{title}</Text>
-          {showActiveCount && activeFilterCount > 0 && (
-            <span
+          {showActiveCount && activeFilterCount > 0 ? <span
               style={{
                 backgroundColor: '#3b82f6',
                 color: 'white',
@@ -232,14 +232,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               }}
             >
               {activeFilterCount}
-            </span>
-          )}
+            </span> : null}
         </div>
-        {collapsible && (
-          <span style={{ color: '#6b7280' }}>
+        {collapsible ? <span style={{ color: '#6b7280' }}>
             {isCollapsed ? '▼' : '▲'}
-          </span>
-        )}
+          </span> : null}
       </div>
 
       {/* Filters */}
@@ -250,8 +247,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <FilterInput
                 key={filter.property}
                 definition={filter}
-                value={filterState[filter.property]?.value}
                 operator={filterState[filter.property]?.operator}
+                value={filterState[filter.property]?.value}
                 onChange={(operator, value) => 
                   handleFilterChange(filter.property, operator, value)
                 }
@@ -261,19 +258,19 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
               <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
                 disabled={activeFilterCount === 0}
+                size="sm"
                 style={{ flex: 1 }}
+                variant="outline"
+                onClick={handleReset}
               >
                 Reset
               </Button>
               {!autoApply && (
                 <Button
                   size="sm"
-                  onClick={handleApply}
                   style={{ flex: 1 }}
+                  onClick={handleApply}
                 >
                   Apply
                 </Button>
@@ -308,27 +305,27 @@ const FilterInput: React.FC<FilterInputProps> = ({
 
   return (
     <div>
-      <Text size="sm" color="muted" style={{ marginBottom: 4 }}>
+      <Text color="muted" size="sm" style={{ marginBottom: 4 }}>
         {label || property}
       </Text>
 
       {type === 'text' && (
         <Input
+          placeholder={placeholder || `Filter by ${label || property}...`}
+          size="sm"
           type="text"
           value={value || ''}
           onChange={(e) => handleChange(e.target.value, 'contains')}
-          placeholder={placeholder || `Filter by ${label || property}...`}
-          size="sm"
         />
       )}
 
       {type === 'number' && (
         <div style={{ display: 'flex', gap: 8 }}>
           <Select
+            size="sm"
+            style={{ width: 80 }}
             value={operator || 'eq'}
             onChange={(e) => handleChange(value, e.target.value as any)}
-            style={{ width: 80 }}
-            size="sm"
           >
             <option value="eq">=</option>
             <option value="neq">≠</option>
@@ -338,36 +335,33 @@ const FilterInput: React.FC<FilterInputProps> = ({
             <option value="lte">≤</option>
           </Select>
           <Input
-            type="number"
-            value={value ?? ''}
-            onChange={(e) => handleChange(parseFloat(e.target.value))}
             placeholder={placeholder}
             size="sm"
             style={{ flex: 1 }}
+            type="number"
+            value={value ?? ''}
+            onChange={(e) => handleChange(parseFloat(e.target.value))}
           />
         </div>
       )}
 
-      {type === 'select' && options && (
-        <Select
+      {type === 'select' && options ? <Select
+          size="sm"
           value={value ?? ''}
           onChange={(e) => handleChange(e.target.value || undefined, 'eq')}
-          size="sm"
         >
           <option value="">All</option>
           {options.map(opt => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
-        </Select>
-      )}
+        </Select> : null}
 
-      {type === 'multiselect' && options && (
-        <div style={{ maxHeight: 150, overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: 4, padding: 8 }}>
+      {type === 'multiselect' && options ? <div style={{ maxHeight: 150, overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: 4, padding: 8 }}>
           {options.map(opt => (
             <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <input
-                type="checkbox"
                 checked={(value || []).includes(opt.value)}
+                type="checkbox"
                 onChange={(e) => {
                   const current = value || [];
                   const next = e.target.checked
@@ -379,25 +373,24 @@ const FilterInput: React.FC<FilterInputProps> = ({
               <Text size="sm">{opt.label}</Text>
             </label>
           ))}
-        </div>
-      )}
+        </div> : null}
 
       {type === 'range' && (
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <Input
+            placeholder="Min"
+            size="sm"
             type="number"
             value={value?.[0] ?? ''}
             onChange={(e) => handleChange([parseFloat(e.target.value), value?.[1]], 'between')}
-            placeholder="Min"
-            size="sm"
           />
           <span>-</span>
           <Input
+            placeholder="Max"
+            size="sm"
             type="number"
             value={value?.[1] ?? ''}
             onChange={(e) => handleChange([value?.[0], parseFloat(e.target.value)], 'between')}
-            placeholder="Max"
-            size="sm"
           />
         </div>
       )}
@@ -405,29 +398,29 @@ const FilterInput: React.FC<FilterInputProps> = ({
       {type === 'date' && (
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <Input
+            size="sm"
             type="date"
             value={value?.[0] || ''}
             onChange={(e) => handleChange([e.target.value, value?.[1]], 'between')}
-            size="sm"
           />
           <span>-</span>
           <Input
+            size="sm"
             type="date"
             value={value?.[1] || ''}
             onChange={(e) => handleChange([value?.[0], e.target.value], 'between')}
-            size="sm"
           />
         </div>
       )}
 
       {type === 'boolean' && (
         <Select
+          size="sm"
           value={value === undefined ? '' : String(value)}
           onChange={(e) => {
             const v = e.target.value;
             handleChange(v === '' ? undefined : v === 'true', 'eq');
           }}
-          size="sm"
         >
           <option value="">All</option>
           <option value="true">Yes</option>

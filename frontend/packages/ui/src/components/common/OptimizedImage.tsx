@@ -6,22 +6,22 @@ interface OptimizedImageProps {
   priority?: boolean;
 }
 
-export function OptimizedImage({
+export const OptimizedImage = ({
   src,
   alt,
   width,
   height,
   priority = false,
-}: OptimizedImageProps) {
+}: OptimizedImageProps) => {
   return (
     <img
-      src={src}
       alt={alt}
-      width={width}
+      className="object-cover"
+      decoding="async"
       height={height}
       loading={priority ? "eager" : "lazy"}
-      decoding="async"
-      className="object-cover"
+      src={src}
+      width={width}
     />
   );
 }

@@ -37,9 +37,9 @@ export default function Pagination({
         <div className="flex items-center gap-1.5 text-text-secondary">
           <span>Rows:</span>
           <select
+            className="h-8 rounded-lg border border-border-primary bg-surface px-2 text-xs font-medium text-text-primary focus:outline-none focus:border-primary cursor-pointer transition-colors"
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="h-8 rounded-lg border border-border-primary bg-surface px-2 text-xs font-medium text-text-primary focus:outline-none focus:border-primary cursor-pointer transition-colors"
           >
             <option value={10}>10 / page</option>
             <option value={25}>25 / page</option>
@@ -49,11 +49,11 @@ export default function Pagination({
 
         <div className="flex items-center gap-1.5 border border-border-primary rounded-lg p-0.5 bg-surface">
           <button
-            type="button"
-            onClick={onPrev}
-            disabled={page <= 1}
             aria-label="Previous page"
             className="flex h-7 w-7 items-center justify-center rounded-md text-text-secondary hover:bg-surface-hover hover:text-text-primary disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+            disabled={page <= 1}
+            type="button"
+            onClick={onPrev}
           >
             <ChevronLeft size={15} />
           </button>
@@ -63,11 +63,11 @@ export default function Pagination({
           </span>
 
           <button
-            type="button"
-            onClick={onNext}
-            disabled={page >= totalPages}
             aria-label="Next page"
             className="flex h-7 w-7 items-center justify-center rounded-md text-text-secondary hover:bg-surface-hover hover:text-text-primary disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+            disabled={page >= totalPages}
+            type="button"
+            onClick={onNext}
           >
             <ChevronRight size={15} />
           </button>

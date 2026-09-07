@@ -1,5 +1,3 @@
-import React, { useState, type ReactNode } from "react";
-import { motion, AnimatePresence, type MotionStyle } from "framer-motion";
 import {
   useFloating,
   offset,
@@ -7,8 +5,11 @@ import {
   shift,
   autoUpdate,
 } from "@floating-ui/react";
-import { cn } from "../../../utils/cn";
+import { motion, AnimatePresence, type MotionStyle } from "framer-motion";
+import React, { useState, type ReactNode } from "react";
+
 import { useClickOutside } from "../../../hooks/useClickOutside";
+import { cn } from "../../../utils/cn";
 
 interface PopoverProps {
   trigger: ReactNode;
@@ -18,13 +19,13 @@ interface PopoverProps {
   className?: string;
 }
 
-export function Popover({
+export const Popover = ({
   trigger,
   children,
   placement = "bottom",
   triggerType = "click",
   className,
-}: PopoverProps) {
+}: PopoverProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const { refs, floatingStyles } = useFloating({
@@ -65,13 +66,12 @@ export function Popover({
       </div>
 
       <AnimatePresence>
-        {isOpen && (
-          <motion.div
+        {isOpen ? <motion.div
             ref={refs.setFloating}
-            style={floatingStyles as MotionStyle}
-            initial={{ opacity: 0, scale: 0.95, y: -5 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -5 }}
+            initial={{ opacity: 0, scale: 0.95, y: -5 }}
+            style={floatingStyles as MotionStyle}
             transition={{ duration: 0.15 }}
             className={cn(
               "border-base bg-elevated shadow-elevated z-50 min-w-[200px] rounded-xl border p-4 text-base",
@@ -79,8 +79,7 @@ export function Popover({
             )}
           >
             {children}
-          </motion.div>
-        )}
+          </motion.div> : null}
       </AnimatePresence>
     </div>
   );

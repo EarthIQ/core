@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import {
   LineChart,
   AreaChart,
@@ -91,11 +92,11 @@ export const Dashboard: React.FC = () => {
                 {kpi.value}
               </span>
               <Sparkline
+                color={kpi.change.startsWith("+") ? "#22c55e" : "#ef4444"}
                 data={sparklineData}
+                height={32}
                 type="area"
                 width={80}
-                height={32}
-                color={kpi.change.startsWith("+") ? "#22c55e" : "#ef4444"}
               />
             </div>
           </div>
@@ -106,10 +107,11 @@ export const Dashboard: React.FC = () => {
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Line Chart */}
         <LineChart
-          title="Sales Trend"
-          description="Monthly sales performance over time"
           data={salesData}
+          description="Monthly sales performance over time"
+          exportFilename="sales-trend"
           height={350}
+          title="Sales Trend"
           lines={[
             { dataKey: "sales", name: "Sales", color: "#3b82f6" },
             { dataKey: "revenue", name: "Revenue", color: "#22c55e" },
@@ -122,66 +124,65 @@ export const Dashboard: React.FC = () => {
               strokeDasharray: "5 5",
             },
           ]}
-          yAxis={{
-            tickFormatter: (value) => formatCompact(value),
-          }}
           toolbar={{
             downloadImage: true,
             downloadData: true,
             fullscreen: true,
           }}
-          exportFilename="sales-trend"
+          yAxis={{
+            tickFormatter: (value) => formatCompact(value),
+          }}
         />
 
         {/* Area Chart */}
         <AreaChart
-          title="Revenue & Profit"
-          description="Stacked area showing revenue composition"
+          stacked
           data={salesData}
+          description="Stacked area showing revenue composition"
+          exportFilename="revenue-profit"
           height={350}
+          title="Revenue & Profit"
           areas={[
             { dataKey: "revenue", name: "Revenue" },
             { dataKey: "profit", name: "Profit" },
           ]}
-          stacked
           yAxis={{
             tickFormatter: (value) => formatCurrency(value),
           }}
-          exportFilename="revenue-profit"
         />
 
         {/* Bar Chart */}
         <BarChart
-          title="Monthly Comparison"
-          description="Sales vs Target by month"
+          barCategoryGap="20%"
           data={salesData}
+          description="Sales vs Target by month"
+          exportFilename="monthly-comparison"
           height={350}
+          title="Monthly Comparison"
           bars={[
             { dataKey: "sales", name: "Sales", color: "#3b82f6" },
             { dataKey: "target", name: "Target", color: "#94a3b8" },
           ]}
-          barCategoryGap="20%"
           yAxis={{
             tickFormatter: (value) => formatCompact(value),
           }}
           onDataPointClick={(data, index) => {
-            console.log("Clicked:", data, index);
+            console.warn("Clicked:", data, index);
           }}
-          exportFilename="monthly-comparison"
         />
 
         {/* Horizontal Bar Chart */}
         <BarChart
-          title="Category Performance"
-          description="Sales by product category"
+          bars={[{ dataKey: "value", name: "Sales" }]}
           data={categoryData}
+          description="Sales by product category"
+          exportFilename="category-performance"
           height={350}
           layout="vertical"
-          bars={[{ dataKey: "value", name: "Sales" }]}
+          title="Category Performance"
           xAxis={{
             tickFormatter: (value) => formatCompact(value as number),
           }}
-          exportFilename="category-performance"
         />
       </div>
 
@@ -189,38 +190,38 @@ export const Dashboard: React.FC = () => {
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Donut Chart */}
         <DonutChart
-          title="Sales by Category"
-          description="Distribution of sales"
-          data={categoryData}
-          height={350}
-          centerValue={categoryData.reduce((sum, d) => sum + d.value, 0)}
           centerDescription="Total Sales"
+          centerValue={categoryData.reduce((sum, d) => sum + d.value, 0)}
+          data={categoryData}
+          description="Distribution of sales"
           exportFilename="sales-distribution"
+          height={350}
+          title="Sales by Category"
         />
 
         {/* Pie Chart */}
         <PieChart
-          title="Market Share"
-          description="Percentage of total market"
-          data={categoryData}
-          height={350}
           showLabels
-          labelType="percent"
+          data={categoryData}
+          description="Percentage of total market"
           exportFilename="market-share"
+          height={350}
+          labelType="percent"
+          title="Market Share"
         />
 
         {/* Radar Chart */}
         <RadarChart
-          title="Team Performance"
-          description="Comparison across departments"
+          angleAxisKey="subject"
           data={radarData}
+          description="Comparison across departments"
+          exportFilename="team-performance"
           height={350}
+          title="Team Performance"
           radars={[
             { dataKey: "A", name: "Team A", fillOpacity: 0.3 },
             { dataKey: "B", name: "Team B", fillOpacity: 0.3 },
           ]}
-          angleAxisKey="subject"
-          exportFilename="team-performance"
         />
       </div>
 
@@ -228,23 +229,24 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Scatter Chart */}
         <ScatterChart
-          title="Correlation Analysis"
-          description="Relationship between variables"
           data={scatterData}
+          description="Relationship between variables"
+          exportFilename="correlation"
           height={350}
           scatters={[{ dataKey: "scatter", name: "Data Points" }]}
+          title="Correlation Analysis"
           xAxis={{ dataKey: "x", label: "X Value" }}
           yAxis={{ dataKey: "y", label: "Y Value" }}
           zAxis={{ dataKey: "z", range: [50, 400] }}
-          exportFilename="correlation"
         />
 
         {/* Composed Chart */}
         <ComposedChart
-          title="Combined Metrics"
-          description="Multiple chart types in one"
           data={salesData}
+          description="Multiple chart types in one"
+          exportFilename="combined-metrics"
           height={350}
+          title="Combined Metrics"
           elements={[
             { type: "bar", config: { dataKey: "sales", name: "Sales" } },
             {
@@ -256,38 +258,37 @@ export const Dashboard: React.FC = () => {
           yAxis={{
             tickFormatter: (value) => formatCompact(value),
           }}
-          exportFilename="combined-metrics"
         />
       </div>
 
       {/* Loading State Example */}
       <div className="mt-6">
         <button
-          onClick={() => setIsLoading(!isLoading)}
           className="mb-4 rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+          onClick={() => setIsLoading(!isLoading)}
         >
           Toggle Loading State
         </button>
 
         <LineChart
-          title="Loading Example"
           data={salesData}
           height={300}
           lines={[{ dataKey: "sales" }]}
           loading={isLoading}
           loadingText="Fetching chart data..."
+          title="Loading Example"
         />
       </div>
 
       {/* Empty State Example */}
       <div className="mt-6">
         <LineChart
-          title="Empty State Example"
+          empty
           data={[]}
+          emptyText="No data available for the selected period"
           height={300}
           lines={[{ dataKey: "sales" }]}
-          empty
-          emptyText="No data available for the selected period"
+          title="Empty State Example"
         />
       </div>
     </div>

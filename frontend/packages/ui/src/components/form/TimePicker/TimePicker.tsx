@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useFloating, offset, flip, shift } from "@floating-ui/react";
-import { cn } from "../../../utils/cn";
+import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from "react";
+
 import { useClickOutside } from "../../../hooks/useClickOutside";
+import { cn } from "../../../utils/cn";
 
 interface TimePickerProps {
   value?: string; // Format: "HH:mm"
@@ -16,7 +17,7 @@ interface TimePickerProps {
   className?: string;
 }
 
-export function TimePicker({
+export const TimePicker = ({
   value,
   onChange,
   placeholder = "Select time",
@@ -26,7 +27,7 @@ export function TimePicker({
   format = "12h",
   minuteStep = 15,
   className,
-}: TimePickerProps) {
+}: TimePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const { refs, floatingStyles } = useFloating({
@@ -100,20 +101,17 @@ export function TimePicker({
       ref={containerRef}
       className={cn("w-full", className)}
     >
-      {label && (
-        <label
+      {label ? <label
           className="mb-1.5 block text-sm font-medium"
           style={{ color: "var(--text-secondary)" }}
         >
           {label}
-        </label>
-      )}
+        </label> : null}
 
       <div ref={refs.setReference}>
         <button
-          type="button"
-          onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
+          type="button"
           className={cn(
             "flex w-full items-center justify-between px-4 py-2.5 text-left",
             "rounded-xl transition-all duration-200",
@@ -134,6 +132,7 @@ export function TimePicker({
               ? "0 0 0 3px oklch(from var(--primary) l c h / 0.15)"
               : undefined,
           }}
+          onClick={() => !disabled && setIsOpen(!isOpen)}
         >
           <span
             style={{
@@ -146,44 +145,41 @@ export function TimePicker({
           </span>
           <svg
             className="h-5 w-5"
-            style={{ color: "var(--text-tertiary)" }}
             fill="none"
             stroke="currentColor"
+            style={{ color: "var(--text-tertiary)" }}
             viewBox="0 0 24 24"
           >
             <path
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
         </button>
       </div>
 
-      {error && (
-        <p
+      {error ? <p
           className="mt-1.5 text-sm"
           style={{ color: "var(--error-text)" }}
         >
           {error}
-        </p>
-      )}
+        </p> : null}
 
       <AnimatePresence>
-        {isOpen && (
-          <motion.div
+        {isOpen ? <motion.div
             ref={refs.setFloating}
+            animate={{ opacity: 1, y: 0 }}
+            className="z-50 rounded-2xl p-4"
+            exit={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -10 }}
             style={{
               ...floatingStyles,
               backgroundColor: "var(--bg-elevated)",
               border: "1px solid var(--border-primary)",
               boxShadow: "var(--shadow-lg)",
             }}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="z-50 rounded-2xl p-4"
           >
             <div className="flex gap-4">
               {/* Hours */}
@@ -201,9 +197,8 @@ export function TimePicker({
                     return (
                       <button
                         key={h}
-                        type="button"
-                        onClick={() => selectHour(h)}
                         className="w-full rounded-lg py-2 text-center text-sm transition-colors focus:outline-none"
+                        type="button"
                         style={{
                           backgroundColor: isSelected
                             ? "var(--primary)"
@@ -212,6 +207,7 @@ export function TimePicker({
                             ? "var(--text-on-primary)"
                             : "var(--text-primary)",
                         }}
+                        onClick={() => selectHour(h)}
                         onMouseEnter={(e) => {
                           if (!isSelected) {
                             e.currentTarget.style.backgroundColor =
@@ -246,9 +242,8 @@ export function TimePicker({
                     return (
                       <button
                         key={m}
-                        type="button"
-                        onClick={() => selectMinute(m)}
                         className="w-full rounded-lg py-2 text-center text-sm transition-colors focus:outline-none"
+                        type="button"
                         style={{
                           backgroundColor: isSelected
                             ? "var(--primary)"
@@ -257,6 +252,7 @@ export function TimePicker({
                             ? "var(--text-on-primary)"
                             : "var(--text-primary)",
                         }}
+                        onClick={() => selectMinute(m)}
                         onMouseEnter={(e) => {
                           if (!isSelected) {
                             e.currentTarget.style.backgroundColor =
@@ -292,12 +288,8 @@ export function TimePicker({
                       return (
                         <button
                           key={period}
-                          type="button"
-                          onClick={() => {
-                            const shouldToggle = period === "AM" ? isPM : !isPM;
-                            if (shouldToggle) toggleAMPM();
-                          }}
                           className="w-full rounded-lg py-2 text-center text-sm transition-colors focus:outline-none"
+                          type="button"
                           style={{
                             backgroundColor: isSelected
                               ? "var(--primary)"
@@ -305,6 +297,10 @@ export function TimePicker({
                             color: isSelected
                               ? "var(--text-on-primary)"
                               : "var(--text-primary)",
+                          }}
+                          onClick={() => {
+                            const shouldToggle = period === "AM" ? isPM : !isPM;
+                            if (shouldToggle) toggleAMPM();
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected) {
@@ -327,8 +323,7 @@ export function TimePicker({
                 </div>
               )}
             </div>
-          </motion.div>
-        )}
+          </motion.div> : null}
       </AnimatePresence>
     </div>
   );

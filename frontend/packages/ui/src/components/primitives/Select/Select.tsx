@@ -1,9 +1,10 @@
-import React, { useState, useRef, type ReactNode } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useFloating, offset, flip, shift } from "@floating-ui/react";
-import { cn } from "../../../utils/cn";
+import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useRef, type ReactNode } from "react";
+
 import { useClickOutside } from "../../../hooks/useClickOutside";
 import { useKeyboard } from "../../../hooks/useKeyboard";
+import { cn } from "../../../utils/cn";
 
 interface SelectOption {
   value: string;
@@ -47,7 +48,7 @@ const sizeClasses = {
   lg: "text-lg px-5 py-3",
 };
 
-function SelectionPill({
+const SelectionPill = ({
   label,
   onRemove,
   disabled,
@@ -55,7 +56,7 @@ function SelectionPill({
   label: string;
   onRemove: (e: React.MouseEvent) => void;
   disabled?: boolean;
-}) {
+}) => {
   return (
     <span
       className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium"
@@ -68,23 +69,23 @@ function SelectionPill({
       {label}
       {!disabled && (
         <button
-          type="button"
-          onClick={onRemove}
           aria-label={`Remove ${label}`}
           className="rounded-full transition-colors hover:opacity-70 focus:outline-none"
+          type="button"
+          onClick={onRemove}
         >
           <svg
+            aria-hidden="true"
             className="h-3 w-3"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
-            aria-hidden="true"
           >
             <path
+              d="M6 18L18 6M6 6l12 12"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
             />
           </svg>
         </button>
@@ -93,7 +94,7 @@ function SelectionPill({
   );
 }
 
-function SearchInput({
+const SearchInput = ({
   value,
   onChange,
   placeholder,
@@ -103,7 +104,7 @@ function SearchInput({
   onChange: (val: string) => void;
   placeholder: string;
   inputRef: React.RefObject<HTMLInputElement>;
-}) {
+}) => {
   return (
     <div
       className="relative border-b px-3 py-2"
@@ -119,17 +120,17 @@ function SearchInput({
         style={{ color: "var(--text-tertiary)" }}
       >
         <svg
+          aria-hidden="true"
           className="h-4 w-4"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          aria-hidden="true"
         >
           <path
+            d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
           />
         </svg>
       </span>
@@ -140,62 +141,60 @@ function SearchInput({
       */}
       <input
         ref={inputRef}
+        aria-label="Search options"
+        className="w-full rounded-md py-1.5 pr-8 pl-4 pl-8 text-sm focus:outline-none"
+        placeholder={placeholder}
         type="text"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        aria-label="Search options"
-        onKeyDown={(e) => {
-          // Let the parent handle arrow-key navigation
-          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-            e.stopPropagation();
-          }
-        }}
-        className="w-full rounded-md py-1.5 pr-8 pl-4 pl-8 text-sm focus:outline-none"
         style={{
           backgroundColor: "var(--input-bg)",
           border: "1px solid var(--input-border)",
           color: "var(--text-primary)",
           caretColor: "var(--primary)",
         }}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          // Let the parent handle arrow-key navigation
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.stopPropagation();
+          }
+        }}
       />
 
       {/* Clear-search button */}
       <AnimatePresence>
-        {value && (
-          <motion.button
-            type="button"
-            initial={{ opacity: 0, scale: 0.7 }}
+        {value ? <motion.button
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.7 }}
-            transition={{ duration: 0.12 }}
-            onClick={() => onChange("")}
             aria-label="Clear search"
             className="absolute top-1/2 right-5 -translate-y-1/2 rounded-full p-0.5 transition-colors hover:opacity-70 focus:outline-none"
+            exit={{ opacity: 0, scale: 0.7 }}
+            initial={{ opacity: 0, scale: 0.7 }}
             style={{ color: "var(--text-tertiary)" }}
+            transition={{ duration: 0.12 }}
+            type="button"
+            onClick={() => onChange("")}
           >
             <svg
+              aria-hidden="true"
               className="h-3.5 w-3.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              aria-hidden="true"
             >
               <path
+                d="M6 18L18 6M6 6l12 12"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </motion.button>
-        )}
+          </motion.button> : null}
       </AnimatePresence>
     </div>
   );
 }
 
-export function Select(props: SelectProps) {
+export const Select = (props: SelectProps) => {
   const {
     options,
     placeholder = "Select an option",
@@ -282,7 +281,7 @@ export function Select(props: SelectProps) {
         props.onChange?.([...current, optionValue]);
       }
     } else {
-      (props as SingleSelectProps).onChange?.(optionValue);
+      (props).onChange?.(optionValue);
       setIsOpen(false);
       setFocusedIndex(-1);
       setSearchQuery("");
@@ -409,8 +408,8 @@ export function Select(props: SelectProps) {
           {selectedOptions.map((opt) => (
             <SelectionPill
               key={opt.value}
-              label={opt.label}
               disabled={disabled}
+              label={opt.label}
               onRemove={(e) => handleRemovePill(opt.value, e)}
             />
           ))}
@@ -450,22 +449,18 @@ export function Select(props: SelectProps) {
       ref={containerRef}
       className="w-full"
     >
-      {label && (
-        <label
+      {label ? <label
           className="mb-1.5 block text-sm font-medium"
           style={{ color: "var(--text-secondary)" }}
         >
           {label}
-          {isMultiple && props.maxSelections !== undefined && (
-            <span
+          {isMultiple && props.maxSelections !== undefined ? <span
               className="ml-2 font-normal"
               style={{ color: "var(--text-tertiary)" }}
             >
               ({selectedValues.length}/{props.maxSelections})
-            </span>
-          )}
-        </label>
-      )}
+            </span> : null}
+        </label> : null}
 
       <div
         ref={refs.setReference}
@@ -473,13 +468,12 @@ export function Select(props: SelectProps) {
       >
         {/* ── Trigger button ── */}
         <button
-          type="button"
-          onClick={handleToggle}
-          disabled={disabled}
-          aria-haspopup="listbox"
           aria-expanded={isOpen}
-          aria-multiselectable={isMultiple}
+          aria-haspopup="listbox"
           aria-label={label || placeholder}
+          aria-multiselectable={isMultiple}
+          disabled={disabled}
+          type="button"
           className={cn(
             "w-full rounded-lg text-left transition-all",
             "focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
@@ -507,53 +501,52 @@ export function Select(props: SelectProps) {
             outlineColor: "var(--ring)",
             minHeight: "2.5rem",
           }}
+          onClick={handleToggle}
         >
           {renderTriggerContent()}
 
           <span className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-1">
-            {isMultiple && selectedValues.length > 0 && !disabled && (
-              <motion.button
-                type="button"
-                initial={{ opacity: 0, scale: 0.8 }}
+            {isMultiple && selectedValues.length > 0 && !disabled ? <motion.button
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                onClick={handleClearAll}
                 aria-label="Clear all selections"
                 className="rounded-full p-0.5 transition-colors hover:opacity-70 focus:outline-none"
+                exit={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.8 }}
                 style={{ color: "var(--text-tertiary)" }}
+                type="button"
+                onClick={handleClearAll}
               >
                 <svg
+                  aria-hidden="true"
                   className="h-4 w-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
-                  aria-hidden="true"
                 >
                   <path
+                    d="M6 18L18 6M6 6l12 12"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
-              </motion.button>
-            )}
+              </motion.button> : null}
 
             <span style={{ color: "var(--text-tertiary)" }}>
               <motion.svg
                 animate={{ rotate: isOpen ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
+                aria-hidden="true"
                 className="h-5 w-5"
                 fill="none"
                 stroke="currentColor"
+                transition={{ duration: 0.2 }}
                 viewBox="0 0 24 24"
-                aria-hidden="true"
               >
                 <path
+                  d="M19 9l-7 7-7-7"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
                 />
               </motion.svg>
             </span>
@@ -562,9 +555,16 @@ export function Select(props: SelectProps) {
 
         {/* ── Dropdown ── */}
         <AnimatePresence>
-          {isOpen && (
-            <motion.div
+          {isOpen ? <motion.div
               ref={refs.setFloating}
+              animate={{ opacity: 1, y: 0 }}
+              aria-label={label || placeholder}
+              aria-multiselectable={isMultiple}
+              className="w-full"
+              exit={{ opacity: 0, y: -8 }}
+              initial={{ opacity: 0, y: -8 }}
+              role="listbox"
+              transition={{ duration: 0.15, ease: "easeOut" }}
               style={{
                 ...floatingStyles,
                 backgroundColor: "var(--bg-elevated)",
@@ -577,28 +577,17 @@ export function Select(props: SelectProps) {
                   It was swallowing the inner scroll container.
                 */
               }}
-              role="listbox"
-              aria-label={label || placeholder}
-              aria-multiselectable={isMultiple}
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-              className="w-full"
             >
               {/* Search input - sticky at the top of the dropdown */}
-              {searchable && (
-                <SearchInput
+              {searchable ? <SearchInput
+                  inputRef={searchInputRef}
+                  placeholder={searchPlaceholder}
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  placeholder={searchPlaceholder}
-                  inputRef={searchInputRef}
-                />
-              )}
+                /> : null}
 
               {/* Max-selection notice */}
-              {isMultiple && maxReached && (
-                <div
+              {isMultiple && maxReached ? <div
                   className="border-b px-4 py-2 text-xs"
                   style={{
                     color: "var(--text-tertiary)",
@@ -607,8 +596,7 @@ export function Select(props: SelectProps) {
                   }}
                 >
                   Maximum of {props.maxSelections} items selected
-                </div>
-              )}
+                </div> : null}
 
               {/*
                 Options list
@@ -628,17 +616,17 @@ export function Select(props: SelectProps) {
                   <div className="flex flex-col items-center gap-2 px-4 py-6 text-center">
                     <span style={{ color: "var(--text-tertiary)" }}>
                       <svg
+                        aria-hidden="true"
                         className="h-8 w-8 opacity-40"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
-                        aria-hidden="true"
                       >
                         <path
+                          d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={1.5}
-                          d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
                         />
                       </svg>
                     </span>
@@ -648,16 +636,14 @@ export function Select(props: SelectProps) {
                     >
                       {searchQuery ? noResultsMessage : "No options available"}
                     </p>
-                    {searchQuery && (
-                      <button
-                        type="button"
-                        onClick={() => handleSearchChange("")}
+                    {searchQuery ? <button
                         className="text-xs font-medium underline-offset-2 transition-opacity hover:opacity-70 focus:outline-none"
                         style={{ color: "var(--primary)" }}
+                        type="button"
+                        onClick={() => handleSearchChange("")}
                       >
                         Clear search
-                      </button>
-                    )}
+                      </button> : null}
                   </div>
                 ) : (
                   filteredOptions.map((option, index) => {
@@ -669,18 +655,11 @@ export function Select(props: SelectProps) {
                     return (
                       <button
                         key={option.value}
-                        type="button"
-                        role="option"
-                        aria-selected={isSelected}
                         aria-disabled={isEffectivelyDisabled}
-                        onClick={() =>
-                          !isEffectivelyDisabled && handleSelect(option.value)
-                        }
-                        onMouseEnter={() =>
-                          !isEffectivelyDisabled && setFocusedIndex(index)
-                        }
-                        onMouseLeave={() => setFocusedIndex(-1)}
+                        aria-selected={isSelected}
                         disabled={isEffectivelyDisabled}
+                        role="option"
+                        type="button"
                         className={cn(
                           "w-full px-4 py-2.5 text-left text-sm transition-colors",
                           "focus:outline-none",
@@ -700,10 +679,16 @@ export function Select(props: SelectProps) {
                             : "var(--text-primary)",
                           transitionDuration: "var(--transition-fast)",
                         }}
+                        onMouseLeave={() => setFocusedIndex(-1)}
+                        onClick={() =>
+                          !isEffectivelyDisabled && handleSelect(option.value)
+                        }
+                        onMouseEnter={() =>
+                          !isEffectivelyDisabled && setFocusedIndex(index)
+                        }
                       >
                         <span className="flex items-center gap-2">
-                          {isMultiple && (
-                            <span
+                          {isMultiple ? <span
                               className="flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors"
                               style={{
                                 backgroundColor: isSelected
@@ -714,24 +699,21 @@ export function Select(props: SelectProps) {
                                   : "var(--border-primary)",
                               }}
                             >
-                              {isSelected && (
-                                <svg
+                              {isSelected ? <svg
+                                  aria-hidden="true"
                                   className="h-3 w-3"
                                   fill="none"
                                   stroke="white"
                                   viewBox="0 0 24 24"
-                                  aria-hidden="true"
                                 >
                                   <path
+                                    d="M5 13l4 4L19 7"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                     strokeWidth={3}
-                                    d="M5 13l4 4L19 7"
                                   />
-                                </svg>
-                              )}
-                            </span>
-                          )}
+                                </svg> : null}
+                            </span> : null}
 
                           {option.icon}
 
@@ -741,22 +723,20 @@ export function Select(props: SelectProps) {
                               : option.label}
                           </span>
 
-                          {!isMultiple && isSelected && (
-                            <svg
+                          {!isMultiple && isSelected ? <svg
+                              aria-hidden="true"
                               className="h-4 w-4 shrink-0"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
-                              aria-hidden="true"
                             >
                               <path
+                                d="M5 13l4 4L19 7"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
-                                d="M5 13l4 4L19 7"
                               />
-                            </svg>
-                          )}
+                            </svg> : null}
                         </span>
                       </button>
                     );
@@ -765,8 +745,7 @@ export function Select(props: SelectProps) {
               </div>
 
               {/* Multi-select footer */}
-              {isMultiple && options.length > 0 && (
-                <div
+              {isMultiple && options.length > 0 ? <div
                   className="flex items-center justify-between border-t px-4 py-2"
                   style={{ borderColor: "var(--border-primary)" }}
                 >
@@ -777,33 +756,29 @@ export function Select(props: SelectProps) {
                     {selectedValues.length} selected
                   </span>
                   <button
+                    className="rounded px-2 py-1 text-xs font-medium transition-colors hover:opacity-80 focus:outline-none"
+                    style={{ color: "var(--primary)" }}
                     type="button"
                     onClick={() => {
                       setIsOpen(false);
                       setFocusedIndex(-1);
                       setSearchQuery("");
                     }}
-                    className="rounded px-2 py-1 text-xs font-medium transition-colors hover:opacity-80 focus:outline-none"
-                    style={{ color: "var(--primary)" }}
                   >
                     Done
                   </button>
-                </div>
-              )}
-            </motion.div>
-          )}
+                </div> : null}
+            </motion.div> : null}
         </AnimatePresence>
       </div>
 
-      {error && (
-        <p
+      {error ? <p
           className="mt-1.5 text-sm"
-          style={{ color: "var(--error-text)" }}
           role="alert"
+          style={{ color: "var(--error-text)" }}
         >
           {error}
-        </p>
-      )}
+        </p> : null}
     </div>
   );
 }

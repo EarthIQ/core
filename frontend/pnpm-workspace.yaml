@@ -3,3 +3,8 @@ packages:
   - "packages/*"
   - "../modules/*/frontend"
 
+# Pin a single ESLint major across the whole workspace so every package
+# (including those that resolve ESLint via hoisting) runs the same v10 build.
+overrides:
+  eslint: "^10.10.0"
+

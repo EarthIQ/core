@@ -22,6 +22,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+
 import { api } from "./api";
 import { useAuth } from "./auth";
 
@@ -31,7 +32,7 @@ export interface AppNotification {
   id: string; // recipient id (per-user row) - use for read/unread/delete
   message_id: string;
   category: string;
-  kind: "info" | "success" | "warning" | "error" | string;
+  kind: string;
   title: string;
   body: string | null;
   payload: Record<string, unknown> | null;
@@ -134,7 +135,7 @@ function wsUrl(path: string): string {
 
 // ── Provider ───────────────────────────────────────────────────────────────────
 
-export function NotificationsProvider({ children }: { children: ReactNode }) {
+export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
@@ -482,7 +483,7 @@ const KIND_ICON: Record<string, string> = {
   error: "⛔",
 };
 
-function ToastStack({
+const ToastStack = ({
   toasts,
   onDismiss,
   onOpen,
@@ -490,13 +491,13 @@ function ToastStack({
   toasts: NotificationToast[];
   onDismiss: (id: string) => void;
   onOpen: (t: NotificationToast) => void;
-}) {
+}) => {
   if (!toasts.length) return null;
   return createPortal(
     <div
+      aria-live="polite"
       className="fixed top-4 right-4 z-[999] flex flex-col gap-2 w-[min(92vw,22rem)]"
       role="status"
-      aria-live="polite"
     >
       {toasts.map((t) => (
         <div
@@ -507,18 +508,16 @@ function ToastStack({
           <span className="text-base leading-none mt-0.5">{KIND_ICON[t.kind] ?? "🔔"}</span>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold text-text-primary truncate">{t.title}</div>
-            {t.body && (
-              <div className="text-xs text-text-secondary mt-0.5 line-clamp-2">{t.body}</div>
-            )}
+            {t.body ? <div className="text-xs text-text-secondary mt-0.5 line-clamp-2">{t.body}</div> : null}
             <div className="text-[0.65rem] text-text-tertiary mt-1">click to view</div>
           </div>
           <button
+            aria-label="Dismiss notification"
             className="text-text-tertiary hover:text-text-primary text-xs cursor-pointer shrink-0"
             onClick={(e) => {
               e.stopPropagation();
               onDismiss(t.id);
             }}
-            aria-label="Dismiss notification"
           >
             ✕
           </button>

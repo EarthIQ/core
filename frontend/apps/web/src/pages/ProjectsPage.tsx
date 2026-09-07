@@ -1,5 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  Button,
+  Badge,
+  Avatar,
+  Select,
+  Dropdown,
+  EmptyState,
+  Skeleton,
+  ConfirmDialog,
+} from "@packages/ui";
 import {
   Layers,
   Map as MapIcon,
@@ -26,24 +34,17 @@ import {
   X,
   FolderOpen,
 } from "lucide-react";
-import {
-  Button,
-  Badge,
-  Avatar,
-  Select,
-  Dropdown,
-  EmptyState,
-  Skeleton,
-  ConfirmDialog,
-} from "@packages/ui";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { ShareDialog } from "@/components/map/share/ShareDialog";
+import { useAuth } from "@/lib/auth";
 import {
   fetchProjects,
   createProject,
   deleteProject,
-  ProjectItem,
+  type ProjectItem,
 } from "@/lib/projects";
-import { useAuth } from "@/lib/auth";
-import { ShareDialog } from "@/components/map/share/ShareDialog";
 
 // ── Types & constants ─────────────────────────────────────────────────────────
 
@@ -165,7 +166,7 @@ function sortProjects(list: ProjectItem[], key: SortKey): ProjectItem[] {
 
 // ── Small stat tile ───────────────────────────────────────────────────────────
 
-function StatTile({
+const StatTile = ({
   icon,
   label,
   value,
@@ -175,7 +176,7 @@ function StatTile({
   label: string;
   value: number;
   tone: "primary" | "info" | "success";
-}) {
+}) => {
   const toneCls: Record<string, string> = {
     primary: "bg-primary/10 text-primary",
     info: "bg-info-bg text-info-text",
@@ -206,7 +207,7 @@ interface CardHandlers {
   onDelete: () => void;
 }
 
-function ProjectCard({
+const ProjectCard = ({
   project,
   myId,
   view,
@@ -217,7 +218,7 @@ function ProjectCard({
   project: ProjectItem;
   myId?: string;
   view: ViewMode;
-} & CardHandlers) {
+} & CardHandlers) => {
   const { label: bmLabel, Icon: BmIcon } = basemapMeta(project.basemap);
   const role = roleFor(project, myId);
   const RoleIcon = role.Icon;
@@ -254,27 +255,27 @@ function ProjectCard({
       onClick={(e) => e.stopPropagation()}
     >
       <button
-        type="button"
-        onClick={onShare}
-        title="Share project"
         aria-label="Share project"
         className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-text-secondary hover:text-primary hover:bg-primary/10 transition-colors border-none bg-transparent cursor-pointer"
+        title="Share project"
+        type="button"
+        onClick={onShare}
       >
         <Share2 size={15} />
       </button>
       <Dropdown
+        items={menuItems}
+        placement="bottom-end"
         trigger={
           <button
-            type="button"
-            title="More actions"
             aria-label="More actions"
             className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors border-none bg-transparent cursor-pointer"
+            title="More actions"
+            type="button"
           >
             <MoreVertical size={16} />
           </button>
         }
-        placement="bottom-end"
-        items={menuItems}
       />
     </div>
   );
@@ -298,14 +299,14 @@ function ProjectCard({
 
   const badges = (
     <div className="flex flex-wrap items-center gap-1.5">
-      <Badge variant={role.variant} size="xs" leftIcon={<RoleIcon size={12} />}>
+      <Badge leftIcon={<RoleIcon size={12} />} size="xs" variant={role.variant}>
         {role.label}
       </Badge>
-      <Badge variant="outline" size="xs" leftIcon={<BmIcon size={12} />}>
+      <Badge leftIcon={<BmIcon size={12} />} size="xs" variant="outline">
         {bmLabel}
       </Badge>
       {!isMine && sharedGroups > 0 && (
-        <Badge variant="info" size="xs" leftIcon={<Users size={12} />}>
+        <Badge leftIcon={<Users size={12} />} size="xs" variant="info">
           {sharedGroups} group{sharedGroups === 1 ? "" : "s"}
         </Badge>
       )}
@@ -315,18 +316,18 @@ function ProjectCard({
   if (view === "list") {
     return (
       <article
-        onClick={onOpen}
         className="group flex items-center gap-4 bg-surface border border-border-primary rounded-xl p-3 cursor-pointer transition-all hover:border-primary/40 hover:shadow-md"
+        onClick={onOpen}
       >
         <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/25 to-accent/10 flex items-center justify-center shrink-0">
-          <BmIcon size={20} className="text-primary" />
+          <BmIcon className="text-primary" size={20} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-bold text-sm text-text-primary truncate max-w-[10rem] sm:max-w-[220px]">
               {project.title}
             </h3>
-            <Badge variant={role.variant} size="xs">
+            <Badge size="xs" variant={role.variant}>
               {role.label}
             </Badge>
           </div>
@@ -342,7 +343,7 @@ function ProjectCard({
             <Clock size={11} /> {relativeTime(project.updated_at)}
           </span>
         </div>
-        <Avatar name={oName} size="sm" bordered />
+        <Avatar bordered name={oName} size="sm" />
         {actions}
       </article>
     );
@@ -350,14 +351,14 @@ function ProjectCard({
 
   return (
     <article
-      onClick={onOpen}
       className="group relative flex flex-col bg-surface border border-border-primary rounded-2xl overflow-hidden cursor-pointer transition-all hover:border-primary/40 hover:shadow-lg"
+      onClick={onOpen}
     >
       <div className="h-1.5 bg-gradient-to-r from-primary/60 via-primary/20 to-accent/40" />
       <div className="p-5 flex flex-col gap-3 flex-1">
         <div className="flex items-start gap-3">
           <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/25 to-accent/10 flex items-center justify-center shrink-0">
-            <BmIcon size={20} className="text-primary" />
+            <BmIcon className="text-primary" size={20} />
           </div>
           <h3 className="min-w-0 flex-1 font-bold text-sm text-text-primary leading-snug line-clamp-2">
             {project.title}
@@ -371,7 +372,7 @@ function ProjectCard({
         <div className="mt-auto" />
         <div className="flex items-center justify-between gap-2 pt-3 border-t border-border-subtle">
           <div className="flex items-center gap-2 min-w-0">
-            <Avatar name={oName} size="xs" bordered />
+            <Avatar bordered name={oName} size="xs" />
             <div className="min-w-0">
               <div className="text-xs font-medium text-text-primary truncate">
                 {oName}
@@ -554,10 +555,10 @@ export default function ProjectsPage() {
           </p>
         </div>
         <Button
+          className="whitespace-nowrap"
+          leftIcon={<Plus size={16} />}
           variant="primary"
           onClick={() => setCreateOpen(true)}
-          leftIcon={<Plus size={16} />}
-          className="whitespace-nowrap"
         >
           New project
         </Button>
@@ -568,26 +569,26 @@ export default function ProjectsPage() {
         <StatTile
           icon={<FolderOpen size={18} />}
           label="Total projects"
-          value={projects.length}
           tone="primary"
+          value={projects.length}
         />
         <StatTile
           icon={<Crown size={18} />}
           label="Created by me"
-          value={mineCount}
           tone="success"
+          value={mineCount}
         />
         <StatTile
           icon={<Users size={18} />}
           label="Shared with me"
-          value={sharedCount}
           tone="info"
+          value={sharedCount}
         />
         <StatTile
           icon={<MapIcon size={18} />}
           label="Published maps"
-          value={totalMaps}
           tone="primary"
+          value={totalMaps}
         />
       </div>
 
@@ -597,33 +598,31 @@ export default function ProjectsPage() {
           {/* Search */}
           <div className="relative flex-1">
             <Search
-              size={15}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
+              size={15}
             />
             <input
+              className="input pl-9"
+              placeholder="Search projects by name or description…"
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search projects by name or description…"
-              className="input pl-9"
             />
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch("")}
+            {search ? <button
                 aria-label="Clear search"
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary cursor-pointer"
+                type="button"
+                onClick={() => setSearch("")}
               >
                 <X size={15} />
-              </button>
-            )}
+              </button> : null}
           </div>
 
           {/* Access filter */}
           <div
+            aria-label="Filter by access"
             className="inline-flex items-center rounded-xl border border-border-primary bg-surface p-0.5"
             role="tablist"
-            aria-label="Filter by access"
           >
             {(
               [
@@ -634,15 +633,15 @@ export default function ProjectsPage() {
             ).map((t) => (
               <button
                 key={t.key}
-                type="button"
-                role="tab"
                 aria-selected={access === t.key}
-                onClick={() => setAccess(t.key)}
+                role="tab"
+                type="button"
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border-none ${
                   access === t.key
                     ? "bg-primary text-[var(--text-on-primary)]"
                     : "text-text-secondary hover:text-text-primary bg-transparent"
                 }`}
+                onClick={() => setAccess(t.key)}
               >
                 {t.label}
                 <span
@@ -658,24 +657,24 @@ export default function ProjectsPage() {
           <div className="flex items-center gap-2">
             <Select
               options={SORT_OPTIONS}
+              size="sm"
               value={sort}
               onChange={(v: string) => setSort(v as SortKey)}
-              size="sm"
             />
             <div className="inline-flex items-center rounded-xl border border-border-primary bg-surface p-0.5">
               <button
-                type="button"
-                onClick={() => setView("grid")}
                 aria-label="Grid view"
                 className={`w-8 h-8 inline-flex items-center justify-center rounded-lg cursor-pointer border-none transition-colors ${view === "grid" ? "bg-primary text-[var(--text-on-primary)]" : "bg-transparent text-text-secondary hover:text-text-primary"}`}
+                type="button"
+                onClick={() => setView("grid")}
               >
                 <LayoutGrid size={15} />
               </button>
               <button
-                type="button"
-                onClick={() => setView("list")}
                 aria-label="List view"
                 className={`w-8 h-8 inline-flex items-center justify-center rounded-lg cursor-pointer border-none transition-colors ${view === "list" ? "bg-primary text-[var(--text-on-primary)]" : "bg-transparent text-text-secondary hover:text-text-primary"}`}
+                type="button"
+                onClick={() => setView("list")}
               >
                 <List size={15} />
               </button>
@@ -690,17 +689,15 @@ export default function ProjectsPage() {
           <p className="text-xs text-text-tertiary">
             Showing {visibleProjects.length} of {projects.length} project
             {projects.length === 1 ? "" : "s"}
-            {hasActiveFilters && " (filtered)"}
+            {hasActiveFilters ? " (filtered)" : null}
           </p>
-          {hasActiveFilters && (
-            <button
+          {hasActiveFilters ? <button
+              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 cursor-pointer border-none bg-transparent"
               type="button"
               onClick={resetFilters}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 cursor-pointer border-none bg-transparent"
             >
               <X size={13} /> Clear filters
-            </button>
-          )}
+            </button> : null}
         </div>
       )}
 
@@ -708,10 +705,10 @@ export default function ProjectsPage() {
       {error ? (
         <div className="bg-surface border border-border-primary rounded-2xl">
           <EmptyState
+            action={{ label: "Try again", onClick: () => loadProjects() }}
+            description={error}
             size="lg"
             title="Couldn't load your projects"
-            description={error}
-            action={{ label: "Try again", onClick: () => loadProjects() }}
           />
         </div>
       ) : loading ? (
@@ -724,10 +721,10 @@ export default function ProjectsPage() {
               >
                 <div className="flex items-start gap-3">
                   <Skeleton
+                    className="w-11 h-11 shrink-0"
+                    height={44}
                     variant="rounded"
                     width={44}
-                    height={44}
-                    className="w-11 h-11 shrink-0"
                   />
                   <div className="flex-1 space-y-2">
                     <Skeleton width="70%" />
@@ -738,12 +735,12 @@ export default function ProjectsPage() {
                 <Skeleton width="80%" />
                 <div className="mt-3 pt-3 border-t border-border-subtle flex items-center justify-between">
                   <Skeleton
+                    className="w-6 h-6"
+                    height={24}
                     variant="circular"
                     width={24}
-                    height={24}
-                    className="w-6 h-6"
                   />
-                  <Skeleton width={64} className="w-16 h-8" />
+                  <Skeleton className="w-16 h-8" width={64} />
                 </div>
               </div>
             ))}
@@ -756,22 +753,22 @@ export default function ProjectsPage() {
                 className="bg-surface border border-border-primary rounded-xl p-3 flex items-center gap-4"
               >
                 <Skeleton
+                  className="w-11 h-11 shrink-0"
+                  height={44}
                   variant="rounded"
                   width={44}
-                  height={44}
-                  className="w-11 h-11 shrink-0"
                 />
                 <div className="flex-1 space-y-2">
                   <Skeleton width="40%" />
                   <Skeleton width="65%" />
                 </div>
                 <Skeleton
+                  className="w-8 h-8"
+                  height={32}
                   variant="circular"
                   width={32}
-                  height={32}
-                  className="w-8 h-8"
                 />
-                <Skeleton width={64} className="w-16 h-8" />
+                <Skeleton className="w-16 h-8" width={64} />
               </div>
             ))}
           </div>
@@ -779,10 +776,10 @@ export default function ProjectsPage() {
       ) : projects.length === 0 ? (
         <div className="bg-surface border border-border-primary rounded-2xl">
           <EmptyState
-            size="lg"
-            icon={<FolderOpen size={40} className="text-primary" />}
-            title="No projects yet"
             description="Create your first geospatial workspace to start organizing layers, maps, and analysis."
+            icon={<FolderOpen className="text-primary" size={40} />}
+            size="lg"
+            title="No projects yet"
             action={{
               label: "Create a project",
               onClick: () => setCreateOpen(true),
@@ -792,6 +789,7 @@ export default function ProjectsPage() {
       ) : visibleProjects.length === 0 ? (
         <div className="bg-surface border border-border-primary rounded-2xl">
           <EmptyState
+            action={{ label: "Clear filters", onClick: resetFilters }}
             size="md"
             title="No matching projects"
             description={
@@ -799,7 +797,6 @@ export default function ProjectsPage() {
                 ? `Nothing matched “${search.trim()}”. Try a different search or clear your filters.`
                 : "Nothing matches the current filters. Try switching tabs or clearing filters."
             }
-            action={{ label: "Clear filters", onClick: resetFilters }}
           />
         </div>
       ) : view === "grid" ? (
@@ -807,12 +804,12 @@ export default function ProjectsPage() {
           {visibleProjects.map((p) => (
             <ProjectCard
               key={p.id}
-              project={p}
               myId={myId}
+              project={p}
               view={view}
+              onDelete={() => setDeleteTarget(p)}
               onOpen={() => openProject(p)}
               onShare={() => setShareProject(p)}
-              onDelete={() => setDeleteTarget(p)}
             />
           ))}
         </div>
@@ -821,20 +818,19 @@ export default function ProjectsPage() {
           {visibleProjects.map((p) => (
             <ProjectCard
               key={p.id}
-              project={p}
               myId={myId}
+              project={p}
               view={view}
+              onDelete={() => setDeleteTarget(p)}
               onOpen={() => openProject(p)}
               onShare={() => setShareProject(p)}
-              onDelete={() => setDeleteTarget(p)}
             />
           ))}
         </div>
       )}
 
       {/* ── Create Project modal ──────────────────────────────────────────── */}
-      {createOpen && (
-        <div
+      {createOpen ? <div
           className="fixed inset-0 z-[999] flex items-center justify-center p-4 overlay animate-fade-in"
           onMouseDown={(e) =>
             e.target === e.currentTarget && setCreateOpen(false)
@@ -851,36 +847,34 @@ export default function ProjectsPage() {
                 </p>
               </div>
               <button
-                type="button"
-                onClick={() => setCreateOpen(false)}
                 aria-label="Close"
                 className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-hover cursor-pointer border-none bg-transparent"
+                type="button"
+                onClick={() => setCreateOpen(false)}
               >
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="p-6 flex flex-col gap-4">
-              {cError && (
-                <div className="p-3 rounded-lg bg-error-subtle text-error text-sm border border-error/20">
+            <form className="p-6 flex flex-col gap-4" onSubmit={handleCreate}>
+              {cError ? <div className="p-3 rounded-lg bg-error-subtle text-error text-sm border border-error/20">
                   {cError}
-                </div>
-              )}
+                </div> : null}
 
               <div>
                 <label className="form-label" htmlFor="np-title">
                   Project title
                 </label>
                 <input
-                  id="np-title"
-                  type="text"
-                  required
-                  maxLength={255}
                   autoFocus
+                  required
+                  className="input"
+                  id="np-title"
+                  maxLength={255}
                   placeholder="e.g. Coastal Wetland Vulnerability Index"
+                  type="text"
                   value={cTitle}
                   onChange={(e) => setCTitle(e.target.value)}
-                  className="input"
                 />
               </div>
 
@@ -889,12 +883,12 @@ export default function ProjectsPage() {
                   Description
                 </label>
                 <textarea
+                  className="input textarea"
                   id="np-desc"
-                  rows={3}
                   placeholder="Brief overview of layers, objectives, and area of interest…"
+                  rows={3}
                   value={cDesc}
                   onChange={(e) => setCDesc(e.target.value)}
-                  className="input textarea"
                 />
               </div>
 
@@ -903,10 +897,10 @@ export default function ProjectsPage() {
                   Default basemap
                 </label>
                 <select
+                  className="input select"
                   id="np-basemap"
                   value={cBasemap}
                   onChange={(e) => setCBasemap(e.target.value)}
-                  className="input select"
                 >
                   {BASEMAP_CHOICES.map((b) => (
                     <option key={b.value} value={b.value}>
@@ -924,12 +918,12 @@ export default function ProjectsPage() {
                   Cancel
                 </Button>
                 <Button
+                  disabled={creating}
                   type="submit"
                   variant="primary"
-                  disabled={creating}
                   leftIcon={
                     creating ? (
-                      <Loader2 size={15} className="animate-spin" />
+                      <Loader2 className="animate-spin" size={15} />
                     ) : (
                       <Plus size={15} />
                     )
@@ -940,57 +934,52 @@ export default function ProjectsPage() {
               </div>
             </form>
           </div>
-        </div>
-      )}
+        </div> : null}
 
       {/* ── Share dialog (reuses the map/project share surface) ──────────── */}
-      {shareProject && (
-        <ShareDialog
-          open={!!shareProject}
-          onClose={() => setShareProject(null)}
-          entityType="project"
+      {shareProject ? <ShareDialog
           entityId={shareProject.id}
           entityTitle={shareProject.title}
+          entityType="project"
+          open={!!shareProject}
           shareUrl={`${window.location.origin}/map?projectId=${shareProject.id}`}
           canManage={
             (myId && shareProject.owner_id === myId) ||
             shareProject.user_permission === "admin"
           }
-        />
-      )}
+          onClose={() => setShareProject(null)}
+        /> : null}
 
       {/* ── Delete confirmation ──────────────────────────────────────────── */}
       <ConfirmDialog
+        cancelLabel="Cancel"
+        confirmLabel="Delete project"
+        icon={<Trash2 size={22} />}
         isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleConfirmDelete}
+        loading={deleting}
         title="Delete project?"
+        variant="danger"
         description={
           deleteTarget
             ? `“${deleteTarget.title}” and its layers, annotations, and published maps will be permanently removed. This cannot be undone.`
             : undefined
         }
-        confirmLabel="Delete project"
-        cancelLabel="Cancel"
-        variant="danger"
-        loading={deleting}
-        icon={<Trash2 size={22} />}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
       />
 
       {/* ── Inline notice ────────────────────────────────────────────────── */}
-      {notice && (
-        <div
+      {notice ? <div
+          aria-live="polite"
+          role="status"
           className={`fixed left-1/2 bottom-6 -translate-x-1/2 z-[1001] px-4 py-2.5 rounded-xl border shadow-2xl text-sm font-medium whitespace-nowrap animate-fade-in ${
             notice.type === "success"
               ? "bg-success-bg text-success-text border-success-border"
               : "bg-error-bg text-error-text border-error-border"
           }`}
-          role="status"
-          aria-live="polite"
         >
           {notice.text}
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 }

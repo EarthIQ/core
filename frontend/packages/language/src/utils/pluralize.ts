@@ -2,7 +2,7 @@ import type { PluralRule, PluralTranslation } from "../types";
 
 export function getPluralRule(count: number, locale: string): PluralRule {
   const pluralRules = new Intl.PluralRules(locale);
-  return pluralRules.select(count) as PluralRule;
+  return pluralRules.select(count);
 }
 
 export function pluralize(

@@ -1,5 +1,6 @@
-import React, { type ReactNode, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import React, { type ReactNode, useState } from "react";
+
 import { cn } from "../../../utils/cn";
 
 /**
@@ -119,7 +120,7 @@ const badgeVariants = {
 /**
  * Individual sidebar item component
  */
-function SidebarItemComponent({
+const SidebarItemComponent = ({
   item,
   collapsed,
   depth = 0,
@@ -127,7 +128,7 @@ function SidebarItemComponent({
   item: SidebarItem;
   collapsed: boolean;
   depth?: number;
-}) {
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const hasChildren = item.children && item.children.length > 0;
   const isDisabled = item.disabled;
@@ -151,11 +152,10 @@ function SidebarItemComponent({
   return (
     <div>
       <Component
-        href={item.href}
-        onClick={handleClick}
-        disabled={isDisabled}
-        aria-expanded={hasChildren ? isOpen : undefined}
         aria-current={item.active ? "page" : undefined}
+        aria-expanded={hasChildren ? isOpen : undefined}
+        disabled={isDisabled}
+        href={item.href}
         className={cn(
           // Base styles
           "flex w-full items-center gap-3 rounded-xl px-3 py-2.5",
@@ -181,10 +181,10 @@ function SidebarItemComponent({
           // Nested item indentation
           depth > 0 && "ml-4"
         )}
+        onClick={handleClick}
       >
         {/* Icon */}
-        {item.icon && (
-          <span
+        {item.icon ? <span
             className={cn(
               "flex h-5 w-5 flex-shrink-0 items-center justify-center",
               item.active
@@ -193,18 +193,17 @@ function SidebarItemComponent({
             )}
           >
             {item.icon}
-          </span>
-        )}
+          </span> : null}
 
         {/* Label - animated visibility */}
         <AnimatePresence>
           {!collapsed && (
             <motion.span
-              initial={{ opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: "auto" }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.15 }}
               className="flex-1 truncate"
+              exit={{ opacity: 0, width: 0 }}
+              initial={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.15 }}
             >
               {item.label}
             </motion.span>
@@ -224,46 +223,42 @@ function SidebarItemComponent({
         )}
 
         {/* Expand/Collapse chevron for folders */}
-        {!collapsed && hasChildren && (
-          <motion.svg
+        {!collapsed && hasChildren ? <motion.svg
             animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
+            aria-hidden="true"
             className="h-4 w-4 text-[var(--text-tertiary)]"
             fill="none"
             stroke="currentColor"
+            transition={{ duration: 0.2 }}
             viewBox="0 0 24 24"
-            aria-hidden="true"
           >
             <path
+              d="M19 9l-7 7-7-7"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M19 9l-7 7-7-7"
             />
-          </motion.svg>
-        )}
+          </motion.svg> : null}
       </Component>
 
       {/* Nested children */}
       <AnimatePresence>
-        {hasChildren && isOpen && !collapsed && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
+        {hasChildren && isOpen && !collapsed ? <motion.div
             animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
             className="mt-1 space-y-1 overflow-hidden"
+            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
           >
             {item.children!.map((child) => (
               <SidebarItemComponent
                 key={child.key}
-                item={child}
                 collapsed={collapsed}
                 depth={depth + 1}
+                item={child}
               />
             ))}
-          </motion.div>
-        )}
+          </motion.div> : null}
       </AnimatePresence>
     </div>
   );
@@ -317,7 +312,7 @@ function SidebarItemComponent({
  *   ]}
  * />
  */
-export function Sidebar({
+export const Sidebar = ({
   items,
   header,
   footer,
@@ -326,10 +321,11 @@ export function Sidebar({
   expandedWidth = 260,
   collapsedWidth = 72,
   className,
-}: SidebarProps) {
+}: SidebarProps) => {
   return (
     <motion.aside
       animate={{ width: collapsed ? collapsedWidth : expandedWidth }}
+      aria-label="Sidebar navigation"
       transition={{ duration: 0.2, ease: "easeInOut" }}
       className={cn(
         // Base styles
@@ -341,22 +337,20 @@ export function Sidebar({
         "overflow-hidden",
         className
       )}
-      aria-label="Sidebar navigation"
     >
       {/* Header */}
-      {header && (
-        <div
+      {header ? <div
           className={cn(
             "flex-shrink-0 border-b border-[var(--border-primary)] p-4",
             collapsed && "flex items-center justify-center"
           )}
         >
           {header}
-        </div>
-      )}
+        </div> : null}
 
       {/* Navigation */}
       <nav
+        aria-label="Main navigation"
         className={cn(
           "flex-1 space-y-1 overflow-x-hidden overflow-y-auto p-3",
           // Custom scrollbar styling (from your theme)
@@ -366,35 +360,30 @@ export function Sidebar({
           "[&::-webkit-scrollbar-thumb]:rounded-full",
           "[&::-webkit-scrollbar-thumb:hover]:bg-[var(--scrollbar-thumb-hover)]"
         )}
-        aria-label="Main navigation"
       >
         {items.map((item) => (
           <SidebarItemComponent
             key={item.key}
-            item={item}
             collapsed={collapsed}
+            item={item}
           />
         ))}
       </nav>
 
       {/* Footer */}
-      {footer && (
-        <div
+      {footer ? <div
           className={cn(
             "flex-shrink-0 border-t border-[var(--border-primary)] p-4",
             collapsed && "flex items-center justify-center"
           )}
         >
           {footer}
-        </div>
-      )}
+        </div> : null}
 
       {/* Collapse Toggle Button */}
-      {onCollapse && (
-        <button
-          onClick={() => onCollapse(!collapsed)}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      {onCollapse ? <button
           aria-expanded={!collapsed}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className={cn(
             // Position
             "absolute top-1/2 right-0 z-10",
@@ -414,25 +403,25 @@ export function Sidebar({
             "focus-visible:ring-2 focus-visible:outline-none",
             "focus-visible:ring-[var(--ring)]"
           )}
+          onClick={() => onCollapse(!collapsed)}
         >
           <motion.svg
             animate={{ rotate: collapsed ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
+            aria-hidden="true"
             className="h-4 w-4"
             fill="none"
             stroke="currentColor"
+            transition={{ duration: 0.2 }}
             viewBox="0 0 24 24"
-            aria-hidden="true"
           >
             <path
+              d="M15 19l-7-7 7-7"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M15 19l-7-7 7-7"
             />
           </motion.svg>
-        </button>
-      )}
+        </button> : null}
     </motion.aside>
   );
 }

@@ -1,6 +1,8 @@
 import { Button, Modal, ModalFooter } from "@packages/ui";
 import { Check, Copy } from "lucide-react";
-import { getVectorTileUrl } from "../../lib/datasets";
+
+import { getVectorTileUrl } from "@/lib/datasets";
+
 import type { DatasetItem } from "./types";
 
 interface Props {
@@ -21,10 +23,10 @@ export default function TileUrlModal({
   return (
     <Modal
       isOpen
-      onClose={onClose}
-      title="Vector Tile URL"
       description={dataset.name}
       size="lg"
+      title="Vector Tile URL"
+      onClose={onClose}
     >
       <div className="flex flex-col gap-4">
         <p className="text-sm text-text-secondary leading-relaxed">

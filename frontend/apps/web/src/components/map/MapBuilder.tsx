@@ -1,5 +1,3 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import "maplibre-gl/dist/maplibre-gl.css";
 import {
   X,
   Map,
@@ -16,9 +14,13 @@ import {
   Lock,
   Save,
 } from "lucide-react";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { useEffect, useRef, useState, useCallback } from "react";
+
 import { BASEMAP_STYLES } from "@/hooks/useMapLibre";
-import type { MapLayerItem } from "@/lib/maps";
+
 import type { Annotation } from "@/lib/mapEditor/types";
+import type { MapLayerItem } from "@/lib/maps";
 
 /* ──────────────────────────────────────────────────────────────────────────── */
 /*  Types                                                                      */
@@ -51,7 +53,8 @@ interface MapBuilderProps {
   currentLayers: MapLayerItem[];
   currentAnnotations: Annotation[];
   /* Existing map being edited (null = new publish) */
-  editingMap: any | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  editingMap: any;
   /* Actions */
   onPublish: (config: MapBuilderConfig) => Promise<void>;
   onUpdate: (mapId: string, config: MapBuilderConfig) => Promise<void>;
@@ -122,10 +125,10 @@ const BASEMAP_OPTIONS = [
 /*  Component                                                                  */
 /* ──────────────────────────────────────────────────────────────────────────── */
 
-export function MapBuilder({
+export const MapBuilder = ({
   isOpen,
   onClose,
-  projectId,
+  _projectId,
   currentBasemap,
   currentCenter,
   currentZoom,
@@ -136,7 +139,7 @@ export function MapBuilder({
   editingMap,
   onPublish,
   onUpdate,
-}: MapBuilderProps) {
+}: MapBuilderProps) => {
   /* ── Builder state ─────────────────────────────────────────────────────── */
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -179,8 +182,8 @@ export function MapBuilder({
       setCenterLng(editingMap.center_lng ?? 0);
       setCenterLat(editingMap.center_lat ?? 20);
       setZoom(editingMap.zoom ?? 2.5);
-      setBearing((editingMap as any).bearing ?? 0);
-      setPitch((editingMap as any).pitch ?? 0);
+      setBearing((editingMap).bearing ?? 0);
+      setPitch((editingMap).pitch ?? 0);
       setLayers(editingMap.layers_config || []);
       setWidgets({
         titleCard: true,
@@ -404,29 +407,27 @@ export function MapBuilder({
       <header className="flex items-center justify-between px-5 py-3 border-b border-border-primary bg-elevated shrink-0">
         <div className="flex items-center gap-3">
           <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-surface-hover text-text-secondary hover:text-text-primary transition-colors"
             aria-label="Close builder"
+            className="p-1.5 rounded-lg hover:bg-surface-hover text-text-secondary hover:text-text-primary transition-colors"
+            onClick={onClose}
           >
             <X size={18} />
           </button>
           <div className="flex items-center gap-2">
-            <Map size={16} className="text-primary" />
+            <Map className="text-primary" size={16} />
             <h1 className="text-sm font-bold text-text-primary">
               {editingMap ? "Edit Published Map" : "Map Builder"}
             </h1>
           </div>
-          {editingMap && (
-            <span className="text-[10px] font-mono text-text-tertiary">
+          {editingMap ? <span className="text-[10px] font-mono text-text-tertiary">
               Editing: {editingMap.title}
-            </span>
-          )}
+            </span> : null}
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={handlePublish}
-            disabled={!title.trim() || publishing}
             className="btn btn-primary btn-sm flex items-center gap-1.5 disabled:opacity-50"
+            disabled={!title.trim() || publishing}
+            onClick={handlePublish}
           >
             <Save size={13} />
             {publishing
@@ -445,21 +446,16 @@ export function MapBuilder({
           <div ref={previewRef} className="w-full h-full absolute inset-0" />
 
           {/* Live widget overlays (mirrors what the viewer will see) */}
-          {widgets.titleCard && title && (
-            <div className="absolute top-4 left-4 z-10 max-w-xs bg-elevated border border-border-primary rounded-xl p-3.5 shadow-xl pointer-events-none">
+          {widgets.titleCard && title ? <div className="absolute top-4 left-4 z-10 max-w-xs bg-elevated border border-border-primary rounded-xl p-3.5 shadow-xl pointer-events-none">
               <h2 className="text-sm font-bold text-text-primary">{title}</h2>
-              {description && (
-                <p className="text-[11px] text-text-secondary mt-1">
+              {description ? <p className="text-[11px] text-text-secondary mt-1">
                   {description}
-                </p>
-              )}
-            </div>
-          )}
+                </p> : null}
+            </div> : null}
 
-          {widgets.layerList && layers.filter((l) => l.url).length > 0 && (
-            <div className="absolute top-4 right-4 z-10 w-52 bg-elevated border border-border-primary rounded-xl p-3 shadow-xl pointer-events-none">
+          {widgets.layerList && layers.filter((l) => l.url).length > 0 ? <div className="absolute top-4 right-4 z-10 w-52 bg-elevated border border-border-primary rounded-xl p-3 shadow-xl pointer-events-none">
               <div className="flex items-center gap-1.5 text-xs font-bold text-text-primary mb-2">
-                <Layers size={12} className="text-primary" />
+                <Layers className="text-primary" size={12} />
                 Layers
               </div>
               <div className="flex flex-col gap-1.5">
@@ -477,35 +473,28 @@ export function MapBuilder({
                     </div>
                   ))}
               </div>
-            </div>
-          )}
+            </div> : null}
 
           {/* Zoom controls overlay */}
-          {widgets.zoomControls && (
-            <div className="absolute bottom-6 right-6 z-10 flex flex-col gap-1 pointer-events-none">
+          {widgets.zoomControls ? <div className="absolute bottom-6 right-6 z-10 flex flex-col gap-1 pointer-events-none">
               <div className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-tertiary">
                 <ZoomIn size={14} />
               </div>
               <div className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-tertiary">
                 <Compass size={14} />
               </div>
-            </div>
-          )}
+            </div> : null}
 
           {/* Scale bar indicator */}
-          {widgets.scaleBar && (
-            <div className="absolute bottom-6 left-6 z-10 flex items-center gap-1.5 pointer-events-none">
+          {widgets.scaleBar ? <div className="absolute bottom-6 left-6 z-10 flex items-center gap-1.5 pointer-events-none">
               <div className="w-24 h-0.5 bg-text-secondary/60 rounded" />
               <span className="text-[9px] text-text-tertiary">10 km</span>
-            </div>
-          )}
+            </div> : null}
 
           {/* Attribution */}
-          {widgets.attribution && (
-            <div className="absolute bottom-2 right-2 z-10 text-[9px] text-text-quaternary pointer-events-none">
+          {widgets.attribution ? <div className="absolute bottom-2 right-2 z-10 text-[9px] text-text-quaternary pointer-events-none">
               © OpenStreetMap © CARTO | Powered by EarthIQ
-            </div>
-          )}
+            </div> : null}
 
           {/* Map status badge */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-elevated border border-border-primary pointer-events-none">
@@ -530,12 +519,12 @@ export function MapBuilder({
             ).map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 py-2.5 text-xs font-semibold transition-colors border-b-2 ${
                   activeTab === tab.id
                     ? "text-primary border-primary"
                     : "text-text-tertiary border-transparent hover:text-text-secondary"
                 }`}
+                onClick={() => setActiveTab(tab.id)}
               >
                 {tab.label}
               </button>
@@ -551,11 +540,11 @@ export function MapBuilder({
                 <div className="form-field">
                   <label className="form-label text-xs">Map Title *</label>
                   <input
-                    type="text"
+                    className="input input-sm"
                     placeholder="e.g. Wetland Extent Dashboard"
+                    type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="input input-sm"
                   />
                 </div>
 
@@ -563,11 +552,11 @@ export function MapBuilder({
                 <div className="form-field">
                   <label className="form-label text-xs">Description</label>
                   <textarea
-                    rows={2}
+                    className="input textarea input-sm"
                     placeholder="Shown in the title card..."
+                    rows={2}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="input textarea input-sm"
                   />
                 </div>
 
@@ -578,12 +567,12 @@ export function MapBuilder({
                     {BASEMAP_OPTIONS.map((opt) => (
                       <button
                         key={opt.id}
-                        onClick={() => setBasemap(opt.id)}
                         className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all ${
                           basemap === opt.id
                             ? "border-primary bg-primary/5"
                             : "border-border-secondary hover:border-border-primary"
                         }`}
+                        onClick={() => setBasemap(opt.id)}
                       >
                         <div
                           className="w-10 h-7 rounded border border-border-secondary"
@@ -606,15 +595,15 @@ export function MapBuilder({
                         Center Lng
                       </label>
                       <input
-                        type="number"
-                        step="0.001"
-                        min={-180}
+                        className="input input-sm"
                         max={180}
+                        min={-180}
+                        step="0.001"
+                        type="number"
                         value={centerLng}
                         onChange={(e) =>
                           setCenterLng(parseFloat(e.target.value) || 0)
                         }
-                        className="input input-sm"
                       />
                     </div>
                     <div>
@@ -622,15 +611,15 @@ export function MapBuilder({
                         Center Lat
                       </label>
                       <input
-                        type="number"
-                        step="0.001"
-                        min={-90}
+                        className="input input-sm"
                         max={90}
+                        min={-90}
+                        step="0.001"
+                        type="number"
                         value={centerLat}
                         onChange={(e) =>
                           setCenterLat(parseFloat(e.target.value) || 0)
                         }
-                        className="input input-sm"
                       />
                     </div>
                     <div>
@@ -638,15 +627,15 @@ export function MapBuilder({
                         Zoom
                       </label>
                       <input
-                        type="number"
-                        step="0.1"
-                        min={0}
+                        className="input input-sm"
                         max={22}
+                        min={0}
+                        step="0.1"
+                        type="number"
                         value={zoom}
                         onChange={(e) =>
                           setZoom(parseFloat(e.target.value) || 0)
                         }
-                        className="input input-sm"
                       />
                     </div>
                     <div>
@@ -654,15 +643,15 @@ export function MapBuilder({
                         Pitch (°)
                       </label>
                       <input
-                        type="number"
-                        step="1"
-                        min={0}
+                        className="input input-sm"
                         max={85}
+                        min={0}
+                        step="1"
+                        type="number"
                         value={pitch}
                         onChange={(e) =>
                           setPitch(parseFloat(e.target.value) || 0)
                         }
-                        className="input input-sm"
                       />
                     </div>
                     <div>
@@ -670,15 +659,15 @@ export function MapBuilder({
                         Bearing (°)
                       </label>
                       <input
-                        type="number"
-                        step="1"
-                        min={-180}
+                        className="input input-sm"
                         max={180}
+                        min={-180}
+                        step="1"
+                        type="number"
                         value={bearing}
                         onChange={(e) =>
                           setBearing(parseFloat(e.target.value) || 0)
                         }
-                        className="input input-sm"
                       />
                     </div>
                   </div>
@@ -698,12 +687,12 @@ export function MapBuilder({
                 {WIDGETS.map((w) => (
                   <button
                     key={w.key}
-                    onClick={() => toggleWidget(w.key)}
                     className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
                       widgets[w.key]
                         ? "border-primary/60 bg-primary/5"
                         : "border-border-secondary hover:border-border-primary"
                     }`}
+                    onClick={() => toggleWidget(w.key)}
                   >
                     <div
                       className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
@@ -755,13 +744,13 @@ export function MapBuilder({
                         className="flex items-center gap-3 p-3 rounded-lg border border-border-secondary bg-surface/30"
                       >
                         <button
-                          onClick={() => toggleLayerVisible(layer.id)}
+                          title={layer.visible ? "Hide layer" : "Show layer"}
                           className={`p-1.5 rounded-lg transition-colors ${
                             layer.visible
                               ? "text-primary bg-primary/10"
                               : "text-text-tertiary bg-surface/50 hover:text-text-secondary"
                           }`}
-                          title={layer.visible ? "Hide layer" : "Show layer"}
+                          onClick={() => toggleLayerVisible(layer.id)}
                         >
                           {layer.visible ? (
                             <Eye size={14} />
@@ -777,14 +766,12 @@ export function MapBuilder({
                             {layer.type}
                           </div>
                         </div>
-                        {layer.style?.color && (
-                          <span
+                        {layer.style?.color ? <span
                             className="w-3 h-3 rounded-full border border-white/20 shrink-0"
                             style={{
                               backgroundColor: layer.style.color as string,
                             }}
-                          />
-                        )}
+                          /> : null}
                       </div>
                     ))
                 )}
@@ -806,19 +793,19 @@ export function MapBuilder({
                     </div>
                   </div>
                   <input
-                    type="checkbox"
                     checked={isPublic}
-                    onChange={(e) => setIsPublic(e.target.checked)}
                     className="w-4 h-4 accent-primary cursor-pointer"
+                    type="checkbox"
+                    onChange={(e) => setIsPublic(e.target.checked)}
                   />
                 </div>
 
                 <div className="p-3 rounded-lg bg-surface/20 border border-border-secondary/50">
                   <div className="flex items-center gap-2 text-xs font-semibold text-text-primary mb-1.5">
                     {isPublic ? (
-                      <Globe size={13} className="text-success" />
+                      <Globe className="text-success" size={13} />
                     ) : (
-                      <Lock size={13} className="text-accent" />
+                      <Lock className="text-accent" size={13} />
                     )}
                     {isPublic ? "Shareable" : "Private"}
                   </div>
@@ -871,9 +858,9 @@ export function MapBuilder({
           {/* Footer action */}
           <div className="p-3 border-t border-border-primary shrink-0">
             <button
-              onClick={handlePublish}
-              disabled={!title.trim() || publishing}
               className="w-full btn btn-primary btn-md flex items-center justify-center gap-2 disabled:opacity-50"
+              disabled={!title.trim() || publishing}
+              onClick={handlePublish}
             >
               <Save size={14} />
               {publishing

@@ -1,7 +1,9 @@
 // hooks/useMapEvent.ts
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback as _useCallback, useRef } from 'react';
+
 import { useMap } from './useMap';
-import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'maplibre-gl';
+
+import type { MapLayerMouseEvent, MapLayerTouchEvent as _MapLayerTouchEvent } from 'maplibre-gl';
 
 type MapEventType = 
   | 'click' | 'dblclick' | 'mousedown' | 'mouseup' | 'mousemove' 

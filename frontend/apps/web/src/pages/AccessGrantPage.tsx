@@ -1,7 +1,9 @@
+import { CheckCircle2, Loader2, ShieldCheck, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { CheckCircle2, Loader2, ShieldCheck, XCircle } from "lucide-react";
+
 import { shareApi, type AccessRequestInfo } from "@/components/map/share/shareApi";
+
 import type { Role } from "@/components/map/share/types";
 
 /**
@@ -85,7 +87,7 @@ export default function AccessGrantPage() {
       <div className="w-full max-w-md bg-elevated border border-border-primary rounded-2xl shadow-2xl p-8 flex flex-col items-center text-center animate-scale-in">
         {loading ? (
           <>
-            <Loader2 size={40} className="animate-spin text-primary mb-4" />
+            <Loader2 className="animate-spin text-primary mb-4" size={40} />
             <h2 className="text-lg font-semibold text-text-primary">Loading request…</h2>
             <p className="text-sm text-text-secondary mt-2">
               One moment, we&rsquo;re fetching the details.
@@ -93,15 +95,15 @@ export default function AccessGrantPage() {
           </>
         ) : error && !info ? (
           <>
-            <XCircle size={40} className="text-red-400 mb-4" />
+            <XCircle className="text-red-400 mb-4" size={40} />
             <h2 className="text-lg font-semibold text-text-primary">
               Couldn&rsquo;t load this request
             </h2>
             <p className="text-sm text-text-secondary mt-2">{error}</p>
             <button
+              className="mt-6 px-6 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:opacity-90 transition-opacity"
               type="button"
               onClick={() => navigate("/dashboard", { replace: true })}
-              className="mt-6 px-6 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:opacity-90 transition-opacity"
             >
               Go to Dashboard
             </button>
@@ -110,7 +112,7 @@ export default function AccessGrantPage() {
           <>
             {done === "granted" ? (
               <>
-                <CheckCircle2 size={40} className="text-success mb-4" />
+                <CheckCircle2 className="text-success mb-4" size={40} />
                 <h2 className="text-lg font-semibold text-text-primary">
                   Access granted
                 </h2>
@@ -131,7 +133,7 @@ export default function AccessGrantPage() {
               </>
             ) : done === "denied" ? (
               <>
-                <XCircle size={40} className="text-warning mb-4" />
+                <XCircle className="text-warning mb-4" size={40} />
                 <h2 className="text-lg font-semibold text-text-primary">
                   Request declined
                 </h2>
@@ -146,7 +148,7 @@ export default function AccessGrantPage() {
             ) : (
               <>
                 <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                  <ShieldCheck size={26} className="text-primary" />
+                  <ShieldCheck className="text-primary" size={26} />
                 </div>
                 <h2 className="text-lg font-semibold text-text-primary">
                   Access request
@@ -159,14 +161,14 @@ export default function AccessGrantPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-text-primary truncate">
-                      {info!.requesterName ?? info!.requesterEmail}
+                      {info.requesterName ?? info.requesterEmail}
                     </p>
                     <p className="text-xs text-text-secondary truncate">
-                      {info!.requesterEmail}
+                      {info.requesterEmail}
                     </p>
                   </div>
                   <span className="ml-auto text-[11px] font-medium text-text-tertiary capitalize shrink-0">
-                    wants {info!.requestedRole}
+                    wants {info.requestedRole}
                   </span>
                 </div>
 
@@ -174,35 +176,33 @@ export default function AccessGrantPage() {
                 <p className="mt-4 text-sm text-text-secondary leading-relaxed">
                   for your {label}{" "}
                   <span className="font-semibold text-text-primary">
-                    &ldquo;{info!.title}&rdquo;
+                    &ldquo;{info.title}&rdquo;
                   </span>
                 </p>
 
                 {/* Message */}
-                {info!.message && (
-                  <div className="mt-3 w-full text-left">
+                {info.message ? <div className="mt-3 w-full text-left">
                     <p className="text-[11px] uppercase tracking-wider text-text-tertiary font-semibold mb-1.5">
                       They wrote
                     </p>
                     <div className="rounded-lg bg-bg-tertiary border-l-2 border-primary/60 px-3.5 py-2.5 text-[13px] text-text-secondary italic leading-relaxed">
-                      {info!.message}
+                      {info.message}
                     </div>
-                  </div>
-                )}
+                  </div> : null}
 
                 {/* Role picker */}
                 <div className="mt-5 w-full flex items-center justify-between gap-3">
                   <label
-                    htmlFor="grant-role"
                     className="text-sm text-text-secondary font-medium"
+                    htmlFor="grant-role"
                   >
                     Grant as
                   </label>
                   <select
+                    className="px-3 py-2 rounded-lg bg-bg-tertiary border border-border-primary text-sm text-text-primary focus:outline-none focus:border-primary/60"
                     id="grant-role"
                     value={role}
                     onChange={(e) => setRole(e.target.value as Role)}
-                    className="px-3 py-2 rounded-lg bg-bg-tertiary border border-border-primary text-sm text-text-primary focus:outline-none focus:border-primary/60"
                   >
                     <option value="viewer">Viewer</option>
                     <option value="commenter">Commenter</option>
@@ -210,25 +210,25 @@ export default function AccessGrantPage() {
                   </select>
                 </div>
 
-                {error && <p className="mt-3 text-xs text-red-400">{error}</p>}
+                {error ? <p className="mt-3 text-xs text-red-400">{error}</p> : null}
 
                 {/* Actions */}
                 <div className="mt-6 w-full flex items-center gap-3">
                   <button
+                    className="flex-1 px-4 py-2.5 rounded-full text-sm font-medium text-text-secondary hover:bg-surface-hover disabled:opacity-60 transition-colors"
+                    disabled={busy}
                     type="button"
                     onClick={handleDeny}
-                    disabled={busy}
-                    className="flex-1 px-4 py-2.5 rounded-full text-sm font-medium text-text-secondary hover:bg-surface-hover disabled:opacity-60 transition-colors"
                   >
                     Decline
                   </button>
                   <button
+                    className="flex-[2] flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60 transition-opacity"
+                    disabled={busy}
                     type="button"
                     onClick={handleGrant}
-                    disabled={busy}
-                    className="flex-[2] flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60 transition-opacity"
                   >
-                    {busy && <Loader2 size={15} className="animate-spin" />}
+                    {busy ? <Loader2 className="animate-spin" size={15} /> : null}
                     {busy ? "Working…" : "Grant access"}
                   </button>
                 </div>
@@ -237,9 +237,9 @@ export default function AccessGrantPage() {
 
             {(done === "granted" || done === "denied") && (
               <button
+                className="mt-6 px-6 py-2 rounded-full border border-border-primary text-sm font-medium text-text-secondary hover:bg-surface-hover transition-colors"
                 type="button"
                 onClick={() => navigate("/dashboard", { replace: true })}
-                className="mt-6 px-6 py-2 rounded-full border border-border-primary text-sm font-medium text-text-secondary hover:bg-surface-hover transition-colors"
               >
                 Back to Dashboard
               </button>

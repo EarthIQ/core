@@ -1,0 +1,7 @@
+/**
+ * ESLint 9 flat config for @packages/onboarding.
+ * @see https://eslint.org/docs/latest/use/configure/configuration-files
+ *
+ * @type {import("eslint").Linter.Config[]}
+ */
+module.exports = require("@packages/eslint-config").reactConfig;

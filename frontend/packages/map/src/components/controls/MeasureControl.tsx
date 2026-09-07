@@ -1,4 +1,6 @@
 // MeasureControl.tsx
+import * as turf from "@turf/turf";
+import { Ruler, Trash2, Undo2, Check } from "lucide-react";
 import {
   type ReactNode,
   useState,
@@ -7,11 +9,12 @@ import {
   useRef,
   useMemo,
 } from "react";
+
 import { ControlButton, ControlButtonFlyout } from "./MapControlButton";
 import { useMap } from "../../hooks/useMap";
-import * as turf from "@turf/turf";
+
 import type { GeoJSONSource } from "maplibre-gl";
-import { Ruler, Trash2, Undo2, Check } from "lucide-react";
+
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -59,19 +62,19 @@ export interface MeasureControlProps {
 // ICONS
 // ═══════════════════════════════════════════════════════════════════════
 
-function DistanceIcon() {
+const DistanceIcon = () => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={20}
-      height={20}
-      viewBox="0 0 24 24"
+      aria-hidden="true"
       fill="none"
+      height={20}
       stroke="currentColor"
-      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden="true"
+      strokeWidth={1.5}
+      viewBox="0 0 24 24"
+      width={20}
+      xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M4 20L20 4" />
       <circle cx={4} cy={20} r={2} />
@@ -80,19 +83,19 @@ function DistanceIcon() {
   );
 }
 
-function AreaIcon() {
+const AreaIcon = () => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={20}
-      height={20}
-      viewBox="0 0 24 24"
+      aria-hidden="true"
       fill="none"
+      height={20}
       stroke="currentColor"
-      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden="true"
+      strokeWidth={1.5}
+      viewBox="0 0 24 24"
+      width={20}
+      xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M4 4h16v16H4z" />
       <path d="M4 4l16 16" opacity={0.4} />
@@ -658,32 +661,31 @@ export const MeasureControl: React.FC<MeasureControlProps> = ({
   return (
     <div ref={wrapperRef} className="relative">
       <ControlButtonFlyout
+        active={isActive}
+        className={className}
+        flyoutAlign="start"
+        flyoutClassName={flyoutClassName}
+        flyoutSide={flyoutSide}
+        forceOpen={isActive}
         icon={icon ?? <Ruler className="h-4 w-4" />}
         label={label}
-        flyoutSide={flyoutSide}
-        flyoutAlign="start"
-        active={isActive}
-        forceOpen={isActive}
-        className={className}
-        flyoutClassName={flyoutClassName}
       >
         {/* Mode buttons */}
         <ControlButton
+          active={measureMode === "distance"}
           icon={<DistanceIcon />}
           label="Measure distance"
-          active={measureMode === "distance"}
           onClick={() => startMeasurement("distance")}
         />
         <ControlButton
+          active={measureMode === "area"}
           icon={<AreaIcon />}
           label="Measure area"
-          active={measureMode === "area"}
           onClick={() => startMeasurement("area")}
         />
 
         {/* Result display */}
-        {currentResult && (
-          <div
+        {currentResult ? <div
             className="mx-1 my-1 rounded-lg px-2.5 py-2"
             style={{
               background: "var(--surface-hover)",
@@ -699,8 +701,7 @@ export const MeasureControl: React.FC<MeasureControlProps> = ({
             <div className="text-sm font-bold">
               {currentResult.formattedValue}
             </div>
-            {currentResult.segments && currentResult.segments.length > 1 && (
-              <div
+            {currentResult.segments && currentResult.segments.length > 1 ? <div
                 className="mt-1.5 space-y-0.5 border-t pt-1.5"
                 style={{ borderColor: "var(--border-primary)" }}
               >
@@ -717,66 +718,58 @@ export const MeasureControl: React.FC<MeasureControlProps> = ({
                     </span>
                   </div>
                 ))}
-              </div>
-            )}
-          </div>
-        )}
+              </div> : null}
+          </div> : null}
 
         {/* Status hint */}
-        {measureMode && !currentResult && (
-          <div
+        {measureMode && !currentResult ? <div
             className="px-2.5 py-1.5 text-center text-[10px]"
             style={{ color: "var(--text-tertiary)" }}
           >
             {measureMode === "distance"
               ? "Click to add points"
               : "Click to add vertices"}
-          </div>
-        )}
+          </div> : null}
 
         {/* Action buttons when measuring */}
-        {measureMode && isDrawing && (
-          <>
+        {measureMode && isDrawing ? <>
             <div
               className="mx-2 h-px"
               style={{ background: "var(--border-primary)" }}
             />
             <ControlButton
+              disabled={!hasPoints}
               icon={<Undo2 className="h-4 w-4" />}
               label="Undo last point"
               onClick={undoLastPoint}
-              disabled={!hasPoints}
             />
             <ControlButton
+              disabled={!canFinish}
               icon={<Check className="h-4 w-4" />}
               label="Finish measurement"
               onClick={finishMeasurement}
-              disabled={!canFinish}
             />
             <ControlButton
+              className="text-[var(--error)] hover:bg-[var(--error-bg)]"
               icon={<Trash2 className="h-4 w-4" />}
               label="Cancel"
               onClick={cancelMeasurement}
-              className="text-[var(--error)] hover:bg-[var(--error-bg)]"
             />
-          </>
-        )}
+          </> : null}
 
         {/* Action buttons when finished */}
-        {measureMode && !isDrawing && (
-          <>
+        {measureMode && !isDrawing ? <>
             <div
               className="mx-2 h-px"
               style={{ background: "var(--border-primary)" }}
             />
             <ControlButton
+              className="text-[var(--error)] hover:bg-[var(--error-bg)]"
               icon={<Trash2 className="h-4 w-4" />}
               label="Clear measurement"
               onClick={cancelMeasurement}
-              className="text-[var(--error)] hover:bg-[var(--error-bg)]"
             />
-          </>
-        )}
+          </> : null}
       </ControlButtonFlyout>
     </div>
   );

@@ -1,12 +1,10 @@
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { useAuth } from "@/lib/auth";
-import { api, ApiError } from "@/lib/api";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@packages/ui";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+
 import { AlertBanner } from "@/components/admin/AlertBanner";
-import { SummaryCards } from "@/components/admin/SummaryCards";
-import { UsersTab } from "@/components/admin/UsersTab";
 import { GroupsTab } from "@/components/admin/GroupsTab";
 import { PermissionsTab } from "@/components/admin/PermissionsTab";
+import { SummaryCards } from "@/components/admin/SummaryCards";
 import {
   type GroupFilterState,
   type GroupFormState,
@@ -25,17 +23,20 @@ import {
   emptyPermissionForm,
   emptyUserForm,
 } from "@/components/admin/types";
+import { UsersTab } from "@/components/admin/UsersTab";
+import { api, ApiError } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 // ── Icons (inline SVG to avoid extra deps) ───────────────────────────────────
 
-function UsersIcon() {
+const UsersIcon = () => {
   return (
     <svg
       className="h-4 w-4"
-      viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       strokeWidth={2}
+      viewBox="0 0 24 24"
     >
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
       <circle cx="9" cy="7" r="4" />
@@ -45,33 +46,33 @@ function UsersIcon() {
   );
 }
 
-function GroupsIcon() {
+const GroupsIcon = () => {
   return (
     <svg
       className="h-4 w-4"
-      viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       strokeWidth={2}
+      viewBox="0 0 24 24"
     >
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" />
+      <rect height="7" rx="1" width="7" x="3" y="3" />
+      <rect height="7" rx="1" width="7" x="14" y="3" />
+      <rect height="7" rx="1" width="7" x="3" y="14" />
+      <rect height="7" rx="1" width="7" x="14" y="14" />
     </svg>
   );
 }
 
-function PermissionsIcon() {
+const PermissionsIcon = () => {
   return (
     <svg
       className="h-4 w-4"
-      viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       strokeWidth={2}
+      viewBox="0 0 24 24"
     >
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <rect height="11" rx="2" ry="2" width="18" x="3" y="11" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
   );
@@ -546,8 +547,8 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Alerts */}
-      {error && <AlertBanner type="error" message={error} />}
-      {notice && <AlertBanner type="success" message={notice} />}
+      {error ? <AlertBanner message={error} type="error" /> : null}
+      {notice ? <AlertBanner message={notice} type="success" /> : null}
 
       {/* Summary */}
       <SummaryCards cards={summaryCards} />
@@ -555,21 +556,21 @@ export default function AdminUsersPage() {
       {/* Tabs */}
       <Tabs defaultValue="users" variant="underline">
         <TabsList>
-          <TabsTrigger value="users" icon={<UsersIcon />}>
+          <TabsTrigger icon={<UsersIcon />} value="users">
             Users
             <span className="ml-1.5 rounded-full bg-surface-hover px-2 py-0.5 text-xs text-text-tertiary">
               {userTotal}
             </span>
           </TabsTrigger>
 
-          <TabsTrigger value="groups" icon={<GroupsIcon />}>
+          <TabsTrigger icon={<GroupsIcon />} value="groups">
             Groups
             <span className="ml-1.5 rounded-full bg-surface-hover px-2 py-0.5 text-xs text-text-tertiary">
               {groupTotal}
             </span>
           </TabsTrigger>
 
-          <TabsTrigger value="permissions" icon={<PermissionsIcon />}>
+          <TabsTrigger icon={<PermissionsIcon />} value="permissions">
             Permissions
             <span className="ml-1.5 rounded-full bg-surface-hover px-2 py-0.5 text-xs text-text-tertiary">
               {permissionTotal}
@@ -579,112 +580,112 @@ export default function AdminUsersPage() {
 
         <TabsContent value="users">
           <UsersTab
-            users={users}
-            total={userTotal}
-            totalPages={userTotalPages}
+            createForm={userForm}
+            createModalOpen={createUserModalOpen}
+            editForm={editUserForm}
+            editingId={editingUserId}
+            filters={userFilters}
             groups={allGroups}
             loading={usersLoading}
             submitting={submitting}
-            filters={userFilters}
-            onFilterChange={(next) =>
-              setUserFilters((prev) => ({ ...prev, ...next }))
-            }
-            createModalOpen={createUserModalOpen}
-            onOpenCreateModal={() => {
-              setUserForm(emptyUserForm);
-              setCreateUserModalOpen(true);
-            }}
+            total={userTotal}
+            totalPages={userTotalPages}
+            users={users}
+            onCreateFormChange={setUserForm}
+            onCreateSubmit={createUser}
+            onDelete={deleteUser}
+            onEditFormChange={setEditUserForm}
+            onEditStart={startEditingUser}
+            onEditSubmit={saveUser}
             onCloseCreateModal={() => {
               setCreateUserModalOpen(false);
               setUserForm(emptyUserForm);
             }}
-            createForm={userForm}
-            onCreateFormChange={setUserForm}
-            onCreateSubmit={createUser}
-            editingId={editingUserId}
-            editForm={editUserForm}
-            onEditFormChange={setEditUserForm}
-            onEditSubmit={saveUser}
-            onEditStart={startEditingUser}
             onEditCancel={() => {
               setEditingUserId(null);
               setEditUserForm(emptyUserForm);
             }}
-            onDelete={deleteUser}
+            onFilterChange={(next) =>
+              setUserFilters((prev) => ({ ...prev, ...next }))
+            }
+            onOpenCreateModal={() => {
+              setUserForm(emptyUserForm);
+              setCreateUserModalOpen(true);
+            }}
           />
         </TabsContent>
 
         <TabsContent value="groups">
           <GroupsTab
+            createForm={groupForm}
+            createModalOpen={createGroupModalOpen}
+            editForm={editGroupForm}
+            editingId={editingGroupId}
+            filters={groupFilters}
             groups={groups}
+            loading={groupsLoading}
+            permissions={allPermissions}
+            submitting={submitting}
             total={groupTotal}
             totalPages={groupTotalPages}
             users={allUsers}
-            permissions={allPermissions}
-            loading={groupsLoading}
-            submitting={submitting}
-            filters={groupFilters}
-            onFilterChange={(next) =>
-              setGroupFilters((prev) => ({ ...prev, ...next }))
-            }
-            createModalOpen={createGroupModalOpen}
-            onOpenCreateModal={() => {
-              setGroupForm(emptyGroupForm);
-              setCreateGroupModalOpen(true);
-            }}
+            onCreateFormChange={setGroupForm}
+            onCreateSubmit={createGroup}
+            onDelete={deleteGroup}
+            onEditFormChange={setEditGroupForm}
+            onEditStart={startEditingGroup}
+            onEditSubmit={saveGroup}
             onCloseCreateModal={() => {
               setCreateGroupModalOpen(false);
               setGroupForm(emptyGroupForm);
             }}
-            createForm={groupForm}
-            onCreateFormChange={setGroupForm}
-            onCreateSubmit={createGroup}
-            editingId={editingGroupId}
-            editForm={editGroupForm}
-            onEditFormChange={setEditGroupForm}
-            onEditSubmit={saveGroup}
-            onEditStart={startEditingGroup}
             onEditCancel={() => {
               setEditingGroupId(null);
               setEditGroupForm(emptyGroupForm);
             }}
-            onDelete={deleteGroup}
+            onFilterChange={(next) =>
+              setGroupFilters((prev) => ({ ...prev, ...next }))
+            }
+            onOpenCreateModal={() => {
+              setGroupForm(emptyGroupForm);
+              setCreateGroupModalOpen(true);
+            }}
           />
         </TabsContent>
 
         <TabsContent value="permissions">
           <PermissionsTab
+            createForm={permissionForm}
+            createModalOpen={createPermissionModalOpen}
+            editForm={editPermissionForm}
+            editingId={editingPermissionId}
+            filters={permissionFilters}
+            loading={permissionsLoading}
             permissions={permissions}
+            submitting={submitting}
             total={permissionTotal}
             totalPages={permissionTotalPages}
-            loading={permissionsLoading}
-            submitting={submitting}
-            filters={permissionFilters}
-            onFilterChange={(next) =>
-              setPermissionFilters((prev) => ({ ...prev, ...next }))
-            }
-            createModalOpen={createPermissionModalOpen}
-            onOpenCreateModal={() => {
-              setPermissionForm(emptyPermissionForm);
-              setCreatePermissionModalOpen(true);
-            }}
+            onCreateFormChange={setPermissionForm}
+            onCreateSubmit={createPermission}
+            onDelete={deletePermission}
+            onEditFormChange={setEditPermissionForm}
+            onEditStart={startEditingPermission}
+            onEditSubmit={savePermission}
             onCloseCreateModal={() => {
               setCreatePermissionModalOpen(false);
               setPermissionForm(emptyPermissionForm);
             }}
-            createForm={permissionForm}
-            onCreateFormChange={setPermissionForm}
-            onCreateSubmit={createPermission}
-            editingId={editingPermissionId}
-            editForm={editPermissionForm}
-            onEditFormChange={setEditPermissionForm}
-            onEditSubmit={savePermission}
-            onEditStart={startEditingPermission}
             onEditCancel={() => {
               setEditingPermissionId(null);
               setEditPermissionForm(emptyPermissionForm);
             }}
-            onDelete={deletePermission}
+            onFilterChange={(next) =>
+              setPermissionFilters((prev) => ({ ...prev, ...next }))
+            }
+            onOpenCreateModal={() => {
+              setPermissionForm(emptyPermissionForm);
+              setCreatePermissionModalOpen(true);
+            }}
           />
         </TabsContent>
       </Tabs>

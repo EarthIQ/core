@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef as _useRef } from 'react';
+
 import { useMap } from './useMap';
+
 import type { GeoJSON } from 'geojson';
 
 export interface UseDrawnFeaturesOptions {
@@ -13,7 +15,7 @@ export interface UseDrawnFeaturesOptions {
 
 export const useDrawnFeatures = (options: UseDrawnFeaturesOptions = {}) => {
   const { persist = false, storageKey = 'drawn-features', maxFeatures = 100 } = options;
-  const { map, isLoaded } = useMap();
+  const { map: _map, isLoaded: _isLoaded } = useMap();
   
   const [features, setFeatures] = useState<GeoJSON.Feature[]>(() => {
     if (persist) {
@@ -32,7 +34,7 @@ export const useDrawnFeatures = (options: UseDrawnFeaturesOptions = {}) => {
     if (persist) {
       try {
         localStorage.setItem(storageKey, JSON.stringify(features));
-      } catch {}
+      } catch { /* ignore quota/serialization errors */ }
     }
   }, [features, persist, storageKey]);
 

@@ -7,7 +7,7 @@
  */
 import { NOTIFICATION_CATEGORIES, useNotifications } from "@/lib/notifications";
 
-function Row({
+const Row = ({
   label,
   hint,
   checked,
@@ -19,22 +19,22 @@ function Row({
   checked: boolean;
   onChange: (v: boolean) => void;
   disabled?: boolean;
-}) {
+}) => {
   return (
     <div className="flex items-center justify-between gap-4 py-3 border-b border-border-secondary last:border-0">
       <div className="min-w-0">
         <div className="text-sm font-medium text-text-primary">{label}</div>
-        {hint && <div className="text-xs text-text-tertiary mt-0.5">{hint}</div>}
+        {hint ? <div className="text-xs text-text-tertiary mt-0.5">{hint}</div> : null}
       </div>
       <button
-        role="switch"
         aria-checked={checked}
         aria-label={label}
         disabled={disabled}
-        onClick={() => onChange(!checked)}
+        role="switch"
         className={`relative w-12 h-7 rounded-full transition-colors shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
           checked ? "bg-primary" : "bg-surface-hover border border-border-secondary"
         }`}
+        onClick={() => onChange(!checked)}
       >
         <span
           className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${
@@ -67,23 +67,23 @@ export default function NotificationPrefsSection() {
         </div>
         <div className="mt-2">
           <Row
-            label="Receive notifications"
-            hint="Keep this on to see mentions, access requests, and system updates."
             checked={enabled}
+            hint="Keep this on to see mentions, access requests, and system updates."
+            label="Receive notifications"
             onChange={(v) => updatePrefs({ enabled: v })}
           />
           <Row
-            label="Desktop toasts"
-            hint="Show a pop-up toast when a new notification arrives."
             checked={toasts}
             disabled={!enabled}
+            hint="Show a pop-up toast when a new notification arrives."
+            label="Desktop toasts"
             onChange={(v) => updatePrefs({ toasts: v })}
           />
           <Row
-            label="Sound"
-            hint="Play a soft chime with each new notification."
             checked={sound}
             disabled={!enabled}
+            hint="Play a soft chime with each new notification."
+            label="Sound"
             onChange={(v) => updatePrefs({ sound: v })}
           />
         </div>
@@ -100,9 +100,9 @@ export default function NotificationPrefsSection() {
           {NOTIFICATION_CATEGORIES.map((c) => (
             <Row
               key={c.id}
-              label={c.label}
               checked={prefs?.categories?.[c.id] ?? true}
               disabled={!enabled}
+              label={c.label}
               onChange={(v) => updatePrefs({ categories: { [c.id]: v } })}
             />
           ))}
