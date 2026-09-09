@@ -3,8 +3,9 @@
 This repository is **EarthIQ Core**, a "pluggable monolith" geo-platform. A core
 FastAPI backend + React/Vite frontend are the always-present shell, and a set of
 swappable **modules** (AI, hydrology, resources, urban-planning, notifications)
-are mounted into it at build/wire time. This file is the source of truth for how
-to work in this repo. Follow it.
+are mounted into it at build/wire time. This **folder** of rules is the source of truth for how to work in this repo.
+Follow it. `01-core.md` (this file) is always-on; the `1*-skill-*.md` files
+auto-activate on the matching files (Cline conditional rules via `paths:`).
 
 ---
 
@@ -51,7 +52,7 @@ to work in this repo. Follow it.
 
 ```
 core/                                  # repository root (CWD)
-├── .clinerules                        # THIS FILE - AI/agent working rules
+├── .clinerules                        # THIS FOLDER - 01-core (always-on) + design skills
 ├── README.md
 ├── LICENSE.txt
 ├── modules.registry.yaml              # CATALOG of available modules (name, version, repo)
