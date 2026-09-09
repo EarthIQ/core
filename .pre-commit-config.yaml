@@ -1,0 +1,50 @@
+# .pre-commit-config.yaml
+#
+# Shared by the CORE repo and EVERY module (copied in by `setup hooks`).
+#   - On commit (staged files, fast):   pre-commit run
+#   - Whole repo:                       pre-commit run --all-files
+#   - Bump remote-hook versions:        pre-commit autoupdate
+#
+# The Python + JS/TS hooks are `language: system` and shell out to the repo's OWN
+# toolchain (uv-managed ruff + the pnpm workspace's prettier/eslint). That keeps
+# tool versions and config in lock-step with the codebase — no isolated hook envs
+# pulling divergent versions.
+fail_fast: false
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format
+        entry: scripts/pc_ruff_format.sh
+        language: system
+        files: '\.py$'
+
+      - id: ruff-lint
+        name: ruff check
+        entry: scripts/pc_ruff_check.sh
+        language: system
+        files: '\.py$'
+
+      - id: prettier
+        name: prettier (workspace)
+        entry: scripts/pc_prettier.sh
+        language: system
+        files: '\.(t|j)sx?$|\.(json|md|css|html|ya?ml)$'
+
+      - id: eslint
+        name: eslint (workspace)
+        entry: scripts/pc_eslint.sh
+        language: system
+        files: '\.(t|j)sx?$'
+
+  # Free hygiene + safety hooks (standard; self-update via `pre-commit autoupdate`)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]

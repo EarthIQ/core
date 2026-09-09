@@ -1,13 +1,15 @@
 import subprocess
-import typer
+
 import questionary
+import typer
 from rich.console import Console
 
-from .registry import ROOT, load_registry, load_lock
-from .installer import install_selected, remove_module, clone_module
-from .workspace import update_backend_workspace, update_frontend_workspace
 from .codegen import generate_frontend_routes
 from .compose import generate_compose
+from .hooks import install_hooks
+from .installer import clone_module, install_selected, remove_module
+from .registry import ROOT, load_lock, load_registry
+from .workspace import update_backend_workspace, update_frontend_workspace
 
 app = typer.Typer(help="Pluggable-monolith module manager")
 console = Console()
@@ -26,16 +28,27 @@ def _rewire(lock: dict):
         try:
             subprocess.run(["pnpm", "install"], cwd=str(frontend_dir), check=False)
         except FileNotFoundError:
-            console.print("[yellow]pnpm command not found. Skipping auto frontend package install.[/]")
+            console.print(
+                "[yellow]pnpm command not found. Skipping auto frontend package install.[/]"
+            )
+
+    # Keep git pre-commit hooks fresh across core + every module (no-op if absent).
+    try:
+        install_hooks(ROOT, verbose=False)
+    except Exception as exc:  # hook wiring must never break a sync
+        console.print(f"[yellow]hook install skipped: {exc}[/]")
 
 
 @app.command()
 def init():
     """Interactive: select modules, clone, wire, build, start."""
     registry = load_registry()
-    selected = questionary.checkbox(
-        "Select modules to install:", choices=[m["name"] for m in registry]
-    ).ask() or []
+    selected = (
+        questionary.checkbox(
+            "Select modules to install:", choices=[m["name"] for m in registry]
+        ).ask()
+        or []
+    )
 
     lock = install_selected(selected, registry)
     _rewire(lock)
@@ -87,6 +100,16 @@ def list_modules():
 def sync():
     _rewire(load_lock())
     console.print("[green]Synced workspaces, routes, and compose file.[/]")
+
+
+@app.command()
+def hooks():
+    """Install/refresh pre-commit hooks in the core repo + every installed module."""
+    n = install_hooks(ROOT)
+    if n:
+        console.print(f"[green]pre-commit hooks installed in {n} repo(s).[/]")
+    else:
+        console.print("[yellow]No hooks installed (see hint above).[/]")
 
 
 if __name__ == "__main__":

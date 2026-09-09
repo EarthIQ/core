@@ -1,0 +1,35 @@
+# ruff.toml — single source of truth for Python style across core + all modules.
+#
+# The pre-commit hooks invoke `ruff --config ruff.toml` explicitly (see scripts/pc_*.sh),
+# and ruff also auto-discovers this file when run from a repo root. `setup hooks`
+# copies it into every module repo so all repos share identical rules.
+line-length = 100
+target-version = "py311"
+
+[lint]
+select = [
+    "E",    # pycodestyle (errors)
+    "W",    # pycodestyle (warnings)
+    "F",    # pyflakes (undefined names, unused imports, ...)
+    "I",    # isort (import ordering)
+    "UP",   # pyupgrade (modern syntax)
+    "B",    # flake8-bugbear (likely bugs)
+    "SIM",  # flake8-simplify
+    "C4",   # flake8-comprehensions
+    "RUF",  # ruff-specific
+]
+ignore = ["E501"]  # line length is enforced by `ruff format`, not the linter
+
+[lint.isort]
+# First-party packages so imports group correctly across the pluggable repos.
+known-first-party = [
+    "app",
+    "setup_cli",
+    "module_ai",
+    "module_hydrology",
+    "module_resources",
+    "module_urban",
+]
+
+[format]
+quote-style = "double"
