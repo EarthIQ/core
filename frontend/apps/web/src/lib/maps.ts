@@ -96,7 +96,7 @@ export async function createMap(input: MapCreateInput): Promise<MapItem> {
 
 export async function updateMap(
   mapId: string,
-  input: MapUpdateInput,
+  input: MapUpdateInput
 ): Promise<MapItem> {
   return api.put<MapItem>(`/api/v1/maps/${mapId}`, input);
 }
@@ -107,7 +107,7 @@ export async function deleteMap(mapId: string): Promise<void> {
 
 export async function shareMap(
   mapId: string,
-  shareData: { is_public?: boolean; group_access?: GroupAccess[] },
+  shareData: { is_public?: boolean; group_access?: GroupAccess[] }
 ): Promise<MapItem> {
   return api.post<MapItem>(`/api/v1/maps/${mapId}/share`, shareData);
 }
@@ -118,7 +118,7 @@ export async function fetchUserGroups(): Promise<GroupItem[]> {
 
 export async function createGroup(
   name: string,
-  description?: string,
+  description?: string
 ): Promise<GroupItem> {
   return api.post<GroupItem>("/api/v1/auth/groups", { name, description });
 }

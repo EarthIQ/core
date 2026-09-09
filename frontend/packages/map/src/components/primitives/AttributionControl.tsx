@@ -5,7 +5,6 @@ import { useMap } from "../../hooks/useMap";
 
 import type React from "react";
 
-
 export interface AttributionControlProps {
   /** Position on map */
   position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";

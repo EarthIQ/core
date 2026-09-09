@@ -175,7 +175,6 @@ export function useTerraDraw(
         }
       }
     };
-     
   }, [map, enabled]);
 
   /* ── report TerraDraw feature events to the caller ────────────────────── */
@@ -208,7 +207,7 @@ export function useTerraDraw(
     const d = drawRef.current;
     if (!d) return;
     const mode =
-      variantId !== null ? VARIANT_TO_MODE[variantId] ?? "select" : "select";
+      variantId !== null ? (VARIANT_TO_MODE[variantId] ?? "select") : "select";
     if (modeRef.current === mode) return; // setMode restarts modes; skip no-ops
     modeRef.current = mode;
     d.setMode(mode);

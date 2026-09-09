@@ -43,6 +43,7 @@ src/locales/
 ```
 
 **`en.json`**
+
 ```json
 {
   "common": {
@@ -56,6 +57,7 @@ src/locales/
 ```
 
 **`es.json`**
+
 ```json
 {
   "common": {
@@ -69,6 +71,7 @@ src/locales/
 ```
 
 **`index.ts`**
+
 ```typescript
 import type { LanguageConfig } from "@packages/language";
 
@@ -118,7 +121,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 // app/layout.tsx
 import { LanguageProvider } from "@/providers/language-provider";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body>
@@ -178,29 +185,29 @@ i18n.t("hello"); // "Hola"
 
 **Config Options:**
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `translations` | `Translations` | ✅ | Object containing all locale translations |
-| `defaultLocale` | `string` | ✅ | Default locale to use |
-| `fallbackLocale` | `string` | ❌ | Fallback locale for missing translations |
-| `onMissingTranslation` | `(key, locale) => string` | ❌ | Handler for missing translations |
-| `onLocaleChange` | `(locale) => void` | ❌ | Callback when locale changes |
+| Option                 | Type                      | Required | Description                               |
+| ---------------------- | ------------------------- | -------- | ----------------------------------------- |
+| `translations`         | `Translations`            | ✅       | Object containing all locale translations |
+| `defaultLocale`        | `string`                  | ✅       | Default locale to use                     |
+| `fallbackLocale`       | `string`                  | ❌       | Fallback locale for missing translations  |
+| `onMissingTranslation` | `(key, locale) => string` | ❌       | Handler for missing translations          |
+| `onLocaleChange`       | `(locale) => void`        | ❌       | Callback when locale changes              |
 
 **Returns: `LanguageInstance`**
 
-| Property/Method | Type | Description |
-|-----------------|------|-------------|
-| `locale` | `string` | Current locale |
-| `locales` | `string[]` | Available locales |
-| `setLocale(locale)` | `(locale) => void` | Change current locale |
-| `t(key, values?, options?)` | `TranslateFunction` | Translate a key |
-| `formatDate(date, options?)` | `(date, options?) => string` | Format a date |
-| `formatNumber(value, options?)` | `(value, options?) => string` | Format a number |
-| `formatCurrency(value, options)` | `(value, options) => string` | Format currency |
-| `formatRelativeTime(date, options?)` | `(date, options?) => string` | Format relative time |
-| `formatList(items, options?)` | `(items, options?) => string` | Format a list |
-| `hasTranslation(key)` | `(key) => boolean` | Check if translation exists |
-| `getTranslation(key)` | `(key) => string \| undefined` | Get raw translation |
+| Property/Method                      | Type                           | Description                 |
+| ------------------------------------ | ------------------------------ | --------------------------- |
+| `locale`                             | `string`                       | Current locale              |
+| `locales`                            | `string[]`                     | Available locales           |
+| `setLocale(locale)`                  | `(locale) => void`             | Change current locale       |
+| `t(key, values?, options?)`          | `TranslateFunction`            | Translate a key             |
+| `formatDate(date, options?)`         | `(date, options?) => string`   | Format a date               |
+| `formatNumber(value, options?)`      | `(value, options?) => string`  | Format a number             |
+| `formatCurrency(value, options)`     | `(value, options) => string`   | Format currency             |
+| `formatRelativeTime(date, options?)` | `(date, options?) => string`   | Format relative time        |
+| `formatList(items, options?)`        | `(items, options?) => string`  | Format a list               |
+| `hasTranslation(key)`                | `(key) => boolean`             | Check if translation exists |
+| `getTranslation(key)`                | `(key) => string \| undefined` | Get raw translation         |
 
 ---
 
@@ -220,18 +227,18 @@ import { LanguageProvider } from "@packages/language/react";
   onLocaleChange={(locale) => console.log(locale)}
 >
   {children}
-</LanguageProvider>
+</LanguageProvider>;
 ```
 
 **Props:**
 
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| `config` | `LanguageConfig` | ✅ | - | Language configuration |
-| `children` | `ReactNode` | ✅ | - | Child components |
-| `initialLocale` | `string` | ❌ | `defaultLocale` | Initial locale |
-| `persistKey` | `string` | ❌ | `"app-locale"` | localStorage key |
-| `onLocaleChange` | `(locale) => void` | ❌ | - | Locale change callback |
+| Prop             | Type               | Required | Default         | Description            |
+| ---------------- | ------------------ | -------- | --------------- | ---------------------- |
+| `config`         | `LanguageConfig`   | ✅       | -               | Language configuration |
+| `children`       | `ReactNode`        | ✅       | -               | Child components       |
+| `initialLocale`  | `string`           | ❌       | `defaultLocale` | Initial locale         |
+| `persistKey`     | `string`           | ❌       | `"app-locale"`  | localStorage key       |
+| `onLocaleChange` | `(locale) => void` | ❌       | -               | Locale change callback |
 
 ---
 
@@ -255,17 +262,17 @@ t("save"); // "Save" (translates "common.save")
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter   | Type     | Description                              |
+| ----------- | -------- | ---------------------------------------- |
 | `namespace` | `string` | Optional prefix for all translation keys |
 
 **Returns:**
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `t` | `(key, values?, options?) => string` | Translation function |
-| `locale` | `string` | Current locale |
-| `isLoading` | `boolean` | Loading state |
+| Property    | Type                                 | Description          |
+| ----------- | ------------------------------------ | -------------------- |
+| `t`         | `(key, values?, options?) => string` | Translation function |
+| `locale`    | `string`                             | Current locale       |
+| `isLoading` | `boolean`                            | Loading state        |
 
 ---
 
@@ -283,7 +290,10 @@ setLocale("es");
 
 // Render locale switcher
 locales.map((loc) => (
-  <button key={loc} onClick={() => setLocale(loc)}>
+  <button
+    key={loc}
+    onClick={() => setLocale(loc)}
+  >
     {loc}
   </button>
 ));
@@ -291,12 +301,12 @@ locales.map((loc) => (
 
 **Returns:**
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `locale` | `string` | Current locale |
-| `locales` | `string[]` | Available locales |
-| `setLocale` | `(locale) => void` | Change locale |
-| `isLoading` | `boolean` | Loading state |
+| Property    | Type               | Description       |
+| ----------- | ------------------ | ----------------- |
+| `locale`    | `string`           | Current locale    |
+| `locales`   | `string[]`         | Available locales |
+| `setLocale` | `(locale) => void` | Change locale     |
+| `isLoading` | `boolean`          | Loading state     |
 
 ---
 
@@ -325,13 +335,13 @@ formatList(["Apple", "Banana", "Orange"]); // "Apple, Banana, and Orange"
 
 **Returns:**
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `formatDate` | `(date, options?) => string` | Format date |
-| `formatNumber` | `(value, options?) => string` | Format number |
-| `formatCurrency` | `(value, options) => string` | Format currency |
-| `formatRelativeTime` | `(date, options?) => string` | Format relative time |
-| `formatList` | `(items, options?) => string` | Format list |
+| Method               | Signature                     | Description          |
+| -------------------- | ----------------------------- | -------------------- |
+| `formatDate`         | `(date, options?) => string`  | Format date          |
+| `formatNumber`       | `(value, options?) => string` | Format number        |
+| `formatCurrency`     | `(value, options) => string`  | Format currency      |
+| `formatRelativeTime` | `(date, options?) => string`  | Format relative time |
+| `formatList`         | `(items, options?) => string` | Format list          |
 
 ---
 
@@ -384,6 +394,7 @@ t("items", { count: 5 }, { count: 5 }); // "5 items"
 ```
 
 **Pluralization Rules:**
+
 - 2 parts: `singular | plural`
 - 3 parts: `zero | singular | plural`
 - Uses `Intl.PluralRules` for language-specific rules
@@ -394,11 +405,11 @@ t("items", { count: 5 }, { count: 5 }); // "5 items"
 t(key, values?, options?);
 ```
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `count` | `number` | Count for pluralization |
+| Option         | Type     | Description                     |
+| -------------- | -------- | ------------------------------- |
+| `count`        | `number` | Count for pluralization         |
 | `defaultValue` | `string` | Fallback if translation missing |
-| `locale` | `string` | Override current locale |
+| `locale`       | `string` | Override current locale         |
 
 ```tsx
 // With default value
@@ -418,10 +429,10 @@ t("greeting", { name: "John" }, { locale: "es" }); // "¡Hola, John!"
 const { formatDate } = useFormat();
 
 // With presets
-formatDate(date, { preset: "short" });  // "12/15/24"
+formatDate(date, { preset: "short" }); // "12/15/24"
 formatDate(date, { preset: "medium" }); // "Dec 15, 2024"
-formatDate(date, { preset: "long" });   // "December 15, 2024"
-formatDate(date, { preset: "full" });   // "Sunday, December 15, 2024"
+formatDate(date, { preset: "long" }); // "December 15, 2024"
+formatDate(date, { preset: "full" }); // "Sunday, December 15, 2024"
 
 // Custom options (Intl.DateTimeFormat options)
 formatDate(date, {
@@ -437,13 +448,13 @@ formatDate(date, { preset: "relative" }); // "2 days ago"
 
 **Presets:**
 
-| Preset | Example Output |
-|--------|----------------|
-| `short` | 12/15/24 |
-| `medium` | Dec 15, 2024 |
-| `long` | December 15, 2024 |
-| `full` | Sunday, December 15, 2024 |
-| `relative` | 2 days ago |
+| Preset     | Example Output            |
+| ---------- | ------------------------- |
+| `short`    | 12/15/24                  |
+| `medium`   | Dec 15, 2024              |
+| `long`     | December 15, 2024         |
+| `full`     | Sunday, December 15, 2024 |
+| `relative` | 2 days ago                |
 
 ### Number Formatting
 
@@ -540,11 +551,7 @@ interpolate("Hello, {{name}}!", { name: "World" }); // "Hello, World!"
 ### `pluralize(translations, count, locale)`
 
 ```typescript
-pluralize(
-  { one: "{{count}} item", other: "{{count}} items" },
-  5,
-  "en"
-); // "{{count}} items"
+pluralize({ one: "{{count}} item", other: "{{count}} items" }, 5, "en"); // "{{count}} items"
 ```
 
 ### `formatBytes(bytes, locale, decimals?)`
@@ -763,12 +770,15 @@ const languageConfig: LanguageConfig = {
 ### 5. Create Locale Metadata
 
 ```typescript
-export const localeMetadata: Record<AppLocale, {
-  name: string;
-  nativeName: string;
-  flag: string;
-  dir: "ltr" | "rtl";
-}> = {
+export const localeMetadata: Record<
+  AppLocale,
+  {
+    name: string;
+    nativeName: string;
+    flag: string;
+    dir: "ltr" | "rtl";
+  }
+> = {
   en: { name: "English", nativeName: "English", flag: "🇺🇸", dir: "ltr" },
   es: { name: "Spanish", nativeName: "Español", flag: "🇪🇸", dir: "ltr" },
   ar: { name: "Arabic", nativeName: "العربية", flag: "🇸🇦", dir: "rtl" },
@@ -825,9 +835,15 @@ export function LocaleSwitcher() {
   const { locale, locales: availableLocales, setLocale } = useLocale();
 
   return (
-    <select value={locale} onChange={(e) => setLocale(e.target.value)}>
+    <select
+      value={locale}
+      onChange={(e) => setLocale(e.target.value)}
+    >
       {availableLocales.map((loc) => (
-        <option key={loc} value={loc}>
+        <option
+          key={loc}
+          value={loc}
+        >
           {locales[loc].flag} {locales[loc].name}
         </option>
       ))}
@@ -878,9 +894,21 @@ export function OrderSummary({ order }) {
   return (
     <div>
       <h2>{t("orderNumber", { number: order.id })}</h2>
-      <p>{t("placedOn", { date: formatDate(order.createdAt, { preset: "long" }) })}</p>
-      <p>{t("total")}: {formatCurrency(order.total, { currency: "USD" })}</p>
-      <p>{t("itemCount", { count: order.items.length }, { count: order.items.length })}</p>
+      <p>
+        {t("placedOn", {
+          date: formatDate(order.createdAt, { preset: "long" }),
+        })}
+      </p>
+      <p>
+        {t("total")}: {formatCurrency(order.total, { currency: "USD" })}
+      </p>
+      <p>
+        {t(
+          "itemCount",
+          { count: order.items.length },
+          { count: order.items.length }
+        )}
+      </p>
     </div>
   );
 }

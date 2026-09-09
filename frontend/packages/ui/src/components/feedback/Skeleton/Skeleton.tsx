@@ -56,7 +56,7 @@ export const Skeleton = ({
       style={style}
     />
   );
-}
+};
 
 // Pre-built skeleton patterns
 export const SkeletonCard = ({ className }: { className?: string }) => {
@@ -97,7 +97,7 @@ export const SkeletonCard = ({ className }: { className?: string }) => {
       </div>
     </div>
   );
-}
+};
 
 export const SkeletonTable = ({
   rows = 5,
@@ -135,4 +135,4 @@ export const SkeletonTable = ({
       ))}
     </div>
   );
-}
+};

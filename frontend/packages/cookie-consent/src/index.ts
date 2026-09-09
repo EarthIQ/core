@@ -9,7 +9,7 @@ export {
   type CookieSettingsButtonProps,
   type CookieCategoryProps,
   type CookieToggleProps,
-} from './components';
+} from "./components";
 
 // Hooks
 export {
@@ -23,7 +23,7 @@ export {
   type ConsentChangeCallback,
   type ConsentInitializedCallback,
   type ConsentInitializedDetail,
-} from './hooks';
+} from "./hooks";
 
 // Store
 export {
@@ -31,7 +31,7 @@ export {
   useCookiePreferences,
   useHasConsented,
   useCookieConsentVisible,
-} from './stores';
+} from "./stores";
 
 // Utils
 export {
@@ -45,7 +45,7 @@ export {
   dispatchConsentEvent,
   initializeGoogleAnalytics,
   disableGoogleAnalytics,
-} from './utils';
+} from "./utils";
 
 // Types
 export type {
@@ -57,4 +57,4 @@ export type {
   BannerPosition,
   CookieConsentConfig,
   CookieConsentState,
-} from './types';
+} from "./types";

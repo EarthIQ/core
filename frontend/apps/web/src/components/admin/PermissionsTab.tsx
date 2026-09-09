@@ -12,7 +12,12 @@ import {
 
 const SearchIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
         strokeLinecap="round"
@@ -21,17 +26,33 @@ const SearchIcon = () => {
       />
     </svg>
   );
-}
+};
 
 const PlusIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M12 4v16m8-8H4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
     </svg>
   );
-}
+};
 
-const SortIcon = ({ active, order }: { active: boolean; order: "asc" | "desc" }) => {
+const SortIcon = ({
+  active,
+  order,
+}: {
+  active: boolean;
+  order: "asc" | "desc";
+}) => {
   return (
     <svg
       fill="none"
@@ -41,14 +62,24 @@ const SortIcon = ({ active, order }: { active: boolean; order: "asc" | "desc" })
         active ? "text-primary opacity-100" : "opacity-30"
       } ${active && order === "asc" ? "rotate-180" : ""}`}
     >
-      <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+      <path
+        d="M19 9l-7 7-7-7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
     </svg>
   );
-}
+};
 
 const EditIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
         strokeLinecap="round"
@@ -57,11 +88,16 @@ const EditIcon = () => {
       />
     </svg>
   );
-}
+};
 
 const TrashIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
         strokeLinecap="round"
@@ -70,11 +106,16 @@ const TrashIcon = () => {
       />
     </svg>
   );
-}
+};
 
 const KeyIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
         strokeLinecap="round"
@@ -83,7 +124,7 @@ const KeyIcon = () => {
       />
     </svg>
   );
-}
+};
 
 // ── PermissionsTab Component ─────────────────────────────────────────────────
 
@@ -134,7 +175,8 @@ export const PermissionsTab = ({
   onEditCancel,
   onDelete,
 }: PermissionsTabProps) => {
-  const [deleteCandidate, setDeleteCandidate] = useState<PermissionSummary | null>(null);
+  const [deleteCandidate, setDeleteCandidate] =
+    useState<PermissionSummary | null>(null);
 
   const handleSort = (field: "name") => {
     onFilterChange({
@@ -147,22 +189,24 @@ export const PermissionsTab = ({
   return (
     <div className="space-y-4">
       {/* ── Top Bar: Search & Actions ── */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border-primary bg-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-border-primary bg-surface flex flex-col gap-3 rounded-2xl border p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="relative min-w-[240px] flex-1 sm:max-w-md">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-tertiary">
+          <div className="text-text-tertiary pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <SearchIcon />
           </div>
           <input
-            className="w-full rounded-xl border border-border-primary bg-surface-hover/60 py-2 pr-3.5 pl-9 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="border-border-primary bg-surface-hover/60 text-text-primary placeholder:text-text-tertiary focus:border-primary focus:bg-surface focus:ring-primary/20 w-full rounded-xl border py-2 pr-3.5 pl-9 text-sm focus:ring-2 focus:outline-none"
             placeholder="Search permissions by key or description…"
             type="text"
             value={filters.search}
-            onChange={(e) => onFilterChange({ search: e.target.value, page: 1 })}
+            onChange={(e) =>
+              onFilterChange({ search: e.target.value, page: 1 })
+            }
           />
         </div>
 
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90 active:scale-[0.98]"
+          className="bg-primary inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90 active:scale-[0.98]"
           type="button"
           onClick={onOpenCreateModal}
         >
@@ -172,13 +216,13 @@ export const PermissionsTab = ({
       </div>
 
       {/* ── Table Container ── */}
-      <div className="overflow-hidden rounded-2xl border border-border-primary bg-surface shadow-sm">
+      <div className="border-border-primary bg-surface overflow-hidden rounded-2xl border shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-border-primary bg-surface-hover/40 text-xs font-semibold uppercase tracking-wider text-text-secondary">
+            <thead className="border-border-primary bg-surface-hover/40 text-text-secondary border-b text-xs font-semibold tracking-wider uppercase">
               <tr>
                 <th
-                  className="cursor-pointer px-6 py-3.5 transition select-none hover:text-text-primary"
+                  className="hover:text-text-primary cursor-pointer px-6 py-3.5 transition select-none"
                   scope="col"
                   onClick={() => handleSort("name")}
                 >
@@ -190,24 +234,36 @@ export const PermissionsTab = ({
                     />
                   </div>
                 </th>
-                <th className="px-6 py-3.5" scope="col">
+                <th
+                  className="px-6 py-3.5"
+                  scope="col"
+                >
                   Component / Scope
                 </th>
-                <th className="px-6 py-3.5" scope="col">
+                <th
+                  className="px-6 py-3.5"
+                  scope="col"
+                >
                   Description
                 </th>
-                <th className="px-6 py-3.5 text-right" scope="col">
+                <th
+                  className="px-6 py-3.5 text-right"
+                  scope="col"
+                >
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-primary">
+            <tbody className="divide-border-primary divide-y">
               {loading ? (
                 <tr>
-                  <td className="px-6 py-12 text-center text-text-secondary" colSpan={4}>
+                  <td
+                    className="text-text-secondary px-6 py-12 text-center"
+                    colSpan={4}
+                  >
                     <div className="inline-flex items-center gap-2">
                       <svg
-                        className="h-5 w-5 animate-spin text-primary"
+                        className="text-primary h-5 w-5 animate-spin"
                         fill="none"
                         viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg"
@@ -232,10 +288,15 @@ export const PermissionsTab = ({
                 </tr>
               ) : permissions.length === 0 ? (
                 <tr>
-                  <td className="px-6 py-12 text-center text-text-secondary" colSpan={4}>
+                  <td
+                    className="text-text-secondary px-6 py-12 text-center"
+                    colSpan={4}
+                  >
                     <div className="mx-auto max-w-sm space-y-2">
-                      <p className="font-medium text-text-primary">No permissions found</p>
-                      <p className="text-xs text-text-tertiary">
+                      <p className="text-text-primary font-medium">
+                        No permissions found
+                      </p>
+                      <p className="text-text-tertiary text-xs">
                         {filters.search
                           ? "Try searching for a different permission key."
                           : "Get started by adding your first permission."}
@@ -247,20 +308,23 @@ export const PermissionsTab = ({
                 permissions.map((permission) => {
                   const parts = permission.name.split(":");
                   const componentName = parts.length > 1 ? parts[0] : "general";
-                  const actionName = parts.length > 1 ? parts.slice(1).join(":") : permission.name;
+                  const actionName =
+                    parts.length > 1
+                      ? parts.slice(1).join(":")
+                      : permission.name;
 
                   return (
                     <tr
                       key={permission.id}
-                      className="group transition-colors hover:bg-surface-hover/50"
+                      className="group hover:bg-surface-hover/50 transition-colors"
                     >
                       {/* Permission Key */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2.5">
-                          <span className="rounded-lg bg-surface-hover p-1.5 text-text-secondary">
+                          <span className="bg-surface-hover text-text-secondary rounded-lg p-1.5">
                             <KeyIcon />
                           </span>
-                          <span className="font-mono text-xs font-semibold text-text-primary">
+                          <span className="text-text-primary font-mono text-xs font-semibold">
                             {permission.name}
                           </span>
                         </div>
@@ -268,21 +332,23 @@ export const PermissionsTab = ({
 
                       {/* Component / Scope Badge */}
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center rounded-md border border-border-primary bg-surface-hover/80 px-2.5 py-1 text-xs font-medium text-text-primary capitalize">
+                        <span className="border-border-primary bg-surface-hover/80 text-text-primary inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-medium capitalize">
                           {componentName} &rarr; {actionName}
                         </span>
                       </td>
 
                       {/* Description */}
-                      <td className="max-w-md truncate px-6 py-4 text-xs text-text-secondary">
-                        {permission.description || <span className="text-text-tertiary">-</span>}
+                      <td className="text-text-secondary max-w-md truncate px-6 py-4 text-xs">
+                        {permission.description || (
+                          <span className="text-text-tertiary">-</span>
+                        )}
                       </td>
 
                       {/* Actions */}
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
-                            className="rounded-lg p-1.5 text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
+                            className="text-text-secondary hover:bg-surface-hover hover:text-text-primary rounded-lg p-1.5 transition"
                             title="Edit Permission"
                             type="button"
                             onClick={() => onEditStart(permission)}
@@ -290,7 +356,7 @@ export const PermissionsTab = ({
                             <EditIcon />
                           </button>
                           <button
-                            className="rounded-lg p-1.5 text-danger transition hover:bg-danger/10"
+                            className="text-danger hover:bg-danger/10 rounded-lg p-1.5 transition"
                             title="Delete Permission"
                             type="button"
                             onClick={() => setDeleteCandidate(permission)}
@@ -308,16 +374,18 @@ export const PermissionsTab = ({
         </div>
 
         {/* ── Pagination Footer ── */}
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-border-primary px-6 py-3.5 sm:flex-row">
-          <div className="flex items-center gap-3 text-xs text-text-secondary">
+        <div className="border-border-primary flex flex-col items-center justify-between gap-3 border-t px-6 py-3.5 sm:flex-row">
+          <div className="text-text-secondary flex items-center gap-3 text-xs">
             <span>
-              Showing {total === 0 ? 0 : (filters.page - 1) * filters.page_size + 1} to{" "}
-              {Math.min(filters.page * filters.page_size, total)} of {total} permissions
+              Showing{" "}
+              {total === 0 ? 0 : (filters.page - 1) * filters.page_size + 1} to{" "}
+              {Math.min(filters.page * filters.page_size, total)} of {total}{" "}
+              permissions
             </span>
             <div className="flex items-center gap-1.5">
               <span>Per page:</span>
               <select
-                className="rounded-lg border border-border-primary bg-surface-hover/60 px-2 py-1 text-xs text-text-primary focus:border-primary focus:outline-none"
+                className="border-border-primary bg-surface-hover/60 text-text-primary focus:border-primary rounded-lg border px-2 py-1 text-xs focus:outline-none"
                 value={filters.page_size}
                 onChange={(e) =>
                   onFilterChange({ page_size: Number(e.target.value), page: 1 })
@@ -384,25 +452,27 @@ export const PermissionsTab = ({
         onClose={() => setDeleteCandidate(null)}
       >
         <div className="space-y-4 pt-2">
-          {deleteCandidate ? <div className="rounded-xl border border-border-primary bg-surface-hover/60 p-3.5">
-              <div className="font-mono text-sm font-semibold text-text-primary">
+          {deleteCandidate ? (
+            <div className="border-border-primary bg-surface-hover/60 rounded-xl border p-3.5">
+              <div className="text-text-primary font-mono text-sm font-semibold">
                 {deleteCandidate.name}
               </div>
-              <div className="text-xs text-text-secondary">
+              <div className="text-text-secondary text-xs">
                 {deleteCandidate.description || "No description"}
               </div>
-            </div> : null}
+            </div>
+          ) : null}
 
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
-              className="rounded-lg border border-border-primary px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
+              className="border-border-primary text-text-secondary hover:bg-surface-hover hover:text-text-primary rounded-lg border px-4 py-2 text-sm font-medium transition"
               type="button"
               onClick={() => setDeleteCandidate(null)}
             >
               Cancel
             </button>
             <button
-              className="rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:opacity-50"
+              className="bg-danger rounded-lg px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:opacity-50"
               disabled={submitting}
               type="button"
               onClick={() => {
@@ -419,5 +489,4 @@ export const PermissionsTab = ({
       </Modal>
     </div>
   );
-}
-
+};

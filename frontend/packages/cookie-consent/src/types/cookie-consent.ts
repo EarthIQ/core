@@ -1,4 +1,5 @@
-export type CookieCategory = 'necessary' | 'functional' | 'analytics' | 'marketing';
+export type CookieCategory =
+  "necessary" | "functional" | "analytics" | "marketing";
 
 export interface CookieInfo {
   /** Cookie or storage key name */
@@ -10,7 +11,7 @@ export interface CookieInfo {
   /** Expiry duration (e.g., "1 year", "Session") */
   expiry: string;
   /** Storage type */
-  type: 'http' | 'localStorage' | 'sessionStorage';
+  type: "http" | "localStorage" | "sessionStorage";
 }
 
 export interface CookieCategoryConfig {
@@ -39,7 +40,7 @@ export interface ConsentRecord {
   version: string;
 }
 
-export type BannerPosition = 'bottom' | 'bottom-left' | 'bottom-right' | 'top';
+export type BannerPosition = "bottom" | "bottom-left" | "bottom-right" | "top";
 
 export interface CookieConsentConfig {
   /** URL to privacy policy page */
@@ -65,7 +66,7 @@ export interface CookieConsentState {
   preferences: CookiePreferences;
   config: CookieConsentConfig;
   categories: CookieCategoryConfig[];
-  
+
   setVisible: (visible: boolean) => void;
   openSettings: () => void;
   closeSettings: () => void;
@@ -81,7 +82,10 @@ export interface CookieConsentState {
 // Event types for external listeners
 export interface CookieConsentEventMap {
   cookieConsentUpdate: CustomEvent<{ preferences: CookiePreferences }>;
-  cookieConsentInitialized: CustomEvent<{ preferences: CookiePreferences; isNewUser: boolean }>;
+  cookieConsentInitialized: CustomEvent<{
+    preferences: CookiePreferences;
+    isNewUser: boolean;
+  }>;
 }
 
 declare global {

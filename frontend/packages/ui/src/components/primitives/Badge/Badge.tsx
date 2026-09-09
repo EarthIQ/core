@@ -94,16 +94,19 @@ export const Badge = ({
 }: BadgeProps) => {
   return (
     <span className={cn(badgeVariants({ variant, size, glow }), className)}>
-      {dot ? <span
+      {dot ? (
+        <span
           className={cn(
             "h-1.5 w-1.5 animate-pulse rounded-full",
             dotColors[dotColor]
           )}
-        /> : null}
+        />
+      ) : null}
       {leftIcon}
       {children}
       {rightIcon}
-      {removable ? <button
+      {removable ? (
+        <button
           aria-label="Remove"
           className="ml-1 rounded-full p-0.5 transition-colors hover:bg-[--surface-hover]"
           type="button"
@@ -122,7 +125,8 @@ export const Badge = ({
               strokeWidth={2}
             />
           </svg>
-        </button> : null}
+        </button>
+      ) : null}
     </span>
   );
-}
+};

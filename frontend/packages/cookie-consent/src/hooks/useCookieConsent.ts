@@ -1,8 +1,12 @@
-import { useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo } from "react";
 
-import { useCookieConsentStore } from '../stores/cookieConsentStore';
-import { type CookieCategory, type CookieConsentConfig, type CookiePreferences ,type  CookieCategoryConfig } from '../types';
-
+import { useCookieConsentStore } from "../stores/cookieConsentStore";
+import {
+  type CookieCategory,
+  type CookieConsentConfig,
+  type CookiePreferences,
+  type CookieCategoryConfig,
+} from "../types";
 
 export interface UseCookieConsentReturn {
   // State
@@ -12,7 +16,7 @@ export interface UseCookieConsentReturn {
   preferences: CookiePreferences;
   categories: CookieCategoryConfig[];
   config: CookieConsentConfig;
-  
+
   // Actions
   openSettings: () => void;
   closeSettings: () => void;
@@ -21,7 +25,7 @@ export interface UseCookieConsentReturn {
   acceptSelected: () => void;
   setPreference: (category: CookieCategory, value: boolean) => void;
   resetPreferences: () => void;
-  
+
   // Helpers
   hasConsent: (category: CookieCategory) => boolean;
   canTrack: () => boolean;
@@ -29,16 +33,21 @@ export interface UseCookieConsentReturn {
   canUseFunctional: () => boolean;
 }
 
-export const useCookieConsent = (config?: CookieConsentConfig): UseCookieConsentReturn => {
+export const useCookieConsent = (
+  config?: CookieConsentConfig
+): UseCookieConsentReturn => {
   const store = useCookieConsentStore();
 
   useEffect(() => {
     store.initialize(config);
   }, []);
 
-  const hasConsent = useCallback((category: CookieCategory): boolean => {
-    return store.preferences[category];
-  }, [store.preferences]);
+  const hasConsent = useCallback(
+    (category: CookieCategory): boolean => {
+      return store.preferences[category];
+    },
+    [store.preferences]
+  );
 
   const canTrack = useCallback((): boolean => {
     return store.preferences.analytics;
@@ -52,48 +61,51 @@ export const useCookieConsent = (config?: CookieConsentConfig): UseCookieConsent
     return store.preferences.functional;
   }, [store.preferences.functional]);
 
-  return useMemo(() => ({
-    // State
-    isVisible: store.isVisible,
-    isSettingsOpen: store.isSettingsOpen,
-    hasConsented: store.hasConsented,
-    preferences: store.preferences,
-    categories: store.categories,
-    config: store.config,
-    
-    // Actions
-    openSettings: store.openSettings,
-    closeSettings: store.closeSettings,
-    acceptAll: store.acceptAll,
-    rejectAll: store.rejectAll,
-    acceptSelected: store.acceptSelected,
-    setPreference: store.setPreference,
-    resetPreferences: store.resetPreferences,
-    
-    // Helpers
-    hasConsent,
-    canTrack,
-    canShowAds,
-    canUseFunctional,
-  }), [
-    store.isVisible,
-    store.isSettingsOpen,
-    store.hasConsented,
-    store.preferences,
-    store.categories,
-    store.config,
-    store.openSettings,
-    store.closeSettings,
-    store.acceptAll,
-    store.rejectAll,
-    store.acceptSelected,
-    store.setPreference,
-    store.resetPreferences,
-    hasConsent,
-    canTrack,
-    canShowAds,
-    canUseFunctional,
-  ]);
+  return useMemo(
+    () => ({
+      // State
+      isVisible: store.isVisible,
+      isSettingsOpen: store.isSettingsOpen,
+      hasConsented: store.hasConsented,
+      preferences: store.preferences,
+      categories: store.categories,
+      config: store.config,
+
+      // Actions
+      openSettings: store.openSettings,
+      closeSettings: store.closeSettings,
+      acceptAll: store.acceptAll,
+      rejectAll: store.rejectAll,
+      acceptSelected: store.acceptSelected,
+      setPreference: store.setPreference,
+      resetPreferences: store.resetPreferences,
+
+      // Helpers
+      hasConsent,
+      canTrack,
+      canShowAds,
+      canUseFunctional,
+    }),
+    [
+      store.isVisible,
+      store.isSettingsOpen,
+      store.hasConsented,
+      store.preferences,
+      store.categories,
+      store.config,
+      store.openSettings,
+      store.closeSettings,
+      store.acceptAll,
+      store.rejectAll,
+      store.acceptSelected,
+      store.setPreference,
+      store.resetPreferences,
+      hasConsent,
+      canTrack,
+      canShowAds,
+      canUseFunctional,
+    ]
+  );
 };
 
 /**

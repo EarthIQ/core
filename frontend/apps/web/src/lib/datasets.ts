@@ -14,11 +14,7 @@ export interface AttributeField {
 
 /** Semantic category of a dataset. */
 export type DatasetType =
-  | "vector"
-  | "raster"
-  | "tabular"
-  | "remote-sensing"
-  | "points";
+  "vector" | "raster" | "tabular" | "remote-sensing" | "points";
 
 /** File/container format of an uploaded dataset. */
 export type DatasetFormat =
@@ -164,7 +160,7 @@ function downloadToken(): string | null {
  */
 export async function downloadDataset(
   datasetId: string,
-  filename: string,
+  filename: string
 ): Promise<void> {
   const token = downloadToken();
   const res = await fetch(getDownloadUrl(datasetId), {
@@ -205,7 +201,7 @@ export async function listDatasets(params?: {
 
   const res = await fetch(
     `${API_BASE}/api/v1/data/datasets${qs.size ? `?${qs}` : ""}`,
-    { headers: authHeaders() },
+    { headers: authHeaders() }
   );
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -242,7 +238,7 @@ export async function getDataset(datasetId: string): Promise<GeoDatasetOut> {
 /** Update a dataset's metadata. */
 export async function updateDataset(
   datasetId: string,
-  payload: UpdateDatasetParams,
+  payload: UpdateDatasetParams
 ): Promise<GeoDatasetOut> {
   const res = await fetch(`${API_BASE}/api/v1/data/datasets/${datasetId}`, {
     method: "PATCH",
@@ -259,11 +255,11 @@ export async function updateDataset(
 /** Fetch a bounded preview (schema + sample rows) for a dataset. */
 export async function previewDataset(
   datasetId: string,
-  maxRows = 20,
+  maxRows = 20
 ): Promise<DatasetPreview> {
   const res = await fetch(
     `${API_BASE}/api/v1/data/datasets/${datasetId}/preview?max_rows=${maxRows}`,
-    { headers: authHeaders() },
+    { headers: authHeaders() }
   );
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -274,11 +270,11 @@ export async function previewDataset(
 
 /** Fetch the geometry-type profile (dominant point/line/polygon) for one dataset. */
 export async function getGeometrySummary(
-  datasetId: string,
+  datasetId: string
 ): Promise<GeometrySummary> {
   const res = await fetch(
     `${API_BASE}/api/v1/data/datasets/${encodeURIComponent(datasetId)}/geometry`,
-    { headers: authHeaders() },
+    { headers: authHeaders() }
   );
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -293,14 +289,14 @@ export async function getGeometrySummary(
  * (callers should treat the profile as optional and fall back to `{}`).
  */
 export async function getGeometrySummaries(
-  datasetIds: string[],
+  datasetIds: string[]
 ): Promise<Record<string, GeometrySummary>> {
   if (datasetIds.length === 0) return {};
   const res = await fetch(
     `${API_BASE}/api/v1/data/datasets/geometry?ids=${encodeURIComponent(
-      datasetIds.slice(0, 100).join(","),
+      datasetIds.slice(0, 100).join(",")
     )}`,
-    { headers: authHeaders() },
+    { headers: authHeaders() }
   );
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -313,7 +309,7 @@ export async function getGeometrySummaries(
 /** Upload a dataset file with metadata. Reports progress via onProgress callback. */
 export async function uploadDataset(
   params: UploadDatasetParams,
-  onProgress?: (pct: number) => void,
+  onProgress?: (pct: number) => void
 ): Promise<GeoDatasetOut> {
   const form = new FormData();
   form.append("file", params.file);
@@ -365,11 +361,11 @@ export async function uploadDataset(
 
 /** Fetch a dataset's stored features (for editing on the map). */
 export async function getDatasetFeatures(
-  datasetId: string,
+  datasetId: string
 ): Promise<GeoDatasetFeature[]> {
   const res = await fetch(
     `${API_BASE}/api/v1/data/datasets/${datasetId}/features`,
-    { headers: authHeaders() },
+    { headers: authHeaders() }
   );
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -394,7 +390,7 @@ export async function replaceDatasetFeatures(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     geometry?: any;
     properties?: Record<string, unknown>;
-  }>,
+  }>
 ): Promise<GeoDatasetOut> {
   const res = await fetch(
     `${API_BASE}/api/v1/data/datasets/${datasetId}/features`,
@@ -402,7 +398,7 @@ export async function replaceDatasetFeatures(
       method: "PUT",
       headers: { ...authHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify({ features }),
-    },
+    }
   );
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -425,12 +421,12 @@ export async function deleteDataset(datasetId: string): Promise<void> {
 
 // ── Data folders (catalog tree) ──────────────────────────────────────────────
 
-async function folderRequest<T>(
-  path: string,
-  init?: RequestInit,
-): Promise<T> {
+async function folderRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}/api/v1/data${path}`, {
-    headers: { ...authHeaders(), ...(init?.body ? { "Content-Type": "application/json" } : {}) },
+    headers: {
+      ...authHeaders(),
+      ...(init?.body ? { "Content-Type": "application/json" } : {}),
+    },
     ...init,
   });
   if (!res.ok) {
@@ -449,7 +445,7 @@ export function listFolders(): Promise<DataFolder[]> {
 /** Create a folder. `parentId` null/undefined = root level. */
 export function createFolder(
   name: string,
-  parentId?: string | null,
+  parentId?: string | null
 ): Promise<DataFolder> {
   return folderRequest<DataFolder>("/folders", {
     method: "POST",
@@ -458,7 +454,10 @@ export function createFolder(
 }
 
 /** Rename a folder. */
-export function renameFolder(folderId: string, name: string): Promise<DataFolder> {
+export function renameFolder(
+  folderId: string,
+  name: string
+): Promise<DataFolder> {
   return folderRequest<DataFolder>(`/folders/${folderId}`, {
     method: "PATCH",
     body: JSON.stringify({ name }),
@@ -468,7 +467,7 @@ export function renameFolder(folderId: string, name: string): Promise<DataFolder
 /** Re-parent a folder. `parentId` null = root level. */
 export function moveFolder(
   folderId: string,
-  parentId: string | null,
+  parentId: string | null
 ): Promise<DataFolder> {
   return folderRequest<DataFolder>(`/folders/${folderId}/move`, {
     method: "POST",
@@ -477,7 +476,9 @@ export function moveFolder(
 }
 
 /** Delete a folder (its datasets move to the parent folder). */
-export function deleteFolder(folderId: string): Promise<{ moved_datasets: number }> {
+export function deleteFolder(
+  folderId: string
+): Promise<{ moved_datasets: number }> {
   return folderRequest<{ moved_datasets: number }>(`/folders/${folderId}`, {
     method: "DELETE",
   });
@@ -486,7 +487,7 @@ export function deleteFolder(folderId: string): Promise<{ moved_datasets: number
 /** Move a dataset into a folder (`folderId` null = back to root level). */
 export function moveDataset(
   datasetId: string,
-  folderId: string | null,
+  folderId: string | null
 ): Promise<GeoDatasetOut> {
   return folderRequest<GeoDatasetOut>(`/datasets/${datasetId}/move`, {
     method: "POST",

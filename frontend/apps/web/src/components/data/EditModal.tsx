@@ -16,12 +16,7 @@ interface Props {
   }) => void;
 }
 
-export default function EditModal({
-  dataset,
-  saving,
-  onClose,
-  onSave,
-}: Props) {
+export default function EditModal({ dataset, saving, onClose, onSave }: Props) {
   const [name, setName] = useState(dataset.name);
   const [desc, setDesc] = useState(dataset.description ?? "");
   const [source, setSource] = useState(dataset.source ?? "");
@@ -60,7 +55,10 @@ export default function EditModal({
       title="Edit Dataset Metadata"
       onClose={() => !saving && onClose()}
     >
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={handleSubmit}
+      >
         <Input
           required
           label="Name"
@@ -100,7 +98,11 @@ export default function EditModal({
           >
             Cancel
           </Button>
-          <Button loading={saving} loadingText="Saving…" type="submit">
+          <Button
+            loading={saving}
+            loadingText="Saving…"
+            type="submit"
+          >
             Save Changes
           </Button>
         </ModalFooter>

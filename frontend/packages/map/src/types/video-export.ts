@@ -16,11 +16,7 @@ export interface Keyframe extends MapState {
 }
 
 export type EasingType =
-  | "linear"
-  | "ease-in"
-  | "ease-out"
-  | "ease-in-out"
-  | "cubic-bezier";
+  "linear" | "ease-in" | "ease-out" | "ease-in-out" | "cubic-bezier";
 
 export interface ExportSettings {
   format: "mp4" | "webm" | "gif";

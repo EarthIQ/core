@@ -141,7 +141,8 @@ export const PieChart: React.FC<PieChartProps> = ({
               ))}
             </Pie>
 
-            {showTooltip ? <Tooltip
+            {showTooltip ? (
+              <Tooltip
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover, 0 0% 100%))",
                   border: "1px solid hsl(var(--border, 220 13% 91%))",
@@ -152,15 +153,18 @@ export const PieChart: React.FC<PieChartProps> = ({
                   value.toLocaleString(),
                   name,
                 ]}
-              /> : null}
+              />
+            ) : null}
 
-            {showLegend ? <Legend
+            {showLegend ? (
+              <Legend
                 height={36}
                 iconSize={8}
                 iconType="circle"
                 verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              /> : null}
+              />
+            ) : null}
           </RechartsPieChart>
         </ResponsiveContainer>
       </div>

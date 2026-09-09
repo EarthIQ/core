@@ -44,14 +44,20 @@ export const Progress = ({
 
   return (
     <div className={cn("w-full", className)}>
-      {(label || showValue) ? <div className="mb-2 flex items-center justify-between">
-          {label ? <span className="text-sm font-medium text-[var(--text-primary)]">
+      {label || showValue ? (
+        <div className="mb-2 flex items-center justify-between">
+          {label ? (
+            <span className="text-sm font-medium text-[var(--text-primary)]">
               {label}
-            </span> : null}
-          {showValue ? <span className="text-sm text-[var(--text-secondary)] tabular-nums">
+            </span>
+          ) : null}
+          {showValue ? (
+            <span className="text-sm text-[var(--text-secondary)] tabular-nums">
               {Math.round(percentage)}%
-            </span> : null}
-        </div> : null}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       <div
         className={cn(
@@ -81,4 +87,4 @@ export const Progress = ({
       </div>
     </div>
   );
-}
+};

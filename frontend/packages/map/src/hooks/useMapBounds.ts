@@ -1,7 +1,7 @@
-import { type LngLatBounds } from 'maplibre-gl';
-import { useState, useEffect, useCallback } from 'react';
+import { type LngLatBounds } from "maplibre-gl";
+import { useState, useEffect, useCallback } from "react";
 
-import { useMap } from './useMap';
+import { useMap } from "./useMap";
 
 export interface MapBoundsState {
   bounds: LngLatBounds | null;
@@ -12,8 +12,13 @@ export interface MapBoundsState {
   center: { lng: number; lat: number };
 }
 
-export const useMapBounds = (debounceMs: number = 100): MapBoundsState & {
-  fitBounds: (bounds: [[number, number], [number, number]], options?: any) => void;
+export const useMapBounds = (
+  debounceMs: number = 100
+): MapBoundsState & {
+  fitBounds: (
+    bounds: [[number, number], [number, number]],
+    options?: any
+  ) => void;
 } => {
   const { map, isLoaded } = useMap();
   const [state, setState] = useState<MapBoundsState>({
@@ -22,7 +27,7 @@ export const useMapBounds = (debounceMs: number = 100): MapBoundsState & {
     south: 0,
     east: 0,
     west: 0,
-    center: { lng: 0, lat: 0 }
+    center: { lng: 0, lat: 0 },
   });
 
   useEffect(() => {
@@ -35,33 +40,33 @@ export const useMapBounds = (debounceMs: number = 100): MapBoundsState & {
       timeoutId = setTimeout(() => {
         const bounds = map.getBounds();
         const center = map.getCenter();
-        
+
         setState({
           bounds,
           north: bounds.getNorth(),
           south: bounds.getSouth(),
           east: bounds.getEast(),
           west: bounds.getWest(),
-          center: { lng: center.lng, lat: center.lat }
+          center: { lng: center.lng, lat: center.lat },
         });
       }, debounceMs);
     };
 
     updateBounds();
-    map.on('moveend', updateBounds);
+    map.on("moveend", updateBounds);
 
     return () => {
       clearTimeout(timeoutId);
-      map.off('moveend', updateBounds);
+      map.off("moveend", updateBounds);
     };
   }, [map, isLoaded, debounceMs]);
 
-  const fitBounds = useCallback((
-    bounds: [[number, number], [number, number]],
-    options?: any
-  ) => {
-    map?.fitBounds(bounds, options);
-  }, [map]);
+  const fitBounds = useCallback(
+    (bounds: [[number, number], [number, number]], options?: any) => {
+      map?.fitBounds(bounds, options);
+    },
+    [map]
+  );
 
   return { ...state, fitBounds };
 };

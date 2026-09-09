@@ -1,4 +1,4 @@
-import type { Profile } from '../types';
+import type { Profile } from "../types";
 
 /**
  * Predefined accessibility profiles
@@ -6,11 +6,11 @@ import type { Profile } from '../types';
  */
 export const profiles: Profile[] = [
   {
-    id: 'low-vision',
-    nameKey: 'profileLowVision',
-    descKey: 'profileLowVisionDesc',
-    icon: '👁️',
-    color: 'from-blue-500 to-blue-600',
+    id: "low-vision",
+    nameKey: "profileLowVision",
+    descKey: "profileLowVisionDesc",
+    icon: "👁️",
+    color: "from-blue-500 to-blue-600",
     settings: {
       fontSize: 2,
       contrast: 1,
@@ -20,11 +20,11 @@ export const profiles: Profile[] = [
     },
   },
   {
-    id: 'blind',
-    nameKey: 'profileBlind',
-    descKey: 'profileBlindDesc',
-    icon: '🦯',
-    color: 'from-purple-500 to-purple-600',
+    id: "blind",
+    nameKey: "profileBlind",
+    descKey: "profileBlindDesc",
+    icon: "🦯",
+    color: "from-purple-500 to-purple-600",
     settings: {
       reducedMotion: true,
       focusIndicator: true,
@@ -32,11 +32,11 @@ export const profiles: Profile[] = [
     },
   },
   {
-    id: 'dyslexia',
-    nameKey: 'profileDyslexia',
-    descKey: 'profileDyslexiaDesc',
-    icon: '📖',
-    color: 'from-teal-500 to-teal-600',
+    id: "dyslexia",
+    nameKey: "profileDyslexia",
+    descKey: "profileDyslexiaDesc",
+    icon: "📖",
+    color: "from-teal-500 to-teal-600",
     settings: {
       dyslexicFont: true,
       lineHeight: 2,
@@ -46,11 +46,11 @@ export const profiles: Profile[] = [
     },
   },
   {
-    id: 'color-blind',
-    nameKey: 'profileColorBlind',
-    descKey: 'profileColorBlindDesc',
-    icon: '🎨',
-    color: 'from-orange-500 to-orange-600',
+    id: "color-blind",
+    nameKey: "profileColorBlind",
+    descKey: "profileColorBlindDesc",
+    icon: "🎨",
+    color: "from-orange-500 to-orange-600",
     settings: {
       saturation: 2,
       contrast: 1,
@@ -58,11 +58,11 @@ export const profiles: Profile[] = [
     },
   },
   {
-    id: 'motor',
-    nameKey: 'profileMotor',
-    descKey: 'profileMotorDesc',
-    icon: '🖐️',
-    color: 'from-green-500 to-green-600',
+    id: "motor",
+    nameKey: "profileMotor",
+    descKey: "profileMotorDesc",
+    icon: "🖐️",
+    color: "from-green-500 to-green-600",
     settings: {
       cursorSize: 2,
       focusIndicator: true,
@@ -70,11 +70,11 @@ export const profiles: Profile[] = [
     },
   },
   {
-    id: 'adhd',
-    nameKey: 'profileADHD',
-    descKey: 'profileADHDDesc',
-    icon: '🧠',
-    color: 'from-pink-500 to-pink-600',
+    id: "adhd",
+    nameKey: "profileADHD",
+    descKey: "profileADHDDesc",
+    icon: "🧠",
+    color: "from-pink-500 to-pink-600",
     settings: {
       reducedMotion: true,
       hideImages: true,
@@ -83,11 +83,11 @@ export const profiles: Profile[] = [
     },
   },
   {
-    id: 'cognitive',
-    nameKey: 'profileCognitive',
-    descKey: 'profileCognitiveDesc',
-    icon: '💡',
-    color: 'from-yellow-500 to-yellow-600',
+    id: "cognitive",
+    nameKey: "profileCognitive",
+    descKey: "profileCognitiveDesc",
+    icon: "💡",
+    color: "from-yellow-500 to-yellow-600",
     settings: {
       fontSize: 1,
       lineHeight: 1,

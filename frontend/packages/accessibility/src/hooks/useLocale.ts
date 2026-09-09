@@ -1,9 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from "react";
 
-import { translations } from '../constants/translations';
-import { getStoredLocale } from '../utils/storage';
+import { translations } from "../constants/translations";
+import { getStoredLocale } from "../utils/storage";
 
-import type { Locale, TranslationKey } from '../types';
+import type { Locale, TranslationKey } from "../types";
 
 interface UseLocaleOptions {
   storageKey?: string;
@@ -14,9 +14,9 @@ interface UseLocaleOptions {
  * Hook for managing locale and translations
  */
 export function useLocale(options: UseLocaleOptions = {}) {
-  const { storageKey = 'app-locale', defaultLocale = 'en' } = options;
+  const { storageKey = "app-locale", defaultLocale = "en" } = options;
 
-  const [locale, setLocale] = useState<Locale>(() => 
+  const [locale, setLocale] = useState<Locale>(() =>
     getStoredLocale(storageKey, defaultLocale)
   );
 
@@ -28,7 +28,7 @@ export function useLocale(options: UseLocaleOptions = {}) {
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
 
     // Also poll for same-tab changes
     const interval = setInterval(() => {
@@ -39,28 +39,34 @@ export function useLocale(options: UseLocaleOptions = {}) {
     }, 1000);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
       clearInterval(interval);
     };
   }, [storageKey, locale]);
 
   // Translation function
-  const t = useCallback((key: TranslationKey): string => {
-    const translation = translations[locale]?.[key] || translations.en[key];
-    if (Array.isArray(translation)) {
-      return translation.join(', ');
-    }
-    return translation as string;
-  }, [locale]);
+  const t = useCallback(
+    (key: TranslationKey): string => {
+      const translation = translations[locale]?.[key] || translations.en[key];
+      if (Array.isArray(translation)) {
+        return translation.join(", ");
+      }
+      return translation as string;
+    },
+    [locale]
+  );
 
   // Get options array for multi-level settings
-  const getOptions = useCallback((key: TranslationKey): string[] => {
-    const translation = translations[locale]?.[key] || translations.en[key];
-    if (Array.isArray(translation)) {
-      return [...translation];
-    }
-    return [];
-  }, [locale]);
+  const getOptions = useCallback(
+    (key: TranslationKey): string[] => {
+      const translation = translations[locale]?.[key] || translations.en[key];
+      if (Array.isArray(translation)) {
+        return [...translation];
+      }
+      return [];
+    },
+    [locale]
+  );
 
   return {
     locale,

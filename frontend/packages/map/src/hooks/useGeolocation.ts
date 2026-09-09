@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
 export interface GeolocationState {
   position: GeolocationPosition | null;
@@ -26,14 +26,14 @@ export const useGeolocation = (options: UseGeolocationOptions = {}) => {
     timeout = 10000,
     maximumAge = 0,
     watch = false,
-    autoStart = false
+    autoStart = false,
   } = options;
 
   const [state, setState] = useState<GeolocationState>({
     position: null,
     error: null,
     loading: false,
-    timestamp: null
+    timestamp: null,
   });
 
   const [isWatching, setIsWatching] = useState(false);
@@ -42,7 +42,7 @@ export const useGeolocation = (options: UseGeolocationOptions = {}) => {
   const positionOptions: PositionOptions = {
     enableHighAccuracy,
     timeout,
-    maximumAge
+    maximumAge,
   };
 
   const handleSuccess = useCallback((position: GeolocationPosition) => {
@@ -50,44 +50,48 @@ export const useGeolocation = (options: UseGeolocationOptions = {}) => {
       position,
       error: null,
       loading: false,
-      timestamp: position.timestamp
+      timestamp: position.timestamp,
     });
   }, []);
 
   const handleError = useCallback((error: GeolocationPositionError) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       error,
-      loading: false
+      loading: false,
     }));
   }, []);
 
   // Get current position once
   const getCurrentPosition = useCallback(() => {
     if (!navigator.geolocation) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: {
           code: 0,
-          message: 'Geolocation not supported',
+          message: "Geolocation not supported",
           PERMISSION_DENIED: 1,
           POSITION_UNAVAILABLE: 2,
-          TIMEOUT: 3
+          TIMEOUT: 3,
         },
-        loading: false
+        loading: false,
       }));
       return;
     }
 
-    setState(prev => ({ ...prev, loading: true }));
-    navigator.geolocation.getCurrentPosition(handleSuccess, handleError, positionOptions);
+    setState((prev) => ({ ...prev, loading: true }));
+    navigator.geolocation.getCurrentPosition(
+      handleSuccess,
+      handleError,
+      positionOptions
+    );
   }, [handleSuccess, handleError, positionOptions]);
 
   // Start watching position
   const startWatching = useCallback(() => {
     if (!navigator.geolocation) return;
 
-    setState(prev => ({ ...prev, loading: true }));
+    setState((prev) => ({ ...prev, loading: true }));
     const id = navigator.geolocation.watchPosition(
       handleSuccess,
       handleError,
@@ -134,6 +138,6 @@ export const useGeolocation = (options: UseGeolocationOptions = {}) => {
     accuracy: state.position?.coords.accuracy ?? null,
     altitude: state.position?.coords.altitude ?? null,
     heading: state.position?.coords.heading ?? null,
-    speed: state.position?.coords.speed ?? null
+    speed: state.position?.coords.speed ?? null,
   };
 };

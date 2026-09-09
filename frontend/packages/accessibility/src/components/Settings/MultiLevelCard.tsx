@@ -24,25 +24,16 @@ export const MultiLevelCard: React.FC<MultiLevelCardProps> = ({
       aria-label={`${label}: ${options[value]}`}
       aria-pressed={isActive}
       type="button"
-      className={`
-        group relative flex w-full flex-col
-        rounded-2xl p-4 text-left
-        transition-all duration-200
-        ${
-          isActive
-            ? "bg-primary text-white shadow-lg shadow-primary/30"
-            : "border border-[var(--border-primary)] bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
-        }
-      `}
+      className={`group relative flex w-full flex-col rounded-2xl p-4 text-left transition-all duration-200 ${
+        isActive
+          ? "bg-primary shadow-primary/30 text-white shadow-lg"
+          : "border border-[var(--border-primary)] bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+      } `}
       onClick={handleClick}
     >
       <div className="flex items-start justify-between gap-3">
         <div
-          className={`
-            flex h-10 w-10 items-center justify-center rounded-xl
-            transition-colors
-            ${isActive ? "bg-white/20" : "bg-[var(--bg-tertiary)]"}
-          `}
+          className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${isActive ? "bg-white/20" : "bg-[var(--bg-tertiary)]"} `}
         >
           {icon}
         </div>
@@ -52,18 +43,15 @@ export const MultiLevelCard: React.FC<MultiLevelCardProps> = ({
           {Array.from({ length: maxLevel + 1 }).map((_, i) => (
             <div
               key={i}
-              className={`
-                h-1.5 w-4 rounded-full transition-all
-                ${
-                  i <= value
-                    ? isActive
-                      ? "bg-white"
-                      : "bg-primary"
-                    : isActive
-                      ? "bg-white/30"
-                      : "bg-[var(--border-primary)]"
-                }
-              `}
+              className={`h-1.5 w-4 rounded-full transition-all ${
+                i <= value
+                  ? isActive
+                    ? "bg-white"
+                    : "bg-primary"
+                  : isActive
+                    ? "bg-white/30"
+                    : "bg-[var(--border-primary)]"
+              } `}
             />
           ))}
         </div>
@@ -72,10 +60,7 @@ export const MultiLevelCard: React.FC<MultiLevelCardProps> = ({
       <div className="mt-3">
         <div className="text-sm font-semibold">{label}</div>
         <div
-          className={`
-            mt-0.5 text-xs
-            ${isActive ? "text-white/70" : "text-[var(--text-tertiary)]"}
-          `}
+          className={`mt-0.5 text-xs ${isActive ? "text-white/70" : "text-[var(--text-tertiary)]"} `}
         >
           {options[value]}
         </div>

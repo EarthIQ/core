@@ -99,7 +99,11 @@ const FONT_SCALE_PX: Record<FontScale, string> = {
 /** hex → hsl components */
 function hexToHsl(hex: string): [number, number, number] | null {
   let h = hex.trim().replace(/^#/, "");
-  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  if (h.length === 3)
+    h = h
+      .split("")
+      .map((c) => c + c)
+      .join("");
   if (!/^[0-9a-fA-F]{6}$/.test(h)) return null;
   const r = parseInt(h.slice(0, 2), 16) / 255;
   const g = parseInt(h.slice(2, 4), 16) / 255;
@@ -148,9 +152,18 @@ export function applyAccentColor(hex: string | null): void {
   if (!hsl) return;
   const [h, s, l] = hsl;
   root.style.setProperty("--primary", hex);
-  root.style.setProperty("--primary-dark", hslToHex(h, Math.min(100, s + 5), Math.max(10, l - 12)));
-  root.style.setProperty("--primary-light", hslToHex(h, s, Math.min(92, l + 14)));
-  root.style.setProperty("--primary-hover", hslToHex(h, Math.min(100, s + 5), Math.max(10, l - 8)));
+  root.style.setProperty(
+    "--primary-dark",
+    hslToHex(h, Math.min(100, s + 5), Math.max(10, l - 12))
+  );
+  root.style.setProperty(
+    "--primary-light",
+    hslToHex(h, s, Math.min(92, l + 14))
+  );
+  root.style.setProperty(
+    "--primary-hover",
+    hslToHex(h, Math.min(100, s + 5), Math.max(10, l - 8))
+  );
 }
 
 function applyFontScale(scale: FontScale, compact: boolean): void {
@@ -210,7 +223,8 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
   const applyAll = useCallback((next: UIPreferences) => {
     setPrefs(next);
     writeLocal(next);
-    if (next.theme_mode !== themeRef.current) setThemeRef.current(next.theme_mode);
+    if (next.theme_mode !== themeRef.current)
+      setThemeRef.current(next.theme_mode);
     applyAccentColor(next.accent_color);
     applyFontScale(next.font_scale, next.compact_mode);
     document.documentElement.classList.toggle("compact", next.compact_mode);
@@ -278,7 +292,9 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
       return next;
     });
     const t = setTimeout(() => {
-      api.put("/api/v1/profile/me/preferences", { theme_mode: theme }).catch(() => {});
+      api
+        .put("/api/v1/profile/me/preferences", { theme_mode: theme })
+        .catch(() => {});
     }, 250);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -292,19 +308,23 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
       if (putTimer.current) clearTimeout(putTimer.current);
       putTimer.current = setTimeout(() => {
         const body: Record<string, unknown> = {};
-        if (partial.theme_mode !== undefined) body.theme_mode = partial.theme_mode;
+        if (partial.theme_mode !== undefined)
+          body.theme_mode = partial.theme_mode;
         if (partial.map_units !== undefined) body.map_units = partial.map_units;
         if (partial.default_basemap !== undefined)
           body.default_basemap = partial.default_basemap;
-        if (partial.accent_color !== undefined) body.accent_color = partial.accent_color;
-        if (partial.compact_mode !== undefined) body.compact_mode = partial.compact_mode;
-        if (partial.font_scale !== undefined) body.font_scale = partial.font_scale;
+        if (partial.accent_color !== undefined)
+          body.accent_color = partial.accent_color;
+        if (partial.compact_mode !== undefined)
+          body.compact_mode = partial.compact_mode;
+        if (partial.font_scale !== undefined)
+          body.font_scale = partial.font_scale;
         api.put("/api/v1/profile/me/preferences", body).catch(() => {
           /* offline - local state already applied */
         });
       }, 250);
     },
-    [prefs, applyAll, isAuthenticated],
+    [prefs, applyAll, isAuthenticated]
   );
 
   const reset = useCallback(() => {
@@ -326,11 +346,15 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo(
     () => ({ prefs, ready, update, reset, refresh }),
-    [prefs, ready, update, reset, refresh],
+    [prefs, ready, update, reset, refresh]
   );
 
-  return <PreferencesContext.Provider value={value}>{children}</PreferencesContext.Provider>;
-}
+  return (
+    <PreferencesContext.Provider value={value}>
+      {children}
+    </PreferencesContext.Provider>
+  );
+};
 
 export function usePreferences(): PreferencesContextValue {
   return useContext(PreferencesContext);

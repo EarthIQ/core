@@ -2,10 +2,18 @@
   "name": "@packages/accessibility",
   "version": "1.0.0",
   "description": "Accessible accessibility widget for React applications",
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "react",
+    "widget",
+    "wcag"
+  ],
+  "license": "MIT",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
@@ -20,26 +28,22 @@
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
   ],
-  "sideEffects": [
-    "**/*.css"
-  ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
     "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit",
+    "dev": "tsup --watch",
     "lint": "eslint .",
-    "prepublishOnly": "pnpm run build"
-  },
-  "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@packages/eslint-config": "workspace:^",
@@ -48,12 +52,8 @@
     "tsup": "^8.5.1",
     "typescript": "^6.0.3"
   },
-  "keywords": [
-    "accessibility",
-    "a11y",
-    "react",
-    "widget",
-    "wcag"
-  ],
-  "license": "MIT"
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
 }

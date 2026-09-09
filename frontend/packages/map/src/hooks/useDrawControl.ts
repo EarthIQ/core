@@ -175,7 +175,9 @@ export function useDrawControl(
       }));
 
       const idList = Array.isArray(ids) ? ids : [ids];
-      const relevantFeatures = featuresColl.features.filter((f) => f.id && idList.includes(f.id as string));
+      const relevantFeatures = featuresColl.features.filter(
+        (f) => f.id && idList.includes(f.id as string)
+      );
 
       if (action === "update" && relevantFeatures.length > 0) {
         callbacksRef.current.onUpdate?.({
@@ -201,15 +203,17 @@ export function useDrawControl(
 
     const handleSelectionChange = () => {
       const snap = getSnapshot();
-      const ids = snap.features
-        .filter((f) => (f as any).selected)
-        .map((f) => f.id as string) || [];
+      const ids =
+        snap.features
+          .filter((f) => (f as any).selected)
+          .map((f) => f.id as string) || [];
       setState((prev) => ({
         ...prev,
         selectedIds: ids,
       }));
       // Construct pseudo-events for compatibility
-      const featArr = snap.features.filter((f) => ids.includes(f.id as string)) || [];
+      const featArr =
+        snap.features.filter((f) => ids.includes(f.id as string)) || [];
       callbacksRef.current.onSelectionChange?.({
         type: "draw.selectionchange",
         features: featArr,

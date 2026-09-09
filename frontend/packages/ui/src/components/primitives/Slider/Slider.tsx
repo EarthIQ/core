@@ -149,14 +149,18 @@ export const Slider = ({
   return (
     <div className={cn("w-full select-none", className)}>
       {/* Label Row */}
-      {(label || showValue) ? <div className="mb-3 flex items-center justify-between">
-          {label ? <label
+      {label || showValue ? (
+        <div className="mb-3 flex items-center justify-between">
+          {label ? (
+            <label
               className="text-sm font-medium"
               style={{ color: "var(--text-primary)" }}
             >
               {label}
-            </label> : null}
-          {showValue ? <motion.span
+            </label>
+          ) : null}
+          {showValue ? (
+            <motion.span
               key={value}
               animate={{ opacity: 1, y: 0 }}
               initial={{ opacity: 0, y: -4 }}
@@ -173,8 +177,10 @@ export const Slider = ({
               }}
             >
               {displayValue}
-            </motion.span> : null}
-        </div> : null}
+            </motion.span>
+          ) : null}
+        </div>
+      ) : null}
 
       {/* Track Container */}
       <div className="relative flex items-center py-2">
@@ -258,7 +264,8 @@ export const Slider = ({
       </div>
 
       {/* Min / Max Labels */}
-      {showMinMax ? <div className="mt-1 flex justify-between">
+      {showMinMax ? (
+        <div className="mt-1 flex justify-between">
           <span
             className="text-xs"
             style={{ color: "var(--text-tertiary)" }}
@@ -271,7 +278,8 @@ export const Slider = ({
           >
             {formatValue ? formatValue(max) : max}
           </span>
-        </div> : null}
+        </div>
+      ) : null}
     </div>
   );
-}
+};

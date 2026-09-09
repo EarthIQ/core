@@ -1,4 +1,4 @@
-import type { GeoJSON } from 'geojson';
+import type { GeoJSON } from "geojson";
 
 export const FormatUtils = {
   /**
@@ -8,89 +8,98 @@ export const FormatUtils = {
     if (!wkt) return null;
 
     const wktUpper = wkt.trim().toUpperCase();
-    
+
     try {
       // Point
-      if (wktUpper.startsWith('POINT')) {
+      if (wktUpper.startsWith("POINT")) {
         const match = wkt.match(/POINT\s*\(\s*([^(]+)\s*\)/i);
         if (match) {
           const coords = match[1].trim().split(/\s+/).map(Number);
-          return { type: 'Point', coordinates: coords };
+          return { type: "Point", coordinates: coords };
         }
       }
 
       // MultiPoint
-      if (wktUpper.startsWith('MULTIPOINT')) {
+      if (wktUpper.startsWith("MULTIPOINT")) {
         const match = wkt.match(/MULTIPOINT\s*\(\s*(.+)\s*\)/i);
         if (match) {
-          const points = match[1].split(',').map(p => {
-            const coords = p.trim().replace(/[()]/g, '').split(/\s+/).map(Number);
+          const points = match[1].split(",").map((p) => {
+            const coords = p
+              .trim()
+              .replace(/[()]/g, "")
+              .split(/\s+/)
+              .map(Number);
             return coords;
           });
-          return { type: 'MultiPoint', coordinates: points };
+          return { type: "MultiPoint", coordinates: points };
         }
       }
 
       // LineString
-      if (wktUpper.startsWith('LINESTRING')) {
+      if (wktUpper.startsWith("LINESTRING")) {
         const match = wkt.match(/LINESTRING\s*\(\s*(.+)\s*\)/i);
         if (match) {
-          const coords = match[1].split(',').map(p => 
-            p.trim().split(/\s+/).map(Number)
-          );
-          return { type: 'LineString', coordinates: coords };
+          const coords = match[1]
+            .split(",")
+            .map((p) => p.trim().split(/\s+/).map(Number));
+          return { type: "LineString", coordinates: coords };
         }
       }
 
       // MultiLineString
-      if (wktUpper.startsWith('MULTILINESTRING')) {
+      if (wktUpper.startsWith("MULTILINESTRING")) {
         const match = wkt.match(/MULTILINESTRING\s*\(\s*(.+)\s*\)/i);
         if (match) {
-          const lines = match[1].split(/\),\s*\(/).map(line => {
-            return line.replace(/[()]/g, '').split(',').map(p =>
-              p.trim().split(/\s+/).map(Number)
-            );
+          const lines = match[1].split(/\),\s*\(/).map((line) => {
+            return line
+              .replace(/[()]/g, "")
+              .split(",")
+              .map((p) => p.trim().split(/\s+/).map(Number));
           });
-          return { type: 'MultiLineString', coordinates: lines };
+          return { type: "MultiLineString", coordinates: lines };
         }
       }
 
       // Polygon
-      if (wktUpper.startsWith('POLYGON')) {
+      if (wktUpper.startsWith("POLYGON")) {
         const match = wkt.match(/POLYGON\s*\(\s*(.+)\s*\)/i);
         if (match) {
-          const rings = match[1].split(/\),\s*\(/).map(ring => {
-            return ring.replace(/[()]/g, '').split(',').map(p =>
-              p.trim().split(/\s+/).map(Number)
-            );
+          const rings = match[1].split(/\),\s*\(/).map((ring) => {
+            return ring
+              .replace(/[()]/g, "")
+              .split(",")
+              .map((p) => p.trim().split(/\s+/).map(Number));
           });
-          return { type: 'Polygon', coordinates: rings };
+          return { type: "Polygon", coordinates: rings };
         }
       }
 
       // MultiPolygon
-      if (wktUpper.startsWith('MULTIPOLYGON')) {
+      if (wktUpper.startsWith("MULTIPOLYGON")) {
         const match = wkt.match(/MULTIPOLYGON\s*\(\s*(.+)\s*\)/i);
         if (match) {
-          const polygons = match[1].split(/\)\s*\),\s*\(\s*\(/).map(poly => {
-            return poly.replace(/[()]/g, '').split(/\),\s*\(/).map(ring =>
-              ring.split(',').map(p => p.trim().split(/\s+/).map(Number))
-            );
+          const polygons = match[1].split(/\)\s*\),\s*\(\s*\(/).map((poly) => {
+            return poly
+              .replace(/[()]/g, "")
+              .split(/\),\s*\(/)
+              .map((ring) =>
+                ring.split(",").map((p) => p.trim().split(/\s+/).map(Number))
+              );
           });
-          return { type: 'MultiPolygon', coordinates: polygons };
+          return { type: "MultiPolygon", coordinates: polygons };
         }
       }
 
       // GeometryCollection
-      if (wktUpper.startsWith('GEOMETRYCOLLECTION')) {
+      if (wktUpper.startsWith("GEOMETRYCOLLECTION")) {
         // This would require recursive parsing
-        console.warn('GeometryCollection parsing not fully implemented');
+        console.warn("GeometryCollection parsing not fully implemented");
         return null;
       }
 
       return null;
     } catch (error) {
-      console.error('Failed to parse WKT:', error);
+      console.error("Failed to parse WKT:", error);
       return null;
     }
   },
@@ -99,46 +108,55 @@ export const FormatUtils = {
    * Convert GeoJSON geometry to WKT
    */
   geoJSONToWKT(geometry: GeoJSON.Geometry): string {
-    const formatCoords = (coords: number[]): string => coords.join(' ');
-    const formatRing = (ring: number[][]): string => ring.map(formatCoords).join(', ');
+    const formatCoords = (coords: number[]): string => coords.join(" ");
+    const formatRing = (ring: number[][]): string =>
+      ring.map(formatCoords).join(", ");
 
     switch (geometry.type) {
-      case 'Point':
+      case "Point":
         return `POINT (${formatCoords(geometry.coordinates)})`;
-      
-      case 'MultiPoint': {
+
+      case "MultiPoint": {
         const points = (geometry.coordinates as number[][])
-          .map(c => `(${formatCoords(c)})`).join(', ');
+          .map((c) => `(${formatCoords(c)})`)
+          .join(", ");
         return `MULTIPOINT (${points})`;
       }
-      
-      case 'LineString':
+
+      case "LineString":
         return `LINESTRING (${formatRing(geometry.coordinates)})`;
-      
-      case 'MultiLineString': {
+
+      case "MultiLineString": {
         const lines = (geometry.coordinates as number[][][])
-          .map(line => `(${formatRing(line)})`).join(', ');
+          .map((line) => `(${formatRing(line)})`)
+          .join(", ");
         return `MULTILINESTRING (${lines})`;
       }
-      
-      case 'Polygon': {
+
+      case "Polygon": {
         const rings = (geometry.coordinates as number[][][])
-          .map(ring => `(${formatRing(ring)})`).join(', ');
+          .map((ring) => `(${formatRing(ring)})`)
+          .join(", ");
         return `POLYGON (${rings})`;
       }
-      
-      case 'MultiPolygon': {
+
+      case "MultiPolygon": {
         const polygons = (geometry.coordinates as number[][][][])
-          .map(poly => `(${poly.map(ring => `(${formatRing(ring)})`).join(', ')})`).join(', ');
+          .map(
+            (poly) =>
+              `(${poly.map((ring) => `(${formatRing(ring)})`).join(", ")})`
+          )
+          .join(", ");
         return `MULTIPOLYGON (${polygons})`;
       }
-      
-      case 'GeometryCollection': {
+
+      case "GeometryCollection": {
         const geometries = geometry.geometries
-          .map(g => FormatUtils.geoJSONToWKT(g)).join(', ');
+          .map((g) => FormatUtils.geoJSONToWKT(g))
+          .join(", ");
         return `GEOMETRYCOLLECTION (${geometries})`;
       }
-      
+
       default:
         throw new Error(`Unsupported geometry type: ${(geometry as any).type}`);
     }
@@ -161,15 +179,15 @@ export const FormatUtils = {
     const {
       latColumn,
       lngColumn,
-      delimiter = ',',
+      delimiter = ",",
       hasHeader = true,
       parseNumbers = true,
-      skipEmptyRows = true
+      skipEmptyRows = true,
     } = options;
 
-    const lines = csvData.trim().split('\n');
+    const lines = csvData.trim().split("\n");
     if (lines.length === 0) {
-      return { type: 'FeatureCollection', features: [] };
+      return { type: "FeatureCollection", features: [] };
     }
 
     // Parse header
@@ -190,10 +208,14 @@ export const FormatUtils = {
     const lngIdx = headers.indexOf(lngColumn);
 
     if (latIdx === -1) {
-      throw new Error(`Latitude column "${latColumn}" not found. Available columns: ${headers.join(', ')}`);
+      throw new Error(
+        `Latitude column "${latColumn}" not found. Available columns: ${headers.join(", ")}`
+      );
     }
     if (lngIdx === -1) {
-      throw new Error(`Longitude column "${lngColumn}" not found. Available columns: ${headers.join(', ')}`);
+      throw new Error(
+        `Longitude column "${lngColumn}" not found. Available columns: ${headers.join(", ")}`
+      );
     }
 
     const features: GeoJSON.Feature[] = [];
@@ -203,7 +225,7 @@ export const FormatUtils = {
       if (skipEmptyRows && !line) continue;
 
       const values = parseCSVLine(line, delimiter);
-      
+
       const lat = parseFloat(values[latIdx]);
       const lng = parseFloat(values[lngIdx]);
 
@@ -213,26 +235,26 @@ export const FormatUtils = {
       headers.forEach((header, idx) => {
         if (idx !== latIdx && idx !== lngIdx) {
           let value: any = values[idx];
-          
-          if (parseNumbers && value !== '' && !isNaN(Number(value))) {
+
+          if (parseNumbers && value !== "" && !isNaN(Number(value))) {
             value = Number(value);
           }
-          
+
           properties[header] = value;
         }
       });
 
       features.push({
-        type: 'Feature',
+        type: "Feature",
         geometry: {
-          type: 'Point',
-          coordinates: [lng, lat]
+          type: "Point",
+          coordinates: [lng, lat],
         },
-        properties
+        properties,
       });
     }
 
-    return { type: 'FeatureCollection', features };
+    return { type: "FeatureCollection", features };
   },
 
   /**
@@ -242,24 +264,24 @@ export const FormatUtils = {
     geojson: GeoJSON.FeatureCollection,
     options: {
       includeGeometry?: boolean;
-      geometryFormat?: 'wkt' | 'latlng' | 'geojson';
+      geometryFormat?: "wkt" | "latlng" | "geojson";
       delimiter?: string;
       properties?: string[];
     } = {}
   ): string {
     const {
       includeGeometry = true,
-      geometryFormat = 'latlng',
-      delimiter = ',',
-      properties
+      geometryFormat = "latlng",
+      delimiter = ",",
+      properties,
     } = options;
 
-    if (geojson.features.length === 0) return '';
+    if (geojson.features.length === 0) return "";
 
     // Collect all property names
     const allProps = new Set<string>();
-    geojson.features.forEach(f => {
-      Object.keys(f.properties || {}).forEach(key => allProps.add(key));
+    geojson.features.forEach((f) => {
+      Object.keys(f.properties || {}).forEach((key) => allProps.add(key));
     });
 
     const propColumns = properties || Array.from(allProps);
@@ -267,39 +289,46 @@ export const FormatUtils = {
     // Build header
     const headers: string[] = [...propColumns];
     if (includeGeometry) {
-      if (geometryFormat === 'latlng') {
-        headers.push('latitude', 'longitude');
-      } else if (geometryFormat === 'wkt') {
-        headers.push('geometry_wkt');
+      if (geometryFormat === "latlng") {
+        headers.push("latitude", "longitude");
+      } else if (geometryFormat === "wkt") {
+        headers.push("geometry_wkt");
       } else {
-        headers.push('geometry');
+        headers.push("geometry");
       }
     }
 
     const rows: string[] = [headers.join(delimiter)];
 
     // Build data rows
-    geojson.features.forEach(feature => {
-      const values: string[] = propColumns.map(prop => {
+    geojson.features.forEach((feature) => {
+      const values: string[] = propColumns.map((prop) => {
         const value = feature.properties?.[prop];
         return formatCSVValue(value, delimiter);
       });
 
       if (includeGeometry && feature.geometry) {
-        if (geometryFormat === 'latlng') {
+        if (geometryFormat === "latlng") {
           const coords = getCentroidCoordinates(feature.geometry);
           values.push(String(coords[1]), String(coords[0]));
-        } else if (geometryFormat === 'wkt') {
-          values.push(formatCSVValue(FormatUtils.geoJSONToWKT(feature.geometry), delimiter));
+        } else if (geometryFormat === "wkt") {
+          values.push(
+            formatCSVValue(
+              FormatUtils.geoJSONToWKT(feature.geometry),
+              delimiter
+            )
+          );
         } else {
-          values.push(formatCSVValue(JSON.stringify(feature.geometry), delimiter));
+          values.push(
+            formatCSVValue(JSON.stringify(feature.geometry), delimiter)
+          );
         }
       }
 
       rows.push(values.join(delimiter));
     });
 
-    return rows.join('\n');
+    return rows.join("\n");
   },
 
   /**
@@ -308,10 +337,10 @@ export const FormatUtils = {
   formatCoordinates(
     lng: number,
     lat: number,
-    format: 'decimal' | 'dms' | 'ddm' = 'decimal',
+    format: "decimal" | "dms" | "ddm" = "decimal",
     precision: number = 6
   ): string {
-    if (format === 'decimal') {
+    if (format === "decimal") {
       return `${lat.toFixed(precision)}, ${lng.toFixed(precision)}`;
     }
 
@@ -321,12 +350,16 @@ export const FormatUtils = {
       const minutesFloat = (absolute - degrees) * 60;
       const minutes = Math.floor(minutesFloat);
       const seconds = (minutesFloat - minutes) * 60;
-      
-      const direction = isLat
-        ? value >= 0 ? 'N' : 'S'
-        : value >= 0 ? 'E' : 'W';
 
-      if (format === 'dms') {
+      const direction = isLat
+        ? value >= 0
+          ? "N"
+          : "S"
+        : value >= 0
+          ? "E"
+          : "W";
+
+      if (format === "dms") {
         return `${degrees}°${minutes}'${seconds.toFixed(2)}"${direction}`;
       } else {
         // DDM format
@@ -358,28 +391,28 @@ export const FormatUtils = {
     // Try DMS format
     const dmsPattern = /(\d+)°\s*(\d+)'\s*([\d.]+)"?\s*([NSEW])/gi;
     const matches = [...input.matchAll(dmsPattern)];
-    
+
     if (matches.length >= 2) {
       const coords: number[] = [];
       const isLats: boolean[] = [];
 
-      matches.forEach(match => {
+      matches.forEach((match) => {
         const degrees = parseInt(match[1]);
         const minutes = parseInt(match[2]);
         const seconds = parseFloat(match[3]);
         const direction = match[4].toUpperCase();
 
         let value = degrees + minutes / 60 + seconds / 3600;
-        if (direction === 'S' || direction === 'W') {
+        if (direction === "S" || direction === "W") {
           value = -value;
         }
 
         coords.push(value);
-        isLats.push(direction === 'N' || direction === 'S');
+        isLats.push(direction === "N" || direction === "S");
       });
 
-      const latIdx = isLats.findIndex(v => v);
-      const lngIdx = isLats.findIndex(v => !v);
+      const latIdx = isLats.findIndex((v) => v);
+      const lngIdx = isLats.findIndex((v) => !v);
 
       if (latIdx !== -1 && lngIdx !== -1) {
         return [coords[lngIdx], coords[latIdx]];
@@ -392,8 +425,11 @@ export const FormatUtils = {
   /**
    * Format distance for display
    */
-  formatDistance(meters: number, units: 'metric' | 'imperial' = 'metric'): string {
-    if (units === 'metric') {
+  formatDistance(
+    meters: number,
+    units: "metric" | "imperial" = "metric"
+  ): string {
+    if (units === "metric") {
       if (meters < 1) {
         return `${(meters * 100).toFixed(0)} cm`;
       }
@@ -414,8 +450,11 @@ export const FormatUtils = {
   /**
    * Format area for display
    */
-  formatArea(sqMeters: number, units: 'metric' | 'imperial' = 'metric'): string {
-    if (units === 'metric') {
+  formatArea(
+    sqMeters: number,
+    units: "metric" | "imperial" = "metric"
+  ): string {
+    if (units === "metric") {
       if (sqMeters < 10000) {
         return `${sqMeters.toFixed(sqMeters < 100 ? 1 : 0)} m²`;
       }
@@ -439,17 +478,36 @@ export const FormatUtils = {
   /**
    * Format bearing/heading for display
    */
-  formatBearing(degrees: number, format: 'degrees' | 'cardinal' = 'degrees'): string {
+  formatBearing(
+    degrees: number,
+    format: "degrees" | "cardinal" = "degrees"
+  ): string {
     // Normalize to 0-360
     const normalized = ((degrees % 360) + 360) % 360;
 
-    if (format === 'degrees') {
+    if (format === "degrees") {
       return `${normalized.toFixed(1)}°`;
     }
 
     // Cardinal direction
-    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 
-                       'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    const directions = [
+      "N",
+      "NNE",
+      "NE",
+      "ENE",
+      "E",
+      "ESE",
+      "SE",
+      "SSE",
+      "S",
+      "SSW",
+      "SW",
+      "WSW",
+      "W",
+      "WNW",
+      "NW",
+      "NNW",
+    ];
     const index = Math.round(normalized / 22.5) % 16;
     return directions[index];
   },
@@ -477,8 +535,8 @@ export const FormatUtils = {
     let value = parseFloat(match[1]);
     const suffix = match[2]?.toUpperCase();
 
-    if (suffix === 'K') value *= 1000;
-    if (suffix === 'M') value *= 1000000;
+    if (suffix === "K") value *= 1000;
+    if (suffix === "M") value *= 1000000;
 
     return value;
   },
@@ -488,39 +546,39 @@ export const FormatUtils = {
    */
   convertGeometry(
     input: any,
-    fromFormat: 'geojson' | 'wkt' | 'wkb',
-    toFormat: 'geojson' | 'wkt'
+    fromFormat: "geojson" | "wkt" | "wkb",
+    toFormat: "geojson" | "wkt"
   ): any {
     let geometry: GeoJSON.Geometry;
 
     // Parse input
-    if (fromFormat === 'geojson') {
-      geometry = typeof input === 'string' ? JSON.parse(input) : input;
-    } else if (fromFormat === 'wkt') {
+    if (fromFormat === "geojson") {
+      geometry = typeof input === "string" ? JSON.parse(input) : input;
+    } else if (fromFormat === "wkt") {
       const parsed = FormatUtils.wktToGeoJSON(input);
-      if (!parsed) throw new Error('Failed to parse WKT');
+      if (!parsed) throw new Error("Failed to parse WKT");
       geometry = parsed;
-    } else if (fromFormat === 'wkb') {
-      throw new Error('WKB parsing not implemented');
+    } else if (fromFormat === "wkb") {
+      throw new Error("WKB parsing not implemented");
     } else {
       throw new Error(`Unknown format: ${String(fromFormat)}`);
     }
 
     // Convert output
-    if (toFormat === 'geojson') {
+    if (toFormat === "geojson") {
       return geometry;
-    } else if (toFormat === 'wkt') {
+    } else if (toFormat === "wkt") {
       return FormatUtils.geoJSONToWKT(geometry);
     }
 
     throw new Error(`Unknown format: ${String(toFormat)}`);
-  }
+  },
 };
 
 // Helper functions
 function parseCSVLine(line: string, delimiter: string): string[] {
   const result: string[] = [];
-  let current = '';
+  let current = "";
   let inQuotes = false;
 
   for (let i = 0; i < line.length; i++) {
@@ -541,7 +599,7 @@ function parseCSVLine(line: string, delimiter: string): string[] {
         inQuotes = true;
       } else if (char === delimiter) {
         result.push(current);
-        current = '';
+        current = "";
       } else {
         current += char;
       }
@@ -553,31 +611,32 @@ function parseCSVLine(line: string, delimiter: string): string[] {
 }
 
 function formatCSVValue(value: any, delimiter: string): string {
-  if (value === null || value === undefined) return '';
-  
+  if (value === null || value === undefined) return "";
+
   const str = String(value);
-  
-  if (str.includes(delimiter) || str.includes('"') || str.includes('\n')) {
+
+  if (str.includes(delimiter) || str.includes('"') || str.includes("\n")) {
     return `"${str.replace(/"/g, '""')}"`;
   }
-  
+
   return str;
 }
 
 function getCentroidCoordinates(geometry: GeoJSON.Geometry): [number, number] {
   switch (geometry.type) {
-    case 'Point':
+    case "Point":
       return geometry.coordinates as [number, number];
-    case 'LineString': {
+    case "LineString": {
       const mid = Math.floor(geometry.coordinates.length / 2);
       return geometry.coordinates[mid] as [number, number];
     }
-    case 'Polygon': {
+    case "Polygon": {
       // Simple centroid calculation
       const ring = geometry.coordinates[0];
       const n = ring.length - 1;
-      let cx = 0, cy = 0;
-      ring.slice(0, n).forEach(coord => {
+      let cx = 0,
+        cy = 0;
+      ring.slice(0, n).forEach((coord) => {
         cx += coord[0];
         cy += coord[1];
       });

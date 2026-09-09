@@ -87,4 +87,4 @@ export const SortableList = <T extends { id: string | number }>({
       })}
     </div>
   );
-}
+};

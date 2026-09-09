@@ -17,14 +17,14 @@ export const CheckboxList = ({
   onChange,
 }: CheckboxListProps) => {
   return (
-    <div className="max-h-40 space-y-2 overflow-y-auto rounded-xl border border-border-primary bg-surface-hover p-3">
+    <div className="border-border-primary bg-surface-hover max-h-40 space-y-2 overflow-y-auto rounded-xl border p-3">
       {options.length === 0 ? (
-        <p className="text-sm text-text-tertiary">{emptyMessage}</p>
+        <p className="text-text-tertiary text-sm">{emptyMessage}</p>
       ) : (
         options.map((option) => (
           <label
             key={option.id}
-            className="flex cursor-pointer items-center gap-2 text-sm text-text-secondary hover:text-text-primary"
+            className="text-text-secondary hover:text-text-primary flex cursor-pointer items-center gap-2 text-sm"
           >
             <input
               checked={selected.includes(option.id)}
@@ -37,4 +37,4 @@ export const CheckboxList = ({
       )}
     </div>
   );
-}
+};

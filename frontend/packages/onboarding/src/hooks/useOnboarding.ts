@@ -1,11 +1,11 @@
-import { useContext } from 'react';
+import { useContext } from "react";
 
-import { OnboardingContext } from '../components/OnboardingProvider';
+import { OnboardingContext } from "../components/OnboardingProvider";
 
 export const useOnboarding = () => {
   const context = useContext(OnboardingContext);
   if (!context) {
-    throw new Error('useOnboarding must be used within an OnboardingProvider');
+    throw new Error("useOnboarding must be used within an OnboardingProvider");
   }
   return context;
 };

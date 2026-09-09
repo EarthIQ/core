@@ -1,16 +1,17 @@
 import { create } from "zustand";
 
-import { POINT_KINDS ,type 
-  ActiveTool,type 
-  Annotation,type 
-  AnnotationKind,type 
-  Bookmark,type 
-  CommentMessage,type 
-  CommentThread,type 
-  DrawnFeature,type 
-  DrawSession,type 
-  PointAnnotation,type 
-  ShapeAnnotation,
+import {
+  POINT_KINDS,
+  type ActiveTool,
+  type Annotation,
+  type AnnotationKind,
+  type Bookmark,
+  type CommentMessage,
+  type CommentThread,
+  type DrawnFeature,
+  type DrawSession,
+  type PointAnnotation,
+  type ShapeAnnotation,
 } from "./types";
 
 /* ──────────────────────────────────────────────────────────────────────── */
@@ -25,7 +26,7 @@ function uid(prefix: string) {
 /** Default styling for a freshly placed annotation of a given kind. */
 export function defaultAnnotationFor(
   kind: AnnotationKind,
-  seed: { lngLat?: [number, number]; radius?: number; color?: string },
+  seed: { lngLat?: [number, number]; radius?: number; color?: string }
 ): Annotation {
   const base = {
     id: uid("ann"),
@@ -61,7 +62,8 @@ function migrateComments(raw: unknown): CommentThread[] {
   if (!Array.isArray(raw)) return [];
   const out: CommentThread[] = [];
   const lngLat = (v: unknown): [number, number] | null =>
-    Array.isArray(v) && v.length === 2 &&
+    Array.isArray(v) &&
+    v.length === 2 &&
     Number.isFinite(Number(v[0])) &&
     Number.isFinite(Number(v[1]))
       ? [Number(v[0]), Number(v[1])]
@@ -73,15 +75,15 @@ function migrateComments(raw: unknown): CommentThread[] {
 
     if (Array.isArray(c.messages)) {
       // Current threaded format
-      const messages: CommentMessage[] = (c.messages)
+      const messages: CommentMessage[] = c.messages
         .filter((m) => m && typeof m.body === "string" && m.body.trim())
         .map((m) => ({
           id: typeof m.id === "string" ? m.id : uid("msg"),
           body: m.body,
-          author: typeof m.author === "string" && m.author ? m.author : "Unknown",
+          author:
+            typeof m.author === "string" && m.author ? m.author : "Unknown",
           authorId: typeof m.authorId === "string" ? m.authorId : "",
-          createdAt:
-            typeof m.createdAt === "number" ? m.createdAt : Date.now(),
+          createdAt: typeof m.createdAt === "number" ? m.createdAt : Date.now(),
           mentions: Array.isArray(m.mentions)
             ? m.mentions
                 .filter(
@@ -89,7 +91,7 @@ function migrateComments(raw: unknown): CommentThread[] {
                     x &&
                     typeof x === "object" &&
                     typeof (x as any).name === "string" &&
-                    (x as any).name.trim(),
+                    (x as any).name.trim()
                 )
                 .map((x: any) => ({
                   id: typeof x.id === "string" ? x.id : "",
@@ -107,12 +109,9 @@ function migrateComments(raw: unknown): CommentThread[] {
           typeof c.resolvedById === "string" ? c.resolvedById : undefined,
         resolvedByName:
           typeof c.resolvedByName === "string" ? c.resolvedByName : undefined,
-        resolvedAt:
-          typeof c.resolvedAt === "number" ? c.resolvedAt : undefined,
+        resolvedAt: typeof c.resolvedAt === "number" ? c.resolvedAt : undefined,
         createdAt:
-          typeof c.createdAt === "number"
-            ? c.createdAt
-            : messages[0].createdAt,
+          typeof c.createdAt === "number" ? c.createdAt : messages[0].createdAt,
         updatedAt:
           typeof c.updatedAt === "number"
             ? c.updatedAt
@@ -186,7 +185,7 @@ interface MapEditorState extends Snapshot {
   addAnnotation: (ann: Annotation) => void;
   updateAnnotation: (
     id: string,
-    patch: Partial<PointAnnotation> & Partial<ShapeAnnotation>,
+    patch: Partial<PointAnnotation> & Partial<ShapeAnnotation>
   ) => void;
   removeAnnotation: (id: string) => void;
   clearAnnotations: () => void;
@@ -213,7 +212,7 @@ interface MapEditorState extends Snapshot {
       zoom: number;
       bearing?: number;
       pitch?: number;
-    },
+    }
   ) => void;
   removeBookmark: (id: string) => void;
   renameBookmark: (id: string, name: string) => void;
@@ -224,20 +223,20 @@ interface MapEditorState extends Snapshot {
     body: string,
     author: string,
     authorId: string,
-    mentions?: { id: string; name: string }[],
+    mentions?: { id: string; name: string }[]
   ) => void;
   replyToThread: (
     threadId: string,
     body: string,
     author: string,
     authorId: string,
-    mentions?: { id: string; name: string }[],
+    mentions?: { id: string; name: string }[]
   ) => void;
   setThreadResolved: (
     threadId: string,
     resolved: boolean,
     resolvedById?: string,
-    resolvedByName?: string,
+    resolvedByName?: string
   ) => void;
   removeThread: (threadId: string) => void;
 
@@ -312,7 +311,7 @@ export const useMapEditor = create<MapEditorState>((set) => ({
     set((s) => ({
       ...pushHistory(s),
       annotations: s.annotations.map((a) =>
-        a.id === id ? ({ ...a, ...patch }) : a,
+        a.id === id ? { ...a, ...patch } : a
       ),
     })),
 
@@ -327,28 +326,28 @@ export const useMapEditor = create<MapEditorState>((set) => ({
     set((s) =>
       s.annotations.length
         ? { ...pushHistory(s), annotations: [], selectionId: null }
-        : {},
+        : {}
     ),
 
   syncDrawnFeatures: (features) =>
     set((s) =>
       JSON.stringify(s.drawnFeatures) === JSON.stringify(features)
         ? {}
-        : { drawnFeatures: features, selectionId: null },
+        : { drawnFeatures: features, selectionId: null }
     ),
 
   commitDrawnFeatures: (features) =>
     set((s) =>
       JSON.stringify(s.drawnFeatures) === JSON.stringify(features)
         ? {}
-        : { ...pushHistory(s), drawnFeatures: features, selectionId: null },
+        : { ...pushHistory(s), drawnFeatures: features, selectionId: null }
     ),
 
   clearDrawnFeatures: () =>
     set((s) =>
       s.drawnFeatures.length
         ? { ...pushHistory(s), drawnFeatures: [], selectionId: null }
-        : {},
+        : {}
     ),
 
   startDrawSession: (session) =>
@@ -444,7 +443,7 @@ export const useMapEditor = create<MapEditorState>((set) => ({
                   },
                 ],
               }
-            : c,
+            : c
         ),
       };
     }),
@@ -461,7 +460,7 @@ export const useMapEditor = create<MapEditorState>((set) => ({
               resolvedById: resolved ? resolvedById : undefined,
               resolvedByName: resolved ? resolvedByName : undefined,
             }
-          : c,
+          : c
       ),
     })),
 
@@ -502,7 +501,7 @@ export const useMapEditor = create<MapEditorState>((set) => ({
     set(
       placing
         ? { commentPlacement: true, activeThreadId: null, commentsOpen: false }
-        : { commentPlacement: false, pendingCommentLocation: null },
+        : { commentPlacement: false, pendingCommentLocation: null }
     ),
   setPendingCommentLocation: (lngLat) =>
     set({ pendingCommentLocation: lngLat, activeThreadId: null }),
@@ -527,7 +526,7 @@ export const useMapEditor = create<MapEditorState>((set) => ({
 
 /** Convenience selector: the annotation currently selected. */
 export function selectSelectedAnnotation(
-  s: MapEditorState,
+  s: MapEditorState
 ): Annotation | undefined {
   return s.annotations.find((a) => a.id === s.selectionId);
 }

@@ -1,10 +1,10 @@
-import React, { useCallback } from 'react';
+import React, { useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
 export interface ZoomControlProps {
   /** Position on map */
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   /** Show zoom in button */
   showZoomIn?: boolean;
   /** Show zoom out button */
@@ -24,9 +24,9 @@ export interface ZoomControlProps {
   /** Animation duration */
   duration?: number;
   /** Orientation */
-  orientation?: 'vertical' | 'horizontal';
+  orientation?: "vertical" | "horizontal";
   /** Size */
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   /** Show zoom level display */
   showZoomLevel?: boolean;
   /** Custom className */
@@ -40,20 +40,20 @@ export interface ZoomControlProps {
 }
 
 export const ZoomControl: React.FC<ZoomControlProps> = ({
-  position = 'top-right',
+  position = "top-right",
   showZoomIn = true,
   showZoomOut = true,
   showReset = false,
   resetView,
   zoomStep = 1,
   duration = 300,
-  orientation = 'vertical',
-  size = 'md',
+  orientation = "vertical",
+  size = "md",
   showZoomLevel = false,
   className,
   onZoomChange,
   minZoom = 0,
-  maxZoom = 22
+  maxZoom = 22,
 }) => {
   const { map, isLoaded } = useMap();
   const [currentZoom, setCurrentZoom] = React.useState(0);
@@ -69,10 +69,10 @@ export const ZoomControl: React.FC<ZoomControlProps> = ({
     };
 
     updateZoom();
-    map.on('zoom', updateZoom);
+    map.on("zoom", updateZoom);
 
     return () => {
-      map.off('zoom', updateZoom);
+      map.off("zoom", updateZoom);
     };
   }, [map, isLoaded, onZoomChange]);
 
@@ -97,35 +97,35 @@ export const ZoomControl: React.FC<ZoomControlProps> = ({
       zoom: resetView.zoom,
       pitch: resetView.pitch || 0,
       bearing: resetView.bearing || 0,
-      duration: duration * 2
+      duration: duration * 2,
     });
   }, [map, resetView, duration]);
 
   const positionStyles: Record<string, React.CSSProperties> = {
-    'top-left': { top: 10, left: 10 },
-    'top-right': { top: 10, right: 10 },
-    'bottom-left': { bottom: 10, left: 10 },
-    'bottom-right': { bottom: 10, right: 10 }
+    "top-left": { top: 10, left: 10 },
+    "top-right": { top: 10, right: 10 },
+    "bottom-left": { bottom: 10, left: 10 },
+    "bottom-right": { bottom: 10, right: 10 },
   };
 
   const sizes = {
     sm: { button: 28, font: 14 },
     md: { button: 36, font: 18 },
-    lg: { button: 44, font: 22 }
+    lg: { button: 44, font: 22 },
   };
 
   const buttonStyle: React.CSSProperties = {
     width: sizes[size].button,
     height: sizes[size].button,
     fontSize: sizes[size].font,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: '1px solid #d1d5db',
-    backgroundColor: 'white',
-    cursor: 'pointer',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "1px solid #d1d5db",
+    backgroundColor: "white",
+    cursor: "pointer",
     borderRadius: 4,
-    transition: 'background-color 0.15s'
+    transition: "background-color 0.15s",
   };
 
   const isAtMaxZoom = currentZoom >= maxZoom;
@@ -135,74 +135,96 @@ export const ZoomControl: React.FC<ZoomControlProps> = ({
     <div
       className={className}
       style={{
-        position: 'absolute',
+        position: "absolute",
         ...positionStyles[position],
-        zIndex: 1000
+        zIndex: 1000,
       }}
     >
       <div
         style={{
-          display: 'flex',
-          flexDirection: orientation === 'vertical' ? 'column' : 'row',
+          display: "flex",
+          flexDirection: orientation === "vertical" ? "column" : "row",
           gap: 2,
-          backgroundColor: 'white',
+          backgroundColor: "white",
           borderRadius: 6,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          padding: 2
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          padding: 2,
         }}
       >
-        {showZoomIn ? <button
+        {showZoomIn ? (
+          <button
             disabled={isAtMaxZoom}
             title="Zoom in"
             style={{
               ...buttonStyle,
               opacity: isAtMaxZoom ? 0.5 : 1,
-              cursor: isAtMaxZoom ? 'not-allowed' : 'pointer'
+              cursor: isAtMaxZoom ? "not-allowed" : "pointer",
             }}
             onClick={handleZoomIn}
-            onMouseEnter={(e) => !isAtMaxZoom && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+            onMouseEnter={(e) =>
+              !isAtMaxZoom &&
+              (e.currentTarget.style.backgroundColor = "#f3f4f6")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "white")
+            }
           >
             +
-          </button> : null}
+          </button>
+        ) : null}
 
-        {showZoomLevel ? <div
+        {showZoomLevel ? (
+          <div
             title={`Zoom level: ${currentZoom.toFixed(1)}`}
             style={{
               ...buttonStyle,
-              cursor: 'default',
+              cursor: "default",
               fontSize: sizes[size].font - 6,
-              fontWeight: 'bold',
-              color: '#6b7280'
+              fontWeight: "bold",
+              color: "#6b7280",
             }}
           >
             {Math.round(currentZoom)}
-          </div> : null}
+          </div>
+        ) : null}
 
-        {showZoomOut ? <button
+        {showZoomOut ? (
+          <button
             disabled={isAtMinZoom}
             title="Zoom out"
             style={{
               ...buttonStyle,
               opacity: isAtMinZoom ? 0.5 : 1,
-              cursor: isAtMinZoom ? 'not-allowed' : 'pointer'
+              cursor: isAtMinZoom ? "not-allowed" : "pointer",
             }}
             onClick={handleZoomOut}
-            onMouseEnter={(e) => !isAtMinZoom && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+            onMouseEnter={(e) =>
+              !isAtMinZoom &&
+              (e.currentTarget.style.backgroundColor = "#f3f4f6")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "white")
+            }
           >
             −
-          </button> : null}
+          </button>
+        ) : null}
 
-        {showReset && resetView ? <button
+        {showReset && resetView ? (
+          <button
             style={buttonStyle}
             title="Reset view"
             onClick={handleReset}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#f3f4f6")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "white")
+            }
           >
             ⌂
-          </button> : null}
+          </button>
+        ) : null}
       </div>
     </div>
   );
@@ -218,26 +240,35 @@ export const useZoom = () => {
 
     const updateZoom = () => setZoom(map.getZoom());
     updateZoom();
-    map.on('zoom', updateZoom);
-    
+    map.on("zoom", updateZoom);
+
     return () => {
-      map.off('zoom', updateZoom);
+      map.off("zoom", updateZoom);
     };
   }, [map, isLoaded]);
 
-  const zoomTo = useCallback((level: number, options?: { duration?: number }) => {
-    map?.easeTo({ zoom: level, duration: options?.duration ?? 300 });
-  }, [map]);
+  const zoomTo = useCallback(
+    (level: number, options?: { duration?: number }) => {
+      map?.easeTo({ zoom: level, duration: options?.duration ?? 300 });
+    },
+    [map]
+  );
 
-  const zoomIn = useCallback((step: number = 1) => {
-    if (!map) return;
-    map.easeTo({ zoom: map.getZoom() + step, duration: 300 });
-  }, [map]);
+  const zoomIn = useCallback(
+    (step: number = 1) => {
+      if (!map) return;
+      map.easeTo({ zoom: map.getZoom() + step, duration: 300 });
+    },
+    [map]
+  );
 
-  const zoomOut = useCallback((step: number = 1) => {
-    if (!map) return;
-    map.easeTo({ zoom: map.getZoom() - step, duration: 300 });
-  }, [map]);
+  const zoomOut = useCallback(
+    (step: number = 1) => {
+      if (!map) return;
+      map.easeTo({ zoom: map.getZoom() - step, duration: 300 });
+    },
+    [map]
+  );
 
   return { zoom, zoomTo, zoomIn, zoomOut };
 };

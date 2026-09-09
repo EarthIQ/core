@@ -1,14 +1,13 @@
-import * as maplibregl from 'maplibre-gl';
-import { useEffect } from 'react';
+import * as maplibregl from "maplibre-gl";
+import { useEffect } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type React from 'react';
-
+import type React from "react";
 
 export interface NavigationControlProps {
   /** Position on map */
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   /** Show compass */
   showCompass?: boolean;
   /** Show zoom buttons */
@@ -18,10 +17,10 @@ export interface NavigationControlProps {
 }
 
 export const NavigationControl: React.FC<NavigationControlProps> = ({
-  position = 'top-right',
+  position = "top-right",
   showCompass = true,
   showZoom = true,
-  visualizePitch = true
+  visualizePitch = true,
 }) => {
   const { map, isLoaded } = useMap();
 
@@ -31,7 +30,7 @@ export const NavigationControl: React.FC<NavigationControlProps> = ({
     const control = new maplibregl.NavigationControl({
       showCompass,
       showZoom,
-      visualizePitch
+      visualizePitch,
     });
 
     map.addControl(control, position);

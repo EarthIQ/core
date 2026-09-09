@@ -1,4 +1,3 @@
- 
 import { type Map, type GeoJSONSource } from "maplibre-gl";
 
 import { getGraticule } from "./generator";

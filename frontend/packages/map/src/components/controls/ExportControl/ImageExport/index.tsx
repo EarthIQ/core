@@ -95,7 +95,7 @@ const DownloadIcon = ({ className }: { className?: string }) => {
       />
     </svg>
   );
-}
+};
 
 const CheckIcon = ({ className }: { className?: string }) => {
   return (
@@ -112,7 +112,7 @@ const CheckIcon = ({ className }: { className?: string }) => {
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
-}
+};
 
 const LoaderIcon = ({ className }: { className?: string }) => {
   return (
@@ -129,7 +129,7 @@ const LoaderIcon = ({ className }: { className?: string }) => {
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
   );
-}
+};
 
 const ImageIcon = ({ className }: { className?: string }) => {
   return (
@@ -159,7 +159,7 @@ const ImageIcon = ({ className }: { className?: string }) => {
       <polyline points="21 15 16 10 5 21" />
     </svg>
   );
-}
+};
 
 const XIcon = ({ className }: { className?: string }) => {
   return (
@@ -187,7 +187,7 @@ const XIcon = ({ className }: { className?: string }) => {
       />
     </svg>
   );
-}
+};
 
 // ─── Main Component ───────────────────────────────────────────────────
 
@@ -640,7 +640,8 @@ const ImageExport = ({
             )}
 
             {/* Map Info */}
-            {map ? <div className="space-y-2.5">
+            {map ? (
+              <div className="space-y-2.5">
                 <label
                   className="text-[11px] font-semibold tracking-wider uppercase"
                   style={{ color: "var(--text-tertiary)" }}
@@ -683,7 +684,8 @@ const ImageExport = ({
                     </div>
                   ))}
                 </div>
-              </div> : null}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -774,7 +776,7 @@ const ImageExport = ({
       </div>
     </div>
   );
-}
+};
 
 export default ImageExport;
 export type { ExportOptions, ExportFormat, ExportSize };

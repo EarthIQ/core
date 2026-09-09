@@ -17,7 +17,11 @@ interface DndContextValue {
 
 const LayerDndContext = createContext<DndContextValue | null>(null);
 
-export const LayerDndProvider = ({ children }: { children: React.ReactNode }) => {
+export const LayerDndProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<DropTargetInfo | null>(null);
   const reset = () => {
@@ -31,7 +35,7 @@ export const LayerDndProvider = ({ children }: { children: React.ReactNode }) =>
       {children}
     </LayerDndContext.Provider>
   );
-}
+};
 
 export function useLayerDnd() {
   const ctx = useContext(LayerDndContext);

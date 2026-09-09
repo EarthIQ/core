@@ -61,7 +61,8 @@ export const useDraggablePosition = ({
 
   // ---- Initialise percentage from the given initialPosition (once) ----
   useLayoutEffect(() => {
-    if (initializedRef.current || bounds !== "parent" || !dragRef.current) return;
+    if (initializedRef.current || bounds !== "parent" || !dragRef.current)
+      return;
     const parent = dragRef.current.parentElement;
     if (!parent) return;
 
@@ -183,10 +184,13 @@ export const useDraggablePosition = ({
     };
   }, [isDragging, moveTo]);
 
-  const setPercentPosition = useCallback((px: number, py: number) => {
-    intendedPercentRef.current = { x: px, y: py };
-    syncPixelPosition();
-  }, [syncPixelPosition]);
+  const setPercentPosition = useCallback(
+    (px: number, py: number) => {
+      intendedPercentRef.current = { x: px, y: py };
+      syncPixelPosition();
+    },
+    [syncPixelPosition]
+  );
 
   return {
     position,

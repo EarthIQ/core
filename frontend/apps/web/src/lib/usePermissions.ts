@@ -5,7 +5,10 @@ export type PermissionAction = "view" | "add" | "edit" | "delete";
 export function usePermissions() {
   const { user } = useAuth();
 
-  const hasPermission = (component: string, action: PermissionAction): boolean => {
+  const hasPermission = (
+    component: string,
+    action: PermissionAction
+  ): boolean => {
     if (!user) return false;
     if (user.is_superuser) return true;
 

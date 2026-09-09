@@ -5,7 +5,6 @@ import { LAYER_COLORS } from "./layer-panel/useLayerTree";
 
 import type { LayerTreeNode } from "./layer-panel/types";
 
-
 interface StylePanelProps {
   layer: LayerTreeNode;
   onClose: () => void;
@@ -33,15 +32,15 @@ const SliderField = ({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between">
-        <label className="text-[0.65rem] uppercase tracking-widest text-text-quaternary font-semibold">
+        <label className="text-text-quaternary text-[0.65rem] font-semibold tracking-widest uppercase">
           {label}
         </label>
-        <span className="text-[0.7rem] font-mono text-text-secondary">
+        <span className="text-text-secondary font-mono text-[0.7rem]">
           {display}
         </span>
       </div>
       <input
-        className="w-full accent-primary"
+        className="accent-primary w-full"
         max={max}
         min={min}
         step={step}
@@ -51,7 +50,7 @@ const SliderField = ({
       />
     </div>
   );
-}
+};
 
 export const StylePanel = ({
   layer,
@@ -87,18 +86,18 @@ export const StylePanel = ({
 
   return (
     <div
-      className="absolute top-16 right-3 z-30 w-72 bg-elevated border border-border-primary rounded-xl shadow-2xl"
+      className="bg-elevated border-border-primary absolute top-16 right-3 z-30 w-72 rounded-xl border shadow-2xl"
       style={{ maxHeight: "calc(100vh - 8rem)", overflowY: "auto" }}
     >
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-border-secondary">
+      <div className="border-border-secondary flex items-center justify-between border-b px-3 py-2.5">
         <div className="flex items-center gap-2">
           <span className="text-sm">🎨</span>
-          <span className="text-xs font-bold text-text-primary">
+          <span className="text-text-primary text-xs font-bold">
             Layer Style
           </span>
         </div>
         <button
-          className="p-1 rounded-md text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors"
+          className="text-text-tertiary hover:text-text-primary hover:bg-surface-hover rounded-md p-1 transition-colors"
           type="button"
           onClick={onClose}
         >
@@ -107,11 +106,11 @@ export const StylePanel = ({
       </div>
 
       <div className="px-3 pt-3 pb-1">
-        <div className="text-[0.65rem] uppercase tracking-widest text-text-quaternary font-semibold mb-1">
+        <div className="text-text-quaternary mb-1 text-[0.65rem] font-semibold tracking-widest uppercase">
           Layer Name
         </div>
         <input
-          className="w-full text-xs font-semibold text-text-primary bg-surface-hover border border-border-secondary rounded-md px-2 py-1.5 outline-none focus:border-primary/50"
+          className="text-text-primary bg-surface-hover border-border-secondary focus:border-primary/50 w-full rounded-md border px-2 py-1.5 text-xs font-semibold outline-none"
           value={nameDraft}
           onBlur={commitName}
           onChange={(e) => setNameDraft(e.target.value)}
@@ -121,25 +120,25 @@ export const StylePanel = ({
         />
       </div>
 
-      <div className="px-3 pb-4 flex flex-col gap-5 mt-3">
+      <div className="mt-3 flex flex-col gap-5 px-3 pb-4">
         <div className="flex flex-col gap-2">
-          <label className="text-[0.65rem] uppercase tracking-widest text-text-quaternary font-semibold">
+          <label className="text-text-quaternary text-[0.65rem] font-semibold tracking-widest uppercase">
             {layer.layerType === "raster"
               ? "Tint Color"
               : "Fill / Stroke Color"}
           </label>
           <div className="flex items-center gap-3">
             <input
-              className="w-9 h-9 rounded-lg border-2 border-border-primary cursor-pointer bg-transparent p-0.5"
+              className="border-border-primary h-9 w-9 cursor-pointer rounded-lg border-2 bg-transparent p-0.5"
               type="color"
               value={color}
               onChange={(e) => onChange(layer.id, { color: e.target.value })}
             />
-            <div className="flex gap-1.5 flex-wrap">
+            <div className="flex flex-wrap gap-1.5">
               {LAYER_COLORS.map((c) => (
                 <button
                   key={c}
-                  className="w-5 h-5 rounded-full border-2 transition-transform hover:scale-110"
+                  className="h-5 w-5 rounded-full border-2 transition-transform hover:scale-110"
                   title={c}
                   type="button"
                   style={{
@@ -199,12 +198,12 @@ export const StylePanel = ({
         )}
 
         <div className="flex flex-col gap-2">
-          <label className="text-[0.65rem] uppercase tracking-widest text-text-quaternary font-semibold">
+          <label className="text-text-quaternary text-[0.65rem] font-semibold tracking-widest uppercase">
             Visible Zoom Range
           </label>
-          <div className="flex items-center gap-2 text-[0.7rem] text-text-secondary">
+          <div className="text-text-secondary flex items-center gap-2 text-[0.7rem]">
             <input
-              className="w-14 bg-surface-hover border border-border-secondary rounded px-1.5 py-1 text-center outline-none"
+              className="bg-surface-hover border-border-secondary w-14 rounded border px-1.5 py-1 text-center outline-none"
               max={maxZoom}
               min={0}
               type="number"
@@ -215,7 +214,7 @@ export const StylePanel = ({
             />
             <span>to</span>
             <input
-              className="w-14 bg-surface-hover border border-border-secondary rounded px-1.5 py-1 text-center outline-none"
+              className="bg-surface-hover border-border-secondary w-14 rounded border px-1.5 py-1 text-center outline-none"
               max={22}
               min={minZoom}
               type="number"
@@ -227,27 +226,29 @@ export const StylePanel = ({
           </div>
         </div>
 
-        {layer.tileUrl ? <div className="flex flex-col gap-1.5">
-            <label className="text-[0.65rem] uppercase tracking-widest text-text-quaternary font-semibold">
+        {layer.tileUrl ? (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-text-quaternary text-[0.65rem] font-semibold tracking-widest uppercase">
               Tile URL
             </label>
-            <div className="text-[0.68rem] font-mono text-text-tertiary bg-surface-hover rounded-lg px-2.5 py-2 break-all leading-relaxed border border-border-secondary">
+            <div className="text-text-tertiary bg-surface-hover border-border-secondary rounded-lg border px-2.5 py-2 font-mono text-[0.68rem] leading-relaxed break-all">
               {layer.tileUrl}
             </div>
-          </div> : null}
+          </div>
+        ) : null}
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-[0.65rem] uppercase tracking-widest text-text-quaternary font-semibold">
+          <label className="text-text-quaternary text-[0.65rem] font-semibold tracking-widest uppercase">
             Preview
           </label>
           <div
-            className="h-10 rounded-lg border border-border-secondary"
+            className="border-border-secondary h-10 rounded-lg border"
             style={{ background: color, opacity }}
           />
         </div>
 
         <button
-          className="text-[0.7rem] text-text-tertiary hover:text-error underline self-start"
+          className="text-text-tertiary hover:text-error self-start text-[0.7rem] underline"
           type="button"
           onClick={resetStyle}
         >
@@ -256,4 +257,4 @@ export const StylePanel = ({
       </div>
     </div>
   );
-}
+};

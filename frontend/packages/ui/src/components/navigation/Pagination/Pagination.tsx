@@ -89,7 +89,8 @@ export const Pagination = ({
       </PaginationButton>
 
       {/* First */}
-      {showFirstLast && currentPage > siblingCount + 2 ? <PaginationButton
+      {showFirstLast && currentPage > siblingCount + 2 ? (
+        <PaginationButton
           aria-label="First page"
           className={baseButtonClasses}
           onClick={() => onPageChange(1)}
@@ -107,7 +108,8 @@ export const Pagination = ({
               strokeWidth={2}
             />
           </svg>
-        </PaginationButton> : null}
+        </PaginationButton>
+      ) : null}
 
       {/* Pages */}
       {pages.map((page, index) => {
@@ -140,7 +142,8 @@ export const Pagination = ({
       })}
 
       {/* Last */}
-      {showFirstLast && currentPage < totalPages - siblingCount - 1 ? <PaginationButton
+      {showFirstLast && currentPage < totalPages - siblingCount - 1 ? (
+        <PaginationButton
           aria-label="Last page"
           className={baseButtonClasses}
           onClick={() => onPageChange(totalPages)}
@@ -158,7 +161,8 @@ export const Pagination = ({
               strokeWidth={2}
             />
           </svg>
-        </PaginationButton> : null}
+        </PaginationButton>
+      ) : null}
 
       {/* Next */}
       <PaginationButton
@@ -183,7 +187,7 @@ export const Pagination = ({
       </PaginationButton>
     </nav>
   );
-}
+};
 
 // ─── Internal Button ────────────────────────────────────────────────────────
 
@@ -256,4 +260,4 @@ const PaginationButton = ({
       {children}
     </button>
   );
-}
+};

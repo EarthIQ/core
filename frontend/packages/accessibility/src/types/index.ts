@@ -1,4 +1,4 @@
-import type { translations } from '../constants/translations';
+import type { translations } from "../constants/translations";
 
 /**
  * All accessibility settings that can be configured

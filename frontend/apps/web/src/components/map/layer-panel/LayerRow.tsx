@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 
-import { getDropPosition ,type  DropPos } from "./dnd";
+import { getDropPosition, type DropPos } from "./dnd";
 
 import type { LayerTreeNode, GeometryType } from "./types";
 
@@ -62,7 +62,7 @@ const TypeIcon = ({ layer }: { layer: LayerTreeNode }) => {
       }}
     />
   );
-}
+};
 
 /** Raster style strip shown under the layer name (no "raster" tag). */
 const RasterStyleLine = ({ layer }: { layer: LayerTreeNode }) => {
@@ -76,21 +76,21 @@ const RasterStyleLine = ({ layer }: { layer: LayerTreeNode }) => {
   if (contrast !== undefined && Math.abs(contrast - 1) > 0.001)
     extras.push(`contrast ${Math.round(contrast * 100)}%`);
   return (
-    <div className="mt-1 flex items-center gap-1.5 min-w-0">
+    <div className="mt-1 flex min-w-0 items-center gap-1.5">
       <span
-        className="h-1.5 w-12 rounded-full shrink-0 border border-white/10"
+        className="h-1.5 w-12 shrink-0 rounded-full border border-white/10"
         style={{
           background: `linear-gradient(90deg, ${color}22, ${color})`,
           opacity,
         }}
       />
-      <span className="text-[0.6rem] text-subtle truncate leading-none">
+      <span className="text-subtle truncate text-[0.6rem] leading-none">
         {Math.round(opacity * 100)}% opacity
         {extras.length > 0 ? ` · ${extras.join(" · ")}` : ""}
       </span>
     </div>
   );
-}
+};
 
 export const LayerRow = ({
   layer,
@@ -123,7 +123,7 @@ export const LayerRow = ({
       ref={rowRef}
       draggable
       style={{ paddingLeft: 4 + depth * 14 }}
-      className={`group relative flex items-center gap-1.5 py-1.5 pr-1 rounded-lg cursor-grab active:cursor-grabbing transition-colors duration-150 ${
+      className={`group relative flex cursor-grab items-center gap-1.5 rounded-lg py-1.5 pr-1 transition-colors duration-150 active:cursor-grabbing ${
         isDragging ? "opacity-40" : "hover:bg-surface-hover"
       } ${!layer.visible ? "opacity-80" : ""}`}
       onDragEnd={onDragEnd}
@@ -144,21 +144,25 @@ export const LayerRow = ({
         onDrop(getDropPosition(e, rowRef.current, false));
       }}
     >
-      {isDropTarget && dropPosition === "before" ? <div className="absolute left-2 right-2 -top-0.5 h-0.5 bg-primary rounded-full" /> : null}
-      {isDropTarget && dropPosition === "after" ? <div className="absolute left-2 right-2 -bottom-0.5 h-0.5 bg-primary rounded-full" /> : null}
+      {isDropTarget && dropPosition === "before" ? (
+        <div className="bg-primary absolute -top-0.5 right-2 left-2 h-0.5 rounded-full" />
+      ) : null}
+      {isDropTarget && dropPosition === "after" ? (
+        <div className="bg-primary absolute right-2 -bottom-0.5 left-2 h-0.5 rounded-full" />
+      ) : null}
 
       <GripVertical
-        className="opacity-35 text-text-quaternary shrink-0"
+        className="text-text-quaternary shrink-0 opacity-35"
         size={11}
       />
 
       <TypeIcon layer={layer} />
 
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         {editing ? (
           <input
             autoFocus
-            className="w-full bg-surface-hover border border-primary/40 rounded px-1.5 py-0.5 text-xs text-text-primary outline-none"
+            className="bg-surface-hover border-primary/40 text-text-primary w-full rounded border px-1.5 py-0.5 text-xs outline-none"
             value={nameDraft}
             onBlur={commitRename}
             onChange={(e) => setNameDraft(e.target.value)}
@@ -186,18 +190,20 @@ export const LayerRow = ({
         {!editing && layer.layerType === "raster" && (
           <RasterStyleLine layer={layer} />
         )}
-        {!editing && layer.pending ? <div className="mt-1 flex items-center gap-1.5 min-w-0">
+        {!editing && layer.pending ? (
+          <div className="mt-1 flex min-w-0 items-center gap-1.5">
             <span
-              className="h-1.5 w-1.5 rounded-full animate-pulse shrink-0"
+              className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full"
               style={{ background: "var(--warning)" }}
             />
             <span
-              className="text-[0.6rem] leading-none truncate"
+              className="truncate text-[0.6rem] leading-none"
               style={{ color: "var(--warning-text)" }}
             >
               unsaved
             </span>
-          </div> : null}
+          </div>
+        ) : null}
       </div>
 
       {/* ── Right-side controls: always visible ──────────────────────────── */}
@@ -205,7 +211,7 @@ export const LayerRow = ({
         aria-label={layer.visible ? `Hide ${layer.name}` : `Show ${layer.name}`}
         title={layer.visible ? "Hide layer" : "Show layer"}
         type="button"
-        className={`p-1.5 rounded-md transition-colors shrink-0 ${
+        className={`shrink-0 rounded-md p-1.5 transition-colors ${
           layer.visible
             ? "text-text-secondary hover:text-text-primary"
             : "text-text-quaternary hover:text-text-primary"
@@ -258,7 +264,7 @@ export const LayerRow = ({
         trigger={
           <button
             aria-label="Layer options"
-            className="p-1.5 rounded-md text-text-quaternary hover:text-text-primary hover:bg-surface-hover transition-colors border-none bg-transparent cursor-pointer"
+            className="text-text-quaternary hover:text-text-primary hover:bg-surface-hover cursor-pointer rounded-md border-none bg-transparent p-1.5 transition-colors"
             title="Layer options"
             type="button"
           >
@@ -268,4 +274,4 @@ export const LayerRow = ({
       />
     </div>
   );
-}
+};

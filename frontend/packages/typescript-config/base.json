@@ -29,11 +29,5 @@
     "incremental": true,
     "composite": false
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    ".turbo",
-    "coverage"
-  ]
+  "exclude": ["node_modules", "dist", "build", ".turbo", "coverage"]
 }

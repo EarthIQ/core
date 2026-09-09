@@ -53,7 +53,10 @@ export default function StoryMapBuilderPage() {
   }
 
   return (
-    <BuilderScaffold builder={builder} projectId={projectId}>
+    <BuilderScaffold
+      builder={builder}
+      projectId={projectId}
+    >
       <BuilderWorkspace
         main={
           <EditorPlaceholder
@@ -61,10 +64,17 @@ export default function StoryMapBuilderPage() {
             title={activeScene?.title ?? "Story Map"}
             actions={
               <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                <Button size="sm" onClick={addScene}>
+                <Button
+                  size="sm"
+                  onClick={addScene}
+                >
                   Add scene
                 </Button>
-                <Button disabled size="sm" variant="ghost">
+                <Button
+                  disabled
+                  size="sm"
+                  variant="ghost"
+                >
                   Preview story
                 </Button>
               </div>

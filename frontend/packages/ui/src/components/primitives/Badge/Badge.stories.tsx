@@ -2,7 +2,6 @@ import { Badge } from "./Badge";
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-
 const meta = {
   component: Badge,
 } satisfies Meta<typeof Badge>;

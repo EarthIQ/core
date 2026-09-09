@@ -1,6 +1,10 @@
 import { Deck } from "@deck.gl/core";
 import { cn } from "@packages/ui";
-import { setWorkerUrl ,type  Map as MapLibreMap,type  StyleSpecification } from "maplibre-gl";
+import {
+  setWorkerUrl,
+  type Map as MapLibreMap,
+  type StyleSpecification,
+} from "maplibre-gl";
 import * as maplibregl from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import React, {
@@ -784,10 +788,12 @@ export const Map = memo(
             />
 
             {/* Deck.gl Canvas */}
-            {useDeckGL ? <canvas
+            {useDeckGL ? (
+              <canvas
                 ref={deckCanvasRef}
                 className="pointer-events-none absolute inset-0 h-full w-full"
-              /> : null}
+              />
+            ) : null}
 
             {/* Loading indicator */}
             {!isLoaded && (
@@ -822,7 +828,8 @@ export const Map = memo(
             )}
 
             {/* File Drop Overlay */}
-            {fileDropEnabled && isDragOver ? <div
+            {fileDropEnabled && isDragOver ? (
+              <div
                 aria-live="assertive"
                 role="status"
                 className={cn(
@@ -837,7 +844,8 @@ export const Map = memo(
                   : (fileDrop?.overlay ?? (
                       <DefaultFileDropOverlay fileCount={dragFileCount} />
                     ))}
-              </div> : null}
+              </div>
+            ) : null}
 
             {/* Children only render when loaded */}
             {isLoaded ? children : null}

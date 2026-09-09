@@ -1,9 +1,9 @@
-import React from 'react';
+import React from "react";
 
-import { ProfileCard } from './ProfileCard';
-import { profiles } from '../../constants/profiles';
+import { ProfileCard } from "./ProfileCard";
+import { profiles } from "../../constants/profiles";
 
-import type { TranslationKey } from '../../types';
+import type { TranslationKey } from "../../types";
 
 interface ProfilesSectionProps {
   activeProfile: string | null;
@@ -21,7 +21,7 @@ export const ProfilesSection: React.FC<ProfilesSectionProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-2 gap-3">
-      {profiles.map(profile => (
+      {profiles.map((profile) => (
         <ProfileCard
           key={profile.id}
           isActive={activeProfile === profile.id}

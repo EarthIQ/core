@@ -1,9 +1,9 @@
 // primitives/MapView.tsx
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type React from 'react';
+import type React from "react";
 
 export interface MapViewProps {
   /** Center longitude */
@@ -30,7 +30,7 @@ export interface MapViewProps {
     animate?: boolean;
   };
   /** Transition type */
-  transitionType?: 'jumpTo' | 'easeTo' | 'flyTo';
+  transitionType?: "jumpTo" | "easeTo" | "flyTo";
   /** Callback when move ends */
   onMoveEnd?: () => void;
 }
@@ -43,8 +43,8 @@ export const MapView: React.FC<MapViewProps> = ({
   bearing = 0,
   padding,
   animation = { duration: 1000, animate: true },
-  transitionType = 'flyTo',
-  onMoveEnd
+  transitionType = "flyTo",
+  onMoveEnd,
 }) => {
   const { map, isLoaded } = useMap();
   const isFirstRender = useRef(true);
@@ -59,7 +59,7 @@ export const MapView: React.FC<MapViewProps> = ({
       bearing,
       padding,
       duration: animation.duration,
-      essential: true
+      essential: true,
     };
 
     if (isFirstRender.current || !animation.animate) {
@@ -67,13 +67,13 @@ export const MapView: React.FC<MapViewProps> = ({
       isFirstRender.current = false;
     } else {
       switch (transitionType) {
-        case 'jumpTo':
+        case "jumpTo":
           map.jumpTo(options);
           break;
-        case 'easeTo':
+        case "easeTo":
           map.easeTo(options);
           break;
-        case 'flyTo':
+        case "flyTo":
         default:
           map.flyTo(options);
           break;
@@ -82,12 +82,21 @@ export const MapView: React.FC<MapViewProps> = ({
 
     if (onMoveEnd) {
       const handler = () => onMoveEnd();
-      map.once('moveend', handler);
+      map.once("moveend", handler);
       return () => {
-        map.off('moveend', handler);
+        map.off("moveend", handler);
       };
     }
-  }, [map, isLoaded, longitude, latitude, zoom, pitch, bearing, transitionType]);
+  }, [
+    map,
+    isLoaded,
+    longitude,
+    latitude,
+    zoom,
+    pitch,
+    bearing,
+    transitionType,
+  ]);
 
   return null;
 };

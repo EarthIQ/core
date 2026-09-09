@@ -1,9 +1,14 @@
-import * as turf from '@turf/turf';
-import React, { useState, useCallback, useMemo } from 'react';
+import * as turf from "@turf/turf";
+import React, { useState, useCallback, useMemo } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { Feature, FeatureCollection, Polygon, MultiPolygon } from 'geojson';
+import type {
+  Feature,
+  FeatureCollection,
+  Polygon,
+  MultiPolygon,
+} from "geojson";
 
 export interface UnionToolProps {
   /** Source layers or GeoJSON */
@@ -21,21 +26,21 @@ export interface UnionToolProps {
   /** Custom className */
   className?: string;
   /** Position */
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   /** Preserve properties strategy */
-  propertiesStrategy?: 'first' | 'last' | 'merge' | 'none';
+  propertiesStrategy?: "first" | "last" | "merge" | "none";
 }
 
 export const UnionTool: React.FC<UnionToolProps> = ({
   sources,
-  outputLayerId = 'union-result',
+  outputLayerId = "union-result",
   onResult,
   onError,
   showControls = true,
   autoExecute = false,
   className,
-  position = 'top-right',
-  propertiesStrategy = 'merge'
+  position = "top-right",
+  propertiesStrategy = "merge",
 }) => {
   const { map, isLoaded } = useMap();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -44,35 +49,41 @@ export const UnionTool: React.FC<UnionToolProps> = ({
   const [showResult, setShowResult] = useState(true);
 
   // Get GeoJSON from source
-  const getGeoJSON = useCallback((source: string | FeatureCollection): FeatureCollection | null => {
-    if (typeof source === 'object') {
-      return source;
-    }
-    
-    if (!map) return null;
-    
-    const mapSource = map.getSource(source);
-    if (mapSource && mapSource.type === 'geojson') {
-      return (mapSource as any)._data as FeatureCollection;
-    }
-    
-    return null;
-  }, [map]);
+  const getGeoJSON = useCallback(
+    (source: string | FeatureCollection): FeatureCollection | null => {
+      if (typeof source === "object") {
+        return source;
+      }
+
+      if (!map) return null;
+
+      const mapSource = map.getSource(source);
+      if (mapSource && mapSource.type === "geojson") {
+        return (mapSource as any)._data as FeatureCollection;
+      }
+
+      return null;
+    },
+    [map]
+  );
 
   // Merge properties based on strategy
-  const mergeProperties = useCallback((features: Feature[]): Record<string, any> => {
-    switch (propertiesStrategy) {
-      case 'first':
-        return features[0]?.properties || {};
-      case 'last':
-        return features[features.length - 1]?.properties || {};
-      case 'merge':
-        return features.reduce((acc, f) => ({ ...acc, ...f.properties }), {});
-      case 'none':
-      default:
-        return {};
-    }
-  }, [propertiesStrategy]);
+  const mergeProperties = useCallback(
+    (features: Feature[]): Record<string, any> => {
+      switch (propertiesStrategy) {
+        case "first":
+          return features[0]?.properties || {};
+        case "last":
+          return features[features.length - 1]?.properties || {};
+        case "merge":
+          return features.reduce((acc, f) => ({ ...acc, ...f.properties }), {});
+        case "none":
+        default:
+          return {};
+      }
+    },
+    [propertiesStrategy]
+  );
 
   // Perform union
   const executeUnion = useCallback(() => {
@@ -87,7 +98,10 @@ export const UnionTool: React.FC<UnionToolProps> = ({
         const geoJson = getGeoJSON(source);
         if (geoJson) {
           for (const feature of geoJson.features) {
-            if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
+            if (
+              feature.geometry.type === "Polygon" ||
+              feature.geometry.type === "MultiPolygon"
+            ) {
               allFeatures.push(feature as Feature<Polygon | MultiPolygon>);
             }
           }
@@ -95,7 +109,7 @@ export const UnionTool: React.FC<UnionToolProps> = ({
       }
 
       if (allFeatures.length === 0) {
-        throw new Error('No polygon features found in sources');
+        throw new Error("No polygon features found in sources");
       }
 
       if (allFeatures.length === 1) {
@@ -107,9 +121,11 @@ export const UnionTool: React.FC<UnionToolProps> = ({
 
       // Perform union iteratively
       let unionResult = allFeatures[0];
-      
+
       for (let i = 1; i < allFeatures.length; i++) {
-        const union = turf.union(turf.featureCollection([unionResult, allFeatures[i]]));
+        const union = turf.union(
+          turf.featureCollection([unionResult, allFeatures[i]])
+        );
         if (union) {
           unionResult = union;
         }
@@ -119,7 +135,7 @@ export const UnionTool: React.FC<UnionToolProps> = ({
       unionResult.properties = {
         ...mergeProperties(allFeatures),
         _unionCount: allFeatures.length,
-        _unionTimestamp: new Date().toISOString()
+        _unionTimestamp: new Date().toISOString(),
       };
 
       setResult(unionResult);
@@ -128,38 +144,47 @@ export const UnionTool: React.FC<UnionToolProps> = ({
       // Add to map
       if (map && showResult) {
         const fc: FeatureCollection = {
-          type: 'FeatureCollection',
-          features: [unionResult]
+          type: "FeatureCollection",
+          features: [unionResult],
         };
 
         if (map.getSource(outputLayerId)) {
-          (map.getSource(outputLayerId)).setData(fc);
+          map.getSource(outputLayerId).setData(fc);
         } else {
           map.addSource(outputLayerId, {
-            type: 'geojson',
-            data: fc
+            type: "geojson",
+            data: fc,
           });
 
           map.addLayer({
             id: outputLayerId,
-            type: 'fill',
+            type: "fill",
             source: outputLayerId,
             paint: {
-              'fill-color': '#9b59b6',
-              'fill-opacity': 0.6,
-              'fill-outline-color': '#8e44ad'
-            }
+              "fill-color": "#9b59b6",
+              "fill-opacity": 0.6,
+              "fill-outline-color": "#8e44ad",
+            },
           });
         }
       }
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Union failed');
+      const error = err instanceof Error ? err : new Error("Union failed");
       setError(error);
       onError?.(error);
     } finally {
       setIsProcessing(false);
     }
-  }, [sources, getGeoJSON, map, outputLayerId, showResult, mergeProperties, onResult, onError]);
+  }, [
+    sources,
+    getGeoJSON,
+    map,
+    outputLayerId,
+    showResult,
+    mergeProperties,
+    onResult,
+    onError,
+  ]);
 
   // Auto-execute
   React.useEffect(() => {
@@ -183,15 +208,20 @@ export const UnionTool: React.FC<UnionToolProps> = ({
 
   // Position styles
   const positionStyles = useMemo(() => {
-    const base = { position: 'absolute' as const, zIndex: 1000 };
+    const base = { position: "absolute" as const, zIndex: 1000 };
     const offset = 10;
-    
+
     switch (position) {
-      case 'top-left': return { ...base, top: offset, left: offset };
-      case 'top-right': return { ...base, top: offset, right: offset };
-      case 'bottom-left': return { ...base, bottom: offset, left: offset };
-      case 'bottom-right': return { ...base, bottom: offset, right: offset };
-      default: return { ...base, top: offset, right: offset };
+      case "top-left":
+        return { ...base, top: offset, left: offset };
+      case "top-right":
+        return { ...base, top: offset, right: offset };
+      case "bottom-left":
+        return { ...base, bottom: offset, left: offset };
+      case "bottom-right":
+        return { ...base, bottom: offset, right: offset };
+      default:
+        return { ...base, top: offset, right: offset };
     }
   }, [position]);
 
@@ -202,61 +232,88 @@ export const UnionTool: React.FC<UnionToolProps> = ({
       className={className}
       style={{
         ...positionStyles,
-        backgroundColor: 'white',
+        backgroundColor: "white",
         borderRadius: 8,
         padding: 16,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        minWidth: 250
+        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+        minWidth: 250,
       }}
     >
-      <div style={{ fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
-          <circle cx="8" cy="12" r="6" />
-          <circle cx="16" cy="12" r="6" />
+      <div
+        style={{
+          fontWeight: 600,
+          marginBottom: 12,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <svg
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width="16"
+        >
+          <circle
+            cx="8"
+            cy="12"
+            r="6"
+          />
+          <circle
+            cx="16"
+            cy="12"
+            r="6"
+          />
         </svg>
         Union Tool
       </div>
 
-      <div style={{ fontSize: 12, color: '#666', marginBottom: 12 }}>
+      <div style={{ fontSize: 12, color: "#666", marginBottom: 12 }}>
         <div>Sources: {sources.length} layer(s)</div>
         <div>Strategy: {propertiesStrategy}</div>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <button
           disabled={isProcessing || !isLoaded}
           style={{
             flex: 1,
-            padding: '8px 12px',
-            backgroundColor: isProcessing ? '#95a5a6' : '#9b59b6',
-            color: 'white',
-            border: 'none',
+            padding: "8px 12px",
+            backgroundColor: isProcessing ? "#95a5a6" : "#9b59b6",
+            color: "white",
+            border: "none",
             borderRadius: 4,
-            cursor: isProcessing ? 'not-allowed' : 'pointer',
-            fontSize: 13
+            cursor: isProcessing ? "not-allowed" : "pointer",
+            fontSize: 13,
           }}
           onClick={executeUnion}
         >
-          {isProcessing ? 'Processing...' : 'Execute Union'}
+          {isProcessing ? "Processing..." : "Execute Union"}
         </button>
 
-        {result ? <button
+        {result ? (
+          <button
             style={{
-              padding: '8px 12px',
-              backgroundColor: '#e74c3c',
-              color: 'white',
-              border: 'none',
+              padding: "8px 12px",
+              backgroundColor: "#e74c3c",
+              color: "white",
+              border: "none",
               borderRadius: 4,
-              cursor: 'pointer',
-              fontSize: 13
+              cursor: "pointer",
+              fontSize: 13,
             }}
             onClick={clearResult}
           >
             Clear
-          </button> : null}
+          </button>
+        ) : null}
       </div>
 
-      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+      <label
+        style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}
+      >
         <input
           checked={showResult}
           type="checkbox"
@@ -265,28 +322,36 @@ export const UnionTool: React.FC<UnionToolProps> = ({
         Show result on map
       </label>
 
-      {error ? <div style={{
-          marginTop: 12,
-          padding: 8,
-          backgroundColor: '#fee',
-          borderRadius: 4,
-          color: '#c0392b',
-          fontSize: 12
-        }}>
+      {error ? (
+        <div
+          style={{
+            marginTop: 12,
+            padding: 8,
+            backgroundColor: "#fee",
+            borderRadius: 4,
+            color: "#c0392b",
+            fontSize: 12,
+          }}
+        >
           {error.message}
-        </div> : null}
+        </div>
+      ) : null}
 
-      {result ? <div style={{
-          marginTop: 12,
-          padding: 8,
-          backgroundColor: '#f3e5f5',
-          borderRadius: 4,
-          fontSize: 12
-        }}>
+      {result ? (
+        <div
+          style={{
+            marginTop: 12,
+            padding: 8,
+            backgroundColor: "#f3e5f5",
+            borderRadius: 4,
+            fontSize: 12,
+          }}
+        >
           <strong>Result:</strong> {result.geometry.type}
           <br />
           <small>Area: {turf.area(result).toLocaleString()} m²</small>
-        </div> : null}
+        </div>
+      ) : null}
     </div>
   );
 };

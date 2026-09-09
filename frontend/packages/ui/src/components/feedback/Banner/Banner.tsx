@@ -55,7 +55,7 @@ const InfoIcon = ({ variant }: { variant: string }) => {
       />
     </svg>
   );
-}
+};
 
 const SuccessIcon = ({ variant }: { variant: string }) => {
   return (
@@ -74,7 +74,7 @@ const SuccessIcon = ({ variant }: { variant: string }) => {
       />
     </svg>
   );
-}
+};
 
 const WarningIcon = ({ variant }: { variant: string }) => {
   return (
@@ -93,7 +93,7 @@ const WarningIcon = ({ variant }: { variant: string }) => {
       />
     </svg>
   );
-}
+};
 
 const ErrorIcon = ({ variant }: { variant: string }) => {
   return (
@@ -112,7 +112,7 @@ const ErrorIcon = ({ variant }: { variant: string }) => {
       />
     </svg>
   );
-}
+};
 
 const NeutralIcon = ({ variant }: { variant: string }) => {
   return (
@@ -131,7 +131,7 @@ const NeutralIcon = ({ variant }: { variant: string }) => {
       />
     </svg>
   );
-}
+};
 
 const variantIcons: Record<string, (variant: string) => ReactNode> = {
   info: (variant) => <InfoIcon variant={variant} />,
@@ -178,22 +178,27 @@ export const Banner = ({
           <div className="mx-auto max-w-7xl px-4 py-3">
             <div className="flex items-center justify-between gap-4">
               <div className="flex min-w-0 flex-1 items-center gap-3">
-                {(icon || variantIcons[variant]) ? <span className="flex-shrink-0">
+                {icon || variantIcons[variant] ? (
+                  <span className="flex-shrink-0">
                     {icon || variantIcons[variant](variant)}
-                  </span> : null}
+                  </span>
+                ) : null}
                 <p className="text-sm leading-relaxed">{children}</p>
               </div>
 
               <div className="flex flex-shrink-0 items-center gap-3">
-                {action ? <button
+                {action ? (
+                  <button
                     className="text-sm font-medium underline-offset-4 transition-opacity hover:underline hover:opacity-80"
                     type="button"
                     onClick={action.onClick}
                   >
                     {action.label}
-                  </button> : null}
+                  </button>
+                ) : null}
 
-                {dismissible ? <button
+                {dismissible ? (
+                  <button
                     aria-label="Dismiss banner"
                     className="rounded-lg p-1 transition-colors hover:bg-[var(--surface-hover)]"
                     type="button"
@@ -212,7 +217,8 @@ export const Banner = ({
                         strokeWidth={2}
                       />
                     </svg>
-                  </button> : null}
+                  </button>
+                ) : null}
               </div>
             </div>
           </div>
@@ -220,4 +226,4 @@ export const Banner = ({
       )}
     </AnimatePresence>
   );
-}
+};

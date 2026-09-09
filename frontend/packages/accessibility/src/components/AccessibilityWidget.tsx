@@ -100,7 +100,10 @@ export const AccessibilityWidget: React.FC<AccessibilityWidgetProps> = ({
         onClose={() => setIsOpen(false)}
         onReset={resetSettings}
       >
-        <Accordion allowMultiple={false} defaultOpen={["settings"]}>
+        <Accordion
+          allowMultiple={false}
+          defaultOpen={["settings"]}
+        >
           {/* Profiles Section */}
           <AccordionItem
             id="profiles"
@@ -108,9 +111,11 @@ export const AccessibilityWidget: React.FC<AccessibilityWidgetProps> = ({
               <div className="flex w-full items-center gap-2">
                 <Icons.accessibility className="h-5 w-5" />
                 <span>{t("profiles")}</span>
-                {settings.activeProfile ? <span className="ml-auto text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                {settings.activeProfile ? (
+                  <span className="bg-primary/20 text-primary ml-auto rounded-full px-2 py-0.5 text-xs">
                     Active
-                  </span> : null}
+                  </span>
+                ) : null}
               </div>
             }
           >

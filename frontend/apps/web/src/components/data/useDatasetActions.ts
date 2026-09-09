@@ -28,7 +28,7 @@ export function useDatasetActions(opts: {
   const [inspectTarget, setInspectTarget] = useState<DatasetItem | null>(null);
   const [editDataset, setEditDataset] = useState<DatasetItem | null>(null);
   const [tileUrlDataset, setTileUrlDataset] = useState<DatasetItem | null>(
-    null,
+    null
   );
   const [confirmDelete, setConfirmDelete] = useState<{
     ids: string[];
@@ -79,7 +79,7 @@ export function useDatasetActions(opts: {
         addToast("error", err?.message ?? "Download failed.");
       }
     },
-    [addToast],
+    [addToast]
   );
 
   // ── Edit ────────────────────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ export function useDatasetActions(opts: {
           ...payload,
         });
         updateDatasets((prev) =>
-          prev.map((d) => (d.id === updated.id ? { ...d, ...updated } : d)),
+          prev.map((d) => (d.id === updated.id ? { ...d, ...updated } : d))
         );
         setEditDataset(null);
         addToast("success", "Dataset updated.");
@@ -114,7 +114,7 @@ export function useDatasetActions(opts: {
         setEditSaving(false);
       }
     },
-    [editDataset, updateDatasets, addToast],
+    [editDataset, updateDatasets, addToast]
   );
 
   // ── Delete ───────────────────────────────────────────────────────────────────
@@ -143,14 +143,14 @@ export function useDatasetActions(opts: {
           "success",
           ids.length === 1
             ? "Dataset deleted."
-            : `${ids.length} datasets deleted.`,
+            : `${ids.length} datasets deleted.`
         );
       } catch {
         addToast("error", "Some deletions failed - refreshing list.");
         refresh();
       }
     },
-    [confirmDelete, updateDatasets, addToast, refresh],
+    [confirmDelete, updateDatasets, addToast, refresh]
   );
 
   // ── Move to folder ─────────────────────────────────────────────────────────
@@ -167,7 +167,9 @@ export function useDatasetActions(opts: {
       try {
         await Promise.all(ids.map((id) => moveDataset(id, folderId)));
         updateDatasets((prev) =>
-          prev.map((d) => (ids.includes(d.id) ? { ...d, folder_id: folderId } : d)),
+          prev.map((d) =>
+            ids.includes(d.id) ? { ...d, folder_id: folderId } : d
+          )
         );
         setMoveTargets(null);
         refreshFolders?.();
@@ -176,7 +178,7 @@ export function useDatasetActions(opts: {
           "success",
           moveTargets.length === 1
             ? "Dataset moved."
-            : `${moveTargets.length} datasets moved.`,
+            : `${moveTargets.length} datasets moved.`
         );
       } catch (err: any) {
         addToast("error", err?.message ?? "Move failed.");
@@ -184,7 +186,7 @@ export function useDatasetActions(opts: {
         setMoveSaving(false);
       }
     },
-    [moveTargets, updateDatasets, addToast, refresh, refreshFolders],
+    [moveTargets, updateDatasets, addToast, refresh, refreshFolders]
   );
 
   // ── Copy helpers ─────────────────────────────────────────────────────────────
@@ -197,11 +199,11 @@ export function useDatasetActions(opts: {
         if (copiedTimer.current) window.clearTimeout(copiedTimer.current);
         copiedTimer.current = window.setTimeout(
           () => setTileCopied(false),
-          2000,
+          2000
         );
       });
     },
-    [addToast],
+    [addToast]
   );
 
   const handleCopyId = useCallback(
@@ -213,7 +215,7 @@ export function useDatasetActions(opts: {
         copiedTimer.current = window.setTimeout(() => setIdCopied(false), 2000);
       });
     },
-    [addToast],
+    [addToast]
   );
 
   // ── Open tile URL modal ────────────────────────────────────────────────────

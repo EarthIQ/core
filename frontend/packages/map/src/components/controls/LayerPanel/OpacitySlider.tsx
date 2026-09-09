@@ -112,7 +112,8 @@ export const OpacitySlider: React.FC<OpacitySliderProps> = ({
       </div>
 
       {/* Percentage readout */}
-      {showValue ? <span
+      {showValue ? (
+        <span
           aria-hidden="true"
           style={{
             fontSize: "11px",
@@ -124,7 +125,8 @@ export const OpacitySlider: React.FC<OpacitySliderProps> = ({
           }}
         >
           {percentage}%
-        </span> : null}
+        </span>
+      ) : null}
     </div>
   );
 };

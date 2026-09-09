@@ -1,16 +1,12 @@
-import { cn , Button } from "@packages/ui";
+import { cn, Button } from "@packages/ui";
 import { ArrowLeft, ChevronDown, MapPin, Sparkles } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
-import {
-  buildBuilderUrl,
-  type ProjectBuilder,
-} from "@/lib/builders";
+import { buildBuilderUrl, type ProjectBuilder } from "@/lib/builders";
 import { fetchProjectById } from "@/lib/projects";
 
 import { BuilderPicker } from "./BuilderPicker";
-
 
 interface BuilderScaffoldProps {
   /** The builder definition this page belongs to (from `lib/builders.tsx`). */
@@ -62,7 +58,7 @@ export const BuilderScaffold = ({
   if (!projectId) {
     return (
       <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <div className="bg-primary/10 text-primary flex h-14 w-14 items-center justify-center rounded-2xl">
           <MapPin size={24} />
         </div>
         <h2 className="mt-4 text-lg font-semibold text-[var(--text-primary)]">
@@ -71,7 +67,10 @@ export const BuilderScaffold = ({
         <p className="mt-1.5 text-sm text-[var(--text-tertiary)]">
           Open a project to start building with its maps and data.
         </p>
-        <Button className="mt-5" onClick={() => navigate("/projects")}>
+        <Button
+          className="mt-5"
+          onClick={() => navigate("/projects")}
+        >
           Browse projects
         </Button>
       </div>
@@ -89,13 +88,16 @@ export const BuilderScaffold = ({
       <span
         className={cn(
           "flex h-6 w-6 items-center justify-center rounded-md",
-          builder.iconClassName ?? "text-primary bg-primary/10",
+          builder.iconClassName ?? "text-primary bg-primary/10"
         )}
       >
         <Icon size={14} />
       </span>
       <span className="hidden sm:inline">{builder.label}</span>
-      <ChevronDown className="text-[var(--text-tertiary)]" size={14} />
+      <ChevronDown
+        className="text-[var(--text-tertiary)]"
+        size={14}
+      />
     </button>
   );
   return (
@@ -116,7 +118,7 @@ export const BuilderScaffold = ({
           <span className="h-5 w-px bg-[var(--border-primary)]" />
 
           <div className="flex flex-col leading-tight">
-            <span className="text-[0.7rem] font-medium uppercase tracking-wider text-[var(--text-tertiary)]">
+            <span className="text-[0.7rem] font-medium tracking-wider text-[var(--text-tertiary)] uppercase">
               {projectTitle || "Project builder"}
             </span>
             <span className="text-sm font-semibold text-[var(--text-primary)]">
@@ -140,7 +142,7 @@ export const BuilderScaffold = ({
               <div
                 className={cn(
                   "mx-auto flex h-16 w-16 items-center justify-center rounded-2xl",
-                  builder.iconClassName ?? "text-primary bg-primary/10",
+                  builder.iconClassName ?? "text-primary bg-primary/10"
                 )}
               >
                 <Icon size={28} />
@@ -155,7 +157,7 @@ export const BuilderScaffold = ({
 
             <div className="px-6 py-8">
               <div className="mx-auto max-w-md text-center">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                <div className="bg-primary/10 text-primary inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold">
                   <Sparkles size={13} />
                   Preview
                 </div>
@@ -184,4 +186,4 @@ export const BuilderScaffold = ({
       )}
     </div>
   );
-}
+};

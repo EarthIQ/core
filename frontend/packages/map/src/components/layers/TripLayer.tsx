@@ -1,11 +1,10 @@
-import { TripsLayer } from '@deck.gl/geo-layers';
-import { useEffect, useId, useState, useRef, useCallback } from 'react';
+import { TripsLayer } from "@deck.gl/geo-layers";
+import { useEffect, useId, useState, useRef, useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-
-import type { GeoJSON } from 'geojson';
-import type React from 'react';
+import type { GeoJSON } from "geojson";
+import type React from "react";
 
 export interface TripData {
   path: [number, number, number][]; // [lng, lat, timestamp]
@@ -24,7 +23,9 @@ export interface TripLayerProps {
   /** Get timestamps accessor */
   getTimestamps?: (d: any) => number[];
   /** Get color accessor */
-  getColor?: [number, number, number, number] | ((d: any) => [number, number, number, number]);
+  getColor?:
+    | [number, number, number, number]
+    | ((d: any) => [number, number, number, number]);
   /** Get width accessor */
   getWidth?: number | ((d: any) => number);
   /** Current time for animation */
@@ -32,7 +33,7 @@ export interface TripLayerProps {
   /** Trail length */
   trailLength?: number;
   /** Width units */
-  widthUnits?: 'pixels' | 'meters' | 'common';
+  widthUnits?: "pixels" | "meters" | "common";
   /** Width scale */
   widthScale?: number;
   /** Width min pixels */
@@ -76,7 +77,7 @@ export const TripLayer: React.FC<TripLayerProps> = ({
   getWidth = 3,
   currentTime: propCurrentTime,
   trailLength = 180,
-  widthUnits = 'pixels',
+  widthUnits = "pixels",
   widthScale = 1,
   widthMinPixels = 1,
   widthMaxPixels = 10,
@@ -92,7 +93,7 @@ export const TripLayer: React.FC<TripLayerProps> = ({
   autoPlay = true,
   duration = 30000,
   onTimeChange,
-  fadeTrail = true
+  fadeTrail = true,
 }) => {
   const { map: _map, deck, isLoaded: _isLoaded } = useMap();
   const autoId = useId();
@@ -110,19 +111,23 @@ export const TripLayer: React.FC<TripLayerProps> = ({
     const process = async () => {
       let rawData: any[];
 
-      if (typeof data === 'string') {
+      if (typeof data === "string") {
         try {
           const response = await fetch(data);
           const json = await response.json();
-          rawData = json.type === 'FeatureCollection' ? json.features : json;
+          rawData = json.type === "FeatureCollection" ? json.features : json;
         } catch (error) {
-          console.error('Failed to fetch trip layer data:', error);
+          console.error("Failed to fetch trip layer data:", error);
           return;
         }
-      } else if ((data as GeoJSON.FeatureCollection).type === 'FeatureCollection') {
-        rawData = (data as GeoJSON.FeatureCollection<GeoJSON.LineString>).features.map(f => ({
+      } else if (
+        (data as GeoJSON.FeatureCollection).type === "FeatureCollection"
+      ) {
+        rawData = (
+          data as GeoJSON.FeatureCollection<GeoJSON.LineString>
+        ).features.map((f) => ({
           path: f.geometry.coordinates,
-          ...f.properties
+          ...f.properties,
         }));
       } else {
         rawData = data as TripData[];
@@ -132,7 +137,7 @@ export const TripLayer: React.FC<TripLayerProps> = ({
       let minTime = Infinity;
       let maxTime = -Infinity;
 
-      rawData.forEach(d => {
+      rawData.forEach((d) => {
         const timestamps = getTimestamps(d);
         if (timestamps && timestamps.length > 0) {
           minTime = Math.min(minTime, Math.min(...timestamps));
@@ -162,9 +167,9 @@ export const TripLayer: React.FC<TripLayerProps> = ({
       const delta = timestamp - lastTimeRef.current;
       lastTimeRef.current = timestamp;
 
-      setAnimationTime(prev => {
+      setAnimationTime((prev) => {
         let next = prev + delta * speed;
-        
+
         if (next > timeRange[1]) {
           if (loop) {
             next = timeRange[0];
@@ -172,7 +177,7 @@ export const TripLayer: React.FC<TripLayerProps> = ({
             next = timeRange[1];
           }
         }
-        
+
         onTimeChange?.(next);
         return next;
       });
@@ -187,7 +192,15 @@ export const TripLayer: React.FC<TripLayerProps> = ({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [autoPlay, visible, propCurrentTime, loop, speed, timeRange, onTimeChange]);
+  }, [
+    autoPlay,
+    visible,
+    propCurrentTime,
+    loop,
+    speed,
+    timeRange,
+    onTimeChange,
+  ]);
 
   // Deck.gl rendering
   useEffect(() => {
@@ -206,8 +219,8 @@ export const TripLayer: React.FC<TripLayerProps> = ({
         return path;
       },
       getTimestamps,
-      getColor: typeof getColor === 'function' ? getColor : () => getColor,
-      getWidth: typeof getWidth === 'function' ? getWidth : () => getWidth,
+      getColor: typeof getColor === "function" ? getColor : () => getColor,
+      getWidth: typeof getWidth === "function" ? getWidth : () => getWidth,
       currentTime,
       trailLength,
       widthUnits,
@@ -224,8 +237,8 @@ export const TripLayer: React.FC<TripLayerProps> = ({
       fadeTrail,
       updateTriggers: {
         getColor,
-        getWidth
-      }
+        getWidth,
+      },
     });
 
     const currentLayers = deck.props.layers || [];
@@ -235,27 +248,46 @@ export const TripLayer: React.FC<TripLayerProps> = ({
     return () => {
       const layers = deck.props.layers || [];
       deck.setProps({
-        layers: layers.filter((l: any) => l.id !== id)
+        layers: layers.filter((l: any) => l.id !== id),
       });
     };
   }, [
-    deck, visible, processedData, id, currentTime, trailLength,
-    getPath, getTimestamps, getColor, getWidth,
-    widthUnits, widthScale, widthMinPixels, widthMaxPixels,
-    capRounded, jointRounded, opacity, pickable, onClick, onHover, fadeTrail
+    deck,
+    visible,
+    processedData,
+    id,
+    currentTime,
+    trailLength,
+    getPath,
+    getTimestamps,
+    getColor,
+    getWidth,
+    widthUnits,
+    widthScale,
+    widthMinPixels,
+    widthMaxPixels,
+    capRounded,
+    jointRounded,
+    opacity,
+    pickable,
+    onClick,
+    onHover,
+    fadeTrail,
   ]);
 
   return null;
 };
 
 // Hook for trip layer control
-export const useTripAnimation = (options: {
-  duration?: number;
-  speed?: number;
-  loop?: boolean;
-} = {}) => {
+export const useTripAnimation = (
+  options: {
+    duration?: number;
+    speed?: number;
+    loop?: boolean;
+  } = {}
+) => {
   const { duration = 30000, speed = 1, loop = true } = options;
-  
+
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeRange, setTimeRange] = useState<[number, number]>([0, duration]);
@@ -281,9 +313,12 @@ export const useTripAnimation = (options: {
     }
   }, [timeRange]);
 
-  const seek = useCallback((time: number) => {
-    setCurrentTime(Math.max(timeRange[0], Math.min(timeRange[1], time)));
-  }, [timeRange]);
+  const seek = useCallback(
+    (time: number) => {
+      setCurrentTime(Math.max(timeRange[0], Math.min(timeRange[1], time)));
+    },
+    [timeRange]
+  );
 
   useEffect(() => {
     if (!isPlaying) return;
@@ -296,9 +331,9 @@ export const useTripAnimation = (options: {
       const delta = timestamp - lastTimeRef.current;
       lastTimeRef.current = timestamp;
 
-      setCurrentTime(prev => {
+      setCurrentTime((prev) => {
         let next = prev + delta * speed;
-        
+
         if (next > timeRange[1]) {
           if (loop) {
             next = timeRange[0];
@@ -307,7 +342,7 @@ export const useTripAnimation = (options: {
             return timeRange[1];
           }
         }
-        
+
         return next;
       });
 
@@ -331,6 +366,6 @@ export const useTripAnimation = (options: {
     play,
     pause,
     stop,
-    seek
+    seek,
   };
 };

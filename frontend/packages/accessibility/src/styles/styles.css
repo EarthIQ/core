@@ -129,7 +129,11 @@
 
 .a11y-dyslexic-font,
 .a11y-dyslexic-font * {
-  font-family: "OpenDyslexic", -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-family:
+    "OpenDyslexic",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif !important;
 }
 
 /* =========================================
@@ -221,7 +225,8 @@
    ========================================= */
 .a11y-cursor-large,
 .a11y-cursor-large * {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23000' stroke='%23fff' stroke-width='2' d='M5 5l18 9-9 2.5-2.5 9z'/%3E%3C/svg%3E")
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23000' stroke='%23fff' stroke-width='2' d='M5 5l18 9-9 2.5-2.5 9z'/%3E%3C/svg%3E")
       5 5,
     auto !important;
 }
@@ -232,14 +237,16 @@
 .a11y-cursor-large input[type="submit"],
 .a11y-cursor-large input[type="button"],
 .a11y-cursor-large .btn {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23000' stroke='%23fff' stroke-width='2' d='M10 6v20l4-4h10z'/%3E%3C/svg%3E")
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23000' stroke='%23fff' stroke-width='2' d='M10 6v20l4-4h10z'/%3E%3C/svg%3E")
       10 6,
     pointer !important;
 }
 
 .a11y-cursor-larger,
 .a11y-cursor-larger * {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath fill='%23000' stroke='%23fff' stroke-width='2' d='M8 8l28 14-14 4-4 14z'/%3E%3C/svg%3E")
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath fill='%23000' stroke='%23fff' stroke-width='2' d='M8 8l28 14-14 4-4 14z'/%3E%3C/svg%3E")
       8 8,
     auto !important;
 }
@@ -250,7 +257,8 @@
 .a11y-cursor-larger input[type="submit"],
 .a11y-cursor-larger input[type="button"],
 .a11y-cursor-larger .btn {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath fill='%23000' stroke='%23fff' stroke-width='2' d='M14 8v32l6-6h16z'/%3E%3C/svg%3E")
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath fill='%23000' stroke='%23fff' stroke-width='2' d='M14 8v32l6-6h16z'/%3E%3C/svg%3E")
       14 8,
     pointer !important;
 }

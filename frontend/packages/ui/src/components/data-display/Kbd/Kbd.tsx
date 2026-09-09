@@ -31,7 +31,7 @@ export const Kbd = ({ children, size = "md", className }: KbdProps) => {
       {children}
     </kbd>
   );
-}
+};
 
 // Keyboard Shortcut Group
 interface KeyboardShortcutProps {
@@ -89,4 +89,4 @@ export const KeyboardShortcut = ({
       ))}
     </span>
   );
-}
+};

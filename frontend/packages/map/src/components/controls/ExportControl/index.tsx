@@ -77,7 +77,9 @@ export const ExportControl = ({
           onClose={() => setIsImageExportOpen(false)}
         />
       </Modal>
-      {videoOpen && isVideoExportOpen === undefined ? <VideoExportPanel /> : null}
+      {videoOpen && isVideoExportOpen === undefined ? (
+        <VideoExportPanel />
+      ) : null}
     </>
   );
-}
+};

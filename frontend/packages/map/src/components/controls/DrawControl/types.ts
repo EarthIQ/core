@@ -11,12 +11,7 @@ import type { ReactNode } from "react";
  * Drawing modes supported by the draw control
  */
 export type DrawMode =
-  | "polygon"
-  | "rectangle"
-  | "circle"
-  | "line"
-  | "point"
-  | "freehand";
+  "polygon" | "rectangle" | "circle" | "line" | "point" | "freehand";
 
 /**
  * Draw tool definition for the UI

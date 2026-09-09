@@ -25,7 +25,6 @@ import { ControlButton, ControlButtonFlyout } from "../MapControlButton";
 import type { StyleSpecification } from "maplibre-gl";
 import type * as maplibregl from "maplibre-gl";
 
-
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════
@@ -254,7 +253,9 @@ export const CompareControl = ({
             });
           }
         }
-      } catch (_e) { /* ignore map padding errors */ }
+      } catch (_e) {
+        /* ignore map padding errors */
+      }
     };
     updatePadding();
     window.addEventListener("resize", updatePadding);
@@ -265,7 +266,9 @@ export const CompareControl = ({
         if (rightMapInstance) {
           rightMapInstance.setPadding({ left: 0, top: 0, bottom: 0, right: 0 });
         }
-      } catch (_e) { /* ignore map padding errors */ }
+      } catch (_e) {
+        /* ignore map padding errors */
+      }
     };
   }, [map, isSideBySide, rightMapInstance]);
 
@@ -306,7 +309,9 @@ export const CompareControl = ({
       dragging = false;
       try {
         handle!.releasePointerCapture(e.pointerId);
-      } catch (_) { /* ignore capture release errors */ }
+      } catch (_) {
+        /* ignore capture release errors */
+      }
     }
 
     function onLostCapture() {
@@ -426,151 +431,161 @@ export const CompareControl = ({
         </ControlButtonFlyout>
       </div>
 
-      {isActive &&
-        capturedStyle &&
-        map?.getContainer() ? createPortal(
-          <div
-            ref={overlayRef}
-            style={{
-              position: "absolute",
-              inset: 0,
-              zIndex: 400,
-              pointerEvents: "none",
-            }}
-          >
-            {/* ── Right Map ────────────────────────────────────── */}
+      {isActive && capturedStyle && map?.getContainer()
+        ? createPortal(
             <div
+              ref={overlayRef}
               style={{
                 position: "absolute",
                 inset: 0,
+                zIndex: 400,
                 pointerEvents: "none",
-                clipPath: rightMapClipPath,
-                opacity: showSpyglassUI && !isSpyglassActive ? 0 : 1,
-                transition: showSpyglassUI ? "opacity 0.2s ease" : "none",
               }}
             >
-              <MapProvider>
-                <Map
-                  attributionControl={false}
-                  initialViewState={initialRightMapState}
-                  interactive={false}
-                  style={capturedStyle}
-                  onLoad={(m) => {
-                    rightMapInstanceRef.current = m;
-                    setRightMapInstance(m);
-                  }}
-                >
-                  {rightMapChildren}
-                </Map>
-              </MapProvider>
-            </div>
-
-            {/* ── Swipe / Side-by-side UI ──────────────────────── */}
-            {showSwipeUI ? <>
-                {renderLeftControl ? <div
-                    style={{
-                      position: "absolute",
-                      top: 16,
-                      left: 16,
-                      zIndex: 800,
-                      pointerEvents: "auto",
+              {/* ── Right Map ────────────────────────────────────── */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  pointerEvents: "none",
+                  clipPath: rightMapClipPath,
+                  opacity: showSpyglassUI && !isSpyglassActive ? 0 : 1,
+                  transition: showSpyglassUI ? "opacity 0.2s ease" : "none",
+                }}
+              >
+                <MapProvider>
+                  <Map
+                    attributionControl={false}
+                    initialViewState={initialRightMapState}
+                    interactive={false}
+                    style={capturedStyle}
+                    onLoad={(m) => {
+                      rightMapInstanceRef.current = m;
+                      setRightMapInstance(m);
                     }}
                   >
-                    {renderLeftControl}
-                  </div> : null}
-                {renderRightControl ? <div
-                    style={{
-                      position: "absolute",
-                      top: 16,
-                      right: 16,
-                      zIndex: 800,
-                      pointerEvents: "auto",
-                    }}
-                  >
-                    {renderRightControl}
-                  </div> : null}
+                    {rightMapChildren}
+                  </Map>
+                </MapProvider>
+              </div>
 
-                {/* Divider line */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    bottom: 0,
-                    left: `${currentSwipePos}%`,
-                    width: 4,
-                    transform: "translateX(-50%)",
-                    background: "white",
-                    boxShadow: "0 0 8px rgba(0,0,0,0.4)",
-                    zIndex: 850,
-                    pointerEvents: "none",
-                  }}
-                />
+              {/* ── Swipe / Side-by-side UI ──────────────────────── */}
+              {showSwipeUI ? (
+                <>
+                  {renderLeftControl ? (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 16,
+                        left: 16,
+                        zIndex: 800,
+                        pointerEvents: "auto",
+                      }}
+                    >
+                      {renderLeftControl}
+                    </div>
+                  ) : null}
+                  {renderRightControl ? (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 16,
+                        right: 16,
+                        zIndex: 800,
+                        pointerEvents: "auto",
+                      }}
+                    >
+                      {renderRightControl}
+                    </div>
+                  ) : null}
 
-                {/* Drag handle */}
-                {showDragHandle ? <div
-                    ref={handleCallbackRef}
+                  {/* Divider line */}
+                  <div
                     style={{
                       position: "absolute",
                       top: 0,
                       bottom: 0,
-                      left: `calc(${currentSwipePos}% - 20px)`,
-                      width: 40,
-                      zIndex: 900,
-                      pointerEvents: "auto",
-                      cursor: "ew-resize",
-                      touchAction: "none",
-                      userSelect: "none",
+                      left: `${currentSwipePos}%`,
+                      width: 4,
+                      transform: "translateX(-50%)",
+                      background: "white",
+                      boxShadow: "0 0 8px rgba(0,0,0,0.4)",
+                      zIndex: 850,
+                      pointerEvents: "none",
                     }}
-                  >
+                  />
+
+                  {/* Drag handle */}
+                  {showDragHandle ? (
                     <div
+                      ref={handleCallbackRef}
                       style={{
                         position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        width: 32,
-                        height: 32,
-                        borderRadius: "50%",
-                        background: "white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        boxShadow: "0 0 10px rgba(0,0,0,0.3)",
-                        pointerEvents: "none",
+                        top: 0,
+                        bottom: 0,
+                        left: `calc(${currentSwipePos}% - 20px)`,
+                        width: 40,
+                        zIndex: 900,
+                        pointerEvents: "auto",
+                        cursor: "ew-resize",
+                        touchAction: "none",
+                        userSelect: "none",
                       }}
                     >
-                      <Code className="h-4 w-4" />
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          transform: "translate(-50%, -50%)",
+                          width: 32,
+                          height: 32,
+                          borderRadius: "50%",
+                          background: "white",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "0 0 10px rgba(0,0,0,0.3)",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        <Code className="h-4 w-4" />
+                      </div>
                     </div>
-                  </div> : null}
-              </> : null}
+                  ) : null}
+                </>
+              ) : null}
 
-            {/* ── Spyglass cursor ──────────────────────────────── */}
-            {showSpyglassUI && isSpyglassActive ? <div
-                className={cn(
-                  "pointer-events-none absolute rounded-full",
-                  "border-4 border-white",
-                  "shadow-[0_0_0_2px_rgba(0,0,0,0.3),var(--shadow-xl)]"
-                )}
-                style={{
-                  zIndex: 700,
-                  width: spyglassRadius * 2,
-                  height: spyglassRadius * 2,
-                  left: spyglassPosition.x - spyglassRadius,
-                  top: spyglassPosition.y - spyglassRadius,
-                }}
-              >
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-4 w-px bg-white/50" />
+              {/* ── Spyglass cursor ──────────────────────────────── */}
+              {showSpyglassUI && isSpyglassActive ? (
+                <div
+                  className={cn(
+                    "pointer-events-none absolute rounded-full",
+                    "border-4 border-white",
+                    "shadow-[0_0_0_2px_rgba(0,0,0,0.3),var(--shadow-xl)]"
+                  )}
+                  style={{
+                    zIndex: 700,
+                    width: spyglassRadius * 2,
+                    height: spyglassRadius * 2,
+                    left: spyglassPosition.x - spyglassRadius,
+                    top: spyglassPosition.y - spyglassRadius,
+                  }}
+                >
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="h-4 w-px bg-white/50" />
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="h-px w-4 bg-white/50" />
+                  </div>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-px w-4 bg-white/50" />
-                </div>
-              </div> : null}
-          </div>,
-          map.getContainer()
-        ) : null}
+              ) : null}
+            </div>,
+            map.getContainer()
+          )
+        : null}
     </>
   );
-}
+};
 
 export default CompareControl;

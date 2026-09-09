@@ -1,10 +1,10 @@
 // components/analysis/StatisticsPanel.tsx
-import * as turf from '@turf/turf';
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import * as turf from "@turf/turf";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { FeatureCollection, Feature as _Feature } from 'geojson';
+import type { FeatureCollection, Feature as _Feature } from "geojson";
 
 export interface StatisticsResult {
   field: string;
@@ -24,13 +24,15 @@ export interface StatisticsPanelProps {
   /** Fields to analyze */
   fields?: string[];
   /** Statistics to calculate */
-  statistics?: ('count' | 'sum' | 'mean' | 'median' | 'min' | 'max' | 'stdDev' | 'unique')[];
+  statistics?: (
+    "count" | "sum" | "mean" | "median" | "min" | "max" | "stdDev" | "unique"
+  )[];
   /** Title */
   title?: string;
   /** Custom className */
   className?: string;
   /** Position */
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   /** Collapsible */
   collapsible?: boolean;
   /** Include geometry statistics */
@@ -44,14 +46,14 @@ export interface StatisticsPanelProps {
 export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
   source,
   fields,
-  statistics = ['count', 'sum', 'mean', 'min', 'max'],
-  title = 'Statistics',
+  statistics = ["count", "sum", "mean", "min", "max"],
+  title = "Statistics",
   className,
-  position = 'bottom-right',
+  position = "bottom-right",
   collapsible = true,
   includeGeometryStats = true,
   onCalculate,
-  autoUpdate = true
+  autoUpdate = true,
 }) => {
   const { map, isLoaded } = useMap();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -66,24 +68,25 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
 
   // Get GeoJSON from source
   const getGeoJSON = useCallback((): FeatureCollection | null => {
-    if (typeof source === 'object') {
+    if (typeof source === "object") {
       return source;
     }
-    
-    if (map && typeof source === 'string') {
+
+    if (map && typeof source === "string") {
       const mapSource = map.getSource(source);
-      if (mapSource && mapSource.type === 'geojson') {
+      if (mapSource && mapSource.type === "geojson") {
         return (mapSource as any)._data as FeatureCollection;
       }
     }
-    
+
     return null;
   }, [source, map]);
 
   // Calculate standard deviation
   const calcStdDev = (values: number[], mean: number): number => {
-    const squareDiffs = values.map(value => Math.pow(value - mean, 2));
-    const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / values.length;
+    const squareDiffs = values.map((value) => Math.pow(value - mean, 2));
+    const avgSquareDiff =
+      squareDiffs.reduce((a, b) => a + b, 0) / values.length;
     return Math.sqrt(avgSquareDiff);
   };
 
@@ -106,53 +109,56 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
       if (!fieldsToAnalyze || fieldsToAnalyze.length === 0) {
         // Auto-detect numeric fields
         const sampleProps = features[0]?.properties || {};
-        fieldsToAnalyze = Object.keys(sampleProps).filter(key => {
+        fieldsToAnalyze = Object.keys(sampleProps).filter((key) => {
           const value = sampleProps[key];
-          return typeof value === 'number' || !isNaN(parseFloat(value));
+          return typeof value === "number" || !isNaN(parseFloat(value));
         });
       }
 
       // Calculate field statistics
-      const fieldResults: StatisticsResult[] = fieldsToAnalyze.map(field => {
+      const fieldResults: StatisticsResult[] = fieldsToAnalyze.map((field) => {
         const values = features
-          .map(f => f.properties?.[field])
-          .filter(v => v !== null && v !== undefined);
+          .map((f) => f.properties?.[field])
+          .filter((v) => v !== null && v !== undefined);
 
         const numericValues = values
-          .map(v => typeof v === 'number' ? v : parseFloat(v))
-          .filter(v => !isNaN(v));
+          .map((v) => (typeof v === "number" ? v : parseFloat(v)))
+          .filter((v) => !isNaN(v));
 
         const result: StatisticsResult = {
           field,
-          count: values.length
+          count: values.length,
         };
 
         if (numericValues.length > 0) {
-          if (statistics.includes('sum')) {
+          if (statistics.includes("sum")) {
             result.sum = numericValues.reduce((a, b) => a + b, 0);
           }
-          if (statistics.includes('mean')) {
+          if (statistics.includes("mean")) {
             result.mean = result.sum! / numericValues.length;
           }
-          if (statistics.includes('median')) {
+          if (statistics.includes("median")) {
             const sorted = [...numericValues].sort((a, b) => a - b);
             const mid = Math.floor(sorted.length / 2);
-            result.median = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+            result.median =
+              sorted.length % 2
+                ? sorted[mid]
+                : (sorted[mid - 1] + sorted[mid]) / 2;
           }
-          if (statistics.includes('min')) {
+          if (statistics.includes("min")) {
             result.min = Math.min(...numericValues);
           }
-          if (statistics.includes('max')) {
+          if (statistics.includes("max")) {
             result.max = Math.max(...numericValues);
           }
-          if (statistics.includes('stdDev') && result.mean !== undefined) {
+          if (statistics.includes("stdDev") && result.mean !== undefined) {
             result.stdDev = calcStdDev(numericValues, result.mean);
           }
         }
 
-        if (statistics.includes('unique')) {
+        if (statistics.includes("unique")) {
           const uniqueValues = new Map<any, number>();
-          values.forEach(v => {
+          values.forEach((v) => {
             uniqueValues.set(v, (uniqueValues.get(v) || 0) + 1);
           });
           result.values = Array.from(uniqueValues.entries())
@@ -173,19 +179,19 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
         let totalLength = 0;
         const geometryTypes = new Map<string, number>();
 
-        features.forEach(feature => {
+        features.forEach((feature) => {
           const geomType = feature.geometry.type;
           geometryTypes.set(geomType, (geometryTypes.get(geomType) || 0) + 1);
 
           try {
-            if (geomType === 'Polygon' || geomType === 'MultiPolygon') {
+            if (geomType === "Polygon" || geomType === "MultiPolygon") {
               totalArea += turf.area(feature);
             }
-            if (geomType === 'LineString' || geomType === 'MultiLineString') {
-              totalLength += turf.length(feature, { units: 'kilometers' });
+            if (geomType === "LineString" || geomType === "MultiLineString") {
+              totalLength += turf.length(feature, { units: "kilometers" });
             }
           } catch (e) {
-            console.warn('Geometry calculation failed:', e);
+            console.warn("Geometry calculation failed:", e);
           }
         });
 
@@ -193,8 +199,9 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
           totalArea,
           totalLength,
           featureCount: features.length,
-          geometryTypes: Array.from(geometryTypes.entries())
-            .map(([type, count]) => ({ type, count }))
+          geometryTypes: Array.from(geometryTypes.entries()).map(
+            ([type, count]) => ({ type, count })
+          ),
         });
       }
     } finally {
@@ -211,7 +218,7 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
 
   // Format number
   const formatNumber = (num: number | undefined, decimals = 2): string => {
-    if (num === undefined) return '-';
+    if (num === undefined) return "-";
     return num.toLocaleString(undefined, { maximumFractionDigits: decimals });
   };
 
@@ -225,15 +232,20 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
 
   // Position styles
   const positionStyles = useMemo(() => {
-    const base = { position: 'absolute' as const, zIndex: 1000 };
+    const base = { position: "absolute" as const, zIndex: 1000 };
     const offset = 10;
-    
+
     switch (position) {
-      case 'top-left': return { ...base, top: offset, left: offset };
-      case 'top-right': return { ...base, top: offset, right: offset };
-      case 'bottom-left': return { ...base, bottom: offset, left: offset };
-      case 'bottom-right': return { ...base, bottom: offset, right: offset };
-      default: return { ...base, bottom: offset, right: offset };
+      case "top-left":
+        return { ...base, top: offset, left: offset };
+      case "top-right":
+        return { ...base, top: offset, right: offset };
+      case "bottom-left":
+        return { ...base, bottom: offset, left: offset };
+      case "bottom-right":
+        return { ...base, bottom: offset, right: offset };
+      default:
+        return { ...base, bottom: offset, right: offset };
     }
   }, [position]);
 
@@ -242,70 +254,140 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
       className={className}
       style={{
         ...positionStyles,
-        backgroundColor: 'white',
+        backgroundColor: "white",
         borderRadius: 8,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
         minWidth: 280,
         maxWidth: 350,
-        maxHeight: isCollapsed ? 'auto' : 400,
-        overflow: 'hidden'
+        maxHeight: isCollapsed ? "auto" : 400,
+        overflow: "hidden",
       }}
     >
       {/* Header */}
       <div
         style={{
-          padding: '12px 16px',
-          backgroundColor: '#f8f9fa',
-          borderBottom: '1px solid #eee',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          cursor: collapsible ? 'pointer' : 'default'
+          padding: "12px 16px",
+          backgroundColor: "#f8f9fa",
+          borderBottom: "1px solid #eee",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          cursor: collapsible ? "pointer" : "default",
         }}
         onClick={() => collapsible && setIsCollapsed(!isCollapsed)}
       >
-        <span style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
-            <line x1="18" x2="18" y1="20" y2="10" />
-            <line x1="12" x2="12" y1="20" y2="4" />
-            <line x1="6" x2="6" y1="20" y2="14" />
+        <span
+          style={{
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <svg
+            fill="none"
+            height="16"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            width="16"
+          >
+            <line
+              x1="18"
+              x2="18"
+              y1="20"
+              y2="10"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="20"
+              y2="4"
+            />
+            <line
+              x1="6"
+              x2="6"
+              y1="20"
+              y2="14"
+            />
           </svg>
           {title}
         </span>
-        {collapsible ? <span style={{ transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+        {collapsible ? (
+          <span
+            style={{
+              transform: isCollapsed ? "rotate(180deg)" : "none",
+              transition: "transform 0.2s",
+            }}
+          >
             ▼
-          </span> : null}
+          </span>
+        ) : null}
       </div>
 
       {/* Content */}
       {!isCollapsed && (
-        <div style={{ padding: 16, overflowY: 'auto', maxHeight: 340 }}>
+        <div style={{ padding: 16, overflowY: "auto", maxHeight: 340 }}>
           {isLoading ? (
-            <div style={{ textAlign: 'center', color: '#666', padding: 20 }}>
+            <div style={{ textAlign: "center", color: "#666", padding: 20 }}>
               Calculating...
             </div>
           ) : (
             <>
               {/* Geometry Statistics */}
-              {geometryStats ? <div style={{ marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid #eee' }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 8 }}>
+              {geometryStats ? (
+                <div
+                  style={{
+                    marginBottom: 16,
+                    paddingBottom: 16,
+                    borderBottom: "1px solid #eee",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#666",
+                      marginBottom: 8,
+                    }}
+                  >
                     Geometry Overview
                   </div>
                   <div style={{ fontSize: 13 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: 4,
+                      }}
+                    >
                       <span>Features:</span>
                       <strong>{geometryStats.featureCount}</strong>
                     </div>
                     {geometryStats.totalArea > 0 && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: 4,
+                        }}
+                      >
                         <span>Total Area:</span>
                         <strong>{formatArea(geometryStats.totalArea)}</strong>
                       </div>
                     )}
                     {geometryStats.totalLength > 0 && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: 4,
+                        }}
+                      >
                         <span>Total Length:</span>
-                        <strong>{geometryStats.totalLength.toFixed(2)} km</strong>
+                        <strong>
+                          {geometryStats.totalLength.toFixed(2)} km
+                        </strong>
                       </div>
                     )}
                     <div style={{ marginTop: 8 }}>
@@ -313,13 +395,13 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
                         <span
                           key={type}
                           style={{
-                            display: 'inline-block',
-                            padding: '2px 6px',
-                            backgroundColor: '#e8f4fd',
+                            display: "inline-block",
+                            padding: "2px 6px",
+                            backgroundColor: "#e8f4fd",
                             borderRadius: 4,
                             fontSize: 11,
                             marginRight: 4,
-                            marginBottom: 4
+                            marginBottom: 4,
                           }}
                         >
                           {type}: {count}
@@ -327,7 +409,8 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
                       ))}
                     </div>
                   </div>
-                </div> : null}
+                </div>
+              ) : null}
 
               {/* Field Statistics */}
               {results.map((stat, index) => (
@@ -336,81 +419,121 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
                   style={{
                     marginBottom: 12,
                     paddingBottom: 12,
-                    borderBottom: index < results.length - 1 ? '1px solid #f0f0f0' : 'none'
+                    borderBottom:
+                      index < results.length - 1 ? "1px solid #f0f0f0" : "none",
                   }}
                 >
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#333', marginBottom: 6 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#333",
+                      marginBottom: 6,
+                    }}
+                  >
                     {stat.field}
                   </div>
-                  <div style={{ fontSize: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-                    <span style={{ color: '#666' }}>Count:</span>
-                    <span style={{ textAlign: 'right' }}>{stat.count}</span>
-                    
+                  <div
+                    style={{
+                      fontSize: 12,
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 4,
+                    }}
+                  >
+                    <span style={{ color: "#666" }}>Count:</span>
+                    <span style={{ textAlign: "right" }}>{stat.count}</span>
+
                     {stat.sum !== undefined && (
                       <>
-                        <span style={{ color: '#666' }}>Sum:</span>
-                        <span style={{ textAlign: 'right' }}>{formatNumber(stat.sum)}</span>
+                        <span style={{ color: "#666" }}>Sum:</span>
+                        <span style={{ textAlign: "right" }}>
+                          {formatNumber(stat.sum)}
+                        </span>
                       </>
                     )}
-                    
+
                     {stat.mean !== undefined && (
                       <>
-                        <span style={{ color: '#666' }}>Mean:</span>
-                        <span style={{ textAlign: 'right' }}>{formatNumber(stat.mean)}</span>
+                        <span style={{ color: "#666" }}>Mean:</span>
+                        <span style={{ textAlign: "right" }}>
+                          {formatNumber(stat.mean)}
+                        </span>
                       </>
                     )}
-                    
+
                     {stat.median !== undefined && (
                       <>
-                        <span style={{ color: '#666' }}>Median:</span>
-                        <span style={{ textAlign: 'right' }}>{formatNumber(stat.median)}</span>
+                        <span style={{ color: "#666" }}>Median:</span>
+                        <span style={{ textAlign: "right" }}>
+                          {formatNumber(stat.median)}
+                        </span>
                       </>
                     )}
-                    
+
                     {stat.min !== undefined && (
                       <>
-                        <span style={{ color: '#666' }}>Min:</span>
-                        <span style={{ textAlign: 'right' }}>{formatNumber(stat.min)}</span>
+                        <span style={{ color: "#666" }}>Min:</span>
+                        <span style={{ textAlign: "right" }}>
+                          {formatNumber(stat.min)}
+                        </span>
                       </>
                     )}
-                    
+
                     {stat.max !== undefined && (
                       <>
-                        <span style={{ color: '#666' }}>Max:</span>
-                        <span style={{ textAlign: 'right' }}>{formatNumber(stat.max)}</span>
+                        <span style={{ color: "#666" }}>Max:</span>
+                        <span style={{ textAlign: "right" }}>
+                          {formatNumber(stat.max)}
+                        </span>
                       </>
                     )}
-                    
+
                     {stat.stdDev !== undefined && (
                       <>
-                        <span style={{ color: '#666' }}>Std Dev:</span>
-                        <span style={{ textAlign: 'right' }}>{formatNumber(stat.stdDev)}</span>
+                        <span style={{ color: "#666" }}>Std Dev:</span>
+                        <span style={{ textAlign: "right" }}>
+                          {formatNumber(stat.stdDev)}
+                        </span>
                       </>
                     )}
                   </div>
 
-                  {stat.values && stat.values.length > 0 ? <div style={{ marginTop: 8 }}>
-                      <div style={{ fontSize: 11, color: '#666', marginBottom: 4 }}>Top Values:</div>
+                  {stat.values && stat.values.length > 0 ? (
+                    <div style={{ marginTop: 8 }}>
+                      <div
+                        style={{ fontSize: 11, color: "#666", marginBottom: 4 }}
+                      >
+                        Top Values:
+                      </div>
                       {stat.values.slice(0, 5).map(({ value, count }) => (
                         <div
                           key={String(value)}
                           style={{
-                            display: 'flex',
-                            justifyContent:                             'space-between',
+                            display: "flex",
+                            justifyContent: "space-between",
                             fontSize: 11,
-                            padding: '2px 0'
+                            padding: "2px 0",
                           }}
                         >
                           <span>{String(value)}</span>
-                          <span style={{ color: '#666' }}>{count}</span>
+                          <span style={{ color: "#666" }}>{count}</span>
                         </div>
                       ))}
-                    </div> : null}
+                    </div>
+                  ) : null}
                 </div>
               ))}
 
               {results.length === 0 && !geometryStats && (
-                <div style={{ textAlign: 'center', color: '#999', padding: 20, fontSize: 13 }}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    color: "#999",
+                    padding: 20,
+                    fontSize: 13,
+                  }}
+                >
                   No data available
                 </div>
               )}
@@ -418,15 +541,15 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
               {/* Refresh button */}
               <button
                 style={{
-                  width: '100%',
+                  width: "100%",
                   marginTop: 8,
-                  padding: '8px 12px',
-                  backgroundColor: '#3498db',
-                  color: 'white',
-                  border: 'none',
+                  padding: "8px 12px",
+                  backgroundColor: "#3498db",
+                  color: "white",
+                  border: "none",
                   borderRadius: 4,
-                  cursor: 'pointer',
-                  fontSize: 12
+                  cursor: "pointer",
+                  fontSize: 12,
                 }}
                 onClick={calculateStatistics}
               >

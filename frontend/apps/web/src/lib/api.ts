@@ -4,17 +4,14 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
-    public body?: unknown,
+    public body?: unknown
   ) {
     super(message);
     this.name = "ApiError";
   }
 }
 
-async function request<T>(
-  path: string,
-  init: RequestInit = {},
-): Promise<T> {
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("eq_token");
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -26,7 +23,11 @@ async function request<T>(
 
   if (!res.ok) {
     let body: unknown;
-    try { body = await res.json(); } catch { /* ignore */ }
+    try {
+      body = await res.json();
+    } catch {
+      /* ignore */
+    }
     const msg =
       (body as { detail?: string })?.detail ??
       `HTTP ${res.status} ${res.statusText}`;
@@ -34,7 +35,7 @@ async function request<T>(
   }
 
   const text = await res.text();
-  return text ? (JSON.parse(text) as T) : (undefined);
+  return text ? (JSON.parse(text) as T) : undefined;
 }
 
 export const api = {

@@ -1,11 +1,10 @@
-import { ScatterplotLayer as DeckScatterplotLayer } from '@deck.gl/layers';
-import { useEffect, useId, useState, useCallback as _useCallback } from 'react';
+import { ScatterplotLayer as DeckScatterplotLayer } from "@deck.gl/layers";
+import { useEffect, useId, useState, useCallback as _useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-
-import type { GeoJSON } from 'geojson';
-import type React from 'react';
+import type { GeoJSON } from "geojson";
+import type React from "react";
 
 export interface ScatterplotLayerProps {
   /** Unique layer ID */
@@ -17,11 +16,15 @@ export interface ScatterplotLayerProps {
   /** Get radius accessor */
   getRadius?: number | ((d: any) => number);
   /** Get fill color accessor */
-  getFillColor?: [number, number, number, number] | ((d: any) => [number, number, number, number]);
+  getFillColor?:
+    | [number, number, number, number]
+    | ((d: any) => [number, number, number, number]);
   /** Get line color accessor */
-  getLineColor?: [number, number, number, number] | ((d: any) => [number, number, number, number]);
+  getLineColor?:
+    | [number, number, number, number]
+    | ((d: any) => [number, number, number, number]);
   /** Radius units */
-  radiusUnits?: 'pixels' | 'meters' | 'common';
+  radiusUnits?: "pixels" | "meters" | "common";
   /** Radius scale */
   radiusScale?: number;
   /** Radius min pixels */
@@ -29,7 +32,7 @@ export interface ScatterplotLayerProps {
   /** Radius max pixels */
   radiusMaxPixels?: number;
   /** Line width */
-  lineWidthUnits?: 'pixels' | 'meters' | 'common';
+  lineWidthUnits?: "pixels" | "meters" | "common";
   /** Line width scale */
   lineWidthScale?: number;
   /** Line width min pixels */
@@ -69,15 +72,17 @@ export interface ScatterplotLayerProps {
 export const ScatterplotLayer: React.FC<ScatterplotLayerProps> = ({
   id: propId,
   data,
-  getPosition = (d: any) => d.geometry?.coordinates || d.position || [d.lng || d.longitude, d.lat || d.latitude],
+  getPosition = (d: any) =>
+    d.geometry?.coordinates ||
+    d.position || [d.lng || d.longitude, d.lat || d.latitude],
   getRadius = 5,
   getFillColor = [255, 140, 0, 200],
   getLineColor = [0, 0, 0, 255],
-  radiusUnits = 'pixels',
+  radiusUnits = "pixels",
   radiusScale = 1,
   radiusMinPixels = 1,
   radiusMaxPixels = 100,
-  lineWidthUnits = 'pixels',
+  lineWidthUnits = "pixels",
   lineWidthScale = 1,
   lineWidthMinPixels = 1,
   lineWidthMaxPixels = 10,
@@ -94,7 +99,7 @@ export const ScatterplotLayer: React.FC<ScatterplotLayerProps> = ({
   highlightColor = [255, 255, 0, 255],
   autoHighlight = true,
   minZoom,
-  maxZoom
+  maxZoom,
 }) => {
   const { map, deck, isLoaded } = useMap();
   const autoId = useId();
@@ -106,16 +111,18 @@ export const ScatterplotLayer: React.FC<ScatterplotLayerProps> = ({
     const process = async () => {
       let rawData: any[];
 
-      if (typeof data === 'string') {
+      if (typeof data === "string") {
         try {
           const response = await fetch(data);
           const json = await response.json();
-          rawData = json.type === 'FeatureCollection' ? json.features : json;
+          rawData = json.type === "FeatureCollection" ? json.features : json;
         } catch (error) {
-          console.error('Failed to fetch scatterplot layer data:', error);
+          console.error("Failed to fetch scatterplot layer data:", error);
           return;
         }
-      } else if ((data as GeoJSON.FeatureCollection).type === 'FeatureCollection') {
+      } else if (
+        (data as GeoJSON.FeatureCollection).type === "FeatureCollection"
+      ) {
         rawData = (data as GeoJSON.FeatureCollection).features;
       } else {
         rawData = data as any[];
@@ -135,9 +142,11 @@ export const ScatterplotLayer: React.FC<ScatterplotLayerProps> = ({
       id,
       data: processedData,
       getPosition,
-      getRadius: typeof getRadius === 'function' ? getRadius : () => getRadius,
-      getFillColor: typeof getFillColor === 'function' ? getFillColor : () => getFillColor,
-      getLineColor: typeof getLineColor === 'function' ? getLineColor : () => getLineColor,
+      getRadius: typeof getRadius === "function" ? getRadius : () => getRadius,
+      getFillColor:
+        typeof getFillColor === "function" ? getFillColor : () => getFillColor,
+      getLineColor:
+        typeof getLineColor === "function" ? getLineColor : () => getLineColor,
       radiusUnits,
       radiusScale,
       radiusMinPixels,
@@ -160,8 +169,8 @@ export const ScatterplotLayer: React.FC<ScatterplotLayerProps> = ({
       updateTriggers: {
         getRadius,
         getFillColor,
-        getLineColor
-      }
+        getLineColor,
+      },
     });
 
     const currentLayers = deck.props.layers || [];
@@ -171,16 +180,37 @@ export const ScatterplotLayer: React.FC<ScatterplotLayerProps> = ({
     return () => {
       const layers = deck.props.layers || [];
       deck.setProps({
-        layers: layers.filter((l: any) => l.id !== id)
+        layers: layers.filter((l: any) => l.id !== id),
       });
     };
   }, [
-    deck, useDeckGL, visible, processedData, id,
-    getPosition, getRadius, getFillColor, getLineColor,
-    radiusUnits, radiusScale, radiusMinPixels, radiusMaxPixels,
-    lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels,
-    stroked, filled, billboard, antialiasing, opacity, pickable,
-    onClick, onHover, highlightColor, autoHighlight
+    deck,
+    useDeckGL,
+    visible,
+    processedData,
+    id,
+    getPosition,
+    getRadius,
+    getFillColor,
+    getLineColor,
+    radiusUnits,
+    radiusScale,
+    radiusMinPixels,
+    radiusMaxPixels,
+    lineWidthUnits,
+    lineWidthScale,
+    lineWidthMinPixels,
+    lineWidthMaxPixels,
+    stroked,
+    filled,
+    billboard,
+    antialiasing,
+    opacity,
+    pickable,
+    onClick,
+    onHover,
+    highlightColor,
+    autoHighlight,
   ]);
 
   // Native MapLibre rendering
@@ -190,36 +220,39 @@ export const ScatterplotLayer: React.FC<ScatterplotLayerProps> = ({
     const sourceId = `${id}-source`;
 
     const geojson: GeoJSON.FeatureCollection = {
-      type: 'FeatureCollection',
+      type: "FeatureCollection",
       features: processedData.map((d, index) => {
         const pos = getPosition(d);
-        const radius = typeof getRadius === 'function' ? getRadius(d) : getRadius;
-        const fillColor = typeof getFillColor === 'function' ? getFillColor(d) : getFillColor;
-        const lineColor = typeof getLineColor === 'function' ? getLineColor(d) : getLineColor;
+        const radius =
+          typeof getRadius === "function" ? getRadius(d) : getRadius;
+        const fillColor =
+          typeof getFillColor === "function" ? getFillColor(d) : getFillColor;
+        const lineColor =
+          typeof getLineColor === "function" ? getLineColor(d) : getLineColor;
 
         return {
-          type: 'Feature',
+          type: "Feature",
           id: index,
           geometry: {
-            type: 'Point',
-            coordinates: pos
+            type: "Point",
+            coordinates: pos,
           },
           properties: {
             ...d.properties,
             ...d,
             radius,
-            fillColor: `rgba(${fillColor.join(',')})`,
-            lineColor: `rgba(${lineColor.join(',')})`
-          }
+            fillColor: `rgba(${fillColor.join(",")})`,
+            lineColor: `rgba(${lineColor.join(",")})`,
+          },
         };
-      })
+      }),
     };
 
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
-        type: 'geojson',
+        type: "geojson",
         data: geojson,
-        generateId: true
+        generateId: true,
       });
     } else {
       (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(geojson);
@@ -228,27 +261,28 @@ export const ScatterplotLayer: React.FC<ScatterplotLayerProps> = ({
     if (!map.getLayer(id)) {
       map.addLayer({
         id,
-        type: 'circle',
+        type: "circle",
         source: sourceId,
         paint: {
-          'circle-radius': typeof getRadius === 'number' 
-            ? getRadius 
-            : ['get', 'radius'],
-          'circle-color': typeof getFillColor !== 'function'
-            ? `rgba(${(getFillColor as number[]).join(',')})`
-            : ['get', 'fillColor'],
-          'circle-opacity': filled ? opacity : 0,
-          'circle-stroke-color': typeof getLineColor !== 'function'
-            ? `rgba(${(getLineColor as number[]).join(',')})`
-            : ['get', 'lineColor'],
-          'circle-stroke-width': stroked ? 1 : 0,
-          'circle-stroke-opacity': stroked ? 1 : 0
+          "circle-radius":
+            typeof getRadius === "number" ? getRadius : ["get", "radius"],
+          "circle-color":
+            typeof getFillColor !== "function"
+              ? `rgba(${(getFillColor as number[]).join(",")})`
+              : ["get", "fillColor"],
+          "circle-opacity": filled ? opacity : 0,
+          "circle-stroke-color":
+            typeof getLineColor !== "function"
+              ? `rgba(${(getLineColor as number[]).join(",")})`
+              : ["get", "lineColor"],
+          "circle-stroke-width": stroked ? 1 : 0,
+          "circle-stroke-opacity": stroked ? 1 : 0,
         },
         layout: {
-          visibility: visible ? 'visible' : 'none'
+          visibility: visible ? "visible" : "none",
         },
         ...(minZoom !== undefined && { minzoom: minZoom }),
-        ...(maxZoom !== undefined && { maxzoom: maxZoom })
+        ...(maxZoom !== undefined && { maxzoom: maxZoom }),
       });
     }
 
@@ -256,7 +290,7 @@ export const ScatterplotLayer: React.FC<ScatterplotLayerProps> = ({
     let hoveredId: number | null = null;
 
     if (autoHighlight || onHover) {
-      map.on('mousemove', id, (e) => {
+      map.on("mousemove", id, (e) => {
         if (e.features && e.features.length > 0) {
           if (hoveredId !== null) {
             map.setFeatureState(
@@ -271,16 +305,16 @@ export const ScatterplotLayer: React.FC<ScatterplotLayerProps> = ({
             { hover: true }
           );
 
-          map.getCanvas().style.cursor = 'pointer';
-          
+          map.getCanvas().style.cursor = "pointer";
+
           onHover?.({
             object: e.features[0],
-            coordinate: [e.lngLat.lng, e.lngLat.lat]
+            coordinate: [e.lngLat.lng, e.lngLat.lat],
           });
         }
       });
 
-      map.on('mouseleave', id, () => {
+      map.on("mouseleave", id, () => {
         if (hoveredId !== null) {
           map.setFeatureState(
             { source: sourceId, id: hoveredId },
@@ -288,17 +322,17 @@ export const ScatterplotLayer: React.FC<ScatterplotLayerProps> = ({
           );
         }
         hoveredId = null;
-        map.getCanvas().style.cursor = '';
+        map.getCanvas().style.cursor = "";
         onHover?.({ object: null });
       });
     }
 
     if (onClick) {
-      map.on('click', id, (e) => {
+      map.on("click", id, (e) => {
         if (e.features && e.features.length > 0) {
           onClick({
             object: e.features[0],
-            coordinate: [e.lngLat.lng, e.lngLat.lat]
+            coordinate: [e.lngLat.lng, e.lngLat.lat],
           });
         }
       });
@@ -308,7 +342,26 @@ export const ScatterplotLayer: React.FC<ScatterplotLayerProps> = ({
       if (map.getLayer(id)) map.removeLayer(id);
       if (map.getSource(sourceId)) map.removeSource(sourceId);
     };
-  }, [map, isLoaded, useDeckGL, processedData, id, getPosition, getRadius, getFillColor, getLineColor, stroked, filled, opacity, visible, minZoom, maxZoom, autoHighlight, onClick, onHover]);
+  }, [
+    map,
+    isLoaded,
+    useDeckGL,
+    processedData,
+    id,
+    getPosition,
+    getRadius,
+    getFillColor,
+    getLineColor,
+    stroked,
+    filled,
+    opacity,
+    visible,
+    minZoom,
+    maxZoom,
+    autoHighlight,
+    onClick,
+    onHover,
+  ]);
 
   return null;
 };

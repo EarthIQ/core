@@ -10,7 +10,6 @@ import React, {
 
 import { useMap } from "../../hooks/useMap";
 
-
 export interface SearchResult {
   id: string;
   text: string;
@@ -213,7 +212,9 @@ export const SearchControl: React.FC<SearchControlProps> = ({
         "map-recent-searches",
         JSON.stringify(recentSearches.slice(0, maxRecent))
       );
-    } catch { /* ignore storage errors */ }
+    } catch {
+      /* ignore storage errors */
+    }
   }, [recentSearches, maxRecent]);
 
   // ── Geocoding ──────────────────────────────────────────────────────────────
@@ -577,7 +578,8 @@ export const SearchControl: React.FC<SearchControlProps> = ({
 
           {/* Right-side actions */}
           <span className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-0.5">
-            {query && !isLoading ? <button
+            {query && !isLoading ? (
+              <button
                 aria-label="Clear search"
                 className="rounded-[var(--radius-sm)] p-1 text-[var(--text-tertiary)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-secondary)]"
                 onClick={handleClear}
@@ -595,8 +597,10 @@ export const SearchControl: React.FC<SearchControlProps> = ({
                     strokeWidth={2}
                   />
                 </svg>
-              </button> : null}
-            {collapsible ? <button
+              </button>
+            ) : null}
+            {collapsible ? (
+              <button
                 aria-label="Collapse search"
                 className="rounded-[var(--radius-sm)] p-1 text-[var(--text-tertiary)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-secondary)]"
                 onClick={() => setIsCollapsed(true)}
@@ -614,17 +618,20 @@ export const SearchControl: React.FC<SearchControlProps> = ({
                     strokeWidth={2}
                   />
                 </svg>
-              </button> : null}
+              </button>
+            ) : null}
           </span>
         </div>
 
         {/* ── Dropdown ── */}
-        {showDropdown ? <div
+        {showDropdown ? (
+          <div
             className="card absolute top-[calc(100%+4px)] right-0 left-0 overflow-y-auto p-0"
             style={{ maxHeight: dropdownMaxHeight }}
           >
             {/* Coordinate suggestion */}
-            {isCoordQuery && parsedCoords ? <button
+            {isCoordQuery && parsedCoords ? (
+              <button
                 className={`flex w-full items-center gap-3 border-b border-[var(--border-secondary)] px-3 py-2.5 text-left transition-colors duration-[var(--transition-fast)] ${
                   selectedIndex === 0
                     ? "bg-[var(--surface-hover)]"
@@ -655,7 +662,8 @@ export const SearchControl: React.FC<SearchControlProps> = ({
                 <kbd className="hidden flex-shrink-0 rounded border border-[var(--border-primary)] px-1.5 py-0.5 text-[10px] text-[var(--text-tertiary)] sm:inline-block">
                   ↵
                 </kbd>
-              </button> : null}
+              </button>
+            ) : null}
 
             {/* Place results */}
             {results.length > 0 && (
@@ -676,7 +684,8 @@ export const SearchControl: React.FC<SearchControlProps> = ({
             )}
 
             {/* Recent searches */}
-            {showRecent && recentSearches.length > 0 && !query ? <div>
+            {showRecent && recentSearches.length > 0 && !query ? (
+              <div>
                 <div className="flex items-center justify-between border-b border-[var(--border-primary)] px-3 py-2">
                   <span className="text-xs text-[var(--text-tertiary)]">
                     Recent searches
@@ -701,14 +710,17 @@ export const SearchControl: React.FC<SearchControlProps> = ({
                     />
                   );
                 })}
-              </div> : null}
+              </div>
+            ) : null}
 
             {/* No results */}
-            {query && !isCoordQuery && results.length === 0 && !isLoading ? <div className="px-3 py-4 text-center">
+            {query && !isCoordQuery && results.length === 0 && !isLoading ? (
+              <div className="px-3 py-4 text-center">
                 <p className="text-sm text-[var(--text-tertiary)]">
                   No results found
                 </p>
-                {showCoordinatesInput ? <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+                {showCoordinatesInput ? (
+                  <p className="mt-1 text-xs text-[var(--text-tertiary)]">
                     Try entering coordinates like{" "}
                     <button
                       className="font-medium underline underline-offset-2"
@@ -720,8 +732,10 @@ export const SearchControl: React.FC<SearchControlProps> = ({
                     >
                       48.8566, 2.3522
                     </button>
-                  </p> : null}
-              </div> : null}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
             {/*
               ── Coordinate hint ──────────────────────────────────────────────
@@ -729,87 +743,92 @@ export const SearchControl: React.FC<SearchControlProps> = ({
               minLength), and no other content is occupying the dropdown.
             */}
             {showCoordinatesInput &&
-              !query &&
-              !isCoordQuery &&
-              results.length === 0 &&
-              !(showRecent && recentSearches.length > 0) ? <div className="flex items-start gap-2.5 border-t border-[var(--border-secondary)] px-3 py-2.5">
-                  {/* Icon pill */}
-                  <span
-                    className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full"
-                    style={{
-                      background:
-                        "var(--primary-subtle, color-mix(in srgb, var(--primary) 12%, transparent))",
-                    }}
-                  >
-                    <CrosshairIcon
-                      className="h-3 w-3"
-                      style={{ color: "var(--primary)" }}
-                    />
-                  </span>
+            !query &&
+            !isCoordQuery &&
+            results.length === 0 &&
+            !(showRecent && recentSearches.length > 0) ? (
+              <div className="flex items-start gap-2.5 border-t border-[var(--border-secondary)] px-3 py-2.5">
+                {/* Icon pill */}
+                <span
+                  className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full"
+                  style={{
+                    background:
+                      "var(--primary-subtle, color-mix(in srgb, var(--primary) 12%, transparent))",
+                  }}
+                >
+                  <CrosshairIcon
+                    className="h-3 w-3"
+                    style={{ color: "var(--primary)" }}
+                  />
+                </span>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-[var(--text-secondary)]">
-                      Tip: Search location or jump to coordinates
-                    </p>
-                    <p className="mt-0.5 text-[11px] leading-relaxed text-[var(--text-tertiary)]">
-                      Type{" "}
-                      <button
-                        className="font-mono font-semibold underline underline-offset-2 transition-colors hover:text-[var(--text-secondary)]"
-                        style={{ color: "var(--primary)" }}
-                        onMouseDown={(e) => {
-                          // prevent onBlur from closing the dropdown
-                          e.preventDefault();
-                          setQuery("48.8566, 2.3522");
-                          setSelectedIndex(-1);
-                          inputRef.current?.focus();
-                        }}
-                      >
-                        lat, lng
-                      </button>{" "}
-                      (e.g.{" "}
-                      <button
-                        className="font-mono underline underline-offset-2 transition-colors hover:text-[var(--text-secondary)]"
-                        style={{ color: "var(--primary)" }}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          setQuery("48.8566, 2.3522");
-                          setSelectedIndex(-1);
-                          inputRef.current?.focus();
-                        }}
-                      >
-                        48.8566, 2.3522
-                      </button>
-                      ) to jump directly to a location.
-                    </p>
-                  </div>
-                </div> : null}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-[var(--text-secondary)]">
+                    Tip: Search location or jump to coordinates
+                  </p>
+                  <p className="mt-0.5 text-[11px] leading-relaxed text-[var(--text-tertiary)]">
+                    Type{" "}
+                    <button
+                      className="font-mono font-semibold underline underline-offset-2 transition-colors hover:text-[var(--text-secondary)]"
+                      style={{ color: "var(--primary)" }}
+                      onMouseDown={(e) => {
+                        // prevent onBlur from closing the dropdown
+                        e.preventDefault();
+                        setQuery("48.8566, 2.3522");
+                        setSelectedIndex(-1);
+                        inputRef.current?.focus();
+                      }}
+                    >
+                      lat, lng
+                    </button>{" "}
+                    (e.g.{" "}
+                    <button
+                      className="font-mono underline underline-offset-2 transition-colors hover:text-[var(--text-secondary)]"
+                      style={{ color: "var(--primary)" }}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setQuery("48.8566, 2.3522");
+                        setSelectedIndex(-1);
+                        inputRef.current?.focus();
+                      }}
+                    >
+                      48.8566, 2.3522
+                    </button>
+                    ) to jump directly to a location.
+                  </p>
+                </div>
+              </div>
+            ) : null}
 
             {/*
               Same hint but appended below recent-searches list so it's
               always visible when recents are showing and query is empty.
             */}
             {showCoordinatesInput &&
-              !query &&
-              !isCoordQuery &&
-              results.length === 0 &&
-              showRecent &&
-              recentSearches.length > 0 ? <div className="flex items-center gap-2 border-t border-[var(--border-secondary)] px-3 py-2">
-                  <CrosshairIcon
-                    className="h-3 w-3 flex-shrink-0"
+            !query &&
+            !isCoordQuery &&
+            results.length === 0 &&
+            showRecent &&
+            recentSearches.length > 0 ? (
+              <div className="flex items-center gap-2 border-t border-[var(--border-secondary)] px-3 py-2">
+                <CrosshairIcon
+                  className="h-3 w-3 flex-shrink-0"
+                  style={{ color: "var(--primary)" }}
+                />
+                <p className="text-[11px] text-[var(--text-tertiary)]">
+                  You can also type{" "}
+                  <span
+                    className="font-mono font-medium"
                     style={{ color: "var(--primary)" }}
-                  />
-                  <p className="text-[11px] text-[var(--text-tertiary)]">
-                    You can also type{" "}
-                    <span
-                      className="font-mono font-medium"
-                      style={{ color: "var(--primary)" }}
-                    >
-                      lat, lng
-                    </span>{" "}
-                    to jump to exact coordinates
-                  </p>
-                </div> : null}
-          </div> : null}
+                  >
+                    lat, lng
+                  </span>{" "}
+                  to jump to exact coordinates
+                </p>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -901,9 +920,11 @@ const SearchResultItem: React.FC<SearchResultItemProps> = ({
           {result.placeName}
         </p>
       </div>
-      {result.type ? <span className="flex-shrink-0 rounded-[var(--radius-sm)] bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-xs text-[var(--text-tertiary)]">
+      {result.type ? (
+        <span className="flex-shrink-0 rounded-[var(--radius-sm)] bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-xs text-[var(--text-tertiary)]">
           {result.type}
-        </span> : null}
+        </span>
+      ) : null}
     </div>
   );
 };

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 
-import { getDropPosition ,type  DropPos } from "./dnd";
+import { getDropPosition, type DropPos } from "./dnd";
 
 import type { FolderTreeNode } from "./types";
 
@@ -76,7 +76,7 @@ export const FolderRow = ({
         ref={rowRef}
         draggable
         style={{ paddingLeft: 4 + depth * 14 }}
-        className={`group relative flex items-center gap-1 py-1.5 pr-1 rounded-lg cursor-grab active:cursor-grabbing transition-colors duration-150 ${
+        className={`group relative flex cursor-grab items-center gap-1 rounded-lg py-1.5 pr-1 transition-colors duration-150 active:cursor-grabbing ${
           isDragging ? "opacity-40" : "hover:bg-surface-hover"
         }`}
         onDragEnd={onDragEnd}
@@ -97,17 +97,23 @@ export const FolderRow = ({
           onDrop(getDropPosition(e, rowRef.current, true));
         }}
       >
-        {isDropTarget && dropPosition === "before" ? <div className="absolute left-2 right-2 -top-0.5 h-0.5 bg-primary rounded-full" /> : null}
-        {isDropTarget && dropPosition === "after" ? <div className="absolute left-2 right-2 -bottom-0.5 h-0.5 bg-primary rounded-full" /> : null}
-        {isDropTarget && dropPosition === "inside" ? <div className="absolute inset-0.5 rounded-md ring-2 ring-primary/60 pointer-events-none" /> : null}
+        {isDropTarget && dropPosition === "before" ? (
+          <div className="bg-primary absolute -top-0.5 right-2 left-2 h-0.5 rounded-full" />
+        ) : null}
+        {isDropTarget && dropPosition === "after" ? (
+          <div className="bg-primary absolute right-2 -bottom-0.5 left-2 h-0.5 rounded-full" />
+        ) : null}
+        {isDropTarget && dropPosition === "inside" ? (
+          <div className="ring-primary/60 pointer-events-none absolute inset-0.5 rounded-md ring-2" />
+        ) : null}
 
         <GripVertical
-          className="opacity-35 text-text-quaternary shrink-0"
+          className="text-text-quaternary shrink-0 opacity-35"
           size={11}
         />
 
         <button
-          className="p-0.5 rounded text-text-quaternary hover:text-text-primary shrink-0"
+          className="text-text-quaternary hover:text-text-primary shrink-0 rounded p-0.5"
           type="button"
           onClick={onToggleCollapse}
         >
@@ -119,15 +125,23 @@ export const FolderRow = ({
         </button>
 
         {folder.collapsed ? (
-          <Folder className="text-warning shrink-0" size={14} strokeWidth={1.75} />
+          <Folder
+            className="text-warning shrink-0"
+            size={14}
+            strokeWidth={1.75}
+          />
         ) : (
-          <FolderOpen className="text-warning shrink-0" size={14} strokeWidth={1.75} />
+          <FolderOpen
+            className="text-warning shrink-0"
+            size={14}
+            strokeWidth={1.75}
+          />
         )}
 
         {editing ? (
           <input
             autoFocus
-            className="flex-1 min-w-0 bg-surface-hover border border-primary/40 rounded px-1 text-xs text-text-primary outline-none"
+            className="bg-surface-hover border-primary/40 text-text-primary min-w-0 flex-1 rounded border px-1 text-xs outline-none"
             value={nameDraft}
             onBlur={commitRename}
             onChange={(e) => setNameDraft(e.target.value)}
@@ -141,7 +155,7 @@ export const FolderRow = ({
           />
         ) : (
           <span
-            className="text-xs font-semibold text-text-primary truncate flex-1"
+            className="text-text-primary flex-1 truncate text-xs font-semibold"
             title={folder.name}
             onDoubleClick={() => setEditing(true)}
           >
@@ -149,7 +163,7 @@ export const FolderRow = ({
           </span>
         )}
 
-        <span className="text-[0.6rem] font-mono text-text-quaternary shrink-0">
+        <span className="text-text-quaternary shrink-0 font-mono text-[0.6rem]">
           {childCount}
         </span>
 
@@ -160,7 +174,7 @@ export const FolderRow = ({
           aria-label={
             anyVisible ? "Hide all folder layers" : "Show all folder layers"
           }
-          className={`p-1.5 rounded-md transition-colors shrink-0 hover:bg-surface-hover ${
+          className={`hover:bg-surface-hover shrink-0 rounded-md p-1.5 transition-colors ${
             anyVisible
               ? "text-text-secondary hover:text-text-primary"
               : "text-text-quaternary hover:text-text-primary"
@@ -173,9 +187,24 @@ export const FolderRow = ({
         <Dropdown
           placement="bottom-end"
           items={[
-            { key: "add-data", label: "Add Data Here", icon: <FolderInput size={15} />, onClick: onAddDataHere },
-            { key: "subfolder", label: "New Subfolder", icon: <FolderPlus size={15} />, onClick: onAddSubfolder },
-            { key: "rename", label: "Rename Folder", icon: <Pencil size={15} />, onClick: () => setEditing(true) },
+            {
+              key: "add-data",
+              label: "Add Data Here",
+              icon: <FolderInput size={15} />,
+              onClick: onAddDataHere,
+            },
+            {
+              key: "subfolder",
+              label: "New Subfolder",
+              icon: <FolderPlus size={15} />,
+              onClick: onAddSubfolder,
+            },
+            {
+              key: "rename",
+              label: "Rename Folder",
+              icon: <Pencil size={15} />,
+              onClick: () => setEditing(true),
+            },
             {
               key: "visibility",
               label: anyVisible ? "Hide All Layers" : "Show All Layers",
@@ -183,12 +212,18 @@ export const FolderRow = ({
               onClick: onToggleVisibility,
             },
             { key: "divider", divider: true },
-            { key: "delete", label: "Delete Folder", icon: <Trash2 size={15} />, danger: true, onClick: onRemove },
+            {
+              key: "delete",
+              label: "Delete Folder",
+              icon: <Trash2 size={15} />,
+              danger: true,
+              onClick: onRemove,
+            },
           ]}
           trigger={
             <button
               aria-label="Folder options"
-              className="p-1.5 rounded-md text-text-quaternary hover:text-text-primary hover:bg-surface-hover transition-colors border-none bg-transparent cursor-pointer"
+              className="text-text-quaternary hover:text-text-primary hover:bg-surface-hover cursor-pointer rounded-md border-none bg-transparent p-1.5 transition-colors"
               title="Folder options"
               type="button"
             >
@@ -199,10 +234,10 @@ export const FolderRow = ({
       </div>
 
       {!folder.collapsed && (
-        <div className="border-l border-border-secondary/60 ml-3">
+        <div className="border-border-secondary/60 ml-3 border-l">
           {children}
         </div>
       )}
     </div>
   );
-}
+};

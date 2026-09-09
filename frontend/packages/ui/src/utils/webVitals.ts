@@ -9,7 +9,7 @@ type Metric = {
 
 function sendToAnalytics(metric: Metric) {
   // Send to your analytics service
-  console.warn('[web-vitals]', metric);
+  console.warn("[web-vitals]", metric);
 
   // Example: Send to Google Analytics
   // gtag('event', metric.name, {

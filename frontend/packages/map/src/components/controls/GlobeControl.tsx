@@ -67,4 +67,4 @@ export const GlobeControl = ({ className, labels = {} }: GlobeControlProps) => {
       onClick={toggleProjection}
     />
   );
-}
+};

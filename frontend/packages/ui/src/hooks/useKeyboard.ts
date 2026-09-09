@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from "react";
 
 type KeyHandler = (event: KeyboardEvent) => void;
 
@@ -30,11 +30,11 @@ export function useKeyboard({
   useEffect(() => {
     if (!enabled) return;
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown, enabled]);
 }
 
 export function useEscapeKey(handler: () => void, enabled = true) {
-  useKeyboard({ key: 'Escape', handler, enabled });
+  useKeyboard({ key: "Escape", handler, enabled });
 }

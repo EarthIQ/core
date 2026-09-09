@@ -1,18 +1,18 @@
-import { Cookie } from 'lucide-react';
-import React from 'react';
+import { Cookie } from "lucide-react";
+import React from "react";
 
-import { useCookieConsentStore } from '../stores/cookieConsentStore';
+import { useCookieConsentStore } from "../stores/cookieConsentStore";
 
 export interface CookieSettingsButtonProps {
-  position?: 'bottom-left' | 'bottom-right';
+  position?: "bottom-left" | "bottom-right";
   className?: string;
-  'aria-label'?: string;
+  "aria-label"?: string;
 }
 
 export const CookieSettingsButton: React.FC<CookieSettingsButtonProps> = ({
-  position = 'bottom-left',
-  className = '',
-  'aria-label': ariaLabel = 'Cookie Settings',
+  position = "bottom-left",
+  className = "",
+  "aria-label": ariaLabel = "Cookie Settings",
 }) => {
   const { hasConsented, isVisible, openSettings } = useCookieConsentStore();
 

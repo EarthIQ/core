@@ -18,10 +18,7 @@ import { useModules } from "@/lib/modules";
 import { useNotifications } from "@/lib/notifications";
 import { useTheme } from "@/lib/theme";
 import { usePermissions } from "@/lib/usePermissions";
-import {
-  moduleRegistry,
-  type ModuleBundle,
-} from "@/module-registry.generated";
+import { moduleRegistry, type ModuleBundle } from "@/module-registry.generated";
 
 import { Logo, LogoMark } from "./Logo";
 
@@ -60,7 +57,7 @@ function useModuleNavItems(): NavItem[] {
 
   useEffect(() => {
     const enabled = modules.filter(
-      (m) => m.enabled && m.name in moduleRegistry,
+      (m) => m.enabled && m.name in moduleRegistry
     );
     if (!enabled.length) return;
 
@@ -69,8 +66,8 @@ function useModuleNavItems(): NavItem[] {
         moduleRegistry[m.name]().then((bundle: ModuleBundle) => ({
           ...bundle.navItem,
           icon: bundle.navItem.icon || MODULE_ICON_MAP[m.name] || "🧩",
-        })),
-      ),
+        }))
+      )
     ).then(setNavItems);
   }, [modules]);
 
@@ -97,7 +94,7 @@ const ChevronIcon = ({ collapsed }: { collapsed: boolean }) => {
       )}
     </svg>
   );
-}
+};
 
 // ── User Menu Popover ──────────────────────────────────────────────────────────
 
@@ -137,7 +134,7 @@ const UserMenuPopover = ({
       ? {
           left: Math.min(
             anchorRect.right + 8,
-            Math.max(8, window.innerWidth - MENU_WIDTH - 8),
+            Math.max(8, window.innerWidth - MENU_WIDTH - 8)
           ),
           bottom: Math.max(8, window.innerHeight - anchorRect.top + 8),
           width: MENU_WIDTH,
@@ -150,58 +147,86 @@ const UserMenuPopover = ({
       className={
         (collapsed
           ? "fixed "
-          : "absolute bottom-full left-0 right-0 w-full min-w-[15rem] ") +
-        "mb-2 bg-elevated border border-border-primary rounded-xl shadow-xl animate-fade-in-up z-50 overflow-hidden"
+          : "absolute right-0 bottom-full left-0 w-full min-w-[15rem] ") +
+        "bg-elevated border-border-primary animate-fade-in-up z-50 mb-2 overflow-hidden rounded-xl border shadow-xl"
       }
     >
       {/* User Info Header */}
-      <div className="flex items-center gap-3 px-3.5 py-3 border-b border-border-secondary bg-surface-hover/50">
-        <div className="w-9 h-9 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0 border border-primary/10">
+      <div className="border-border-secondary bg-surface-hover/50 flex items-center gap-3 border-b px-3.5 py-3">
+        <div className="bg-primary/15 text-primary border-primary/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-bold">
           {initials(displayName)}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-semibold text-text-primary truncate">
+          <div className="text-text-primary truncate text-xs font-semibold">
             {displayName}
           </div>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-[0.65rem] text-text-tertiary truncate">
+          <div className="mt-0.5 flex items-center gap-1.5">
+            <span className="text-text-tertiary truncate text-[0.65rem]">
               {user?.email}
             </span>
-            {user?.is_superuser ? <span className="shrink-0 text-[0.55rem] font-bold uppercase tracking-wide px-1.5 py-px rounded-full bg-primary/10 text-primary border border-primary/15">
+            {user?.is_superuser ? (
+              <span className="bg-primary/10 text-primary border-primary/15 shrink-0 rounded-full border px-1.5 py-px text-[0.55rem] font-bold tracking-wide uppercase">
                 Admin
-              </span> : null}
+              </span>
+            ) : null}
           </div>
         </div>
       </div>
 
       {/* Menu Items */}
       <div className="py-1.5">
-        <button className={itemClass} onClick={onSettings}>
-          <Settings className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" size={15} />
+        <button
+          className={itemClass}
+          onClick={onSettings}
+        >
+          <Settings
+            className="text-text-tertiary group-hover:text-primary shrink-0 transition-colors"
+            size={15}
+          />
           <span className="flex-1 text-left">Profile &amp; Settings</span>
-          <span className="text-[0.65rem] text-text-tertiary group-hover:text-primary transition-colors">→</span>
+          <span className="text-text-tertiary group-hover:text-primary text-[0.65rem] transition-colors">
+            →
+          </span>
         </button>
 
-        <button className={itemClass} onClick={onNotifications}>
-          <Bell className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" size={15} />
+        <button
+          className={itemClass}
+          onClick={onNotifications}
+        >
+          <Bell
+            className="text-text-tertiary group-hover:text-primary shrink-0 transition-colors"
+            size={15}
+          />
           <span className="flex-1 text-left">Notifications</span>
-          <span className="text-[0.65rem] text-text-tertiary group-hover:text-primary transition-colors">→</span>
+          <span className="text-text-tertiary group-hover:text-primary text-[0.65rem] transition-colors">
+            →
+          </span>
         </button>
 
-        <button className={itemClass} onClick={toggleTheme}>
+        <button
+          className={itemClass}
+          onClick={toggleTheme}
+        >
           {activeTheme === "dark" ? (
-            <Sun className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" size={15} />
+            <Sun
+              className="text-text-tertiary group-hover:text-primary shrink-0 transition-colors"
+              size={15}
+            />
           ) : (
-            <Moon className="shrink-0 text-text-tertiary group-hover:text-primary transition-colors" size={15} />
+            <Moon
+              className="text-text-tertiary group-hover:text-primary shrink-0 transition-colors"
+              size={15}
+            />
           )}
           <span className="flex-1 text-left">
             {activeTheme === "dark" ? "Light mode" : "Dark mode"}
           </span>
-          <span className="w-8 h-4.5 rounded-full border border-border-primary relative shrink-0">
+          <span className="border-border-primary relative h-4.5 w-8 shrink-0 rounded-full border">
             <span
-              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary shadow-sm transition-all duration-200"
+              className="bg-primary absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full shadow-sm transition-all duration-200"
               style={{
-                left: activeTheme === "dark" ? "calc(100% - 0.95rem)" : "0.2rem",
+                left:
+                  activeTheme === "dark" ? "calc(100% - 0.95rem)" : "0.2rem",
               }}
             />
           </span>
@@ -209,18 +234,21 @@ const UserMenuPopover = ({
       </div>
 
       {/* Footer - Sign Out */}
-      <div className="border-t border-border-secondary py-1.5">
+      <div className="border-border-secondary border-t py-1.5">
         <button
-          className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-error hover:bg-error-subtle transition-colors duration-100 cursor-pointer"
+          className="text-error hover:bg-error-subtle flex w-full cursor-pointer items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold transition-colors duration-100"
           onClick={onLogout}
         >
-          <LogOut className="shrink-0" size={15} />
+          <LogOut
+            className="shrink-0"
+            size={15}
+          />
           Sign out
         </button>
       </div>
     </div>
   );
-}
+};
 
 // ── Notification Bell (topbar) ─────────────────────────────────────────────────
 //
@@ -228,14 +256,16 @@ const UserMenuPopover = ({
 // a quick dropdown (recent items, mark-all-read, open the full center).
 
 const NotificationBell = () => {
-  const { unread, items, connected, markAllRead, markRead } = useNotifications();
+  const { unread, items, connected, markAllRead, markRead } =
+    useNotifications();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onDoc(ev: MouseEvent) {
-      if (ref.current && !ref.current.contains(ev.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(ev.target as Node))
+        setOpen(false);
     }
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
@@ -244,7 +274,10 @@ const NotificationBell = () => {
   const recent = items.slice(0, 5);
 
   return (
-    <div ref={ref} className="relative">
+    <div
+      ref={ref}
+      className="relative"
+    >
       <button
         aria-label={`Notifications (${unread} unread)`}
         className="btn btn-ghost btn-icon btn-sm text-text-secondary hover:text-text-primary relative"
@@ -253,18 +286,19 @@ const NotificationBell = () => {
       >
         {unread > 0 ? <Bell size={18} /> : <BellOff size={18} />}
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[0.95rem] h-[0.95rem] px-1 rounded-full bg-error text-white text-[0.6rem] font-bold flex items-center justify-center">
+          <span className="bg-error absolute -top-0.5 -right-0.5 flex h-[0.95rem] min-w-[0.95rem] items-center justify-center rounded-full px-1 text-[0.6rem] font-bold text-white">
             {unread > 99 ? "99+" : unread}
           </span>
         )}
       </button>
 
-      {open ? <div className="absolute right-0 top-full mt-2 w-[min(92vw,21rem)] bg-elevated border border-border-primary rounded-xl shadow-dropdown animate-fade-in-up z-50 overflow-hidden">
-          <div className="px-4 py-3 border-b border-border-secondary flex items-center justify-between">
-            <span className="text-sm font-semibold text-text-primary">
+      {open ? (
+        <div className="bg-elevated border-border-primary shadow-dropdown animate-fade-in-up absolute top-full right-0 z-50 mt-2 w-[min(92vw,21rem)] overflow-hidden rounded-xl border">
+          <div className="border-border-secondary flex items-center justify-between border-b px-4 py-3">
+            <span className="text-text-primary text-sm font-semibold">
               Notifications
               <span
-                className={`ml-2 text-[0.6rem] px-1.5 py-0.5 rounded-full border ${
+                className={`ml-2 rounded-full border px-1.5 py-0.5 text-[0.6rem] ${
                   connected
                     ? "bg-success-subtle text-success border-success/20"
                     : "bg-error-subtle text-error border-error/20"
@@ -275,10 +309,13 @@ const NotificationBell = () => {
             </span>
             {unread > 0 && (
               <button
-                className="text-xs text-primary cursor-pointer no-underline"
+                className="text-primary cursor-pointer text-xs no-underline"
                 onClick={markAllRead}
               >
-                <CheckCheck className="inline mr-1" size={13} />
+                <CheckCheck
+                  className="mr-1 inline"
+                  size={13}
+                />
                 Mark all read
               </button>
             )}
@@ -286,14 +323,14 @@ const NotificationBell = () => {
 
           <div className="max-h-80 overflow-y-auto">
             {recent.length === 0 ? (
-              <div className="px-4 py-8 text-center text-xs text-text-tertiary">
+              <div className="text-text-tertiary px-4 py-8 text-center text-xs">
                 No notifications yet - you're all caught up.
               </div>
             ) : (
               recent.map((n) => (
                 <button
                   key={n.id}
-                  className="w-full text-left px-4 py-3 border-b border-border-secondary last:border-0 hover:bg-surface-hover transition-colors cursor-pointer"
+                  className="border-border-secondary hover:bg-surface-hover w-full cursor-pointer border-b px-4 py-3 text-left transition-colors last:border-0"
                   onClick={() => {
                     if (!n.read) markRead(n.id);
                     setOpen(false);
@@ -303,20 +340,24 @@ const NotificationBell = () => {
                 >
                   <div className="flex items-center gap-2">
                     {!n.read && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                      <span className="bg-primary h-1.5 w-1.5 shrink-0 rounded-full" />
                     )}
                     <span
-                      className={`text-xs truncate ${
-                        n.read ? "text-text-secondary" : "font-semibold text-text-primary"
+                      className={`truncate text-xs ${
+                        n.read
+                          ? "text-text-secondary"
+                          : "text-text-primary font-semibold"
                       }`}
                     >
                       {n.title}
                     </span>
                   </div>
-                  {n.body ? <div className="text-[0.65rem] text-text-tertiary truncate mt-0.5">
+                  {n.body ? (
+                    <div className="text-text-tertiary mt-0.5 truncate text-[0.65rem]">
                       {n.body}
-                    </div> : null}
-                  <div className="text-[0.6rem] text-text-tertiary mt-0.5">
+                    </div>
+                  ) : null}
+                  <div className="text-text-tertiary mt-0.5 text-[0.6rem]">
                     {timeAgo(n.created_at)}
                   </div>
                 </button>
@@ -324,9 +365,9 @@ const NotificationBell = () => {
             )}
           </div>
 
-          <div className="px-4 py-2.5 border-t border-border-secondary">
+          <div className="border-border-secondary border-t px-4 py-2.5">
             <button
-              className="w-full text-center text-xs font-medium text-primary cursor-pointer no-underline hover:underline"
+              className="text-primary w-full cursor-pointer text-center text-xs font-medium no-underline hover:underline"
               onClick={() => {
                 setOpen(false);
                 navigate("/notifications");
@@ -335,10 +376,11 @@ const NotificationBell = () => {
               View all notifications →
             </button>
           </div>
-        </div> : null}
+        </div>
+      ) : null}
     </div>
   );
-}
+};
 
 // ── Main AppShell ──────────────────────────────────────────────────────────────
 
@@ -361,7 +403,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
     ? [{ label: "Admin", to: "/admin", icon: "🛡️" }]
     : [];
   const rawNav = [...CORE_NAV, ...adminNav, ...moduleNav];
-  
+
   // Filter nav items based on user's view permission
   const allNav = rawNav.filter((item) => {
     const compName = item.to.replace("/", "");
@@ -425,9 +467,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  const userInitial = user
-    ? initials(user.full_name || user.email)
-    : "U";
+  const userInitial = user ? initials(user.full_name || user.email) : "U";
 
   // Sidebar width classes
   const sidebarWidth = isStandaloneView
@@ -443,14 +483,14 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
       : "ml-64";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-base">
+    <div className="bg-base flex h-screen overflow-hidden">
       {/* ── Sidebar ── */}
       <aside
-        className={`fixed top-0 left-0 h-full z-30 flex flex-col bg-surface border-r border-border-primary transition-all duration-300 ease-in-out ${sidebarWidth} overflow-hidden`}
+        className={`bg-surface border-border-primary fixed top-0 left-0 z-30 flex h-full flex-col border-r transition-all duration-300 ease-in-out ${sidebarWidth} overflow-hidden`}
       >
         {/* Brand Header */}
         <div
-          className={`flex items-center shrink-0 border-b border-border-secondary h-14 ${isCollapsed ? "justify-center px-0" : "justify-between px-4"}`}
+          className={`border-border-secondary flex h-14 shrink-0 items-center border-b ${isCollapsed ? "justify-center px-0" : "justify-between px-4"}`}
         >
           {!isCollapsed ? (
             <>
@@ -458,7 +498,10 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
                 className="flex items-center no-underline transition-opacity duration-150 hover:opacity-80"
                 to="/dashboard"
               >
-                <Logo size={28} wordmarkClassName="text-sm" />
+                <Logo
+                  size={28}
+                  wordmarkClassName="text-sm"
+                />
               </NavLink>
 
               <button
@@ -473,7 +516,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
           ) : (
             <button
               aria-label="Expand sidebar"
-              className="flex items-center justify-center cursor-pointer border-none bg-transparent p-0"
+              className="flex cursor-pointer items-center justify-center border-none bg-transparent p-0"
               title="Expand sidebar"
               onClick={() => setIsCollapsed(!isCollapsed)}
             >
@@ -486,9 +529,9 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-1">
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-2 py-3">
           {!isCollapsed && (
-            <div className="px-3 mb-2 text-[0.6rem] font-bold uppercase tracking-widest text-text-quaternary select-none">
+            <div className="text-text-quaternary mb-2 px-3 text-[0.6rem] font-bold tracking-widest uppercase select-none">
               Main Navigation
             </div>
           )}
@@ -499,14 +542,14 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
               title={isCollapsed ? item.label : undefined}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-150 ${
+                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold tracking-wide transition-all duration-150 ${
                   isActive
                     ? "bg-primary/10 text-primary"
                     : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
-                } ${isCollapsed ? "justify-center px-0 w-10 h-10 mx-auto" : "w-full"}`
+                } ${isCollapsed ? "mx-auto h-10 w-10 justify-center px-0" : "w-full"}`
               }
             >
-              <span className="text-base leading-none shrink-0">
+              <span className="shrink-0 text-base leading-none">
                 {item.icon || "📍"}
               </span>
               {!isCollapsed && <span className="truncate">{item.label}</span>}
@@ -517,17 +560,18 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
         {/* Footer / User */}
         <div
           ref={popoverRef}
-          className="relative px-2 pb-3 pt-2 border-t border-border-secondary shrink-0"
+          className="border-border-secondary relative shrink-0 border-t px-2 pt-2 pb-3"
         >
           {/* Popover */}
-          {isUserMenuOpen ? <UserMenuPopover
+          {isUserMenuOpen ? (
+            <UserMenuPopover
               activeTheme={activeTheme}
               collapsed={isCollapsed}
               toggleTheme={toggleTheme}
               user={user}
               anchorRect={
                 isCollapsed
-                  ? userBtnRef.current?.getBoundingClientRect() ?? null
+                  ? (userBtnRef.current?.getBoundingClientRect() ?? null)
                   : null
               }
               onLogout={() => {
@@ -543,29 +587,30 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
                 setIsUserMenuOpen(false);
                 navigate("/settings");
               }}
-            /> : null}
+            />
+          ) : null}
 
           {/* User Button */}
           <button
             ref={userBtnRef}
             id="user-menu-btn"
             title="User Profile & Settings"
-            className={`flex items-center transition-colors duration-150 cursor-pointer border-none text-left rounded-xl ${
+            className={`flex cursor-pointer items-center rounded-xl border-none text-left transition-colors duration-150 ${
               isUserMenuOpen
                 ? "bg-surface-active"
-                : "bg-transparent hover:bg-surface-hover"
-            } ${isCollapsed ? "w-10 h-10 mx-auto justify-center p-0" : "w-full gap-2.5 p-2"}`}
+                : "hover:bg-surface-hover bg-transparent"
+            } ${isCollapsed ? "mx-auto h-10 w-10 justify-center p-0" : "w-full gap-2.5 p-2"}`}
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
           >
-            <div className="w-8 h-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0 border border-primary/10">
+            <div className="bg-primary/15 text-primary border-primary/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-bold">
               {userInitial}
             </div>
             {!isCollapsed && (
-              <div className="flex flex-col min-w-0">
-                <span className="text-xs font-semibold text-text-primary truncate">
+              <div className="flex min-w-0 flex-col">
+                <span className="text-text-primary truncate text-xs font-semibold">
                   {user?.full_name || user?.email || "Account"}
                 </span>
-                <span className="text-[0.65rem] text-text-tertiary">
+                <span className="text-text-tertiary text-[0.65rem]">
                   {user?.is_superuser ? "Administrator" : "Member"}
                 </span>
               </div>
@@ -576,34 +621,35 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
 
       {/* ── Main Content Area ── */}
       <div
-        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${mainOffset}`}
+        className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ease-in-out ${mainOffset}`}
       >
         {/* Topbar */}
         {!isStandaloneView && (
-          <header className="navbar shrink-0 flex items-center justify-between px-4 h-14">
+          <header className="navbar flex h-14 shrink-0 items-center justify-between px-4">
             {/* Left */}
             <div className="flex items-center" />
 
             {/* Center - Search */}
-            <div className="flex-1 min-w-0 flex justify-center px-2">
-              <div className="relative w-full max-w-md group">
+            <div className="flex min-w-0 flex-1 justify-center px-2">
+              <div className="group relative w-full max-w-md">
                 <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-tertiary)] group-focus-within:text-primary transition-colors duration-150"
+                  className="group-focus-within:text-primary pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[var(--text-tertiary)] transition-colors duration-150"
                   size={15}
                 />
                 <input
                   ref={searchRef}
                   aria-label="Search"
-                  className="w-full h-9 rounded-[var(--radius-md)] border border-[var(--input-border)] bg-[var(--input-bg)] pl-9 pr-16 text-xs text-[var(--text-primary)] transition-all duration-150 focus:outline-none focus:border-[var(--input-focus-border)] focus:shadow-[0_0_0_3px_oklch(from_var(--primary)_l_c_h/0.15)]"
+                  className="h-9 w-full rounded-[var(--radius-md)] border border-[var(--input-border)] bg-[var(--input-bg)] pr-16 pl-9 text-xs text-[var(--text-primary)] transition-all duration-150 focus:border-[var(--input-focus-border)] focus:shadow-[0_0_0_3px_oklch(from_var(--primary)_l_c_h/0.15)] focus:outline-none"
                   placeholder="Search projects, layers, datasets…"
                   type="text"
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                 />
-                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                  {searchValue ? <button
+                <div className="absolute top-1/2 right-2.5 flex -translate-y-1/2 items-center gap-1.5">
+                  {searchValue ? (
+                    <button
                       aria-label="Clear search"
-                      className="p-0.5 rounded-md text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+                      className="cursor-pointer rounded-md p-0.5 text-[var(--text-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                       type="button"
                       onClick={() => {
                         setSearchValue("");
@@ -611,8 +657,9 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
                       }}
                     >
                       <X size={13} />
-                    </button> : null}
-                  <kbd className="hidden sm:flex items-center justify-center h-5 min-w-5 px-1.5 rounded-md border border-[var(--border-primary)] bg-[var(--surface-hover)] text-[0.6rem] font-semibold text-[var(--text-tertiary)] select-none pointer-events-none">
+                    </button>
+                  ) : null}
+                  <kbd className="pointer-events-none hidden h-5 min-w-5 items-center justify-center rounded-md border border-[var(--border-primary)] bg-[var(--surface-hover)] px-1.5 text-[0.6rem] font-semibold text-[var(--text-tertiary)] select-none sm:flex">
                     /
                   </kbd>
                 </div>
@@ -637,4 +684,4 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
       </div>
     </div>
   );
-}
+};

@@ -71,9 +71,11 @@ export const Accordion = ({
               onClick={() => !item.disabled && handleToggle(item.key)}
             >
               <div className="flex items-center gap-3">
-                {item.icon ? <span className="text-[var(--text-secondary)]">
+                {item.icon ? (
+                  <span className="text-[var(--text-secondary)]">
                     {item.icon}
-                  </span> : null}
+                  </span>
+                ) : null}
                 <span className="font-medium text-[var(--text-primary)]">
                   {item.title}
                 </span>
@@ -97,7 +99,8 @@ export const Accordion = ({
             </button>
 
             <AnimatePresence initial={false}>
-              {isActive ? <motion.div
+              {isActive ? (
+                <motion.div
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   initial={{ height: 0, opacity: 0 }}
@@ -109,11 +112,12 @@ export const Accordion = ({
                       {item.content}
                     </div>
                   </div>
-                </motion.div> : null}
+                </motion.div>
+              ) : null}
             </AnimatePresence>
           </div>
         );
       })}
     </div>
   );
-}
+};

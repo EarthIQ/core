@@ -110,7 +110,7 @@ export default function AIChatPanel({
     sender: Message["sender"],
     text: string,
     tone?: Message["tone"],
-    toolName?: string,
+    toolName?: string
   ) =>
     setMessages((prev) => [
       ...prev,
@@ -147,7 +147,7 @@ export default function AIChatPanel({
       };
       return dispatchToolCall(call, ctx);
     },
-    [mapRef, setBasemap, setLayerVisible],
+    [mapRef, setBasemap, setLayerVisible]
   );
 
   /* ── Main send handler ───────────────────────────────────────────────────── */
@@ -188,7 +188,7 @@ export default function AIChatPanel({
             "ai",
             parts.join("\n\n") || `Executed **${tc.name}**.`,
             "ok",
-            tc.name,
+            tc.name
           );
         } catch (err) {
           const msg =
@@ -197,7 +197,7 @@ export default function AIChatPanel({
             "ai",
             `Couldn't run that tool - ${msg}`,
             "error",
-            tc.name,
+            tc.name
           );
         }
         return; // already pushed the message above
@@ -220,24 +220,27 @@ export default function AIChatPanel({
 
   return (
     <div
-      className={`h-full flex flex-col bg-surface border-r border-border-primary transition-all duration-300 ease-in-out shrink-0 overflow-hidden relative z-20 ${
+      className={`bg-surface border-border-primary relative z-20 flex h-full shrink-0 flex-col overflow-hidden border-r transition-all duration-300 ease-in-out ${
         isOpen
           ? "w-[360px] opacity-100"
-          : "w-0 opacity-0 pointer-events-none border-r-0"
+          : "pointer-events-none w-0 border-r-0 opacity-0"
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 h-14 border-b border-border-secondary bg-surface-hover/30 shrink-0">
+      <div className="border-border-secondary bg-surface-hover/30 flex h-14 shrink-0 items-center justify-between border-b px-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-            <Sparkles className="animate-pulse" size={16} />
+          <div className="bg-primary/10 text-primary border-primary/20 flex h-8 w-8 items-center justify-center rounded-lg border">
+            <Sparkles
+              className="animate-pulse"
+              size={16}
+            />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-text-primary">
+            <span className="text-text-primary text-xs font-bold">
               EarthIQ AI
             </span>
-            <span className="text-[10px] text-success font-medium flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-success" /> Online
+            <span className="text-success flex items-center gap-1 text-[10px] font-medium">
+              <span className="bg-success h-1.5 w-1.5 rounded-full" /> Online
             </span>
           </div>
         </div>
@@ -254,16 +257,16 @@ export default function AIChatPanel({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 scrollbar-thin">
+      <div className="flex flex-1 scrollbar-thin flex-col gap-4 overflow-y-auto p-4">
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex gap-3 max-w-[85%] ${
-              msg.sender === "user" ? "self-end flex-row-reverse" : "self-start"
+            className={`flex max-w-[85%] gap-3 ${
+              msg.sender === "user" ? "flex-row-reverse self-end" : "self-start"
             }`}
           >
             <div
-              className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center border ${
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border ${
                 msg.sender === "user"
                   ? "bg-primary/10 border-primary/20 text-primary"
                   : "bg-surface-hover border-border-primary text-text-secondary"
@@ -278,41 +281,48 @@ export default function AIChatPanel({
               )}
             </div>
             <div
-              className={`p-3 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap ${
+              className={`rounded-2xl p-3 text-xs leading-relaxed whitespace-pre-wrap ${
                 msg.sender === "user"
                   ? "bg-primary text-text-on-primary rounded-tr-none"
                   : msg.tone === "error"
-                    ? "bg-danger/10 text-danger border border-danger/20 rounded-tl-none"
+                    ? "bg-danger/10 text-danger border-danger/20 rounded-tl-none border"
                     : msg.tone === "info"
-                      ? "bg-surface-hover/60 text-text-tertiary border border-border-secondary rounded-tl-none"
-                      : "bg-surface-hover/80 text-text-secondary border border-border-secondary rounded-tl-none"
+                      ? "bg-surface-hover/60 text-text-tertiary border-border-secondary rounded-tl-none border"
+                      : "bg-surface-hover/80 text-text-secondary border-border-secondary rounded-tl-none border"
               }`}
             >
-              {msg.toolName ? <span className="flex items-center gap-1 mb-1 text-[10px] font-semibold text-primary uppercase tracking-wider">
+              {msg.toolName ? (
+                <span className="text-primary mb-1 flex items-center gap-1 text-[10px] font-semibold tracking-wider uppercase">
                   <MapPin size={10} /> {msg.toolName}
-                </span> : null}
+                </span>
+              ) : null}
               {msg.text}
             </div>
           </div>
         ))}
-        {busy ? <div className="flex items-center gap-2 text-[11px] text-text-quaternary self-start">
-            <Loader2 className="animate-spin" size={13} />
+        {busy ? (
+          <div className="text-text-quaternary flex items-center gap-2 self-start text-[11px]">
+            <Loader2
+              className="animate-spin"
+              size={13}
+            />
             Thinking…
-          </div> : null}
+          </div>
+        ) : null}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Suggestion chips (only before the user has acted) */}
       {messages.length === 1 && !busy && (
-        <div className="px-4 py-2 flex flex-col gap-2 shrink-0 bg-surface">
-          <span className="text-[10px] text-text-quaternary font-bold uppercase tracking-wider">
+        <div className="bg-surface flex shrink-0 flex-col gap-2 px-4 py-2">
+          <span className="text-text-quaternary text-[10px] font-bold tracking-wider uppercase">
             Try asking
           </span>
           <div className="flex flex-col gap-1.5">
             {SUGGESTIONS.map((s) => (
               <button
                 key={s}
-                className="text-left text-[11px] text-text-secondary hover:text-primary hover:border-primary/40 px-3 py-2 rounded-lg border border-border-primary bg-surface-hover/20 transition-all cursor-pointer truncate"
+                className="text-text-secondary hover:text-primary hover:border-primary/40 border-border-primary bg-surface-hover/20 cursor-pointer truncate rounded-lg border px-3 py-2 text-left text-[11px] transition-all"
                 onClick={() => handleSubmit(s)}
               >
                 {s}
@@ -323,16 +333,16 @@ export default function AIChatPanel({
       )}
 
       {/* Input */}
-      <div className="p-4 border-t border-border-secondary bg-surface shrink-0">
+      <div className="border-border-secondary bg-surface shrink-0 border-t p-4">
         <form
-          className="relative flex items-center bg-surface-hover/40 border border-border-secondary rounded-xl p-1.5 focus-within:border-primary/50 transition-colors"
+          className="bg-surface-hover/40 border-border-secondary focus-within:border-primary/50 relative flex items-center rounded-xl border p-1.5 transition-colors"
           onSubmit={(e) => {
             e.preventDefault();
             handleSubmit(inputValue);
           }}
         >
           <input
-            className="input input-sm border-none bg-transparent w-full p-2 text-xs focus:ring-0 focus:outline-none placeholder:text-text-quaternary"
+            className="input input-sm placeholder:text-text-quaternary w-full border-none bg-transparent p-2 text-xs focus:ring-0 focus:outline-none"
             disabled={busy}
             placeholder="Ask AI to navigate, switch basemaps, or explain the data…"
             type="text"

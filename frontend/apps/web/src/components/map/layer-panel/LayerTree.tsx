@@ -68,30 +68,30 @@ export const LayerTree = ({
         const expanded = !node.collapsed || hasVisibleChildren;
         return (
           <div key={node.id}>
-          <FolderRow
-            anyVisible={descendantLayers(node.id).some((l: any) => l.visible)}
-            childCount={childrenOf(node.id).length}
-            depth={depth}
-            folder={node}
-            isDragging={draggingId === node.id}
-            isDropTarget={dropTarget?.id === node.id}
-            dropPosition={
-              dropTarget?.id === node.id ? dropTarget.position : null
-            }
-            onAddDataHere={() => onAddDataToFolder(node.id)}
-            onAddSubfolder={() => onAddFolderInside(node.id)}
-            onDragEnd={reset}
-            onDragStart={() => setDraggingId(node.id)}
-            onDrop={(pos) => handleDrop(node, pos)}
-            onRemove={() => onRemove(node.id)}
-            onRename={(name) => onRename(node.id, name)}
-            onToggleCollapse={() => onToggleCollapse(node.id)}
-            onToggleVisibility={() => onToggleVisibility(node.id)}
-            onDragOverRow={(pos) =>
-              setDropTarget({ id: node.id, position: pos })
-            }
-          >
-            {expanded ? renderLevel(node.id, depth + 1) : null}
+            <FolderRow
+              anyVisible={descendantLayers(node.id).some((l: any) => l.visible)}
+              childCount={childrenOf(node.id).length}
+              depth={depth}
+              folder={node}
+              isDragging={draggingId === node.id}
+              isDropTarget={dropTarget?.id === node.id}
+              dropPosition={
+                dropTarget?.id === node.id ? dropTarget.position : null
+              }
+              onAddDataHere={() => onAddDataToFolder(node.id)}
+              onAddSubfolder={() => onAddFolderInside(node.id)}
+              onDragEnd={reset}
+              onDragStart={() => setDraggingId(node.id)}
+              onDrop={(pos) => handleDrop(node, pos)}
+              onRemove={() => onRemove(node.id)}
+              onRename={(name) => onRename(node.id, name)}
+              onToggleCollapse={() => onToggleCollapse(node.id)}
+              onToggleVisibility={() => onToggleVisibility(node.id)}
+              onDragOverRow={(pos) =>
+                setDropTarget({ id: node.id, position: pos })
+              }
+            >
+              {expanded ? renderLevel(node.id, depth + 1) : null}
             </FolderRow>
           </div>
         );
@@ -114,9 +114,7 @@ export const LayerTree = ({
           onRename={(name) => onRename(node.id, name)}
           onToggle={() => onToggleVisibility(node.id)}
           onEditLayer={
-            onEditLayer && !node.pending
-              ? () => onEditLayer(node)
-              : undefined
+            onEditLayer && !node.pending ? () => onEditLayer(node) : undefined
           }
         />
       );
@@ -124,4 +122,4 @@ export const LayerTree = ({
   }
 
   return <div className="flex flex-col gap-0.5">{renderLevel(null, 0)}</div>;
-}
+};

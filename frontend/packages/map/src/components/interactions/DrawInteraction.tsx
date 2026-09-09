@@ -1,11 +1,12 @@
-import { useEffect, useState, useCallback, useRef as _useRef } from 'react';
+import { useEffect, useState, useCallback, useRef as _useRef } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { GeoJSON } from 'geojson';
-import type React from 'react';
+import type { GeoJSON } from "geojson";
+import type React from "react";
 
-export type DrawMode = 'point' | 'line' | 'polygon' | 'rectangle' | 'circle' | 'freehand';
+export type DrawMode =
+  "point" | "line" | "polygon" | "rectangle" | "circle" | "freehand";
 
 export interface DrawInteractionProps {
   /** Drawing mode */
@@ -42,7 +43,7 @@ export interface DrawInteractionProps {
   /** Show measurements while drawing */
   showMeasurements?: boolean;
   /** Measurement units */
-  measurementUnits?: 'metric' | 'imperial';
+  measurementUnits?: "metric" | "imperial";
   /** Guide lines */
   showGuides?: boolean;
 }
@@ -53,12 +54,12 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
   onDraw,
   onCancel,
   style = {
-    fillColor: '#3b82f6',
+    fillColor: "#3b82f6",
     fillOpacity: 0.3,
-    strokeColor: '#3b82f6',
+    strokeColor: "#3b82f6",
     strokeWidth: 2,
-    pointColor: '#3b82f6',
-    pointRadius: 6
+    pointColor: "#3b82f6",
+    pointRadius: 6,
   },
   snap = false,
   snapTolerance = 10,
@@ -68,8 +69,8 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
   maxPoints,
   autoClose = true,
   _showMeasurements = false,
-  _measurementUnits = 'metric',
-  showGuides = true
+  _measurementUnits = "metric",
+  showGuides = true,
 }) => {
   const { map, isLoaded } = useMap();
   const [coordinates, setCoordinates] = useState<number[][]>([]);
@@ -78,11 +79,11 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
   const [isFreehand, setIsFreehand] = useState(false);
   const [circleCenter, setCircleCenter] = useState<number[] | null>(null);
   const [rectangleStart, setRectangleStart] = useState<number[] | null>(null);
-  
-  const sourceId = 'draw-interaction-source';
-  const layerId = 'draw-interaction-layer';
-  const pointsLayerId = 'draw-interaction-points';
-  const guideLayerId = 'draw-interaction-guide';
+
+  const sourceId = "draw-interaction-source";
+  const layerId = "draw-interaction-layer";
+  const pointsLayerId = "draw-interaction-points";
+  const guideLayerId = "draw-interaction-guide";
 
   // Initialize drawing layers
   useEffect(() => {
@@ -91,8 +92,8 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
     // Add source
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] }
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
       });
     }
 
@@ -100,13 +101,13 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
     if (!map.getLayer(layerId)) {
       map.addLayer({
         id: layerId,
-        type: 'fill',
+        type: "fill",
         source: sourceId,
-        filter: ['==', '$type', 'Polygon'],
+        filter: ["==", "$type", "Polygon"],
         paint: {
-          'fill-color': style.fillColor,
-          'fill-opacity': style.fillOpacity
-        }
+          "fill-color": style.fillColor,
+          "fill-opacity": style.fillOpacity,
+        },
       });
     }
 
@@ -114,12 +115,12 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
     if (!map.getLayer(`${layerId}-line`)) {
       map.addLayer({
         id: `${layerId}-line`,
-        type: 'line',
+        type: "line",
         source: sourceId,
         paint: {
-          'line-color': style.strokeColor,
-          'line-width': style.strokeWidth
-        }
+          "line-color": style.strokeColor,
+          "line-width": style.strokeWidth,
+        },
       });
     }
 
@@ -127,15 +128,15 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
     if (!map.getLayer(pointsLayerId)) {
       map.addLayer({
         id: pointsLayerId,
-        type: 'circle',
+        type: "circle",
         source: sourceId,
-        filter: ['==', '$type', 'Point'],
+        filter: ["==", "$type", "Point"],
         paint: {
-          'circle-color': style.pointColor,
-          'circle-radius': style.pointRadius,
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-width': 2
-        }
+          "circle-color": style.pointColor,
+          "circle-radius": style.pointRadius,
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 2,
+        },
       });
     }
 
@@ -143,14 +144,14 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
     if (showGuides && !map.getLayer(guideLayerId)) {
       map.addLayer({
         id: guideLayerId,
-        type: 'line',
+        type: "line",
         source: sourceId,
-        filter: ['==', ['get', 'type'], 'guide'],
+        filter: ["==", ["get", "type"], "guide"],
         paint: {
-          'line-color': style.strokeColor,
-          'line-width': 1,
-          'line-dasharray': [4, 4]
-        }
+          "line-color": style.strokeColor,
+          "line-width": 1,
+          "line-dasharray": [4, 4],
+        },
       });
     }
 
@@ -169,321 +170,365 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
 
     const features: GeoJSON.Feature[] = [];
 
-    if (mode === 'point' && currentPosition) {
+    if (mode === "point" && currentPosition) {
       features.push({
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: currentPosition },
-        properties: {}
+        type: "Feature",
+        geometry: { type: "Point", coordinates: currentPosition },
+        properties: {},
       });
-    } else if (mode === 'line' && coordinates.length > 0) {
-      const lineCoords = currentPosition 
+    } else if (mode === "line" && coordinates.length > 0) {
+      const lineCoords = currentPosition
         ? [...coordinates, currentPosition]
         : coordinates;
-      
+
       if (lineCoords.length >= 2) {
         features.push({
-          type: 'Feature',
-          geometry: { type: 'LineString', coordinates: lineCoords },
-          properties: {}
+          type: "Feature",
+          geometry: { type: "LineString", coordinates: lineCoords },
+          properties: {},
         });
       }
 
       // Add vertex points
-      coordinates.forEach(coord => {
+      coordinates.forEach((coord) => {
         features.push({
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: coord },
-          properties: {}
+          type: "Feature",
+          geometry: { type: "Point", coordinates: coord },
+          properties: {},
         });
       });
-    } else if (mode === 'polygon' && coordinates.length > 0) {
+    } else if (mode === "polygon" && coordinates.length > 0) {
       const polygonCoords = currentPosition
         ? [...coordinates, currentPosition, coordinates[0]]
         : [...coordinates, coordinates[0]];
 
       if (polygonCoords.length >= 4) {
         features.push({
-          type: 'Feature',
-          geometry: { type: 'Polygon', coordinates: [polygonCoords] },
-          properties: {}
+          type: "Feature",
+          geometry: { type: "Polygon", coordinates: [polygonCoords] },
+          properties: {},
         });
       }
 
       // Add vertex points
-      coordinates.forEach(coord => {
+      coordinates.forEach((coord) => {
         features.push({
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: coord },
-          properties: {}
+          type: "Feature",
+          geometry: { type: "Point", coordinates: coord },
+          properties: {},
         });
       });
 
       // Add guide line from last point to first
       if (showGuides && coordinates.length >= 2 && currentPosition) {
         features.push({
-          type: 'Feature',
-          geometry: { 
-            type: 'LineString', 
-            coordinates: [currentPosition, coordinates[0]] 
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: [currentPosition, coordinates[0]],
           },
-          properties: { type: 'guide' }
+          properties: { type: "guide" },
         });
       }
-    } else if (mode === 'rectangle' && rectangleStart && currentPosition) {
+    } else if (mode === "rectangle" && rectangleStart && currentPosition) {
       const [x1, y1] = rectangleStart;
       const [x2, y2] = currentPosition;
-      
+
       features.push({
-        type: 'Feature',
+        type: "Feature",
         geometry: {
-          type: 'Polygon',
-          coordinates: [[
-            [x1, y1],
-            [x2, y1],
-            [x2, y2],
-            [x1, y2],
-            [x1, y1]
-          ]]
+          type: "Polygon",
+          coordinates: [
+            [
+              [x1, y1],
+              [x2, y1],
+              [x2, y2],
+              [x1, y2],
+              [x1, y1],
+            ],
+          ],
         },
-        properties: {}
+        properties: {},
       });
-    } else if (mode === 'circle' && circleCenter && currentPosition) {
+    } else if (mode === "circle" && circleCenter && currentPosition) {
       const center = circleCenter;
       const radius = distance(center, currentPosition);
       const circleCoords = createCirclePolygon(center, radius, 64);
-      
+
       features.push({
-        type: 'Feature',
-        geometry: { type: 'Polygon', coordinates: [circleCoords] },
-        properties: { radius }
+        type: "Feature",
+        geometry: { type: "Polygon", coordinates: [circleCoords] },
+        properties: { radius },
       });
-    } else if (mode === 'freehand' && coordinates.length > 1) {
+    } else if (mode === "freehand" && coordinates.length > 1) {
       features.push({
-        type: 'Feature',
-        geometry: { type: 'LineString', coordinates: coordinates },
-        properties: {}
+        type: "Feature",
+        geometry: { type: "LineString", coordinates: coordinates },
+        properties: {},
       });
     }
 
     const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
     if (source) {
-      source.setData({ type: 'FeatureCollection', features });
+      source.setData({ type: "FeatureCollection", features });
     }
 
     onDraw?.(coordinates);
-  }, [map, isLoaded, mode, coordinates, currentPosition, rectangleStart, circleCenter, showGuides, onDraw]);
+  }, [
+    map,
+    isLoaded,
+    mode,
+    coordinates,
+    currentPosition,
+    rectangleStart,
+    circleCenter,
+    showGuides,
+    onDraw,
+  ]);
 
   useEffect(() => {
     updatePreview();
   }, [updatePreview]);
 
   // Snap to nearby features
-  const snapToFeatures = useCallback((point: number[]): number[] => {
-    if (!snap || !map || snapLayers.length === 0) return point;
+  const snapToFeatures = useCallback(
+    (point: number[]): number[] => {
+      if (!snap || !map || snapLayers.length === 0) return point;
 
-    const pixel = map.project(point as [number, number]);
-    const bbox: [[number, number], [number, number]] = [
-      [pixel.x - snapTolerance, pixel.y - snapTolerance],
-      [pixel.x + snapTolerance, pixel.y + snapTolerance]
-    ];
+      const pixel = map.project(point as [number, number]);
+      const bbox: [[number, number], [number, number]] = [
+        [pixel.x - snapTolerance, pixel.y - snapTolerance],
+        [pixel.x + snapTolerance, pixel.y + snapTolerance],
+      ];
 
-    const features = map.queryRenderedFeatures(bbox, { layers: snapLayers });
-    
-    let closestPoint = point;
-    let closestDistance = Infinity;
+      const features = map.queryRenderedFeatures(bbox, { layers: snapLayers });
 
-    features.forEach(feature => {
-      const coords = getCoordinates(feature.geometry);
-      coords.forEach(coord => {
-        const d = distance(point, coord);
-        if (d < closestDistance && d < snapTolerance) {
-          closestDistance = d;
-          closestPoint = coord;
-        }
+      let closestPoint = point;
+      let closestDistance = Infinity;
+
+      features.forEach((feature) => {
+        const coords = getCoordinates(feature.geometry);
+        coords.forEach((coord) => {
+          const d = distance(point, coord);
+          if (d < closestDistance && d < snapTolerance) {
+            closestDistance = d;
+            closestPoint = coord;
+          }
+        });
       });
-    });
 
-    return closestPoint;
-  }, [map, snap, snapLayers, snapTolerance]);
+      return closestPoint;
+    },
+    [map, snap, snapLayers, snapTolerance]
+  );
 
   // Handle click
-  const handleClick = useCallback((e: any) => {
-    if (!mode) return;
+  const handleClick = useCallback(
+    (e: any) => {
+      if (!mode) return;
 
-    const coords = snap 
-      ? snapToFeatures([e.lngLat.lng, e.lngLat.lat])
-      : [e.lngLat.lng, e.lngLat.lat];
+      const coords = snap
+        ? snapToFeatures([e.lngLat.lng, e.lngLat.lat])
+        : [e.lngLat.lng, e.lngLat.lat];
 
-    switch (mode) {
-      case 'point': {
-        const pointFeature: GeoJSON.Feature = {
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: coords },
-          properties: {}
-        };
-        onComplete?.(pointFeature);
-        break;
+      switch (mode) {
+        case "point": {
+          const pointFeature: GeoJSON.Feature = {
+            type: "Feature",
+            geometry: { type: "Point", coordinates: coords },
+            properties: {},
+          };
+          onComplete?.(pointFeature);
+          break;
+        }
+
+        case "line":
+          setCoordinates((prev) => {
+            const next = [...prev, coords];
+            if (maxPoints && next.length >= maxPoints) {
+              // Complete line
+              const lineFeature: GeoJSON.Feature = {
+                type: "Feature",
+                geometry: { type: "LineString", coordinates: next },
+                properties: {},
+              };
+              setTimeout(() => {
+                onComplete?.(lineFeature);
+                setCoordinates([]);
+                setIsDrawing(false);
+              }, 0);
+            }
+            return next;
+          });
+          setIsDrawing(true);
+          break;
+
+        case "polygon":
+          setCoordinates((prev) => {
+            const next = [...prev, coords];
+            if (maxPoints && next.length >= maxPoints && autoClose) {
+              // Complete polygon
+              const polygonFeature: GeoJSON.Feature = {
+                type: "Feature",
+                geometry: {
+                  type: "Polygon",
+                  coordinates: [[...next, next[0]]],
+                },
+                properties: {},
+              };
+              setTimeout(() => {
+                onComplete?.(polygonFeature);
+                setCoordinates([]);
+                setIsDrawing(false);
+              }, 0);
+            }
+            return next;
+          });
+          setIsDrawing(true);
+          break;
+
+        case "rectangle":
+          if (!rectangleStart) {
+            setRectangleStart(coords);
+            setIsDrawing(true);
+          } else {
+            const [x1, y1] = rectangleStart;
+            const [x2, y2] = coords;
+            const rectFeature: GeoJSON.Feature = {
+              type: "Feature",
+              geometry: {
+                type: "Polygon",
+                coordinates: [
+                  [
+                    [x1, y1],
+                    [x2, y1],
+                    [x2, y2],
+                    [x1, y2],
+                    [x1, y1],
+                  ],
+                ],
+              },
+              properties: {},
+            };
+            onComplete?.(rectFeature);
+            setRectangleStart(null);
+            setIsDrawing(false);
+          }
+          break;
+
+        case "circle":
+          if (!circleCenter) {
+            setCircleCenter(coords);
+            setIsDrawing(true);
+          } else {
+            const radius = distance(circleCenter, coords);
+            const circleCoords = createCirclePolygon(circleCenter, radius, 64);
+            const circleFeature: GeoJSON.Feature = {
+              type: "Feature",
+              geometry: { type: "Polygon", coordinates: [circleCoords] },
+              properties: { radius, center: circleCenter },
+            };
+            onComplete?.(circleFeature);
+            setCircleCenter(null);
+            setIsDrawing(false);
+          }
+          break;
       }
-
-      case 'line':
-        setCoordinates(prev => {
-          const next = [...prev, coords];
-          if (maxPoints && next.length >= maxPoints) {
-            // Complete line
-            const lineFeature: GeoJSON.Feature = {
-              type: 'Feature',
-              geometry: { type: 'LineString', coordinates: next },
-              properties: {}
-            };
-            setTimeout(() => {
-              onComplete?.(lineFeature);
-              setCoordinates([]);
-              setIsDrawing(false);
-            }, 0);
-          }
-          return next;
-        });
-        setIsDrawing(true);
-        break;
-
-      case 'polygon':
-        setCoordinates(prev => {
-          const next = [...prev, coords];
-          if (maxPoints && next.length >= maxPoints && autoClose) {
-            // Complete polygon
-            const polygonFeature: GeoJSON.Feature = {
-              type: 'Feature',
-              geometry: { type: 'Polygon', coordinates: [[...next, next[0]]] },
-              properties: {}
-            };
-            setTimeout(() => {
-              onComplete?.(polygonFeature);
-              setCoordinates([]);
-              setIsDrawing(false);
-            }, 0);
-          }
-          return next;
-        });
-        setIsDrawing(true);
-        break;
-
-      case 'rectangle':
-        if (!rectangleStart) {
-          setRectangleStart(coords);
-          setIsDrawing(true);
-        } else {
-          const [x1, y1] = rectangleStart;
-          const [x2, y2] = coords;
-          const rectFeature: GeoJSON.Feature = {
-            type: 'Feature',
-            geometry: {
-              type: 'Polygon',
-              coordinates: [[
-                [x1, y1],
-                [x2, y1],
-                [x2, y2],
-                [x1, y2],
-                [x1, y1]
-              ]]
-            },
-            properties: {}
-          };
-          onComplete?.(rectFeature);
-          setRectangleStart(null);
-          setIsDrawing(false);
-        }
-        break;
-
-      case 'circle':
-        if (!circleCenter) {
-          setCircleCenter(coords);
-          setIsDrawing(true);
-        } else {
-          const radius = distance(circleCenter, coords);
-          const circleCoords = createCirclePolygon(circleCenter, radius, 64);
-          const circleFeature: GeoJSON.Feature = {
-            type: 'Feature',
-            geometry: { type: 'Polygon', coordinates: [circleCoords] },
-            properties: { radius, center: circleCenter }
-          };
-          onComplete?.(circleFeature);
-          setCircleCenter(null);
-          setIsDrawing(false);
-        }
-        break;
-    }
-  }, [mode, snap, snapToFeatures, maxPoints, autoClose, rectangleStart, circleCenter, onComplete]);
+    },
+    [
+      mode,
+      snap,
+      snapToFeatures,
+      maxPoints,
+      autoClose,
+      rectangleStart,
+      circleCenter,
+      onComplete,
+    ]
+  );
 
   // Handle double click (complete polygon/line)
-  const handleDoubleClick = useCallback((e: any) => {
-    if (!mode || !isDrawing) return;
+  const handleDoubleClick = useCallback(
+    (e: any) => {
+      if (!mode || !isDrawing) return;
 
-    e.preventDefault();
+      e.preventDefault();
 
-    if (mode === 'polygon' && coordinates.length >= 3) {
-      const polygonFeature: GeoJSON.Feature = {
-        type: 'Feature',
-        geometry: { type: 'Polygon', coordinates: [[...coordinates, coordinates[0]]] },
-        properties: {}
-      };
-      onComplete?.(polygonFeature);
-      setCoordinates([]);
-      setIsDrawing(false);
-    } else if (mode === 'line' && coordinates.length >= 2) {
-      const lineFeature: GeoJSON.Feature = {
-        type: 'Feature',
-        geometry: { type: 'LineString', coordinates: coordinates },
-        properties: {}
-      };
-      onComplete?.(lineFeature);
-      setCoordinates([]);
-      setIsDrawing(false);
-    }
-  }, [mode, isDrawing, coordinates, onComplete]);
+      if (mode === "polygon" && coordinates.length >= 3) {
+        const polygonFeature: GeoJSON.Feature = {
+          type: "Feature",
+          geometry: {
+            type: "Polygon",
+            coordinates: [[...coordinates, coordinates[0]]],
+          },
+          properties: {},
+        };
+        onComplete?.(polygonFeature);
+        setCoordinates([]);
+        setIsDrawing(false);
+      } else if (mode === "line" && coordinates.length >= 2) {
+        const lineFeature: GeoJSON.Feature = {
+          type: "Feature",
+          geometry: { type: "LineString", coordinates: coordinates },
+          properties: {},
+        };
+        onComplete?.(lineFeature);
+        setCoordinates([]);
+        setIsDrawing(false);
+      }
+    },
+    [mode, isDrawing, coordinates, onComplete]
+  );
 
   // Handle mouse move
-  const handleMouseMove = useCallback((e: any) => {
-    if (!mode) return;
+  const handleMouseMove = useCallback(
+    (e: any) => {
+      if (!mode) return;
 
-    const coords = snap
-      ? snapToFeatures([e.lngLat.lng, e.lngLat.lat])
-      : [e.lngLat.lng, e.lngLat.lat];
+      const coords = snap
+        ? snapToFeatures([e.lngLat.lng, e.lngLat.lat])
+        : [e.lngLat.lng, e.lngLat.lat];
 
-    setCurrentPosition(coords);
+      setCurrentPosition(coords);
 
-    // Freehand mode
-    if (isFreehand && mode === 'freehand') {
-      setCoordinates(prev => [...prev, coords]);
-    }
-  }, [mode, snap, snapToFeatures, isFreehand]);
+      // Freehand mode
+      if (isFreehand && mode === "freehand") {
+        setCoordinates((prev) => [...prev, coords]);
+      }
+    },
+    [mode, snap, snapToFeatures, isFreehand]
+  );
 
   // Handle mouse down (for freehand)
-  const handleMouseDown = useCallback((e: any) => {
-    if (!mode || mode !== 'freehand' || !freehandEnabled) return;
+  const handleMouseDown = useCallback(
+    (e: any) => {
+      if (!mode || mode !== "freehand" || !freehandEnabled) return;
 
-    if (e.originalEvent.shiftKey) {
-      setIsFreehand(true);
-      setCoordinates([[e.lngLat.lng, e.lngLat.lat]]);
-      setIsDrawing(true);
-      map?.dragPan.disable();
-    }
-  }, [mode, freehandEnabled, map]);
+      if (e.originalEvent.shiftKey) {
+        setIsFreehand(true);
+        setCoordinates([[e.lngLat.lng, e.lngLat.lat]]);
+        setIsDrawing(true);
+        map?.dragPan.disable();
+      }
+    },
+    [mode, freehandEnabled, map]
+  );
 
   // Handle mouse up (complete freehand)
   const handleMouseUp = useCallback(() => {
-    if (isFreehand && mode === 'freehand') {
+    if (isFreehand && mode === "freehand") {
       if (coordinates.length >= 2) {
         // Simplify the line
         const simplified = simplifyLine(coordinates, freehandTolerance);
-        
+
         const freehandFeature: GeoJSON.Feature = {
-          type: 'Feature',
-          geometry: { type: 'LineString', coordinates: simplified },
-          properties: {}
+          type: "Feature",
+          geometry: { type: "LineString", coordinates: simplified },
+          properties: {},
         };
         onComplete?.(freehandFeature);
       }
-      
+
       setIsFreehand(false);
       setCoordinates([]);
       setIsDrawing(false);
@@ -492,54 +537,67 @@ export const DrawInteraction: React.FC<DrawInteractionProps> = ({
   }, [isFreehand, mode, coordinates, freehandTolerance, map, onComplete]);
 
   // Handle escape key (cancel drawing)
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape' && isDrawing) {
-      setCoordinates([]);
-      setCurrentPosition(null);
-      setRectangleStart(null);
-      setCircleCenter(null);
-      setIsDrawing(false);
-      setIsFreehand(false);
-      
-      // Clear preview
-      const source = map?.getSource(sourceId) as maplibregl.GeoJSONSource;
-      if (source) {
-        source.setData({ type: 'FeatureCollection', features: [] });
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isDrawing) {
+        setCoordinates([]);
+        setCurrentPosition(null);
+        setRectangleStart(null);
+        setCircleCenter(null);
+        setIsDrawing(false);
+        setIsFreehand(false);
+
+        // Clear preview
+        const source = map?.getSource(sourceId) as maplibregl.GeoJSONSource;
+        if (source) {
+          source.setData({ type: "FeatureCollection", features: [] });
+        }
+
+        onCancel?.();
+      } else if (e.key === "Backspace" && isDrawing && coordinates.length > 0) {
+        // Remove last point
+        setCoordinates((prev) => prev.slice(0, -1));
       }
-      
-      onCancel?.();
-    } else if (e.key === 'Backspace' && isDrawing && coordinates.length > 0) {
-      // Remove last point
-      setCoordinates(prev => prev.slice(0, -1));
-    }
-  }, [map, isDrawing, coordinates, onCancel]);
+    },
+    [map, isDrawing, coordinates, onCancel]
+  );
 
   // Setup event listeners
   useEffect(() => {
     if (!map || !isLoaded || !mode) return;
 
-    map.on('click', handleClick);
-    map.on('dblclick', handleDoubleClick);
-    map.on('mousemove', handleMouseMove);
-    map.on('mousedown', handleMouseDown);
-    map.on('mouseup', handleMouseUp);
-    document.addEventListener('keydown', handleKeyDown);
+    map.on("click", handleClick);
+    map.on("dblclick", handleDoubleClick);
+    map.on("mousemove", handleMouseMove);
+    map.on("mousedown", handleMouseDown);
+    map.on("mouseup", handleMouseUp);
+    document.addEventListener("keydown", handleKeyDown);
 
     // Set cursor
-    map.getCanvas().style.cursor = 'crosshair';
+    map.getCanvas().style.cursor = "crosshair";
 
     return () => {
-      map.off('click', handleClick);
-      map.off('dblclick', handleDoubleClick);
-      map.off('mousemove', handleMouseMove);
-      map.off('mousedown', handleMouseDown);
-      map.off('mouseup', handleMouseUp);
-      document.removeEventListener('keydown', handleKeyDown);
-      
-      map.getCanvas().style.cursor = '';
+      map.off("click", handleClick);
+      map.off("dblclick", handleDoubleClick);
+      map.off("mousemove", handleMouseMove);
+      map.off("mousedown", handleMouseDown);
+      map.off("mouseup", handleMouseUp);
+      document.removeEventListener("keydown", handleKeyDown);
+
+      map.getCanvas().style.cursor = "";
       map.dragPan.enable();
     };
-  }, [map, isLoaded, mode, handleClick, handleDoubleClick, handleMouseMove, handleMouseDown, handleMouseUp, handleKeyDown]);
+  }, [
+    map,
+    isLoaded,
+    mode,
+    handleClick,
+    handleDoubleClick,
+    handleMouseMove,
+    handleMouseDown,
+    handleMouseUp,
+    handleKeyDown,
+  ]);
 
   // Reset when mode changes
   useEffect(() => {
@@ -561,13 +619,17 @@ function distance(a: number[], b: number[]): number {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-function createCirclePolygon(center: number[], radius: number, steps: number): number[][] {
+function createCirclePolygon(
+  center: number[],
+  radius: number,
+  steps: number
+): number[][] {
   const coords: number[][] = [];
   for (let i = 0; i <= steps; i++) {
     const angle = (i / steps) * 2 * Math.PI;
     coords.push([
       center[0] + radius * Math.cos(angle),
-      center[1] + radius * Math.sin(angle)
+      center[1] + radius * Math.sin(angle),
     ]);
   }
   return coords;
@@ -575,15 +637,15 @@ function createCirclePolygon(center: number[], radius: number, steps: number): n
 
 function getCoordinates(geometry: GeoJSON.Geometry): number[][] {
   switch (geometry.type) {
-    case 'Point':
+    case "Point":
       return [geometry.coordinates];
-    case 'LineString':
-    case 'MultiPoint':
+    case "LineString":
+    case "MultiPoint":
       return geometry.coordinates;
-    case 'Polygon':
-    case 'MultiLineString':
+    case "Polygon":
+    case "MultiLineString":
       return (geometry.coordinates as number[][][]).flat();
-    case 'MultiPolygon':
+    case "MultiPolygon":
       return (geometry.coordinates as number[][][][]).flat(2);
     default:
       return [];
@@ -592,10 +654,10 @@ function getCoordinates(geometry: GeoJSON.Geometry): number[][] {
 
 function simplifyLine(coords: number[][], tolerance: number): number[][] {
   if (coords.length <= 2) return coords;
-  
+
   // Douglas-Peucker simplification
   const sqTolerance = tolerance * tolerance;
-  
+
   function simplifyDPStep(
     points: number[][],
     first: number,
@@ -615,9 +677,11 @@ function simplifyLine(coords: number[][], tolerance: number): number[][] {
     }
 
     if (maxSqDist > sqTolerance) {
-      if (index - first > 1) simplifyDPStep(points, first, index, sqTolerance, simplified);
+      if (index - first > 1)
+        simplifyDPStep(points, first, index, sqTolerance, simplified);
       simplified.push(points[index]);
-      if (last - index > 1) simplifyDPStep(points, index, last, sqTolerance, simplified);
+      if (last - index > 1)
+        simplifyDPStep(points, index, last, sqTolerance, simplified);
     }
   }
 

@@ -140,35 +140,87 @@ const HeroSlideshow = ({
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden mb-6 min-h-[220px] flex items-center group"
+      className="group relative mb-6 flex min-h-[220px] items-center overflow-hidden rounded-2xl"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
       {/* Landscape background */}
       <svg
         aria-hidden="true"
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 h-full w-full"
         preserveAspectRatio="xMidYMid slice"
         viewBox="0 0 1200 260"
       >
         <defs>
-          <linearGradient id="hero-sky" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#aee3f5" />
-            <stop offset="55%" stopColor="#cdeef7" />
-            <stop offset="100%" stopColor="#e8f7e9" />
+          <linearGradient
+            id="hero-sky"
+            x1="0"
+            x2="0"
+            y1="0"
+            y2="1"
+          >
+            <stop
+              offset="0%"
+              stopColor="#aee3f5"
+            />
+            <stop
+              offset="55%"
+              stopColor="#cdeef7"
+            />
+            <stop
+              offset="100%"
+              stopColor="#e8f7e9"
+            />
           </linearGradient>
-          <linearGradient id="hero-mountain" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#8d9aa8" />
-            <stop offset="45%" stopColor="#b3bec9" />
-            <stop offset="100%" stopColor="#5f7050" />
+          <linearGradient
+            id="hero-mountain"
+            x1="0"
+            x2="0"
+            y1="0"
+            y2="1"
+          >
+            <stop
+              offset="0%"
+              stopColor="#8d9aa8"
+            />
+            <stop
+              offset="45%"
+              stopColor="#b3bec9"
+            />
+            <stop
+              offset="100%"
+              stopColor="#5f7050"
+            />
           </linearGradient>
-          <linearGradient id="hero-grass" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#7fb069" />
-            <stop offset="100%" stopColor="#4e8c46" />
+          <linearGradient
+            id="hero-grass"
+            x1="0"
+            x2="0"
+            y1="0"
+            y2="1"
+          >
+            <stop
+              offset="0%"
+              stopColor="#7fb069"
+            />
+            <stop
+              offset="100%"
+              stopColor="#4e8c46"
+            />
           </linearGradient>
         </defs>
-        <rect fill="url(#hero-sky)" height="260" width="1200" />
-        <circle cx="980" cy="70" fill="#fff6d8" opacity="0.85" r="42" />
+        <rect
+          fill="url(#hero-sky)"
+          height="260"
+          width="1200"
+        />
+        <circle
+          cx="980"
+          cy="70"
+          fill="#fff6d8"
+          opacity="0.85"
+          r="42"
+        />
         <path
           d="M0 190 Q150 150 300 185 T600 180 T900 190 T1200 175 V260 H0 Z"
           fill="#9db98a"
@@ -194,36 +246,36 @@ const HeroSlideshow = ({
       </svg>
 
       {/* Content overlay */}
-      <div className="relative z-10 w-full flex items-center justify-between px-8 py-10 gap-6">
+      <div className="relative z-10 flex w-full items-center justify-between gap-6 px-8 py-10">
         {/* Left: greeting (static) */}
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white drop-shadow-md leading-tight">
+          <h1 className="text-3xl leading-tight font-extrabold text-white drop-shadow-md sm:text-4xl">
             {greeting}
             <br />
             {userName}
           </h1>
-          <p className="mt-2 text-sm sm:text-base text-white/95 drop-shadow-sm">
+          <p className="mt-2 text-sm text-white/95 drop-shadow-sm sm:text-base">
             Here's what's happening within the workspace.
           </p>
         </div>
 
         {/* Right: slideshow content */}
-        <div className="hidden md:flex flex-col items-end text-right gap-3">
+        <div className="hidden flex-col items-end gap-3 text-right md:flex">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-white shrink-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white backdrop-blur-sm">
               {slide.icon}
             </div>
             <div>
               <div className="text-base font-bold text-white drop-shadow-sm">
                 {slide.title}
               </div>
-              <p className="text-xs text-white/90 drop-shadow-sm max-w-[220px]">
+              <p className="max-w-[220px] text-xs text-white/90 drop-shadow-sm">
                 {slide.subtitle}
               </p>
             </div>
           </div>
           <button
-            className="px-4 py-2 rounded-lg bg-white/90 text-gray-800 font-bold text-xs hover:bg-white transition-colors cursor-pointer shadow-md"
+            className="cursor-pointer rounded-lg bg-white/90 px-4 py-2 text-xs font-bold text-gray-800 shadow-md transition-colors hover:bg-white"
             onClick={handleCta}
           >
             {slide.ctaLabel}
@@ -231,7 +283,7 @@ const HeroSlideshow = ({
           <div className="flex items-center gap-2">
             <button
               aria-label="Previous slide"
-              className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/35 transition-colors cursor-pointer"
+              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors hover:bg-white/35"
               onClick={goPrev}
             >
               <ChevronLeft size={15} />
@@ -241,10 +293,10 @@ const HeroSlideshow = ({
                 <button
                   key={i}
                   aria-label={`Go to slide ${i + 1}`}
-                  className={`rounded-full transition-all cursor-pointer ${
+                  className={`cursor-pointer rounded-full transition-all ${
                     i === current
-                      ? "w-5 h-1 bg-white"
-                      : "w-2 h-1 bg-white/50 hover:bg-white/75"
+                      ? "h-1 w-5 bg-white"
+                      : "h-1 w-2 bg-white/50 hover:bg-white/75"
                   }`}
                   onClick={() => setCurrent(i)}
                 />
@@ -252,7 +304,7 @@ const HeroSlideshow = ({
             </div>
             <button
               aria-label="Next slide"
-              className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/35 transition-colors cursor-pointer"
+              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors hover:bg-white/35"
               onClick={goNext}
             >
               <ChevronRight size={15} />
@@ -262,21 +314,21 @@ const HeroSlideshow = ({
       </div>
 
       {/* Mobile: slideshow below greeting */}
-      <div className="md:hidden absolute bottom-3 left-6 right-6 flex items-center justify-between">
+      <div className="absolute right-6 bottom-3 left-6 flex items-center justify-between md:hidden">
         <div className="flex items-center gap-2">
           {HERO_SLIDES.map((_, i) => (
             <button
               key={i}
               aria-label={`Go to slide ${i + 1}`}
-              className={`rounded-full transition-all cursor-pointer ${
-                i === current ? "w-5 h-1 bg-white" : "w-2 h-1 bg-white/50"
+              className={`cursor-pointer rounded-full transition-all ${
+                i === current ? "h-1 w-5 bg-white" : "h-1 w-2 bg-white/50"
               }`}
               onClick={() => setCurrent(i)}
             />
           ))}
         </div>
         <button
-          className="px-3 py-1.5 rounded-md bg-white/90 text-gray-800 font-bold text-xs cursor-pointer shadow"
+          className="cursor-pointer rounded-md bg-white/90 px-3 py-1.5 text-xs font-bold text-gray-800 shadow"
           onClick={handleCta}
         >
           {slide.ctaLabel}
@@ -284,7 +336,7 @@ const HeroSlideshow = ({
       </div>
     </div>
   );
-}
+};
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 
@@ -298,63 +350,63 @@ const StatCard = ({
   value: number | string;
 }) => {
   return (
-    <div className="bg-surface border border-border-primary rounded-xl px-5 py-4 flex items-start justify-between gap-3 hover:border-primary/30 transition-colors">
-      <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 shadow-sm">
+    <div className="bg-surface border-border-primary hover:border-primary/30 flex items-start justify-between gap-3 rounded-xl border px-5 py-4 transition-colors">
+      <div className="bg-primary flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white shadow-sm">
         {icon}
       </div>
       <div className="flex flex-col items-end text-right">
-        <span className="text-sm font-medium text-text-secondary">{label}</span>
-        <span className="text-2xl font-extrabold text-text-primary tabular-nums mt-1">
+        <span className="text-text-secondary text-sm font-medium">{label}</span>
+        <span className="text-text-primary mt-1 text-2xl font-extrabold tabular-nums">
           {value}
         </span>
       </div>
     </div>
   );
-}
+};
 
 // ── Create Project Illustration ───────────────────────────────────────────────
 
 const CreateProjectIllustration = () => {
   return (
-    <div className="relative w-[240px] h-[170px] shrink-0 hidden lg:block select-none pointer-events-none">
+    <div className="pointer-events-none relative hidden h-[170px] w-[240px] shrink-0 select-none lg:block">
       {/* Back card */}
-      <div className="absolute right-0 top-2 w-[150px] h-[140px] bg-elevated border border-border-primary rounded-xl shadow-lg rotate-3 p-3 opacity-90">
-        <div className="flex gap-1.5 mb-2">
-          <span className="w-2 h-2 rounded-full bg-error/70" />
-          <span className="w-2 h-2 rounded-full bg-warning/70" />
-          <span className="w-2 h-2 rounded-full bg-success/70" />
+      <div className="bg-elevated border-border-primary absolute top-2 right-0 h-[140px] w-[150px] rotate-3 rounded-xl border p-3 opacity-90 shadow-lg">
+        <div className="mb-2 flex gap-1.5">
+          <span className="bg-error/70 h-2 w-2 rounded-full" />
+          <span className="bg-warning/70 h-2 w-2 rounded-full" />
+          <span className="bg-success/70 h-2 w-2 rounded-full" />
         </div>
-        <div className="h-2 rounded bg-surface-hover mb-1.5 w-4/5" />
-        <div className="h-2 rounded bg-surface-hover mb-1.5 w-3/5" />
-        <div className="h-2 rounded bg-surface-hover mb-3 w-2/3" />
+        <div className="bg-surface-hover mb-1.5 h-2 w-4/5 rounded" />
+        <div className="bg-surface-hover mb-1.5 h-2 w-3/5 rounded" />
+        <div className="bg-surface-hover mb-3 h-2 w-2/3 rounded" />
         <div className="grid grid-cols-2 gap-2">
-          <div className="h-10 rounded-lg bg-accent/20" />
-          <div className="h-10 rounded-lg bg-primary/15" />
+          <div className="bg-accent/20 h-10 rounded-lg" />
+          <div className="bg-primary/15 h-10 rounded-lg" />
         </div>
       </div>
 
       {/* Front card */}
-      <div className="absolute left-0 top-6 w-[160px] h-[130px] bg-elevated border border-border-primary rounded-xl shadow-xl -rotate-2 p-3">
-        <div className="h-2 rounded bg-surface-hover mb-1.5 w-5/6" />
-        <div className="h-2 rounded bg-surface-hover mb-1.5 w-2/3" />
-        <div className="h-2 rounded bg-surface-hover mb-3 w-3/4" />
+      <div className="bg-elevated border-border-primary absolute top-6 left-0 h-[130px] w-[160px] -rotate-2 rounded-xl border p-3 shadow-xl">
+        <div className="bg-surface-hover mb-1.5 h-2 w-5/6 rounded" />
+        <div className="bg-surface-hover mb-1.5 h-2 w-2/3 rounded" />
+        <div className="bg-surface-hover mb-3 h-2 w-3/4 rounded" />
         <div className="space-y-1.5">
-          <div className="h-2 rounded bg-error/60 w-4/5" />
-          <div className="h-2 rounded bg-warning/60 w-3/5" />
-          <div className="h-2 rounded bg-success/60 w-2/3" />
-          <div className="h-2 rounded bg-accent/50 w-1/2" />
+          <div className="bg-error/60 h-2 w-4/5 rounded" />
+          <div className="bg-warning/60 h-2 w-3/5 rounded" />
+          <div className="bg-success/60 h-2 w-2/3 rounded" />
+          <div className="bg-accent/50 h-2 w-1/2 rounded" />
         </div>
       </div>
 
       {/* Floating chips */}
-      <div className="absolute left-6 bottom-1 flex items-center gap-1.5 bg-elevated border border-border-primary rounded-full px-2 py-1 shadow-md">
-        <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-        <span className="w-2.5 h-2.5 rounded-full bg-success" />
-        <span className="w-2.5 h-2.5 rounded-full bg-warning" />
+      <div className="bg-elevated border-border-primary absolute bottom-1 left-6 flex items-center gap-1.5 rounded-full border px-2 py-1 shadow-md">
+        <span className="bg-primary h-2.5 w-2.5 rounded-full" />
+        <span className="bg-success h-2.5 w-2.5 rounded-full" />
+        <span className="bg-warning h-2.5 w-2.5 rounded-full" />
       </div>
     </div>
   );
-}
+};
 
 // ── Recent Projects Panel ─────────────────────────────────────────────────────
 
@@ -369,45 +421,53 @@ const RecentProjectsPanel = ({
   const recent = projects.slice(0, 5);
 
   return (
-    <div className="bg-surface border border-border-primary rounded-2xl p-5 flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-text-primary">Recent Projects</h2>
+    <div className="bg-surface border-border-primary flex flex-col rounded-2xl border p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-text-primary text-lg font-bold">Recent Projects</h2>
         <button
-          className="flex items-center gap-0.5 text-sm font-semibold text-primary hover:text-primary/80 bg-transparent border-none cursor-pointer p-0"
+          className="text-primary hover:text-primary/80 flex cursor-pointer items-center gap-0.5 border-none bg-transparent p-0 text-sm font-semibold"
           onClick={() => navigate("/projects")}
         >
           View all Projects <ChevronRight size={16} />
         </button>
       </div>
 
-      {loading ? <div className="space-y-3">
+      {loading ? (
+        <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-14 rounded-xl skeleton" />
+            <div
+              key={i}
+              className="skeleton h-14 rounded-xl"
+            />
           ))}
-        </div> : null}
+        </div>
+      ) : null}
 
       {!loading && recent.length === 0 && (
-        <p className="text-sm text-text-tertiary py-6 text-center">
+        <p className="text-text-tertiary py-6 text-center text-sm">
           No projects yet. Create your first one to get started.
         </p>
       )}
 
       {!loading && recent.length > 0 && (
-        <ul className="flex flex-col divide-y divide-border-subtle">
+        <ul className="divide-border-subtle flex flex-col divide-y">
           {recent.map((p) => (
             <li key={p.id}>
               <button
-                className="w-full flex items-center gap-3 py-3 px-1 bg-transparent border-none cursor-pointer text-left hover:bg-surface-hover rounded-lg transition-colors"
+                className="hover:bg-surface-hover flex w-full cursor-pointer items-center gap-3 rounded-lg border-none bg-transparent px-1 py-3 text-left transition-colors"
                 onClick={() => navigate("/projects")}
               >
-                <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-primary/25 to-accent/20 flex items-center justify-center shrink-0 overflow-hidden">
-                  <MapIcon className="text-primary" size={18} />
+                <div className="from-primary/25 to-accent/20 flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br">
+                  <MapIcon
+                    className="text-primary"
+                    size={18}
+                  />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-text-primary truncate">
+                  <div className="text-text-primary truncate text-sm font-semibold">
                     {p.title}
                   </div>
-                  <div className="text-xs text-text-tertiary mt-0.5">
+                  <div className="text-text-tertiary mt-0.5 text-xs">
                     {relativeTime(p.created_at)}
                   </div>
                 </div>
@@ -422,7 +482,7 @@ const RecentProjectsPanel = ({
       )}
     </div>
   );
-}
+};
 
 // ── Discover More Module Card ─────────────────────────────────────────────────
 
@@ -434,29 +494,32 @@ const DiscoverCard = ({ mod }: { mod: ModuleInfo }) => {
   return (
     <button
       disabled={!clickable}
-      className={`card p-5 flex items-start gap-4 text-left transition-all duration-200 ${
+      className={`card flex items-start gap-4 p-5 text-left transition-all duration-200 ${
         clickable
-          ? "hover:border-primary/40 hover:shadow-lg cursor-pointer"
-          : "opacity-70 cursor-default"
+          ? "hover:border-primary/40 cursor-pointer hover:shadow-lg"
+          : "cursor-default opacity-70"
       }`}
       onClick={() => clickable && navigate(`/${routeName}`)}
     >
-      <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+      <div className="bg-primary/10 text-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-xl">
         <Layers size={20} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="font-bold text-sm text-text-primary capitalize">
+        <div className="text-text-primary text-sm font-bold capitalize">
           {mod.name.replace("-", " ").replace(" module", "")}
         </div>
-        <p className="text-xs text-text-secondary mt-1 line-clamp-2 leading-relaxed">
+        <p className="text-text-secondary mt-1 line-clamp-2 text-xs leading-relaxed">
           {mod.description ||
             "Explore what this module can do for your project."}
         </p>
       </div>
-      <ChevronRight className="text-text-tertiary shrink-0 mt-1" size={16} />
+      <ChevronRight
+        className="text-text-tertiary mt-1 shrink-0"
+        size={16}
+      />
     </button>
   );
-}
+};
 
 // ── Create Project Modal ──────────────────────────────────────────────────────
 
@@ -503,20 +566,25 @@ const CreateProjectModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 overlay animate-fade-in">
-      <div className="w-full max-w-[480px] bg-elevated border border-border-primary rounded-2xl p-6 flex flex-col gap-4 animate-scale-in shadow-2xl">
-        <h2 className="text-xl font-bold text-text-primary">
+    <div className="overlay animate-fade-in fixed inset-0 z-[999] flex items-center justify-center p-4">
+      <div className="bg-elevated border-border-primary animate-scale-in flex w-full max-w-[480px] flex-col gap-4 rounded-2xl border p-6 shadow-2xl">
+        <h2 className="text-text-primary text-xl font-bold">
           Create a Project
         </h2>
-        <p className="text-sm text-text-secondary -mt-2">
+        <p className="text-text-secondary -mt-2 text-sm">
           Start a new project to organize your data.
         </p>
 
-        {error ? <div className="p-3 rounded-md bg-error-subtle text-error text-sm border border-error/20">
+        {error ? (
+          <div className="bg-error-subtle text-error border-error/20 rounded-md border p-3 text-sm">
             {error}
-          </div> : null}
+          </div>
+        ) : null}
 
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={handleSubmit}
+        >
           <div className="form-field">
             <label className="form-label">Project Title</label>
             <input
@@ -540,7 +608,7 @@ const CreateProjectModal = ({
             />
           </div>
 
-          <div className="flex gap-3 justify-end mt-2">
+          <div className="mt-2 flex justify-end gap-3">
             <button
               className="btn btn-secondary btn-md"
               type="button"
@@ -560,7 +628,7 @@ const CreateProjectModal = ({
       </div>
     </div>
   );
-}
+};
 
 // ── Main Landing Page ─────────────────────────────────────────────────────────
 
@@ -581,7 +649,7 @@ export default function DashboardPage() {
       // Most recently created first
       data.sort(
         (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
       setProjects(data);
     } catch {
@@ -603,13 +671,13 @@ export default function DashboardPage() {
 
   const userName = useMemo(
     () => displayName(user?.full_name, user?.email),
-    [user],
+    [user]
   );
 
   const discoverModules = modules.filter((m) => m.enabled);
 
   return (
-    <div className="max-w-7xl mx-auto pb-12">
+    <div className="mx-auto max-w-7xl pb-12">
       {/* Hero Slideshow */}
       <HeroSlideshow
         userName={userName}
@@ -617,7 +685,7 @@ export default function DashboardPage() {
       />
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           icon={<Folder size={22} />}
           label="Project Created"
@@ -633,29 +701,36 @@ export default function DashboardPage() {
           label="Map Created"
           value={mapsCount}
         />
-        <StatCard icon={<UserIcon size={22} />} label="User" value={1} />
+        <StatCard
+          icon={<UserIcon size={22} />}
+          label="User"
+          value={1}
+        />
       </div>
 
       {/* Create a Project + Recent Projects */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-10">
+      <div className="mb-10 grid grid-cols-1 gap-5 xl:grid-cols-3">
         {/* Create a Project card */}
-        <div className="xl:col-span-2 rounded-2xl bg-gradient-to-r from-primary/10 via-surface to-surface border border-border-primary p-7 flex items-center justify-between gap-6 overflow-hidden">
+        <div className="from-primary/10 via-surface to-surface border-border-primary flex items-center justify-between gap-6 overflow-hidden rounded-2xl border bg-gradient-to-r p-7 xl:col-span-2">
           <div className="max-w-md">
-            <h2 className="text-2xl font-extrabold text-text-primary">
+            <h2 className="text-text-primary text-2xl font-extrabold">
               Create a Project
             </h2>
-            <p className="mt-2 text-sm text-text-secondary leading-relaxed">
+            <p className="text-text-secondary mt-2 text-sm leading-relaxed">
               To get started you can start by creating a new one or browse
               existing projects
             </p>
-            <div className="flex gap-3 mt-5">
+            <div className="mt-5 flex gap-3">
               <Button
                 variant="secondary"
                 onClick={() => window.location.assign("/projects")}
               >
                 Browse Project
               </Button>
-              <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+              <Button
+                variant="primary"
+                onClick={() => setIsModalOpen(true)}
+              >
                 Create Project
               </Button>
             </div>
@@ -664,22 +739,25 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Projects */}
-        <RecentProjectsPanel loading={projectsLoading} projects={projects} />
+        <RecentProjectsPanel
+          loading={projectsLoading}
+          projects={projects}
+        />
       </div>
 
       {/* Discover more */}
       <section>
-        <div className="flex items-end justify-between gap-4 mb-1">
+        <div className="mb-1 flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-extrabold text-text-primary">
+            <h2 className="text-text-primary text-2xl font-extrabold">
               Discover more
             </h2>
-            <p className="text-sm text-text-secondary mt-1">
+            <p className="text-text-secondary mt-1 text-sm">
               Choose an action to get started with your project
             </p>
           </div>
           <button
-            className="flex items-center gap-0.5 text-sm font-semibold text-primary hover:text-primary/80 bg-transparent border-none cursor-pointer p-0 shrink-0"
+            className="text-primary hover:text-primary/80 flex shrink-0 cursor-pointer items-center gap-0.5 border-none bg-transparent p-0 text-sm font-semibold"
             onClick={() => window.location.assign("/dashboard")}
           >
             View all Modules <ChevronRight size={16} />
@@ -687,13 +765,16 @@ export default function DashboardPage() {
         </div>
 
         {discoverModules.length === 0 ? (
-          <div className="py-10 px-8 text-center text-text-tertiary border-[1.5px] border-dashed border-border-primary rounded-xl mt-4">
+          <div className="text-text-tertiary border-border-primary mt-4 rounded-xl border-[1.5px] border-dashed px-8 py-10 text-center">
             <p className="text-sm">No modules are currently installed.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {discoverModules.map((m) => (
-              <DiscoverCard key={m.name} mod={m} />
+              <DiscoverCard
+                key={m.name}
+                mod={m}
+              />
             ))}
           </div>
         )}

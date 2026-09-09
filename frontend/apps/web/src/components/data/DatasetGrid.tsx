@@ -48,15 +48,23 @@ const MetaTile = ({
   value: string;
 }) => {
   return (
-    <div className="flex items-center gap-1.5 min-w-0 bg-surface-hover/50 px-2.5 py-1.5 rounded-lg border border-border-secondary">
-      <Icon className="shrink-0 text-text-tertiary" size={12} />
-      <span className="text-[0.68rem] text-text-tertiary shrink-0">{label}:</span>
-      <span className="truncate text-xs text-text-primary font-semibold" title={value}>
+    <div className="bg-surface-hover/50 border-border-secondary flex min-w-0 items-center gap-1.5 rounded-lg border px-2.5 py-1.5">
+      <Icon
+        className="text-text-tertiary shrink-0"
+        size={12}
+      />
+      <span className="text-text-tertiary shrink-0 text-[0.68rem]">
+        {label}:
+      </span>
+      <span
+        className="text-text-primary truncate text-xs font-semibold"
+        title={value}
+      >
         {value}
       </span>
     </div>
   );
-}
+};
 
 export default function DatasetGrid({
   items,
@@ -72,30 +80,35 @@ export default function DatasetGrid({
   onMove,
 }: Props) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
+    <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
       {loading ? (
         Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="card p-4 flex flex-col gap-3 bg-surface border border-border-primary rounded-xl animate-pulse"
+            className="card bg-surface border-border-primary flex animate-pulse flex-col gap-3 rounded-xl border p-4"
           >
             <div className="flex items-start gap-3">
-              <div className="skeleton h-10 w-10 rounded-lg shrink-0" />
-              <div className="flex flex-col gap-1.5 flex-1">
-                <div className="skeleton h-4 rounded w-3/4" />
-                <div className="skeleton h-3 rounded w-1/2" />
+              <div className="skeleton h-10 w-10 shrink-0 rounded-lg" />
+              <div className="flex flex-1 flex-col gap-1.5">
+                <div className="skeleton h-4 w-3/4 rounded" />
+                <div className="skeleton h-3 w-1/2 rounded" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="mt-2 grid grid-cols-2 gap-2">
               <div className="skeleton h-7 rounded-lg" />
               <div className="skeleton h-7 rounded-lg" />
             </div>
           </div>
         ))
       ) : items.length === 0 ? (
-        <div className="col-span-full card p-8 bg-surface border border-border-primary rounded-xl">
+        <div className="card bg-surface border-border-primary col-span-full rounded-xl border p-8">
           <EmptyState
-            icon={<Database className="text-primary" size={28} />}
+            icon={
+              <Database
+                className="text-primary"
+                size={28}
+              />
+            }
             size="md"
             action={
               activeFilterCount > 0
@@ -125,24 +138,24 @@ export default function DatasetGrid({
           return (
             <div
               key={d.id}
-              className={`card p-4 flex flex-col justify-between gap-3 bg-surface border border-border-primary hover:border-border-hover hover:shadow-md transition-all duration-200 rounded-xl cursor-pointer group ${
+              className={`card bg-surface border-border-primary hover:border-border-hover group flex cursor-pointer flex-col justify-between gap-3 rounded-xl border p-4 transition-all duration-200 hover:shadow-md ${
                 d._optimistic ? "opacity-60" : ""
               }`}
               onClick={() => onInspect(d)}
             >
               <div className="flex flex-col gap-2.5">
                 {/* Header */}
-                <div className="flex items-start gap-3 justify-between">
-                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
                     <span
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${colors.bg} ${colors.text} ${colors.border}`}
                     >
                       <FIcon size={18} />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <button
-                          className="font-bold text-text-primary text-sm truncate max-w-full hover:text-primary transition-colors cursor-pointer text-left block"
+                          className="text-text-primary hover:text-primary block max-w-full cursor-pointer truncate text-left text-sm font-bold transition-colors"
                           title={d.name}
                           type="button"
                           onClick={(e) => {
@@ -153,15 +166,13 @@ export default function DatasetGrid({
                           {d.name}
                         </button>
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5 text-xs text-text-tertiary">
+                      <div className="text-text-tertiary mt-0.5 flex items-center gap-2 text-xs">
                         <span className="inline-flex items-center gap-1">
                           <TIcon size={12} />
                           {typeLabel(d.type)}
                         </span>
                         <span>•</span>
-                        <span
-                          className={`font-semibold ${colors.text}`}
-                        >
+                        <span className={`font-semibold ${colors.text}`}>
                           {d.format}
                         </span>
                       </div>
@@ -182,36 +193,46 @@ export default function DatasetGrid({
                 </div>
 
                 {/* Description */}
-                {d.description ? <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed">
+                {d.description ? (
+                  <p className="text-text-secondary line-clamp-2 text-xs leading-relaxed">
                     {d.description}
-                  </p> : null}
+                  </p>
+                ) : null}
 
                 {/* Badges row: Stored / Tiled / Tags */}
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {stored ? <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-info/10 text-info border border-info/20">
+                  {stored ? (
+                    <span className="bg-info/10 text-info border-info/20 inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[0.65rem] font-medium">
                       <PackageOpen size={10} />
                       Stored
-                    </span> : null}
-                  {vectorized ? <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-accent/10 text-accent border border-accent/20">
+                    </span>
+                  ) : null}
+                  {vectorized ? (
+                    <span className="bg-accent/10 text-accent border-accent/20 inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[0.65rem] font-medium">
                       <Layers size={10} />
                       Tiled MVT
-                    </span> : null}
-                  {d.tags ? d.tags.slice(0, 3).map((t) => (
-                      <span
-                        key={t}
-                        className="text-[0.65rem] font-medium px-1.5 py-0.5 rounded bg-surface-hover text-text-secondary border border-border-secondary"
-                      >
-                        #{t}
-                      </span>
-                    )) : null}
-                  {d.tags && d.tags.length > 3 ? <span className="text-[0.65rem] text-text-tertiary">
+                    </span>
+                  ) : null}
+                  {d.tags
+                    ? d.tags.slice(0, 3).map((t) => (
+                        <span
+                          key={t}
+                          className="bg-surface-hover text-text-secondary border-border-secondary rounded border px-1.5 py-0.5 text-[0.65rem] font-medium"
+                        >
+                          #{t}
+                        </span>
+                      ))
+                    : null}
+                  {d.tags && d.tags.length > 3 ? (
+                    <span className="text-text-tertiary text-[0.65rem]">
                       +{d.tags.length - 3}
-                    </span> : null}
+                    </span>
+                  ) : null}
                 </div>
               </div>
 
               {/* Metadata Grid */}
-              <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-border-secondary">
+              <div className="border-border-secondary grid grid-cols-2 gap-2 border-t pt-1 text-xs">
                 <MetaTile
                   icon={Hash}
                   label="Records"
@@ -240,4 +261,3 @@ export default function DatasetGrid({
     </div>
   );
 }
-

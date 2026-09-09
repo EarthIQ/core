@@ -1,5 +1,11 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@packages/ui";
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { AlertBanner } from "@/components/admin/AlertBanner";
 import { GroupsTab } from "@/components/admin/GroupsTab";
@@ -39,12 +45,16 @@ const UsersIcon = () => {
       viewBox="0 0 24 24"
     >
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
+      <circle
+        cx="9"
+        cy="7"
+        r="4"
+      />
       <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   );
-}
+};
 
 const GroupsIcon = () => {
   return (
@@ -55,13 +65,37 @@ const GroupsIcon = () => {
       strokeWidth={2}
       viewBox="0 0 24 24"
     >
-      <rect height="7" rx="1" width="7" x="3" y="3" />
-      <rect height="7" rx="1" width="7" x="14" y="3" />
-      <rect height="7" rx="1" width="7" x="3" y="14" />
-      <rect height="7" rx="1" width="7" x="14" y="14" />
+      <rect
+        height="7"
+        rx="1"
+        width="7"
+        x="3"
+        y="3"
+      />
+      <rect
+        height="7"
+        rx="1"
+        width="7"
+        x="14"
+        y="3"
+      />
+      <rect
+        height="7"
+        rx="1"
+        width="7"
+        x="3"
+        y="14"
+      />
+      <rect
+        height="7"
+        rx="1"
+        width="7"
+        x="14"
+        y="14"
+      />
     </svg>
   );
-}
+};
 
 const PermissionsIcon = () => {
   return (
@@ -72,11 +106,18 @@ const PermissionsIcon = () => {
       strokeWidth={2}
       viewBox="0 0 24 24"
     >
-      <rect height="11" rx="2" ry="2" width="18" x="3" y="11" />
+      <rect
+        height="11"
+        rx="2"
+        ry="2"
+        width="18"
+        x="3"
+        y="11"
+      />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
   );
-}
+};
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -88,7 +129,9 @@ export default function AdminUsersPage() {
   const [allUsers, setAllUsers] = useState<UserSummary[]>([]); // For group member pickers
   const [userTotal, setUserTotal] = useState(0);
   const [userTotalPages, setUserTotalPages] = useState(1);
-  const [userFilters, setUserFilters] = useState<UserFilterState>(defaultUserFilterState);
+  const [userFilters, setUserFilters] = useState<UserFilterState>(
+    defaultUserFilterState
+  );
   const [usersLoading, setUsersLoading] = useState(true);
 
   // ── Groups Data ───────────────────────────────────────────────────────────
@@ -96,7 +139,9 @@ export default function AdminUsersPage() {
   const [allGroups, setAllGroups] = useState<GroupSummary[]>([]); // For user group pickers
   const [groupTotal, setGroupTotal] = useState(0);
   const [groupTotalPages, setGroupTotalPages] = useState(1);
-  const [groupFilters, setGroupFilters] = useState<GroupFilterState>(defaultGroupFilterState);
+  const [groupFilters, setGroupFilters] = useState<GroupFilterState>(
+    defaultGroupFilterState
+  );
   const [groupsLoading, setGroupsLoading] = useState(true);
 
   // ── Permissions Data ──────────────────────────────────────────────────────
@@ -104,7 +149,8 @@ export default function AdminUsersPage() {
   const [allPermissions, setAllPermissions] = useState<PermissionSummary[]>([]); // For permission matrix
   const [permissionTotal, setPermissionTotal] = useState(0);
   const [permissionTotalPages, setPermissionTotalPages] = useState(1);
-  const [permissionFilters, setPermissionFilters] = useState<PermissionFilterState>(defaultPermissionFilterState);
+  const [permissionFilters, setPermissionFilters] =
+    useState<PermissionFilterState>(defaultPermissionFilterState);
   const [permissionsLoading, setPermissionsLoading] = useState(true);
 
   // ── General Status ────────────────────────────────────────────────────────
@@ -119,18 +165,25 @@ export default function AdminUsersPage() {
   const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
   const [groupForm, setGroupForm] = useState<GroupFormState>(emptyGroupForm);
 
-  const [createPermissionModalOpen, setCreatePermissionModalOpen] = useState(false);
-  const [permissionForm, setPermissionForm] = useState<PermissionFormState>(emptyPermissionForm);
+  const [createPermissionModalOpen, setCreatePermissionModalOpen] =
+    useState(false);
+  const [permissionForm, setPermissionForm] =
+    useState<PermissionFormState>(emptyPermissionForm);
 
   // ── Edit state ────────────────────────────────────────────────────────────
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [editUserForm, setEditUserForm] = useState<UserFormState>(emptyUserForm);
+  const [editUserForm, setEditUserForm] =
+    useState<UserFormState>(emptyUserForm);
 
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
-  const [editGroupForm, setEditGroupForm] = useState<GroupFormState>(emptyGroupForm);
+  const [editGroupForm, setEditGroupForm] =
+    useState<GroupFormState>(emptyGroupForm);
 
-  const [editingPermissionId, setEditingPermissionId] = useState<string | null>(null);
-  const [editPermissionForm, setEditPermissionForm] = useState<PermissionFormState>(emptyPermissionForm);
+  const [editingPermissionId, setEditingPermissionId] = useState<string | null>(
+    null
+  );
+  const [editPermissionForm, setEditPermissionForm] =
+    useState<PermissionFormState>(emptyPermissionForm);
 
   const isAdmin = Boolean(user?.is_superuser);
 
@@ -148,61 +201,56 @@ export default function AdminUsersPage() {
 
   // ── Load Users ────────────────────────────────────────────────────────────
 
-  const loadUsers = useCallback(
-    async (filters: UserFilterState) => {
-      setUsersLoading(true);
-      try {
-        const params = new URLSearchParams();
-        if (filters.search) params.set("search", filters.search);
-        if (filters.is_superuser !== "all") params.set("is_superuser", filters.is_superuser);
-        if (filters.group_id !== "all") params.set("group_id", filters.group_id);
-        params.set("sort_by", filters.sort_by);
-        params.set("sort_order", filters.sort_order);
-        params.set("page", String(filters.page));
-        params.set("page_size", String(filters.page_size));
+  const loadUsers = useCallback(async (filters: UserFilterState) => {
+    setUsersLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.search) params.set("search", filters.search);
+      if (filters.is_superuser !== "all")
+        params.set("is_superuser", filters.is_superuser);
+      if (filters.group_id !== "all") params.set("group_id", filters.group_id);
+      params.set("sort_by", filters.sort_by);
+      params.set("sort_order", filters.sort_order);
+      params.set("page", String(filters.page));
+      params.set("page_size", String(filters.page_size));
 
-        const res = await api.get<PaginatedResponse<UserSummary>>(
-          `/api/v1/auth/users?${params.toString()}`,
-        );
-        setUsers(res.items);
-        setUserTotal(res.total);
-        setUserTotalPages(res.total_pages);
-      } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Unable to load users");
-      } finally {
-        setUsersLoading(false);
-      }
-    },
-    [],
-  );
+      const res = await api.get<PaginatedResponse<UserSummary>>(
+        `/api/v1/auth/users?${params.toString()}`
+      );
+      setUsers(res.items);
+      setUserTotal(res.total);
+      setUserTotalPages(res.total_pages);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Unable to load users");
+    } finally {
+      setUsersLoading(false);
+    }
+  }, []);
 
   // ── Load Groups ───────────────────────────────────────────────────────────
 
-  const loadGroups = useCallback(
-    async (filters: GroupFilterState) => {
-      setGroupsLoading(true);
-      try {
-        const params = new URLSearchParams();
-        if (filters.search) params.set("search", filters.search);
-        params.set("sort_by", filters.sort_by);
-        params.set("sort_order", filters.sort_order);
-        params.set("page", String(filters.page));
-        params.set("page_size", String(filters.page_size));
+  const loadGroups = useCallback(async (filters: GroupFilterState) => {
+    setGroupsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.search) params.set("search", filters.search);
+      params.set("sort_by", filters.sort_by);
+      params.set("sort_order", filters.sort_order);
+      params.set("page", String(filters.page));
+      params.set("page_size", String(filters.page_size));
 
-        const res = await api.get<PaginatedResponse<GroupSummary>>(
-          `/api/v1/auth/groups?${params.toString()}`,
-        );
-        setGroups(res.items);
-        setGroupTotal(res.total);
-        setGroupTotalPages(res.total_pages);
-      } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Unable to load groups");
-      } finally {
-        setGroupsLoading(false);
-      }
-    },
-    [],
-  );
+      const res = await api.get<PaginatedResponse<GroupSummary>>(
+        `/api/v1/auth/groups?${params.toString()}`
+      );
+      setGroups(res.items);
+      setGroupTotal(res.total);
+      setGroupTotalPages(res.total_pages);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Unable to load groups");
+    } finally {
+      setGroupsLoading(false);
+    }
+  }, []);
 
   // ── Load Permissions ──────────────────────────────────────────────────────
 
@@ -218,18 +266,20 @@ export default function AdminUsersPage() {
         params.set("page_size", String(filters.page_size));
 
         const res = await api.get<PaginatedResponse<PermissionSummary>>(
-          `/api/v1/auth/permissions?${params.toString()}`,
+          `/api/v1/auth/permissions?${params.toString()}`
         );
         setPermissions(res.items);
         setPermissionTotal(res.total);
         setPermissionTotalPages(res.total_pages);
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Unable to load permissions");
+        setError(
+          err instanceof ApiError ? err.message : "Unable to load permissions"
+        );
       } finally {
         setPermissionsLoading(false);
       }
     },
-    [],
+    []
   );
 
   // ── Load Raw Metadata (all groups, all permissions, all users for form pickers) ──
@@ -239,10 +289,20 @@ export default function AdminUsersPage() {
       const [groupsRes, permsRes, usersRes] = await Promise.all([
         api.get<GroupSummary[]>("/api/v1/auth/groups"),
         api.get<PermissionSummary[]>("/api/v1/auth/permissions"),
-        api.get<PaginatedResponse<UserSummary>>("/api/v1/auth/users?page_size=100"),
+        api.get<PaginatedResponse<UserSummary>>(
+          "/api/v1/auth/users?page_size=100"
+        ),
       ]);
-      setAllGroups(Array.isArray(groupsRes) ? groupsRes : (groupsRes as PaginatedResponse<GroupSummary>).items);
-      setAllPermissions(Array.isArray(permsRes) ? permsRes : (permsRes as PaginatedResponse<PermissionSummary>).items);
+      setAllGroups(
+        Array.isArray(groupsRes)
+          ? groupsRes
+          : (groupsRes as PaginatedResponse<GroupSummary>).items
+      );
+      setAllPermissions(
+        Array.isArray(permsRes)
+          ? permsRes
+          : (permsRes as PaginatedResponse<PermissionSummary>).items
+      );
       setAllUsers(usersRes.items || []);
     } catch {
       // Non-critical background metadata fetch
@@ -286,7 +346,7 @@ export default function AdminUsersPage() {
       { label: "Groups", value: groupTotal },
       { label: "Permissions", value: permissionTotal },
     ],
-    [userTotal, groupTotal, permissionTotal],
+    [userTotal, groupTotal, permissionTotal]
   );
 
   // ── User handlers ─────────────────────────────────────────────────────────
@@ -340,7 +400,7 @@ export default function AdminUsersPage() {
 
       const updated = await api.put<UserSummary>(
         `/api/v1/auth/users/${editingUserId}`,
-        payload,
+        payload
       );
       setEditingUserId(null);
       setEditUserForm(emptyUserForm);
@@ -414,7 +474,7 @@ export default function AdminUsersPage() {
           description: editGroupForm.description || undefined,
           permissions: editGroupForm.permissions,
           user_ids: editGroupForm.user_ids,
-        },
+        }
       );
       setEditingGroupId(null);
       setEditGroupForm(emptyGroupForm);
@@ -453,7 +513,7 @@ export default function AdminUsersPage() {
         {
           name: permissionForm.name,
           description: permissionForm.description || undefined,
-        },
+        }
       );
       setPermissionForm(emptyPermissionForm);
       setCreatePermissionModalOpen(false);
@@ -485,7 +545,7 @@ export default function AdminUsersPage() {
         {
           name: editPermissionForm.name,
           description: editPermissionForm.description || undefined,
-        },
+        }
       );
       setEditingPermissionId(null);
       setEditPermissionForm(emptyPermissionForm);
@@ -519,10 +579,10 @@ export default function AdminUsersPage() {
     return (
       <div className="max-w-4xl space-y-4">
         <div className="card p-8">
-          <h1 className="text-2xl font-bold text-text-primary">
+          <h1 className="text-text-primary text-2xl font-bold">
             Administrative access required
           </h1>
-          <p className="mt-2 text-sm text-text-secondary">
+          <p className="text-text-secondary mt-2 text-sm">
             Only superusers can manage users, groups, and permissions from this
             dashboard.
           </p>
@@ -537,42 +597,64 @@ export default function AdminUsersPage() {
     <div className="max-w-7xl space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-text-primary">
+        <h1 className="text-text-primary text-3xl font-bold">
           User management
         </h1>
-        <p className="mt-1 text-sm text-text-secondary">
+        <p className="text-text-secondary mt-1 text-sm">
           Create and govern users, groups, and permissions from a single
           workspace.
         </p>
       </div>
 
       {/* Alerts */}
-      {error ? <AlertBanner message={error} type="error" /> : null}
-      {notice ? <AlertBanner message={notice} type="success" /> : null}
+      {error ? (
+        <AlertBanner
+          message={error}
+          type="error"
+        />
+      ) : null}
+      {notice ? (
+        <AlertBanner
+          message={notice}
+          type="success"
+        />
+      ) : null}
 
       {/* Summary */}
       <SummaryCards cards={summaryCards} />
 
       {/* Tabs */}
-      <Tabs defaultValue="users" variant="underline">
+      <Tabs
+        defaultValue="users"
+        variant="underline"
+      >
         <TabsList>
-          <TabsTrigger icon={<UsersIcon />} value="users">
+          <TabsTrigger
+            icon={<UsersIcon />}
+            value="users"
+          >
             Users
-            <span className="ml-1.5 rounded-full bg-surface-hover px-2 py-0.5 text-xs text-text-tertiary">
+            <span className="bg-surface-hover text-text-tertiary ml-1.5 rounded-full px-2 py-0.5 text-xs">
               {userTotal}
             </span>
           </TabsTrigger>
 
-          <TabsTrigger icon={<GroupsIcon />} value="groups">
+          <TabsTrigger
+            icon={<GroupsIcon />}
+            value="groups"
+          >
             Groups
-            <span className="ml-1.5 rounded-full bg-surface-hover px-2 py-0.5 text-xs text-text-tertiary">
+            <span className="bg-surface-hover text-text-tertiary ml-1.5 rounded-full px-2 py-0.5 text-xs">
               {groupTotal}
             </span>
           </TabsTrigger>
 
-          <TabsTrigger icon={<PermissionsIcon />} value="permissions">
+          <TabsTrigger
+            icon={<PermissionsIcon />}
+            value="permissions"
+          >
             Permissions
-            <span className="ml-1.5 rounded-full bg-surface-hover px-2 py-0.5 text-xs text-text-tertiary">
+            <span className="bg-surface-hover text-text-tertiary ml-1.5 rounded-full px-2 py-0.5 text-xs">
               {permissionTotal}
             </span>
           </TabsTrigger>
@@ -692,4 +774,3 @@ export default function AdminUsersPage() {
     </div>
   );
 }
-

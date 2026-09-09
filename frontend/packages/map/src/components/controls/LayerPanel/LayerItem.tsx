@@ -153,7 +153,9 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                     : "border-[var(--text-tertiary)] bg-transparent"
                 }`}
               >
-                {layer.visible ? <div className="h-1.5 w-1.5 rounded-full bg-white" /> : null}
+                {layer.visible ? (
+                  <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                ) : null}
               </div>
             ) : /* ── Checkbox / Eye Style ── */
             layer.visible ? (
@@ -170,10 +172,12 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
           />
 
           {/* Color Swatch */}
-          {layer.color ? <div
+          {layer.color ? (
+            <div
               className="h-3 w-3 flex-shrink-0 rounded border border-[var(--border-primary)]"
               style={{ backgroundColor: layer.color }}
-            /> : null}
+            />
+          ) : null}
 
           {/* Layer Name */}
           <div className="flex min-w-0 flex-1 items-center gap-1">
@@ -190,21 +194,28 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
           </div>
 
           {/* Metadata badge */}
-          {layer.metadata?.featureCount ? <span className="flex-shrink-0 rounded bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-tertiary)] tabular-nums">
+          {layer.metadata?.featureCount ? (
+            <span className="flex-shrink-0 rounded bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-tertiary)] tabular-nums">
               {Number(layer.metadata.featureCount).toLocaleString()}
-            </span> : null}
+            </span>
+          ) : null}
 
           {/* Type Badge */}
-          {showTypeBadge && layer.existsOnMap ? <span className="hidden flex-shrink-0 rounded bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-[var(--text-tertiary)] uppercase sm:inline-block">
+          {showTypeBadge && layer.existsOnMap ? (
+            <span className="hidden flex-shrink-0 rounded bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-[var(--text-tertiary)] uppercase sm:inline-block">
               {layer.type}
-            </span> : null}
+            </span>
+          ) : null}
 
           {/* Lock */}
-          {layer.locked ? <Lock className="h-3.5 w-3.5 flex-shrink-0 text-[var(--text-tertiary)]" /> : null}
+          {layer.locked ? (
+            <Lock className="h-3.5 w-3.5 flex-shrink-0 text-[var(--text-tertiary)]" />
+          ) : null}
 
           {/* Actions */}
           <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-            {layer.allowChangeOpacity ? <button
+            {layer.allowChangeOpacity ? (
+              <button
                 aria-expanded={showOpacity}
                 aria-label="Toggle opacity"
                 className={`rounded p-1 transition-colors hover:bg-[var(--surface-active)] disabled:cursor-not-allowed disabled:opacity-40 ${showOpacity ? "text-[var(--primary)]" : "text-[var(--text-tertiary)]"}`}
@@ -216,7 +227,8 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                 ) : (
                   <ChevronRight className="h-3.5 w-3.5" />
                 )}
-              </button> : null}
+              </button>
+            ) : null}
             <div className="relative">
               <button
                 aria-expanded={showContextMenu}
@@ -248,7 +260,8 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
         </div>
 
         {/* Opacity Slider & Details */}
-        {showOpacity ? <div
+        {showOpacity ? (
+          <div
             className="flex flex-col gap-2 rounded-b-lg bg-[var(--bg-tertiary)]/50 px-3 py-3"
             style={{ paddingLeft: paddingLeft + 24 }}
             onClick={(e) => e.stopPropagation()}
@@ -264,38 +277,45 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
               </div>
             </div>
 
-            {layer.allowChangeOpacity ? <OpacitySlider
+            {layer.allowChangeOpacity ? (
+              <OpacitySlider
                 disabled={!layer.visible || isMissing}
                 value={layer.opacity}
                 onChange={handleOpacityChange}
-              /> : null}
+              />
+            ) : null}
 
             {/* Collection Details */}
-            {layer.metadata ? <div className="mt-2 flex flex-col gap-2 border-t border-[var(--border-primary)] pt-2">
-                {layer.metadata["description"] ? <div className="flex flex-col gap-1">
+            {layer.metadata ? (
+              <div className="mt-2 flex flex-col gap-2 border-t border-[var(--border-primary)] pt-2">
+                {layer.metadata["description"] ? (
+                  <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1 text-[10px] font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
                       <Info className="h-3 w-3" />
                       About
                     </div>
                     <p className="text-[11px] leading-relaxed text-[var(--text-tertiary)]">
-                      {(layer.metadata["description"] as string).split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
-                        if (part.match(/https?:\/\/[^\s]+/)) {
-                          return (
-                            <a
-                              key={i}
-                              className="text-[var(--primary)] hover:underline break-all"
-                              href={part}
-                              rel="noopener noreferrer"
-                              target="_blank"
-                            >
-                              {part}
-                            </a>
-                          );
-                        }
-                        return part;
-                      })}
+                      {(layer.metadata["description"] as string)
+                        .split(/(https?:\/\/[^\s]+)/g)
+                        .map((part, i) => {
+                          if (part.match(/https?:\/\/[^\s]+/)) {
+                            return (
+                              <a
+                                key={i}
+                                className="break-all text-[var(--primary)] hover:underline"
+                                href={part}
+                                rel="noopener noreferrer"
+                                target="_blank"
+                              >
+                                {part}
+                              </a>
+                            );
+                          }
+                          return part;
+                        })}
                     </p>
-                  </div> : null}
+                  </div>
+                ) : null}
 
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                   {layer.metadata["count"] !== undefined && (
@@ -310,7 +330,8 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                     </div>
                   )}
 
-                  {layer.metadata["format"] ? <div className="flex flex-col gap-0.5">
+                  {layer.metadata["format"] ? (
+                    <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-1 text-[9px] font-medium text-[var(--text-tertiary)] uppercase opacity-70">
                         <Database className="h-2.5 w-2.5" />
                         Format
@@ -318,9 +339,11 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                       <span className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase">
                         {layer.metadata["format"] as string}
                       </span>
-                    </div> : null}
+                    </div>
+                  ) : null}
 
-                  {layer.metadata["tags"] ? <div className="col-span-2 flex flex-col gap-0.5">
+                  {layer.metadata["tags"] ? (
+                    <div className="col-span-2 flex flex-col gap-0.5">
                       <div className="flex items-center gap-1 text-[9px] font-medium text-[var(--text-tertiary)] uppercase opacity-70">
                         <Tag className="h-2.5 w-2.5" />
                         Tags
@@ -328,9 +351,11 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                       <span className="text-[11px] font-semibold text-[var(--text-secondary)]">
                         {layer.metadata["tags"] as string}
                       </span>
-                    </div> : null}
+                    </div>
+                  ) : null}
 
-                  {layer.metadata["license"] ? <div className="flex flex-col gap-0.5">
+                  {layer.metadata["license"] ? (
+                    <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-1 text-[9px] font-medium text-[var(--text-tertiary)] uppercase opacity-70">
                         <Shield className="h-2.5 w-2.5" />
                         License
@@ -338,9 +363,11 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                       <span className="text-[11px] font-semibold text-[var(--text-secondary)]">
                         {layer.metadata["license"] as string}
                       </span>
-                    </div> : null}
+                    </div>
+                  ) : null}
 
-                  {(layer.metadata["start"] || layer.metadata["end"]) ? <div className="col-span-2 flex flex-col gap-0.5">
+                  {layer.metadata["start"] || layer.metadata["end"] ? (
+                    <div className="col-span-2 flex flex-col gap-0.5">
                       <div className="flex items-center gap-1 text-[9px] font-medium text-[var(--text-tertiary)] uppercase opacity-70">
                         <Calendar className="h-2.5 w-2.5" />
                         Temporal Coverage
@@ -364,10 +391,13 @@ export const LayerItem: React.FC<LayerItemProps> = memo(
                             : "Now"}
                         </span>
                       </div>
-                    </div> : null}
+                    </div>
+                  ) : null}
                 </div>
-              </div> : null}
-          </div> : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     );
   }

@@ -441,7 +441,7 @@ export const ExportSettingsPanel = ({
       </div>
     </Modal>
   );
-}
+};
 
 const ExportProgressView = ({
   progress,
@@ -533,4 +533,4 @@ const ExportProgressView = ({
       )}
     </div>
   );
-}
+};

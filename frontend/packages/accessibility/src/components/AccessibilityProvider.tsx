@@ -1,14 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 
-import { AccessibilityWidget } from './AccessibilityWidget';
-import { defaultSettings } from '../constants/defaults';
-import { AccessibilityContext } from '../context/AccessibilityContext';
-import { useAccessibilitySettings } from '../hooks/useAccessibilitySettings';
-import { useLocale } from '../hooks/useLocale';
-import { ReadingGuide } from './ReadingAids/ReadingGuide';
-import { ReadingMask } from './ReadingAids/ReadingMask';
+import { AccessibilityWidget } from "./AccessibilityWidget";
+import { defaultSettings } from "../constants/defaults";
+import { AccessibilityContext } from "../context/AccessibilityContext";
+import { useAccessibilitySettings } from "../hooks/useAccessibilitySettings";
+import { useLocale } from "../hooks/useLocale";
+import { ReadingGuide } from "./ReadingAids/ReadingGuide";
+import { ReadingMask } from "./ReadingAids/ReadingMask";
 
-import type { AccessibilityProviderProps } from '../types';
+import type { AccessibilityProviderProps } from "../types";
 
 /**
  * Provider component that manages accessibility state
@@ -16,30 +16,26 @@ import type { AccessibilityProviderProps } from '../types';
  */
 export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
   children,
-  localeStorageKey = 'app-locale',
-  defaultLocale = 'en',
-  settingsStorageKey = 'accessibility-settings',
+  localeStorageKey = "app-locale",
+  defaultLocale = "en",
+  settingsStorageKey = "accessibility-settings",
   customDefaults,
   disableDefaultWidget = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const {
-    settings,
-    updateSetting,
-    resetSettings,
-    applyProfile,
-  } = useAccessibilitySettings({
-    storageKey: settingsStorageKey,
-    customDefaults,
-  });
+  const { settings, updateSetting, resetSettings, applyProfile } =
+    useAccessibilitySettings({
+      storageKey: settingsStorageKey,
+      customDefaults,
+    });
 
   const hasActiveSettings = useMemo(() => {
     return Object.entries(settings).some(([key, value]) => {
-      if (key === 'activeProfile') return false;
+      if (key === "activeProfile") return false;
       const defaultValue = defaultSettings[key as keyof typeof defaultSettings];
-      if (typeof value === 'number') return value !== 0;
-      if (typeof value === 'boolean') return value !== false;
+      if (typeof value === "number") return value !== 0;
+      if (typeof value === "boolean") return value !== false;
       return value !== defaultValue;
     });
   }, [settings]);
@@ -49,28 +45,31 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
     defaultLocale,
   });
 
-  const contextValue = useMemo(() => ({
-    settings,
-    updateSetting,
-    resetSettings,
-    applyProfile,
-    isOpen,
-    setIsOpen,
-    hasActiveSettings,
-    t,
-    getOptions,
-    locale,
-  }), [
-    settings,
-    updateSetting,
-    resetSettings,
-    applyProfile,
-    isOpen,
-    hasActiveSettings,
-    t,
-    getOptions,
-    locale,
-  ]);
+  const contextValue = useMemo(
+    () => ({
+      settings,
+      updateSetting,
+      resetSettings,
+      applyProfile,
+      isOpen,
+      setIsOpen,
+      hasActiveSettings,
+      t,
+      getOptions,
+      locale,
+    }),
+    [
+      settings,
+      updateSetting,
+      resetSettings,
+      applyProfile,
+      isOpen,
+      hasActiveSettings,
+      t,
+      getOptions,
+      locale,
+    ]
+  );
 
   return (
     <AccessibilityContext.Provider value={contextValue}>

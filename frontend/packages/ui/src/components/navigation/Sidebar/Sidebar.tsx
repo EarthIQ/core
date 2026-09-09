@@ -184,7 +184,8 @@ const SidebarItemComponent = ({
         onClick={handleClick}
       >
         {/* Icon */}
-        {item.icon ? <span
+        {item.icon ? (
+          <span
             className={cn(
               "flex h-5 w-5 flex-shrink-0 items-center justify-center",
               item.active
@@ -193,7 +194,8 @@ const SidebarItemComponent = ({
             )}
           >
             {item.icon}
-          </span> : null}
+          </span>
+        ) : null}
 
         {/* Label - animated visibility */}
         <AnimatePresence>
@@ -223,7 +225,8 @@ const SidebarItemComponent = ({
         )}
 
         {/* Expand/Collapse chevron for folders */}
-        {!collapsed && hasChildren ? <motion.svg
+        {!collapsed && hasChildren ? (
+          <motion.svg
             animate={{ rotate: isOpen ? 180 : 0 }}
             aria-hidden="true"
             className="h-4 w-4 text-[var(--text-tertiary)]"
@@ -238,12 +241,14 @@ const SidebarItemComponent = ({
               strokeLinejoin="round"
               strokeWidth={2}
             />
-          </motion.svg> : null}
+          </motion.svg>
+        ) : null}
       </Component>
 
       {/* Nested children */}
       <AnimatePresence>
-        {hasChildren && isOpen && !collapsed ? <motion.div
+        {hasChildren && isOpen && !collapsed ? (
+          <motion.div
             animate={{ opacity: 1, height: "auto" }}
             className="mt-1 space-y-1 overflow-hidden"
             exit={{ opacity: 0, height: 0 }}
@@ -258,11 +263,12 @@ const SidebarItemComponent = ({
                 item={child}
               />
             ))}
-          </motion.div> : null}
+          </motion.div>
+        ) : null}
       </AnimatePresence>
     </div>
   );
-}
+};
 
 /**
  * Sidebar Component
@@ -339,14 +345,16 @@ export const Sidebar = ({
       )}
     >
       {/* Header */}
-      {header ? <div
+      {header ? (
+        <div
           className={cn(
             "flex-shrink-0 border-b border-[var(--border-primary)] p-4",
             collapsed && "flex items-center justify-center"
           )}
         >
           {header}
-        </div> : null}
+        </div>
+      ) : null}
 
       {/* Navigation */}
       <nav
@@ -371,17 +379,20 @@ export const Sidebar = ({
       </nav>
 
       {/* Footer */}
-      {footer ? <div
+      {footer ? (
+        <div
           className={cn(
             "flex-shrink-0 border-t border-[var(--border-primary)] p-4",
             collapsed && "flex items-center justify-center"
           )}
         >
           {footer}
-        </div> : null}
+        </div>
+      ) : null}
 
       {/* Collapse Toggle Button */}
-      {onCollapse ? <button
+      {onCollapse ? (
+        <button
           aria-expanded={!collapsed}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className={cn(
@@ -421,7 +432,8 @@ export const Sidebar = ({
               strokeWidth={2}
             />
           </motion.svg>
-        </button> : null}
+        </button>
+      ) : null}
     </motion.aside>
   );
-}
+};

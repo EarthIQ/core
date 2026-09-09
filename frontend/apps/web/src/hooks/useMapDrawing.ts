@@ -52,7 +52,7 @@ export function useMapDrawing(
         // Back to select after a shape is committed (same UX as annotations)
         store.setActiveTool({ groupId: "navigate", variantId: "select" });
       },
-    },
+    }
   );
 
   // Active tool → TerraDraw mode
@@ -73,7 +73,7 @@ export function useMapDrawing(
 
   const clearAll = useCallback(
     () => useMapEditor.getState().clearDrawnFeatures(),
-    [],
+    []
   );
 
   return { isReady, setMode, clearAll, featureCount: drawnFeatures.length };

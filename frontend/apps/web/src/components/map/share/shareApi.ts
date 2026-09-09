@@ -117,9 +117,12 @@ function adaptState(raw: RawShareState): ShareState {
 
 // ── Public API surface ────────────────────────────────────────────────────────
 export const shareApi = {
-  async getShareState(entityType: ShareEntityType, entityId: string): Promise<ShareState> {
+  async getShareState(
+    entityType: ShareEntityType,
+    entityId: string
+  ): Promise<ShareState> {
     const raw = await api.get<RawShareState>(
-      `/api/v1/${entityBase(entityType)}/${entityId}/share`,
+      `/api/v1/${entityBase(entityType)}/${entityId}/share`
     );
     return adaptState(raw);
   },
@@ -138,11 +141,11 @@ export const shareApi = {
     emails: string[],
     role: Role,
     message: string,
-    notify: boolean,
+    notify: boolean
   ): Promise<AccessEntry[]> {
     const created = await api.post<RawAccessEntry[]>(
       `/api/v1/${entityBase(entityType)}/${entityId}/share/invite`,
-      { emails, role, message, notify },
+      { emails, role, message, notify }
     );
     return created.map(adaptEntry);
   },
@@ -151,57 +154,71 @@ export const shareApi = {
     entityType: ShareEntityType,
     entityId: string,
     entryId: string,
-    role: Role,
+    role: Role
   ): Promise<void> {
-    await api.patch<void>(`/api/v1/${entityBase(entityType)}/${entityId}/share/${entryId}`, {
-      role,
-    });
+    await api.patch<void>(
+      `/api/v1/${entityBase(entityType)}/${entityId}/share/${entryId}`,
+      {
+        role,
+      }
+    );
   },
 
   async removeAccess(
     entityType: ShareEntityType,
     entityId: string,
-    entryId: string,
+    entryId: string
   ): Promise<void> {
-    await api.delete<void>(`/api/v1/${entityBase(entityType)}/${entityId}/share/${entryId}`);
+    await api.delete<void>(
+      `/api/v1/${entityBase(entityType)}/${entityId}/share/${entryId}`
+    );
   },
 
   async transferOwnership(
     entityType: ShareEntityType,
     entityId: string,
-    entryId: string,
+    entryId: string
   ): Promise<void> {
-    await api.post<void>(`/api/v1/${entityBase(entityType)}/${entityId}/share/transfer`, {
-      entry_id: entryId,
-    });
+    await api.post<void>(
+      `/api/v1/${entityBase(entityType)}/${entityId}/share/transfer`,
+      {
+        entry_id: entryId,
+      }
+    );
   },
 
   async updateGeneralAccess(
     entityType: ShareEntityType,
     entityId: string,
-    general: GeneralAccess,
+    general: GeneralAccess
   ): Promise<void> {
-    await api.put<void>(`/api/v1/${entityBase(entityType)}/${entityId}/share/general`, {
-      type: general.type,
-      role: general.role,
-    });
+    await api.put<void>(
+      `/api/v1/${entityBase(entityType)}/${entityId}/share/general`,
+      {
+        type: general.type,
+        role: general.role,
+      }
+    );
   },
 
   async updateSettings(
     entityType: ShareEntityType,
     entityId: string,
-    settings: ShareSettings,
+    settings: ShareSettings
   ): Promise<void> {
-    await api.put<void>(`/api/v1/${entityBase(entityType)}/${entityId}/share/settings`, {
-      editors_can_share: settings.editorsCanShare,
-      viewers_can_download: settings.viewersCanDownload,
-    });
+    await api.put<void>(
+      `/api/v1/${entityBase(entityType)}/${entityId}/share/settings`,
+      {
+        editors_can_share: settings.editorsCanShare,
+        viewers_can_download: settings.viewersCanDownload,
+      }
+    );
   },
 
   /** Accept an invitation (map or project) using the one-time token from the email. */
   async acceptInvite(token: string): Promise<InviteAcceptResult> {
     const raw = await api.get<RawInviteAccept>(
-      `/api/v1/invite/accept?token=${encodeURIComponent(token)}`,
+      `/api/v1/invite/accept?token=${encodeURIComponent(token)}`
     );
     return {
       ...adaptEntry(raw),
@@ -218,11 +235,11 @@ export const shareApi = {
     entityType: ShareEntityType,
     entityId: string,
     message: string,
-    requestedRole: Role = "viewer",
+    requestedRole: Role = "viewer"
   ): Promise<AccessRequestInfo> {
     const raw = await api.post<RawAccessRequest>(
       `/api/v1/${entityBase(entityType)}/${entityId}/share/request`,
-      { message, requested_role: requestedRole },
+      { message, requested_role: requestedRole }
     );
     return adaptRequest(raw);
   },
@@ -230,7 +247,7 @@ export const shareApi = {
   /** Fetch a request via the owner's approval token (owner only). */
   async getAccessRequest(token: string): Promise<AccessRequestInfo> {
     const raw = await api.get<RawAccessRequest>(
-      `/api/v1/access/request?token=${encodeURIComponent(token)}`,
+      `/api/v1/access/request?token=${encodeURIComponent(token)}`
     );
     return adaptRequest(raw);
   },
@@ -239,7 +256,7 @@ export const shareApi = {
   async grantAccess(token: string, role: Role): Promise<AccessRequestInfo> {
     const raw = await api.post<RawAccessRequest>(
       `/api/v1/access/request/grant?token=${encodeURIComponent(token)}`,
-      { role },
+      { role }
     );
     return adaptRequest(raw);
   },
@@ -247,7 +264,7 @@ export const shareApi = {
   /** Decline an access request (owner only). */
   async denyAccess(token: string): Promise<AccessRequestInfo> {
     const raw = await api.post<RawAccessRequest>(
-      `/api/v1/access/request/deny?token=${encodeURIComponent(token)}`,
+      `/api/v1/access/request/deny?token=${encodeURIComponent(token)}`
     );
     return adaptRequest(raw);
   },

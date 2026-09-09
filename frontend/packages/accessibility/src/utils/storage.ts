@@ -1,9 +1,9 @@
-import { defaultSettings } from '../constants/defaults';
-import { translations } from '../constants/translations';
+import { defaultSettings } from "../constants/defaults";
+import { translations } from "../constants/translations";
 
-import type { AccessibilitySettings, Locale } from '../types';
+import type { AccessibilitySettings, Locale } from "../types";
 
-const SETTINGS_KEY = 'accessibility-settings';
+const SETTINGS_KEY = "accessibility-settings";
 
 /**
  * Get settings from localStorage
@@ -12,7 +12,7 @@ export function getStoredSettings(
   storageKey: string = SETTINGS_KEY,
   customDefaults?: Partial<AccessibilitySettings>
 ): AccessibilitySettings {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return { ...defaultSettings, ...customDefaults };
   }
 
@@ -23,7 +23,7 @@ export function getStoredSettings(
       return { ...defaultSettings, ...customDefaults, ...parsed };
     }
   } catch (error) {
-    console.warn('Failed to parse accessibility settings:', error);
+    console.warn("Failed to parse accessibility settings:", error);
   }
 
   return { ...defaultSettings, ...customDefaults };
@@ -36,12 +36,12 @@ export function saveSettings(
   settings: AccessibilitySettings,
   storageKey: string = SETTINGS_KEY
 ): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
 
   try {
     localStorage.setItem(storageKey, JSON.stringify(settings));
   } catch (error) {
-    console.warn('Failed to save accessibility settings:', error);
+    console.warn("Failed to save accessibility settings:", error);
   }
 }
 
@@ -50,9 +50,9 @@ export function saveSettings(
  */
 export function getStoredLocale(
   storageKey: string,
-  defaultLocale: Locale = 'en'
+  defaultLocale: Locale = "en"
 ): Locale {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return defaultLocale;
   }
 
@@ -62,7 +62,7 @@ export function getStoredLocale(
       return stored as Locale;
     }
   } catch (error) {
-    console.warn('Failed to get stored locale:', error);
+    console.warn("Failed to get stored locale:", error);
   }
 
   return defaultLocale;

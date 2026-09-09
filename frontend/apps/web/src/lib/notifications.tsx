@@ -135,7 +135,11 @@ function wsUrl(path: string): string {
 
 // ── Provider ───────────────────────────────────────────────────────────────────
 
-export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
+export const NotificationsProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
@@ -240,9 +244,13 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
         }
         if (msg.type === "notification:new" && msg.notification) {
           const n = msg.notification;
-          setItems((prev) => (prev.some((x) => x.id === n.id) ? prev : [n, ...prev]));
+          setItems((prev) =>
+            prev.some((x) => x.id === n.id) ? prev : [n, ...prev]
+          );
           setUnread((u) =>
-            typeof msg.unread_count === "number" ? msg.unread_count : u + (n.read ? 0 : 1),
+            typeof msg.unread_count === "number"
+              ? msg.unread_count
+              : u + (n.read ? 0 : 1)
           );
           setTotal((t) => t + 1);
           const p = prefsRef.current;
@@ -281,7 +289,11 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     connect();
 
     const onVisibility = () => {
-      if (document.visibilityState === "visible" && !closed && !deadRef.current) {
+      if (
+        document.visibilityState === "visible" &&
+        !closed &&
+        !deadRef.current
+      ) {
         refresh();
       }
     };
@@ -303,19 +315,25 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   // ── Actions ──────────────────────────────────────────────────────────────────
 
   const markRead = useCallback((id: string) => {
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    setItems((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
     setUnread((u) => Math.max(0, u - 1));
     api.post(`/api/v1/notifications/${id}/read`).catch(() => {});
   }, []);
 
   const markUnread = useCallback((id: string) => {
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: false } : n)));
+    setItems((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: false } : n))
+    );
     setUnread((u) => u + 1);
     api.post(`/api/v1/notifications/${id}/unread`).catch(() => {});
   }, []);
 
   const markAllRead = useCallback(() => {
-    api.post<{ marked: number }>("/api/v1/notifications/read-all").catch(() => {});
+    api
+      .post<{ marked: number }>("/api/v1/notifications/read-all")
+      .catch(() => {});
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnread(0);
   }, []);
@@ -390,7 +408,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
       updatePrefs,
       dismissToast,
       stop,
-    ],
+    ]
   );
 
   return (
@@ -407,7 +425,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
       />
     </NotificationsContext.Provider>
   );
-}
+};
 
 // ── Sending + people search (mention support) ─────────────────────────────────
 
@@ -439,7 +457,9 @@ export interface MentionInput {
  * Peer-to-peer: any authenticated user can mention another; the recipient
  * sees it in the notification hub (category "mention") + live toast/WS push.
  */
-export function sendMention(input: MentionInput): Promise<{ delivered: number }> {
+export function sendMention(
+  input: MentionInput
+): Promise<{ delivered: number }> {
   return api.post<{ delivered: number }>("/api/v1/notifications/mention", {
     to_user_id: input.toUserId,
     title: input.title,
@@ -456,7 +476,8 @@ function beep(): void {
   try {
     const Ctx =
       window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
     const ctx = new Ctx();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -496,24 +517,34 @@ const ToastStack = ({
   return createPortal(
     <div
       aria-live="polite"
-      className="fixed top-4 right-4 z-[999] flex flex-col gap-2 w-[min(92vw,22rem)]"
+      className="fixed top-4 right-4 z-[999] flex w-[min(92vw,22rem)] flex-col gap-2"
       role="status"
     >
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="card p-3 flex items-start gap-3 animate-slide-in-right cursor-pointer"
+          className="card animate-slide-in-right flex cursor-pointer items-start gap-3 p-3"
           onClick={() => onOpen(t)}
         >
-          <span className="text-base leading-none mt-0.5">{KIND_ICON[t.kind] ?? "🔔"}</span>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-text-primary truncate">{t.title}</div>
-            {t.body ? <div className="text-xs text-text-secondary mt-0.5 line-clamp-2">{t.body}</div> : null}
-            <div className="text-[0.65rem] text-text-tertiary mt-1">click to view</div>
+          <span className="mt-0.5 text-base leading-none">
+            {KIND_ICON[t.kind] ?? "🔔"}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-text-primary truncate text-sm font-semibold">
+              {t.title}
+            </div>
+            {t.body ? (
+              <div className="text-text-secondary mt-0.5 line-clamp-2 text-xs">
+                {t.body}
+              </div>
+            ) : null}
+            <div className="text-text-tertiary mt-1 text-[0.65rem]">
+              click to view
+            </div>
           </div>
           <button
             aria-label="Dismiss notification"
-            className="text-text-tertiary hover:text-text-primary text-xs cursor-pointer shrink-0"
+            className="text-text-tertiary hover:text-text-primary shrink-0 cursor-pointer text-xs"
             onClick={(e) => {
               e.stopPropagation();
               onDismiss(t.id);
@@ -524,9 +555,9 @@ const ToastStack = ({
         </div>
       ))}
     </div>,
-    document.body,
+    document.body
   );
-}
+};
 
 export function useNotifications(): NotificationsContextValue {
   return useContext(NotificationsContext);

@@ -1,6 +1,9 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { motion, type HTMLMotionProps } from "framer-motion";
-import React, { type ReactNode as _ReactNode, type HTMLAttributes } from "react";
+import React, {
+  type ReactNode as _ReactNode,
+  type HTMLAttributes,
+} from "react";
 
 import { cn } from "../../../utils/cn";
 
@@ -80,13 +83,13 @@ export const Card = ({
         cardVariants({ variant, size, hoverable, glow }),
         className
       )}
-      {...(animationProps)}
+      {...animationProps}
       {...(props as HTMLMotionProps<"div">)}
     >
       {children}
     </Comp>
   );
-}
+};
 
 export const CardHeader = ({
   className,
@@ -101,7 +104,7 @@ export const CardHeader = ({
       {children}
     </div>
   );
-}
+};
 
 export const CardTitle = ({
   className,
@@ -116,7 +119,7 @@ export const CardTitle = ({
       {children}
     </h3>
   );
-}
+};
 
 export const CardDescription = ({
   className,
@@ -131,7 +134,7 @@ export const CardDescription = ({
       {children}
     </p>
   );
-}
+};
 
 export const CardContent = ({
   className,
@@ -146,7 +149,7 @@ export const CardContent = ({
       {children}
     </div>
   );
-}
+};
 
 export const CardFooter = ({
   className,
@@ -161,4 +164,4 @@ export const CardFooter = ({
       {children}
     </div>
   );
-}
+};

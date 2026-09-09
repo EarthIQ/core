@@ -93,13 +93,15 @@ export const Avatar = ({
         )}
       </div>
 
-      {status ? <StatusIndicator
+      {status ? (
+        <StatusIndicator
           size={size}
           status={status}
-        /> : null}
+        />
+      ) : null}
     </div>
   );
-}
+};
 
 // Separate component to use inline styles for status colors
 // since CSS custom properties can't be used directly in bg-* utilities
@@ -127,7 +129,7 @@ const StatusIndicator = ({
       )}
     />
   );
-}
+};
 
 // Avatar Group
 interface AvatarGroupProps {
@@ -173,4 +175,4 @@ export const AvatarGroup = ({
       )}
     </div>
   );
-}
+};

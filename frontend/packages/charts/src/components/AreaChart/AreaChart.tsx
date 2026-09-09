@@ -109,12 +109,14 @@ export const AreaChart: React.FC<AreaChartProps> = ({
               })}
             </defs>
 
-            {showGrid ? <CartesianGrid
+            {showGrid ? (
+              <CartesianGrid
                 className="stroke-gray-200 dark:stroke-gray-700"
                 horizontal={gridType !== "vertical"}
                 strokeDasharray="3 3"
                 vertical={gridType !== "horizontal"}
-              /> : null}
+              />
+            ) : null}
 
             {!xAxis?.hide && (
               <XAxis
@@ -163,7 +165,8 @@ export const AreaChart: React.FC<AreaChartProps> = ({
               />
             )}
 
-            {showTooltip ? <Tooltip
+            {showTooltip ? (
+              <Tooltip
                 labelStyle={{ fontWeight: 600, marginBottom: 4 }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover, 0 0% 100%))",
@@ -171,15 +174,18 @@ export const AreaChart: React.FC<AreaChartProps> = ({
                   borderRadius: "8px",
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-              /> : null}
+              />
+            ) : null}
 
-            {showLegend ? <Legend
+            {showLegend ? (
+              <Legend
                 height={36}
                 iconSize={8}
                 iconType="circle"
                 verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              /> : null}
+              />
+            ) : null}
 
             {areas.map((area, index) => {
               const gradientId = generateGradientId(chartId, index);

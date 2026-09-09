@@ -131,18 +131,22 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     return (
       <div className={cn("w-full", containerClassName)}>
-        {label ? <label
+        {label ? (
+          <label
             className={labelVariants({ size: inputSize })}
             htmlFor={inputId}
           >
             {label}
-            {required ? <span
+            {required ? (
+              <span
                 aria-hidden="true"
                 className="ml-1 text-[var(--error)]"
               >
                 *
-              </span> : null}
-          </label> : null}
+              </span>
+            ) : null}
+          </label>
+        ) : null}
 
         <textarea
           ref={ref}
@@ -174,24 +178,33 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
         <div className="mt-1.5 flex items-start justify-between gap-2">
           <div className="flex-1">
-            {error ? <p
+            {error ? (
+              <p
                 className="text-sm text-[var(--error-text)]"
                 id={`${inputId}-error`}
                 role="alert"
               >
                 {error}
-              </p> : null}
-            {success && !error ? <p className="text-sm text-[var(--success-text)]">{success}</p> : null}
-            {warning && !error && !success ? <p className="text-sm text-[var(--warning-text)]">{warning}</p> : null}
-            {description && !error && !success && !warning ? <p
+              </p>
+            ) : null}
+            {success && !error ? (
+              <p className="text-sm text-[var(--success-text)]">{success}</p>
+            ) : null}
+            {warning && !error && !success ? (
+              <p className="text-sm text-[var(--warning-text)]">{warning}</p>
+            ) : null}
+            {description && !error && !success && !warning ? (
+              <p
                 className="text-sm text-[var(--text-tertiary)]"
                 id={`${inputId}-description`}
               >
                 {description}
-              </p> : null}
+              </p>
+            ) : null}
           </div>
 
-          {showCharCount && maxLength ? <span
+          {showCharCount && maxLength ? (
+            <span
               className={cn(
                 "text-xs tabular-nums",
                 currentValue.length >= maxLength
@@ -202,7 +215,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
               )}
             >
               {currentValue.length}/{maxLength}
-            </span> : null}
+            </span>
+          ) : null}
         </div>
       </div>
     );

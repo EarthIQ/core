@@ -24,7 +24,11 @@ interface PlaceSearchProps {
   className?: string;
 }
 
-export const PlaceSearch = ({ mapRef, mapReady, className }: PlaceSearchProps) => {
+export const PlaceSearch = ({
+  mapRef,
+  mapReady,
+  className,
+}: PlaceSearchProps) => {
   const [value, setValue] = useState("");
   const [results, setResults] = useState<PlaceResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -87,7 +91,7 @@ export const PlaceSearch = ({ mapRef, mapReady, className }: PlaceSearchProps) =
       markerRef.current?.remove();
       markerRef.current = null;
     },
-    [],
+    []
   );
 
   /** Fly to the place and drop (or move) the labeled marker. */
@@ -97,7 +101,9 @@ export const PlaceSearch = ({ mapRef, mapReady, className }: PlaceSearchProps) =
     setValue("");
     const map = mapRef.current;
     if (!map) return;
-    const zoom = Number.isFinite(p.zoom) ? Math.min(19, Math.max(2, p.zoom)) : 14;
+    const zoom = Number.isFinite(p.zoom)
+      ? Math.min(19, Math.max(2, p.zoom))
+      : 14;
     map.flyTo({ center: [p.lon, p.lat], zoom, duration: 2200 });
     markerRef.current?.remove();
     markerRef.current = new Marker({ color: "#50aad1", scale: 1.1 })
@@ -128,14 +134,21 @@ export const PlaceSearch = ({ mapRef, mapReady, className }: PlaceSearchProps) =
   };
 
   return (
-    <div ref={boxRef} className={`relative w-full ${className ?? ""}`}>
-      <div className="relative flex items-center gap-2 bg-surface-hover/50 border border-border-secondary rounded-lg pl-3 pr-2 py-1.5 hover:border-border-primary focus-within:border-[var(--input-focus-border)] transition-colors">
-        <Search aria-hidden className="shrink-0 text-[var(--text-tertiary)]" size={15} />
+    <div
+      ref={boxRef}
+      className={`relative w-full ${className ?? ""}`}
+    >
+      <div className="bg-surface-hover/50 border-border-secondary hover:border-border-primary relative flex items-center gap-2 rounded-lg border py-1.5 pr-2 pl-3 transition-colors focus-within:border-[var(--input-focus-border)]">
+        <Search
+          aria-hidden
+          className="shrink-0 text-[var(--text-tertiary)]"
+          size={15}
+        />
         <input
           ref={inputRef}
           aria-expanded={open}
           aria-label="Search locations"
-          className="flex-1 min-w-0 bg-transparent text-xs text-[var(--text-primary)] outline-none border-none p-0"
+          className="min-w-0 flex-1 border-none bg-transparent p-0 text-xs text-[var(--text-primary)] outline-none"
           placeholder="Search locations…"
           type="text"
           value={value}
@@ -143,9 +156,10 @@ export const PlaceSearch = ({ mapRef, mapReady, className }: PlaceSearchProps) =
           onKeyDown={onKeyDown}
         />
         {searching ? <Spinner size="xs" /> : null}
-        {value ? <button
+        {value ? (
+          <button
             aria-label="Clear location search"
-            className="p-0.5 rounded-md text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer shrink-0"
+            className="shrink-0 cursor-pointer rounded-md p-0.5 text-[var(--text-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
             type="button"
             onClick={() => {
               setValue("");
@@ -153,11 +167,13 @@ export const PlaceSearch = ({ mapRef, mapReady, className }: PlaceSearchProps) =
             }}
           >
             <X size={13} />
-          </button> : null}
+          </button>
+        ) : null}
       </div>
 
       {/* Results dropdown */}
-      {open ? <div className="absolute top-full left-0 right-0 mt-2 bg-elevated border border-border-primary rounded-xl shadow-xl animate-fade-in-up z-50 overflow-hidden">
+      {open ? (
+        <div className="bg-elevated border-border-primary animate-fade-in-up absolute top-full right-0 left-0 z-50 mt-2 overflow-hidden rounded-xl border shadow-xl">
           <div className="max-h-80 overflow-y-auto py-1">
             {searching && results.length === 0 ? (
               <div className="flex items-center gap-2.5 px-3.5 py-4 text-xs text-[var(--text-tertiary)]">
@@ -173,7 +189,7 @@ export const PlaceSearch = ({ mapRef, mapReady, className }: PlaceSearchProps) =
                 <button
                   key={p.place_id}
                   type="button"
-                  className={`flex w-full items-start gap-2.5 px-3 py-2.5 text-left transition-colors cursor-pointer ${
+                  className={`flex w-full cursor-pointer items-start gap-2.5 px-3 py-2.5 text-left transition-colors ${
                     i === active ? "bg-surface-hover" : ""
                   }`}
                   onMouseEnter={() => setActive(i)}
@@ -200,9 +216,11 @@ export const PlaceSearch = ({ mapRef, mapReady, className }: PlaceSearchProps) =
                     >
                       {p.name}
                     </span>
-                    {p.detail ? <span className="block truncate text-[0.65rem] text-[var(--text-tertiary)]">
+                    {p.detail ? (
+                      <span className="block truncate text-[0.65rem] text-[var(--text-tertiary)]">
                         {p.detail}
-                      </span> : null}
+                      </span>
+                    ) : null}
                   </span>
                   {!mapReady && (
                     <span className="shrink-0 self-center text-[0.6rem] text-[var(--text-tertiary)]">
@@ -214,15 +232,16 @@ export const PlaceSearch = ({ mapRef, mapReady, className }: PlaceSearchProps) =
             )}
           </div>
 
-          <div className="flex items-center justify-between gap-2 px-3.5 py-2 border-t border-border-secondary">
+          <div className="border-border-secondary flex items-center justify-between gap-2 border-t px-3.5 py-2">
             <span className="text-[0.6rem] text-[var(--text-tertiary)]">
               Powered by Nominatim · © OpenStreetMap contributors
             </span>
-            <span className="hidden sm:block text-[0.6rem] text-[var(--text-tertiary)]">
+            <span className="hidden text-[0.6rem] text-[var(--text-tertiary)] sm:block">
               ↑↓ navigate · ↵ fly to
             </span>
           </div>
-        </div> : null}
+        </div>
+      ) : null}
     </div>
   );
-}
+};

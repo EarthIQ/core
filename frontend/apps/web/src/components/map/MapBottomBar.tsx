@@ -56,8 +56,11 @@ export const MapBottomBar = ({
   const isRotated = Math.abs(bearing) > 0.5;
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center gap-1 px-3 h-10 bg-elevated border-t border-border-primary text-xs">
-      <Tooltip content="Toggle AI Assistant" placement="top">
+    <div className="bg-elevated border-border-primary absolute right-0 bottom-0 left-0 z-20 flex h-10 items-center gap-1 border-t px-3 text-xs">
+      <Tooltip
+        content="Toggle AI Assistant"
+        placement="top"
+      >
         <Button
           className="text-text-secondary hover:text-text-primary gap-1"
           size="sm"
@@ -65,12 +68,15 @@ export const MapBottomBar = ({
           onClick={onToggleAI}
         >
           <span>✨</span>
-          <span className="font-semibold text-xs">AI</span>
+          <span className="text-xs font-semibold">AI</span>
         </Button>
       </Tooltip>
-      <div className="w-px h-5 bg-border-primary mx-1.5" />
+      <div className="bg-border-primary mx-1.5 h-5 w-px" />
 
-      <Tooltip content="Zoom out" placement="top">
+      <Tooltip
+        content="Zoom out"
+        placement="top"
+      >
         <Button
           iconOnly
           aria-label="Zoom out"
@@ -84,11 +90,14 @@ export const MapBottomBar = ({
         </Button>
       </Tooltip>
 
-      <span className="text-[0.7rem] font-mono text-text-secondary tabular-nums min-w-[3rem] text-center">
+      <span className="text-text-secondary min-w-[3rem] text-center font-mono text-[0.7rem] tabular-nums">
         {zoomLevel.toFixed(1)}×
       </span>
 
-      <Tooltip content="Zoom in" placement="top">
+      <Tooltip
+        content="Zoom in"
+        placement="top"
+      >
         <Button
           iconOnly
           aria-label="Zoom in"
@@ -102,7 +111,11 @@ export const MapBottomBar = ({
         </Button>
       </Tooltip>
 
-      {isRotated && onResetNorth ? <Tooltip content="Reset north" placement="top">
+      {isRotated && onResetNorth ? (
+        <Tooltip
+          content="Reset north"
+          placement="top"
+        >
           <Button
             iconOnly
             className="text-text-secondary hover:text-text-primary animate-fade-in"
@@ -115,9 +128,10 @@ export const MapBottomBar = ({
               style={{ transform: `rotate(${-bearing}deg)` }}
             />
           </Button>
-        </Tooltip> : null}
+        </Tooltip>
+      ) : null}
 
-      <div className="w-px h-5 bg-border-primary mx-1.5" />
+      <div className="bg-border-primary mx-1.5 h-5 w-px" />
 
       <div className="relative">
         <Button
@@ -134,7 +148,8 @@ export const MapBottomBar = ({
           </span>
         </Button>
 
-        {basemapOpen ? <div className="absolute bottom-full left-0 mb-1.5 w-44 bg-elevated border border-border-primary rounded-lg shadow-dropdown py-1 animate-fade-in-up">
+        {basemapOpen ? (
+          <div className="bg-elevated border-border-primary shadow-dropdown animate-fade-in-up absolute bottom-full left-0 mb-1.5 w-44 rounded-lg border py-1">
             {BASEMAP_OPTIONS.map((bm) => (
               <button
                 key={bm.id}
@@ -148,7 +163,7 @@ export const MapBottomBar = ({
                 }}
               >
                 <span
-                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                  className={`h-1.5 w-1.5 shrink-0 rounded-full ${
                     activeBasemap === bm.id
                       ? "bg-primary"
                       : "bg-text-quaternary"
@@ -158,7 +173,8 @@ export const MapBottomBar = ({
                 <span>{bm.name}</span>
               </button>
             ))}
-          </div> : null}
+          </div>
+        ) : null}
       </div>
       <TerrainControl
         exaggeration={TERRAIN_EXAGGERATION}
@@ -167,8 +183,12 @@ export const MapBottomBar = ({
       />
 
       {/* Bookmark - pinned to the right end of the bar */}
-      {onToggleBookmark ? <div className="ml-auto">
-          <Tooltip content="Bookmark" placement="top">
+      {onToggleBookmark ? (
+        <div className="ml-auto">
+          <Tooltip
+            content="Bookmark"
+            placement="top"
+          >
             <Button
               iconOnly
               aria-label="Bookmark"
@@ -188,7 +208,8 @@ export const MapBottomBar = ({
               />
             </Button>
           </Tooltip>
-        </div> : null}
+        </div>
+      ) : null}
     </div>
   );
-}
+};

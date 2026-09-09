@@ -1,2 +1,2 @@
-export { ProfilesSection } from './ProfilesSection';
-export { ProfileCard } from './ProfileCard';
+export { ProfilesSection } from "./ProfilesSection";
+export { ProfileCard } from "./ProfileCard";

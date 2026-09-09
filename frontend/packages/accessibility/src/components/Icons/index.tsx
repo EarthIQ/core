@@ -21,7 +21,11 @@ export const Icons = {
       viewBox="0 0 24 24"
       width={size}
     >
-      <circle cx="12" cy="4" r="2" />
+      <circle
+        cx="12"
+        cy="4"
+        r="2"
+      />
       <path d="M12 6v14" />
       <path d="M8 8h8" />
       <path d="M8 12l-2 8" />
@@ -120,8 +124,15 @@ export const Icons = {
       viewBox="0 0 24 24"
       width={size}
     >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 2a10 10 0 0 1 0 20" fill="currentColor" />
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+      />
+      <path
+        d="M12 2a10 10 0 0 1 0 20"
+        fill="currentColor"
+      />
     </svg>
   ),
 
@@ -249,7 +260,11 @@ export const Icons = {
       viewBox="0 0 24 24"
       width={size}
     >
-      <circle cx="12" cy="12" r="10" />
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+      />
       <path d="M8 12h8M12 8v8" />
     </svg>
   ),
@@ -298,7 +313,11 @@ export const Icons = {
       viewBox="0 0 24 24"
       width={size}
     >
-      <circle cx="12" cy="12" r="3" />
+      <circle
+        cx="12"
+        cy="12"
+        r="3"
+      />
       <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
     </svg>
   ),
@@ -315,8 +334,19 @@ export const Icons = {
       viewBox="0 0 24 24"
       width={size}
     >
-      <rect height="18" rx="2" ry="2" width="18" x="3" y="3" />
-      <circle cx="8.5" cy="8.5" r="1.5" />
+      <rect
+        height="18"
+        rx="2"
+        ry="2"
+        width="18"
+        x="3"
+        y="3"
+      />
+      <circle
+        cx="8.5"
+        cy="8.5"
+        r="1.5"
+      />
       <path d="M21 15l-5-5L5 21" />
     </svg>
   ),
@@ -349,7 +379,13 @@ export const Icons = {
       viewBox="0 0 24 24"
       width={size}
     >
-      <rect height="10" rx="2" width="18" x="3" y="7" />
+      <rect
+        height="10"
+        rx="2"
+        width="18"
+        x="3"
+        y="7"
+      />
       <path d="M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2M7 17v2a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2" />
     </svg>
   ),

@@ -7,7 +7,11 @@ import type {
   PermissionLevel,
   MapCreateInput,
 } from "./maps";
-import type { Annotation, Bookmark, CommentThread } from "@/lib/mapEditor/types";
+import type {
+  Annotation,
+  Bookmark,
+  CommentThread,
+} from "@/lib/mapEditor/types";
 
 export interface ProjectItem {
   id: string;
@@ -66,20 +70,20 @@ export async function fetchProjects(): Promise<ProjectItem[]> {
 }
 
 export async function fetchProjectById(
-  projectId: string,
+  projectId: string
 ): Promise<ProjectItem> {
   return api.get<ProjectItem>(`/api/v1/projects/${projectId}`);
 }
 
 export async function createProject(
-  input: ProjectCreateInput,
+  input: ProjectCreateInput
 ): Promise<ProjectItem> {
   return api.post<ProjectItem>("/api/v1/projects", input);
 }
 
 export async function updateProject(
   projectId: string,
-  input: ProjectUpdateInput,
+  input: ProjectUpdateInput
 ): Promise<ProjectItem> {
   return api.put<ProjectItem>(`/api/v1/projects/${projectId}`, input);
 }
@@ -90,7 +94,7 @@ export async function deleteProject(projectId: string): Promise<void> {
 
 export async function publishMapFromProject(
   projectId: string,
-  input: MapCreateInput,
+  input: MapCreateInput
 ): Promise<MapItem> {
   return api.post<MapItem>(`/api/v1/projects/${projectId}/maps`, input);
 }

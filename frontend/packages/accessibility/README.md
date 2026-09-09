@@ -36,7 +36,7 @@ A comprehensive, accessible accessibility widget for React applications. Provide
 
 ## Installation
 
-```bash
+````bash
 pnpm add @workspace/accessibility
 
 Usage
@@ -97,12 +97,12 @@ React
 import { useAccessibility } from '@workspace/accessibility';
 
 function SettingsPage() {
-  const { 
-    settings, 
-    updateSetting, 
-    resetSettings, 
+  const {
+    settings,
+    updateSetting,
+    resetSettings,
     applyProfile,
-    setIsOpen 
+    setIsOpen
   } = useAccessibility();
 
   return (
@@ -179,7 +179,7 @@ import '@workspace/accessibility/styles';
 
 function App() {
   return (
-    <AccessibilityProvider 
+    <AccessibilityProvider
       defaultLocale="en"
       localeStorageKey="app-locale"
     >
@@ -200,3 +200,4 @@ This structure is much cleaner and easier to maintain than the original single-f
 
 
 
+````

@@ -92,7 +92,7 @@ const SelectionPill = ({
       )}
     </span>
   );
-}
+};
 
 const SearchInput = ({
   value,
@@ -163,7 +163,8 @@ const SearchInput = ({
 
       {/* Clear-search button */}
       <AnimatePresence>
-        {value ? <motion.button
+        {value ? (
+          <motion.button
             animate={{ opacity: 1, scale: 1 }}
             aria-label="Clear search"
             className="absolute top-1/2 right-5 -translate-y-1/2 rounded-full p-0.5 transition-colors hover:opacity-70 focus:outline-none"
@@ -188,11 +189,12 @@ const SearchInput = ({
                 strokeWidth={2}
               />
             </svg>
-          </motion.button> : null}
+          </motion.button>
+        ) : null}
       </AnimatePresence>
     </div>
   );
-}
+};
 
 export const Select = (props: SelectProps) => {
   const {
@@ -281,7 +283,7 @@ export const Select = (props: SelectProps) => {
         props.onChange?.([...current, optionValue]);
       }
     } else {
-      (props).onChange?.(optionValue);
+      props.onChange?.(optionValue);
       setIsOpen(false);
       setFocusedIndex(-1);
       setSearchQuery("");
@@ -449,18 +451,22 @@ export const Select = (props: SelectProps) => {
       ref={containerRef}
       className="w-full"
     >
-      {label ? <label
+      {label ? (
+        <label
           className="mb-1.5 block text-sm font-medium"
           style={{ color: "var(--text-secondary)" }}
         >
           {label}
-          {isMultiple && props.maxSelections !== undefined ? <span
+          {isMultiple && props.maxSelections !== undefined ? (
+            <span
               className="ml-2 font-normal"
               style={{ color: "var(--text-tertiary)" }}
             >
               ({selectedValues.length}/{props.maxSelections})
-            </span> : null}
-        </label> : null}
+            </span>
+          ) : null}
+        </label>
+      ) : null}
 
       <div
         ref={refs.setReference}
@@ -506,7 +512,8 @@ export const Select = (props: SelectProps) => {
           {renderTriggerContent()}
 
           <span className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-1">
-            {isMultiple && selectedValues.length > 0 && !disabled ? <motion.button
+            {isMultiple && selectedValues.length > 0 && !disabled ? (
+              <motion.button
                 animate={{ opacity: 1, scale: 1 }}
                 aria-label="Clear all selections"
                 className="rounded-full p-0.5 transition-colors hover:opacity-70 focus:outline-none"
@@ -530,7 +537,8 @@ export const Select = (props: SelectProps) => {
                     strokeWidth={2}
                   />
                 </svg>
-              </motion.button> : null}
+              </motion.button>
+            ) : null}
 
             <span style={{ color: "var(--text-tertiary)" }}>
               <motion.svg
@@ -555,7 +563,8 @@ export const Select = (props: SelectProps) => {
 
         {/* ── Dropdown ── */}
         <AnimatePresence>
-          {isOpen ? <motion.div
+          {isOpen ? (
+            <motion.div
               ref={refs.setFloating}
               animate={{ opacity: 1, y: 0 }}
               aria-label={label || placeholder}
@@ -579,15 +588,18 @@ export const Select = (props: SelectProps) => {
               }}
             >
               {/* Search input - sticky at the top of the dropdown */}
-              {searchable ? <SearchInput
+              {searchable ? (
+                <SearchInput
                   inputRef={searchInputRef}
                   placeholder={searchPlaceholder}
                   value={searchQuery}
                   onChange={handleSearchChange}
-                /> : null}
+                />
+              ) : null}
 
               {/* Max-selection notice */}
-              {isMultiple && maxReached ? <div
+              {isMultiple && maxReached ? (
+                <div
                   className="border-b px-4 py-2 text-xs"
                   style={{
                     color: "var(--text-tertiary)",
@@ -596,7 +608,8 @@ export const Select = (props: SelectProps) => {
                   }}
                 >
                   Maximum of {props.maxSelections} items selected
-                </div> : null}
+                </div>
+              ) : null}
 
               {/*
                 Options list
@@ -636,14 +649,16 @@ export const Select = (props: SelectProps) => {
                     >
                       {searchQuery ? noResultsMessage : "No options available"}
                     </p>
-                    {searchQuery ? <button
+                    {searchQuery ? (
+                      <button
                         className="text-xs font-medium underline-offset-2 transition-opacity hover:opacity-70 focus:outline-none"
                         style={{ color: "var(--primary)" }}
                         type="button"
                         onClick={() => handleSearchChange("")}
                       >
                         Clear search
-                      </button> : null}
+                      </button>
+                    ) : null}
                   </div>
                 ) : (
                   filteredOptions.map((option, index) => {
@@ -688,7 +703,8 @@ export const Select = (props: SelectProps) => {
                         }
                       >
                         <span className="flex items-center gap-2">
-                          {isMultiple ? <span
+                          {isMultiple ? (
+                            <span
                               className="flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors"
                               style={{
                                 backgroundColor: isSelected
@@ -699,7 +715,8 @@ export const Select = (props: SelectProps) => {
                                   : "var(--border-primary)",
                               }}
                             >
-                              {isSelected ? <svg
+                              {isSelected ? (
+                                <svg
                                   aria-hidden="true"
                                   className="h-3 w-3"
                                   fill="none"
@@ -712,8 +729,10 @@ export const Select = (props: SelectProps) => {
                                     strokeLinejoin="round"
                                     strokeWidth={3}
                                   />
-                                </svg> : null}
-                            </span> : null}
+                                </svg>
+                              ) : null}
+                            </span>
+                          ) : null}
 
                           {option.icon}
 
@@ -723,7 +742,8 @@ export const Select = (props: SelectProps) => {
                               : option.label}
                           </span>
 
-                          {!isMultiple && isSelected ? <svg
+                          {!isMultiple && isSelected ? (
+                            <svg
                               aria-hidden="true"
                               className="h-4 w-4 shrink-0"
                               fill="none"
@@ -736,7 +756,8 @@ export const Select = (props: SelectProps) => {
                                 strokeLinejoin="round"
                                 strokeWidth={2}
                               />
-                            </svg> : null}
+                            </svg>
+                          ) : null}
                         </span>
                       </button>
                     );
@@ -745,7 +766,8 @@ export const Select = (props: SelectProps) => {
               </div>
 
               {/* Multi-select footer */}
-              {isMultiple && options.length > 0 ? <div
+              {isMultiple && options.length > 0 ? (
+                <div
                   className="flex items-center justify-between border-t px-4 py-2"
                   style={{ borderColor: "var(--border-primary)" }}
                 >
@@ -767,21 +789,25 @@ export const Select = (props: SelectProps) => {
                   >
                     Done
                   </button>
-                </div> : null}
-            </motion.div> : null}
+                </div>
+              ) : null}
+            </motion.div>
+          ) : null}
         </AnimatePresence>
       </div>
 
-      {error ? <p
+      {error ? (
+        <p
           className="mt-1.5 text-sm"
           role="alert"
           style={{ color: "var(--error-text)" }}
         >
           {error}
-        </p> : null}
+        </p>
+      ) : null}
     </div>
   );
-}
+};
 
 // ---------------------------------------------------------------------------
 // Highlights the matched portion of an option label

@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { useMapEditor, defaultAnnotationFor } from "@/lib/mapEditor/store";
-import { POINT_KINDS, SHAPE_KINDS ,type 
-  ActiveTool,type 
-  Annotation,type 
-  AnnotationKind,type 
-  PointAnnotation,type 
-  ShapeAnnotation,
+import {
+  POINT_KINDS,
+  SHAPE_KINDS,
+  type ActiveTool,
+  type Annotation,
+  type AnnotationKind,
+  type PointAnnotation,
+  type ShapeAnnotation,
 } from "@/lib/mapEditor/types";
 
 /* ──────────────────────────────────────────────────────────────────────── */
@@ -39,7 +41,7 @@ function toolToMode(tool: ActiveTool | null): Mode {
 /** Kind of annotation produced for a mode (when unambiguous). */
 function modeToKind(
   tool: ActiveTool | null,
-  mode: Mode,
+  mode: Mode
 ): AnnotationKind | null {
   if (!tool) return null;
   const { variantId } = tool;
@@ -71,7 +73,7 @@ function metersToDeg(meters: number, lat: number) {
 function circleToPolygon(
   center: [number, number],
   radius: number,
-  n = 64,
+  n = 64
 ): { type: "Polygon"; coordinates: number[][][] } {
   const [lng, lat] = center;
   const { latDeg, lngDeg } = metersToDeg(radius, lat);
@@ -99,7 +101,7 @@ function buildGeoJSON(annotations: Annotation[], selectionId: string | null) {
     if ((SHAPE_KINDS as AnnotationKind[]).includes(ann.kind)) {
       const s = ann as ShapeAnnotation;
       if (s.kind === "circle") {
-        const center = (s.geometry).coordinates as [number, number];
+        const center = s.geometry.coordinates as [number, number];
         features.push({
           type: "Feature",
           id: ann.id,
@@ -288,7 +290,7 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
           ?.setData({ type: "FeatureCollection", features: [] });
       }
     },
-    [mapRef],
+    [mapRef]
   );
 
   /* ── preview helpers ──────────────────────────────────────────────────── */
@@ -307,7 +309,7 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
         ],
       });
     },
-    [mapRef],
+    [mapRef]
   );
 
   const clearPreview = useCallback(() => {
@@ -323,7 +325,7 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
     (
       geometry: { type: string; coordinates: any },
       kind: AnnotationKind,
-      seed: Partial<ShapeAnnotation>,
+      seed: Partial<ShapeAnnotation>
     ) => {
       const store = useMapEditor.getState();
       const ann = defaultAnnotationFor(kind, {
@@ -339,7 +341,7 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
       // return to select after drawing for a smoother UX
       store.setActiveTool({ groupId: "navigate", variantId: "select" });
     },
-    [],
+    []
   );
 
   const commitPoint = useCallback(
@@ -349,7 +351,7 @@ export function useMapTools(mapRef: React.RefObject<any>, mapReady: boolean) {
       store.addAnnotation(ann);
       store.setActiveTool({ groupId: "navigate", variantId: "select" });
     },
-    [],
+    []
   );
 
   /* ── map event handlers ───────────────────────────────────────────────── */

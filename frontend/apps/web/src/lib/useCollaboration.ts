@@ -26,7 +26,10 @@ export interface CollaboratorState {
 interface UseCollaborationResult {
   collaborators: CollaboratorState[];
   isConnected: boolean;
-  sendPresence: (cursor: { lng: number; lat: number } | null, viewport?: { zoom: number } | null) => void;
+  sendPresence: (
+    cursor: { lng: number; lat: number } | null,
+    viewport?: { zoom: number } | null
+  ) => void;
 }
 
 export function useCollaboration(
@@ -63,7 +66,7 @@ export function useCollaboration(
           viewport:
             center && zoom != null
               ? { zoom, center: { lng: center.lng, lat: center.lat } }
-              : viewport ?? null,
+              : (viewport ?? null),
         })
       );
     },

@@ -101,12 +101,14 @@ export const TimePicker = ({
       ref={containerRef}
       className={cn("w-full", className)}
     >
-      {label ? <label
+      {label ? (
+        <label
           className="mb-1.5 block text-sm font-medium"
           style={{ color: "var(--text-secondary)" }}
         >
           {label}
-        </label> : null}
+        </label>
+      ) : null}
 
       <div ref={refs.setReference}>
         <button
@@ -160,15 +162,18 @@ export const TimePicker = ({
         </button>
       </div>
 
-      {error ? <p
+      {error ? (
+        <p
           className="mt-1.5 text-sm"
           style={{ color: "var(--error-text)" }}
         >
           {error}
-        </p> : null}
+        </p>
+      ) : null}
 
       <AnimatePresence>
-        {isOpen ? <motion.div
+        {isOpen ? (
+          <motion.div
             ref={refs.setFloating}
             animate={{ opacity: 1, y: 0 }}
             className="z-50 rounded-2xl p-4"
@@ -323,8 +328,9 @@ export const TimePicker = ({
                 </div>
               )}
             </div>
-          </motion.div> : null}
+          </motion.div>
+        ) : null}
       </AnimatePresence>
     </div>
   );
-}
+};

@@ -1,11 +1,10 @@
-import * as maplibregl from 'maplibre-gl';
-import { useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import * as maplibregl from "maplibre-gl";
+import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type React from 'react';
-
+import type React from "react";
 
 export interface PopupProps {
   /** Longitude position */
@@ -21,7 +20,7 @@ export interface PopupProps {
   /** Callback on close */
   onClose?: () => void;
   /** Anchor position */
-  anchor?: 'top' | 'bottom' | 'left' | 'right' | 'center';
+  anchor?: "top" | "bottom" | "left" | "right" | "center";
   /** Offset from anchor */
   offset?: number | [number, number];
   /** Max width */
@@ -37,14 +36,14 @@ export const Popup: React.FC<PopupProps> = ({
   closeButton = true,
   closeOnClick = true,
   onClose,
-  anchor = 'bottom',
+  anchor = "bottom",
   offset = 0,
-  maxWidth = '300px',
-  className
+  maxWidth = "300px",
+  className,
 }) => {
   const { map } = useMap();
   const popupRef = useRef<maplibregl.Popup | null>(null);
-  const containerRef = useRef<HTMLDivElement>(document.createElement('div'));
+  const containerRef = useRef<HTMLDivElement>(document.createElement("div"));
 
   useEffect(() => {
     if (!map) return;
@@ -55,7 +54,7 @@ export const Popup: React.FC<PopupProps> = ({
       anchor,
       offset,
       maxWidth,
-      className
+      className,
     })
       .setLngLat([longitude, latitude])
       .setDOMContent(containerRef.current)
@@ -63,7 +62,7 @@ export const Popup: React.FC<PopupProps> = ({
 
     popupRef.current = popup;
 
-    popup.on('close', () => {
+    popup.on("close", () => {
       onClose?.();
     });
 

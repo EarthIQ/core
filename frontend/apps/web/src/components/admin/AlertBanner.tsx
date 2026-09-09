@@ -10,4 +10,4 @@ export const AlertBanner = ({ type, message }: AlertBannerProps) => {
       : "border-success/30 bg-success/10 text-success";
 
   return <div className={`card border p-4 text-sm ${styles}`}>{message}</div>;
-}
+};

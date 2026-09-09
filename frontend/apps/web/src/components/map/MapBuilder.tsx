@@ -182,8 +182,8 @@ export const MapBuilder = ({
       setCenterLng(editingMap.center_lng ?? 0);
       setCenterLat(editingMap.center_lat ?? 20);
       setZoom(editingMap.zoom ?? 2.5);
-      setBearing((editingMap).bearing ?? 0);
-      setPitch((editingMap).pitch ?? 0);
+      setBearing(editingMap.bearing ?? 0);
+      setPitch(editingMap.pitch ?? 0);
       setLayers(editingMap.layers_config || []);
       setWidgets({
         titleCard: true,
@@ -297,7 +297,7 @@ export const MapBuilder = ({
                 showCompass: widgets.compass,
                 showZoom: widgets.zoomControls,
               }),
-              "bottom-right",
+              "bottom-right"
             );
           }
           if (widgets.scaleBar) {
@@ -308,13 +308,13 @@ export const MapBuilder = ({
               new GeolocateControl({
                 positionOptions: { enableHighAccuracy: true },
               }),
-              "bottom-right",
+              "bottom-right"
             );
           }
         });
 
         mapRef.current = map;
-      },
+      }
     );
 
     return () => {
@@ -350,7 +350,7 @@ export const MapBuilder = ({
         map.setLayoutProperty(
           layer.id,
           "visibility",
-          layer.visible ? "visible" : "none",
+          layer.visible ? "visible" : "none"
         );
       }
     });
@@ -359,7 +359,7 @@ export const MapBuilder = ({
   /* ── Toggle a layer's included/visible state ───────────────────────────── */
   const toggleLayerVisible = useCallback((layerId: string) => {
     setLayers((prev) =>
-      prev.map((l) => (l.id === layerId ? { ...l, visible: !l.visible } : l)),
+      prev.map((l) => (l.id === layerId ? { ...l, visible: !l.visible } : l))
     );
   }, []);
 
@@ -402,26 +402,31 @@ export const MapBuilder = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[2000] flex flex-col bg-bg-primary animate-fade-in">
+    <div className="bg-bg-primary animate-fade-in fixed inset-0 z-[2000] flex flex-col">
       {/* ── Header ────────────────────────────────────────────────────────── */}
-      <header className="flex items-center justify-between px-5 py-3 border-b border-border-primary bg-elevated shrink-0">
+      <header className="border-border-primary bg-elevated flex shrink-0 items-center justify-between border-b px-5 py-3">
         <div className="flex items-center gap-3">
           <button
             aria-label="Close builder"
-            className="p-1.5 rounded-lg hover:bg-surface-hover text-text-secondary hover:text-text-primary transition-colors"
+            className="hover:bg-surface-hover text-text-secondary hover:text-text-primary rounded-lg p-1.5 transition-colors"
             onClick={onClose}
           >
             <X size={18} />
           </button>
           <div className="flex items-center gap-2">
-            <Map className="text-primary" size={16} />
-            <h1 className="text-sm font-bold text-text-primary">
+            <Map
+              className="text-primary"
+              size={16}
+            />
+            <h1 className="text-text-primary text-sm font-bold">
               {editingMap ? "Edit Published Map" : "Map Builder"}
             </h1>
           </div>
-          {editingMap ? <span className="text-[10px] font-mono text-text-tertiary">
+          {editingMap ? (
+            <span className="text-text-tertiary font-mono text-[10px]">
               Editing: {editingMap.title}
-            </span> : null}
+            </span>
+          ) : null}
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -440,22 +445,33 @@ export const MapBuilder = ({
       </header>
 
       {/* ── Body: Split view ──────────────────────────────────────────────── */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         {/* LEFT: Live Map Preview */}
-        <div className="flex-1 relative">
-          <div ref={previewRef} className="w-full h-full absolute inset-0" />
+        <div className="relative flex-1">
+          <div
+            ref={previewRef}
+            className="absolute inset-0 h-full w-full"
+          />
 
           {/* Live widget overlays (mirrors what the viewer will see) */}
-          {widgets.titleCard && title ? <div className="absolute top-4 left-4 z-10 max-w-xs bg-elevated border border-border-primary rounded-xl p-3.5 shadow-xl pointer-events-none">
-              <h2 className="text-sm font-bold text-text-primary">{title}</h2>
-              {description ? <p className="text-[11px] text-text-secondary mt-1">
+          {widgets.titleCard && title ? (
+            <div className="bg-elevated border-border-primary pointer-events-none absolute top-4 left-4 z-10 max-w-xs rounded-xl border p-3.5 shadow-xl">
+              <h2 className="text-text-primary text-sm font-bold">{title}</h2>
+              {description ? (
+                <p className="text-text-secondary mt-1 text-[11px]">
                   {description}
-                </p> : null}
-            </div> : null}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
 
-          {widgets.layerList && layers.filter((l) => l.url).length > 0 ? <div className="absolute top-4 right-4 z-10 w-52 bg-elevated border border-border-primary rounded-xl p-3 shadow-xl pointer-events-none">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-text-primary mb-2">
-                <Layers className="text-primary" size={12} />
+          {widgets.layerList && layers.filter((l) => l.url).length > 0 ? (
+            <div className="bg-elevated border-border-primary pointer-events-none absolute top-4 right-4 z-10 w-52 rounded-xl border p-3 shadow-xl">
+              <div className="text-text-primary mb-2 flex items-center gap-1.5 text-xs font-bold">
+                <Layers
+                  className="text-primary"
+                  size={12}
+                />
                 Layers
               </div>
               <div className="flex flex-col gap-1.5">
@@ -464,51 +480,58 @@ export const MapBuilder = ({
                   .map((l) => (
                     <div
                       key={l.id}
-                      className="flex items-center gap-2 text-[11px] text-text-secondary"
+                      className="text-text-secondary flex items-center gap-2 text-[11px]"
                     >
                       <span
-                        className={`w-2 h-2 rounded-full ${l.visible ? "bg-success" : "bg-text-quaternary"}`}
+                        className={`h-2 w-2 rounded-full ${l.visible ? "bg-success" : "bg-text-quaternary"}`}
                       />
                       <span className="truncate">{l.name}</span>
                     </div>
                   ))}
               </div>
-            </div> : null}
+            </div>
+          ) : null}
 
           {/* Zoom controls overlay */}
-          {widgets.zoomControls ? <div className="absolute bottom-6 right-6 z-10 flex flex-col gap-1 pointer-events-none">
-              <div className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-tertiary">
+          {widgets.zoomControls ? (
+            <div className="pointer-events-none absolute right-6 bottom-6 z-10 flex flex-col gap-1">
+              <div className="bg-elevated border-border-primary text-text-tertiary flex h-8 w-8 items-center justify-center rounded-lg border">
                 <ZoomIn size={14} />
               </div>
-              <div className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-tertiary">
+              <div className="bg-elevated border-border-primary text-text-tertiary flex h-8 w-8 items-center justify-center rounded-lg border">
                 <Compass size={14} />
               </div>
-            </div> : null}
+            </div>
+          ) : null}
 
           {/* Scale bar indicator */}
-          {widgets.scaleBar ? <div className="absolute bottom-6 left-6 z-10 flex items-center gap-1.5 pointer-events-none">
-              <div className="w-24 h-0.5 bg-text-secondary/60 rounded" />
-              <span className="text-[9px] text-text-tertiary">10 km</span>
-            </div> : null}
+          {widgets.scaleBar ? (
+            <div className="pointer-events-none absolute bottom-6 left-6 z-10 flex items-center gap-1.5">
+              <div className="bg-text-secondary/60 h-0.5 w-24 rounded" />
+              <span className="text-text-tertiary text-[9px]">10 km</span>
+            </div>
+          ) : null}
 
           {/* Attribution */}
-          {widgets.attribution ? <div className="absolute bottom-2 right-2 z-10 text-[9px] text-text-quaternary pointer-events-none">
+          {widgets.attribution ? (
+            <div className="text-text-quaternary pointer-events-none absolute right-2 bottom-2 z-10 text-[9px]">
               © OpenStreetMap © CARTO | Powered by EarthIQ
-            </div> : null}
+            </div>
+          ) : null}
 
           {/* Map status badge */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-elevated border border-border-primary pointer-events-none">
-            <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            <span className="text-[10px] font-semibold text-text-secondary">
+          <div className="bg-elevated border-border-primary pointer-events-none absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full border px-3 py-1.5">
+            <span className="bg-success h-2 w-2 animate-pulse rounded-full" />
+            <span className="text-text-secondary text-[10px] font-semibold">
               Live Preview
             </span>
           </div>
         </div>
 
         {/* RIGHT: Configuration Panel */}
-        <aside className="w-80 border-l border-border-primary bg-elevated flex flex-col shrink-0">
+        <aside className="border-border-primary bg-elevated flex w-80 shrink-0 flex-col border-l">
           {/* Tab bar */}
-          <nav className="flex border-b border-border-primary shrink-0">
+          <nav className="border-border-primary flex shrink-0 border-b">
             {(
               [
                 { id: "map", label: "Map" },
@@ -519,10 +542,10 @@ export const MapBuilder = ({
             ).map((tab) => (
               <button
                 key={tab.id}
-                className={`flex-1 py-2.5 text-xs font-semibold transition-colors border-b-2 ${
+                className={`flex-1 border-b-2 py-2.5 text-xs font-semibold transition-colors ${
                   activeTab === tab.id
                     ? "text-primary border-primary"
-                    : "text-text-tertiary border-transparent hover:text-text-secondary"
+                    : "text-text-tertiary hover:text-text-secondary border-transparent"
                 }`}
                 onClick={() => setActiveTab(tab.id)}
               >
@@ -532,7 +555,7 @@ export const MapBuilder = ({
           </nav>
 
           {/* Tab content */}
-          <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
+          <div className="flex-1 scrollbar-thin overflow-y-auto p-4">
             {/* ── MAP TAB ─────────────────────────────────────────────────── */}
             {activeTab === "map" && (
               <div className="flex flex-col gap-5">
@@ -563,11 +586,11 @@ export const MapBuilder = ({
                 {/* Basemap picker */}
                 <div className="form-field">
                   <label className="form-label text-xs">Basemap</label>
-                  <div className="grid grid-cols-3 gap-2 mt-1">
+                  <div className="mt-1 grid grid-cols-3 gap-2">
                     {BASEMAP_OPTIONS.map((opt) => (
                       <button
                         key={opt.id}
-                        className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all ${
+                        className={`flex flex-col items-center gap-1.5 rounded-lg border-2 p-2 transition-all ${
                           basemap === opt.id
                             ? "border-primary bg-primary/5"
                             : "border-border-secondary hover:border-border-primary"
@@ -575,10 +598,10 @@ export const MapBuilder = ({
                         onClick={() => setBasemap(opt.id)}
                       >
                         <div
-                          className="w-10 h-7 rounded border border-border-secondary"
+                          className="border-border-secondary h-7 w-10 rounded border"
                           style={{ backgroundColor: opt.color }}
                         />
-                        <span className="text-[10px] font-medium text-text-secondary">
+                        <span className="text-text-secondary text-[10px] font-medium">
                           {opt.label}
                         </span>
                       </button>
@@ -589,9 +612,9 @@ export const MapBuilder = ({
                 {/* Viewport */}
                 <div className="form-field">
                   <label className="form-label text-xs">Viewport</label>
-                  <div className="grid grid-cols-2 gap-2 mt-1">
+                  <div className="mt-1 grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] text-text-tertiary">
+                      <label className="text-text-tertiary text-[10px]">
                         Center Lng
                       </label>
                       <input
@@ -607,7 +630,7 @@ export const MapBuilder = ({
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-text-tertiary">
+                      <label className="text-text-tertiary text-[10px]">
                         Center Lat
                       </label>
                       <input
@@ -623,7 +646,7 @@ export const MapBuilder = ({
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-text-tertiary">
+                      <label className="text-text-tertiary text-[10px]">
                         Zoom
                       </label>
                       <input
@@ -639,7 +662,7 @@ export const MapBuilder = ({
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-text-tertiary">
+                      <label className="text-text-tertiary text-[10px]">
                         Pitch (°)
                       </label>
                       <input
@@ -655,7 +678,7 @@ export const MapBuilder = ({
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-text-tertiary">
+                      <label className="text-text-tertiary text-[10px]">
                         Bearing (°)
                       </label>
                       <input
@@ -671,7 +694,7 @@ export const MapBuilder = ({
                       />
                     </div>
                   </div>
-                  <p className="text-[10px] text-text-quaternary mt-1.5">
+                  <p className="text-text-quaternary mt-1.5 text-[10px]">
                     Tip: Pan / zoom the preview map to set these values.
                   </p>
                 </div>
@@ -681,13 +704,13 @@ export const MapBuilder = ({
             {/* ── WIDGETS TAB ─────────────────────────────────────────────── */}
             {activeTab === "widgets" && (
               <div className="flex flex-col gap-3">
-                <div className="text-xs text-text-tertiary mb-1">
+                <div className="text-text-tertiary mb-1 text-xs">
                   Select which interactive widgets appear in the published map.
                 </div>
                 {WIDGETS.map((w) => (
                   <button
                     key={w.key}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
+                    className={`flex w-full items-center gap-3 rounded-lg border-2 p-3 text-left transition-all ${
                       widgets[w.key]
                         ? "border-primary/60 bg-primary/5"
                         : "border-border-secondary hover:border-border-primary"
@@ -695,7 +718,7 @@ export const MapBuilder = ({
                     onClick={() => toggleWidget(w.key)}
                   >
                     <div
-                      className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
                         widgets[w.key]
                           ? "bg-primary/20 text-primary"
                           : "bg-surface/50 text-text-tertiary"
@@ -703,16 +726,16 @@ export const MapBuilder = ({
                     >
                       <w.icon size={16} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold text-text-primary">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-text-primary text-xs font-semibold">
                         {w.label}
                       </div>
-                      <div className="text-[10px] text-text-tertiary truncate">
+                      <div className="text-text-tertiary truncate text-[10px]">
                         {w.desc}
                       </div>
                     </div>
                     <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-colors ${
                         widgets[w.key]
                           ? "bg-primary text-white"
                           : "bg-surface text-transparent"
@@ -728,11 +751,11 @@ export const MapBuilder = ({
             {/* ── LAYERS TAB ──────────────────────────────────────────────── */}
             {activeTab === "layers" && (
               <div className="flex flex-col gap-3">
-                <div className="text-xs text-text-tertiary mb-1">
+                <div className="text-text-tertiary mb-1 text-xs">
                   Choose which layers are visible in the published map.
                 </div>
                 {layers.length === 0 ? (
-                  <div className="text-center py-8 text-xs text-text-tertiary">
+                  <div className="text-text-tertiary py-8 text-center text-xs">
                     No layers configured in this project.
                   </div>
                 ) : (
@@ -741,11 +764,11 @@ export const MapBuilder = ({
                     .map((layer) => (
                       <div
                         key={layer.id}
-                        className="flex items-center gap-3 p-3 rounded-lg border border-border-secondary bg-surface/30"
+                        className="border-border-secondary bg-surface/30 flex items-center gap-3 rounded-lg border p-3"
                       >
                         <button
                           title={layer.visible ? "Hide layer" : "Show layer"}
-                          className={`p-1.5 rounded-lg transition-colors ${
+                          className={`rounded-lg p-1.5 transition-colors ${
                             layer.visible
                               ? "text-primary bg-primary/10"
                               : "text-text-tertiary bg-surface/50 hover:text-text-secondary"
@@ -758,20 +781,22 @@ export const MapBuilder = ({
                             <EyeOff size={14} />
                           )}
                         </button>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium text-text-primary truncate">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-text-primary truncate text-xs font-medium">
                             {layer.name}
                           </div>
-                          <div className="text-[10px] text-text-tertiary capitalize">
+                          <div className="text-text-tertiary text-[10px] capitalize">
                             {layer.type}
                           </div>
                         </div>
-                        {layer.style?.color ? <span
-                            className="w-3 h-3 rounded-full border border-white/20 shrink-0"
+                        {layer.style?.color ? (
+                          <span
+                            className="h-3 w-3 shrink-0 rounded-full border border-white/20"
                             style={{
                               backgroundColor: layer.style.color as string,
                             }}
-                          /> : null}
+                          />
+                        ) : null}
                       </div>
                     ))
                 )}
@@ -781,12 +806,12 @@ export const MapBuilder = ({
             {/* ── SHARE TAB ───────────────────────────────────────────────── */}
             {activeTab === "share" && (
               <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between p-3 rounded-lg border border-border-secondary bg-surface/30">
+                <div className="border-border-secondary bg-surface/30 flex items-center justify-between rounded-lg border p-3">
                   <div>
-                    <div className="text-xs font-semibold text-text-primary">
+                    <div className="text-text-primary text-xs font-semibold">
                       Public Access
                     </div>
-                    <div className="text-[10px] text-text-tertiary">
+                    <div className="text-text-tertiary text-[10px]">
                       {isPublic
                         ? "Anyone with the link can view this map"
                         : "Only invited members can view this map"}
@@ -794,22 +819,28 @@ export const MapBuilder = ({
                   </div>
                   <input
                     checked={isPublic}
-                    className="w-4 h-4 accent-primary cursor-pointer"
+                    className="accent-primary h-4 w-4 cursor-pointer"
                     type="checkbox"
                     onChange={(e) => setIsPublic(e.target.checked)}
                   />
                 </div>
 
-                <div className="p-3 rounded-lg bg-surface/20 border border-border-secondary/50">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-text-primary mb-1.5">
+                <div className="bg-surface/20 border-border-secondary/50 rounded-lg border p-3">
+                  <div className="text-text-primary mb-1.5 flex items-center gap-2 text-xs font-semibold">
                     {isPublic ? (
-                      <Globe className="text-success" size={13} />
+                      <Globe
+                        className="text-success"
+                        size={13}
+                      />
                     ) : (
-                      <Lock className="text-accent" size={13} />
+                      <Lock
+                        className="text-accent"
+                        size={13}
+                      />
                     )}
                     {isPublic ? "Shareable" : "Private"}
                   </div>
-                  <p className="text-[11px] text-text-tertiary leading-relaxed">
+                  <p className="text-text-tertiary text-[11px] leading-relaxed">
                     {isPublic
                       ? "The map will be accessible at /share/map/{id}. You can copy the link after publishing."
                       : "The map requires authentication and explicit permission to view."}
@@ -817,11 +848,11 @@ export const MapBuilder = ({
                 </div>
 
                 {/* Summary */}
-                <div className="border-t border-border-secondary pt-4">
-                  <div className="text-xs font-bold text-text-primary mb-2">
+                <div className="border-border-secondary border-t pt-4">
+                  <div className="text-text-primary mb-2 text-xs font-bold">
                     Publish Summary
                   </div>
-                  <div className="flex flex-col gap-1.5 text-[11px] text-text-secondary">
+                  <div className="text-text-secondary flex flex-col gap-1.5 text-[11px]">
                     <div className="flex justify-between">
                       <span className="text-text-tertiary">Title</span>
                       <span className="font-medium">{title || "-"}</span>
@@ -856,9 +887,9 @@ export const MapBuilder = ({
           </div>
 
           {/* Footer action */}
-          <div className="p-3 border-t border-border-primary shrink-0">
+          <div className="border-border-primary shrink-0 border-t p-3">
             <button
-              className="w-full btn btn-primary btn-md flex items-center justify-center gap-2 disabled:opacity-50"
+              className="btn btn-primary btn-md flex w-full items-center justify-center gap-2 disabled:opacity-50"
               disabled={!title.trim() || publishing}
               onClick={handlePublish}
             >
@@ -874,4 +905,4 @@ export const MapBuilder = ({
       </div>
     </div>
   );
-}
+};

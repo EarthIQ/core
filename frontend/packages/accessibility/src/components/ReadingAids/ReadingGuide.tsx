@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 interface ReadingGuideProps {
   enabled: boolean;
@@ -18,8 +18,8 @@ export const ReadingGuide: React.FC<ReadingGuideProps> = ({ enabled }) => {
       setPosition({ y: e.clientY });
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [enabled]);
 
   if (!enabled) return null;
@@ -28,10 +28,7 @@ export const ReadingGuide: React.FC<ReadingGuideProps> = ({ enabled }) => {
     <div
       aria-hidden="true"
       style={{ top: position.y - 24 }}
-      className="
-        pointer-events-none fixed left-0 right-0 z-[9998]
-        h-12 border-y-2 border-primary/60 bg-primary/10
-      "
+      className="border-primary/60 bg-primary/10 pointer-events-none fixed right-0 left-0 z-[9998] h-12 border-y-2"
     />
   );
 };

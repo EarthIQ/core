@@ -92,12 +92,14 @@ export const LineChart: React.FC<LineChartProps> = ({
               if (payload) onDataPointClick(payload, index);
             }}
           >
-            {showGrid ? <CartesianGrid
+            {showGrid ? (
+              <CartesianGrid
                 className="stroke-gray-200 dark:stroke-gray-700"
                 horizontal={gridType !== "vertical"}
                 strokeDasharray="3 3"
                 vertical={gridType !== "horizontal"}
-              /> : null}
+              />
+            ) : null}
 
             {!xAxis?.hide && (
               <XAxis
@@ -149,7 +151,8 @@ export const LineChart: React.FC<LineChartProps> = ({
               />
             )}
 
-            {showTooltip ? <Tooltip
+            {showTooltip ? (
+              <Tooltip
                 cursor={tooltipConfig.cursor ?? { stroke: "#ccc" }}
                 formatter={tooltipConfig.formatter}
                 labelFormatter={tooltipConfig.labelFormatter}
@@ -160,9 +163,11 @@ export const LineChart: React.FC<LineChartProps> = ({
                   borderRadius: "8px",
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-              /> : null}
+              />
+            ) : null}
 
-            {showLegend ? <Legend
+            {showLegend ? (
+              <Legend
                 height={36}
                 iconSize={8}
                 iconType="circle"
@@ -170,7 +175,8 @@ export const LineChart: React.FC<LineChartProps> = ({
                 wrapperStyle={{
                   paddingTop: legendPosition === "bottom" ? 16 : 0,
                 }}
-              /> : null}
+              />
+            ) : null}
 
             {referenceLines.map((refLine, index) => (
               <ReferenceLine

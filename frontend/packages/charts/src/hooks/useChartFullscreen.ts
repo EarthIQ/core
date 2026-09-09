@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from "react";
 
 interface UseChartFullscreenReturn {
   isFullscreen: boolean;
@@ -12,12 +12,12 @@ export const useChartFullscreen = (): UseChartFullscreenReturn => {
 
   const openFullscreen = useCallback(() => {
     setIsFullscreen(true);
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
   }, []);
 
   const closeFullscreen = useCallback(() => {
     setIsFullscreen(false);
-    document.body.style.overflow = '';
+    document.body.style.overflow = "";
   }, []);
 
   const toggleFullscreen = useCallback(() => {
@@ -31,19 +31,19 @@ export const useChartFullscreen = (): UseChartFullscreenReturn => {
   // Handle escape key
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isFullscreen) {
+      if (event.key === "Escape" && isFullscreen) {
         closeFullscreen();
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isFullscreen, closeFullscreen]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, []);
 

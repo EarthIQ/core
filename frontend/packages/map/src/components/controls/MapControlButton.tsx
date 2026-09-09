@@ -96,7 +96,7 @@ export const ControlGroup = ({
       {children}
     </div>
   );
-}
+};
 
 // ─── Control Button ───────────────────────────────────────────────────
 //
@@ -225,7 +225,7 @@ export const ControlButton = ({
       {icon}
     </button>
   );
-}
+};
 
 // ─── Control Divider ──────────────────────────────────────────────────
 //
@@ -243,7 +243,7 @@ export const ControlButton = ({
 
 export const ControlDivider = () => {
   return <hr className="mx-2 h-px bg-[var(--border-primary)]" />;
-}
+};
 
 // ─── Flyout Context ──────────────────────────────────────────────────
 // Allows any descendant to close the flyout programmatically.
@@ -520,7 +520,7 @@ export const ControlButtonFlyout = ({
       </div>
     </div>
   );
-}
+};
 
 // ─── FlyoutCloseButton ────────────────────────────────────────────────
 //
@@ -534,8 +534,7 @@ export const ControlButtonFlyout = ({
 //   </ControlButtonFlyout>
 // ───────────────────────────────────────────────────────────────────────
 
-export interface MapControlButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface MapControlButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   active?: boolean | undefined;
   children: React.ReactNode;
   disabled?: boolean | undefined;
@@ -576,4 +575,4 @@ export const FlyoutCloseButton = ({
       onClick={handleClick}
     />
   );
-}
+};

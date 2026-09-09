@@ -276,7 +276,8 @@ export const FileUpload = ({
           )}
         </div>
 
-        {currentFile ? <button
+        {currentFile ? (
+          <button
             aria-label="Remove file"
             type="button"
             className={cn(
@@ -302,7 +303,8 @@ export const FileUpload = ({
                 strokeWidth={2}
               />
             </svg>
-          </button> : null}
+          </button>
+        ) : null}
       </div>
     );
   }
@@ -497,9 +499,11 @@ export const FileUpload = ({
 
                   <p className="text-xs text-[var(--text-secondary)]">
                     {formatFileSize(fileInfo.file.size)}
-                    {fileInfo.error ? <span className="ml-2 text-[var(--error-text)]">
+                    {fileInfo.error ? (
+                      <span className="ml-2 text-[var(--error-text)]">
                         {fileInfo.error}
-                      </span> : null}
+                      </span>
+                    ) : null}
                   </p>
 
                   {fileInfo.status === "uploading" && (
@@ -584,4 +588,4 @@ export const FileUpload = ({
       </AnimatePresence>
     </div>
   );
-}
+};

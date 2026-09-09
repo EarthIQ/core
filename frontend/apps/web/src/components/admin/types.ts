@@ -43,7 +43,6 @@ export const defaultUserFilterState: UserFilterState = {
 };
 
 export interface GroupFilterState {
-
   search: string;
   sort_by: "name" | "created_at";
   sort_order: "asc" | "desc";
@@ -75,7 +74,6 @@ export const defaultPermissionFilterState: PermissionFilterState = {
   page_size: 10,
 };
 
-
 export interface GroupSummary {
   id: string;
   name: string;
@@ -84,7 +82,6 @@ export interface GroupSummary {
   permissions?: PermissionSummary[];
   users?: UserSummary[];
 }
-
 
 export interface UserFormState {
   email: string;

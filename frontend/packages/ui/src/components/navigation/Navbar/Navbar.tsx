@@ -254,9 +254,11 @@ export const Navbar = ({
           </div>
 
           {/* Right Content (Desktop) */}
-          {rightContent ? <div className="hidden items-center gap-3 md:flex">
+          {rightContent ? (
+            <div className="hidden items-center gap-3 md:flex">
               {rightContent}
-            </div> : null}
+            </div>
+          ) : null}
 
           {/* Mobile Menu Button */}
           <div className="flex items-center md:hidden">
@@ -294,7 +296,8 @@ export const Navbar = ({
 
       {/* Mobile Menu */}
       <AnimatePresence>
-        {mobileMenuOpen ? <>
+        {mobileMenuOpen ? (
+          <>
             {/* Backdrop */}
             <motion.div
               animate={{ opacity: 1 }}
@@ -337,21 +340,24 @@ export const Navbar = ({
                 ))}
 
                 {/* Right content in mobile menu */}
-                {rightContent ? <motion.div
+                {rightContent ? (
+                  <motion.div
                     animate={{ opacity: 1 }}
                     className="mt-4 border-t border-[var(--border-primary)] pt-4"
                     initial={{ opacity: 0 }}
                     transition={{ delay: items.length * 0.05 }}
                   >
                     {rightContent}
-                  </motion.div> : null}
+                  </motion.div>
+                ) : null}
               </div>
             </motion.div>
-          </> : null}
+          </>
+        ) : null}
       </AnimatePresence>
     </nav>
   );
-}
+};
 
 /**
  * Desktop navigation link component
@@ -386,11 +392,13 @@ const NavLink = ({ item }: { item: NavItem }) => {
       )}
       onClick={item.onClick}
     >
-      {item.icon ? <span className="h-4 w-4 flex-shrink-0">{item.icon}</span> : null}
+      {item.icon ? (
+        <span className="h-4 w-4 flex-shrink-0">{item.icon}</span>
+      ) : null}
       {item.label}
     </Component>
   );
-}
+};
 
 /**
  * Mobile navigation link component
@@ -433,8 +441,10 @@ const MobileNavLink = ({
         onClose();
       }}
     >
-      {item.icon ? <span className="h-5 w-5 flex-shrink-0">{item.icon}</span> : null}
+      {item.icon ? (
+        <span className="h-5 w-5 flex-shrink-0">{item.icon}</span>
+      ) : null}
       {item.label}
     </Component>
   );
-}
+};

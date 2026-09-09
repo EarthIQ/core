@@ -1,11 +1,10 @@
-import { HeatmapLayer as DeckHeatmapLayer } from '@deck.gl/aggregation-layers';
-import { useEffect, useId } from 'react';
+import { HeatmapLayer as DeckHeatmapLayer } from "@deck.gl/aggregation-layers";
+import { useEffect, useId } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-
-import type { GeoJSON } from 'geojson';
-import type React from 'react';
+import type { GeoJSON } from "geojson";
+import type React from "react";
 
 export interface HeatmapLayerProps {
   /** Unique layer ID */
@@ -40,7 +39,7 @@ export const HeatmapLayer: React.FC<HeatmapLayerProps> = ({
   colorRange,
   threshold = 0,
   visible = true,
-  useDeckGL = false
+  useDeckGL = false,
 }) => {
   const { map, deck, isLoaded } = useMap();
   const autoId = useId();
@@ -53,9 +52,12 @@ export const HeatmapLayer: React.FC<HeatmapLayerProps> = ({
       // Use Deck.gl HeatmapLayer for better performance
       const layer = new DeckHeatmapLayer({
         id,
-        data: typeof data === 'string' ? data : (data as any).features,
+        data: typeof data === "string" ? data : (data as any).features,
         getPosition: (d: any) => d.geometry?.coordinates || d.coordinates,
-        getWeight: typeof weight === 'function' ? weight : (d: any) => d.properties?.[weight] || 1,
+        getWeight:
+          typeof weight === "function"
+            ? weight
+            : (d: any) => d.properties?.[weight] || 1,
         intensity,
         radiusPixels: radius,
         opacity,
@@ -66,19 +68,22 @@ export const HeatmapLayer: React.FC<HeatmapLayerProps> = ({
           [253, 141, 60, 255],
           [252, 78, 42, 255],
           [227, 26, 28, 255],
-          [177, 0, 38, 255]
+          [177, 0, 38, 255],
         ],
         threshold,
-        visible
+        visible,
       });
 
       deck.setProps({
-        layers: [...(deck.props.layers || []).filter((l: any) => l.id !== id), layer]
+        layers: [
+          ...(deck.props.layers || []).filter((l: any) => l.id !== id),
+          layer,
+        ],
       });
 
       return () => {
         deck.setProps({
-          layers: (deck.props.layers || []).filter((l: any) => l.id !== id)
+          layers: (deck.props.layers || []).filter((l: any) => l.id !== id),
         });
       };
     } else if (map) {
@@ -87,27 +92,26 @@ export const HeatmapLayer: React.FC<HeatmapLayerProps> = ({
 
       if (!map.getSource(sourceId)) {
         map.addSource(sourceId, {
-          type: 'geojson',
-          data: typeof data === 'string' ? data : data
+          type: "geojson",
+          data: typeof data === "string" ? data : data,
         });
       }
 
       if (!map.getLayer(id)) {
         map.addLayer({
           id,
-          type: 'heatmap',
+          type: "heatmap",
           source: sourceId,
           paint: {
-            'heatmap-weight': typeof weight === 'string' 
-              ? ['get', weight] 
-              : weight,
-            'heatmap-intensity': intensity,
-            'heatmap-radius': radius,
-            'heatmap-opacity': opacity
+            "heatmap-weight":
+              typeof weight === "string" ? ["get", weight] : weight,
+            "heatmap-intensity": intensity,
+            "heatmap-radius": radius,
+            "heatmap-opacity": opacity,
           },
           layout: {
-            visibility: visible ? 'visible' : 'none'
-          }
+            visibility: visible ? "visible" : "none",
+          },
         });
       }
 

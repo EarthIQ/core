@@ -29,22 +29,22 @@ export default function TileUrlModal({
       onClose={onClose}
     >
       <div className="flex flex-col gap-4">
-        <p className="text-sm text-text-secondary leading-relaxed">
+        <p className="text-text-secondary text-sm leading-relaxed">
           This dataset is served as Mapbox Vector Tiles (MVT) via PostGIS{" "}
           <code className="text-primary font-mono text-xs">ST_AsMVT</code>. Use
           this URL pattern in MapLibre GL, Mapbox GL, or any MVT-compatible
           client.
         </p>
 
-        <div className="p-3.5 rounded-lg bg-bg-tertiary border border-border-primary font-mono text-sm text-primary break-all leading-relaxed">
+        <div className="bg-bg-tertiary border-border-primary text-primary rounded-lg border p-3.5 font-mono text-sm leading-relaxed break-all">
           {url}
         </div>
 
-        <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
-          <div className="text-xs font-semibold text-accent mb-2">
+        <div className="bg-accent/5 border-accent/20 rounded-lg border p-4">
+          <div className="text-accent mb-2 text-xs font-semibold">
             MapLibre GL example:
           </div>
-          <pre className="text-xs font-mono text-text-secondary whitespace-pre-wrap leading-relaxed">
+          <pre className="text-text-secondary font-mono text-xs leading-relaxed whitespace-pre-wrap">
             {`map.addSource("${dataset.id.slice(0, 8)}", {
   type: "vector",
   tiles: ["${url}"],
@@ -54,7 +54,10 @@ export default function TileUrlModal({
         </div>
 
         <ModalFooter>
-          <Button variant="ghost" onClick={onClose}>
+          <Button
+            variant="ghost"
+            onClick={onClose}
+          >
             Close
           </Button>
           <Button

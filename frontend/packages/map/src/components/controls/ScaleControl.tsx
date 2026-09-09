@@ -1,24 +1,23 @@
-import * as maplibregl from 'maplibre-gl';
-import { useEffect } from 'react';
+import * as maplibregl from "maplibre-gl";
+import { useEffect } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type React from 'react';
-
+import type React from "react";
 
 export interface ScaleControlProps {
   /** Position on map */
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   /** Max width in pixels */
   maxWidth?: number;
   /** Unit system */
-  unit?: 'imperial' | 'metric' | 'nautical';
+  unit?: "imperial" | "metric" | "nautical";
 }
 
 export const ScaleControl: React.FC<ScaleControlProps> = ({
-  position = 'bottom-left',
+  position = "bottom-left",
   maxWidth = 100,
-  unit = 'metric'
+  unit = "metric",
 }) => {
   const { map, isLoaded } = useMap();
 
@@ -27,7 +26,7 @@ export const ScaleControl: React.FC<ScaleControlProps> = ({
 
     const control = new maplibregl.ScaleControl({
       maxWidth,
-      unit
+      unit,
     });
 
     map.addControl(control, position);

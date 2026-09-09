@@ -68,24 +68,30 @@ const SortHeader = ({
   return (
     <button
       type="button"
-      className={`inline-flex items-center gap-1.5 py-1 text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer select-none group ${
-        active
-          ? "text-primary"
-          : "text-text-secondary hover:text-text-primary"
+      className={`group inline-flex cursor-pointer items-center gap-1.5 py-1 text-xs font-semibold tracking-wider uppercase transition-colors select-none ${
+        active ? "text-primary" : "text-text-secondary hover:text-text-primary"
       }`}
       onClick={() => onToggleSort(field)}
     >
       <span>{label}</span>
       <span
         className={`transition-opacity ${
-          active ? "opacity-100 text-primary" : "opacity-0 group-hover:opacity-60"
+          active
+            ? "text-primary opacity-100"
+            : "opacity-0 group-hover:opacity-60"
         }`}
       >
         {active ? (
           sortDir === "asc" ? (
-            <ArrowUp className="stroke-[2.5]" size={13} />
+            <ArrowUp
+              className="stroke-[2.5]"
+              size={13}
+            />
           ) : (
-            <ArrowDown className="stroke-[2.5]" size={13} />
+            <ArrowDown
+              className="stroke-[2.5]"
+              size={13}
+            />
           )
         ) : (
           <ArrowUpDown size={12} />
@@ -93,7 +99,7 @@ const SortHeader = ({
       </span>
     </button>
   );
-}
+};
 
 export default function DatasetTable({
   items,
@@ -116,11 +122,11 @@ export default function DatasetTable({
   onMove,
 }: Props) {
   return (
-    <div className="card overflow-hidden border border-border-primary rounded-xl shadow-xs bg-surface">
+    <div className="card border-border-primary bg-surface overflow-hidden rounded-xl border shadow-xs">
       <div className="w-full overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[760px]">
+        <table className="w-full min-w-[760px] border-collapse text-left">
           <thead>
-            <tr className="border-b border-border-secondary bg-surface-hover/50">
+            <tr className="border-border-secondary bg-surface-hover/50 border-b">
               <th className="w-12 px-4 py-3 text-center">
                 <div className="flex items-center justify-center">
                   <Checkbox
@@ -150,7 +156,7 @@ export default function DatasetTable({
                 />
               </th>
               <th className="px-4 py-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                <span className="text-text-secondary text-xs font-semibold tracking-wider uppercase">
                   Type / CRS
                 </span>
               </th>
@@ -173,53 +179,64 @@ export default function DatasetTable({
                 />
               </th>
               <th className="w-36 px-4 py-3 text-right">
-                <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                <span className="text-text-secondary text-xs font-semibold tracking-wider uppercase">
                   Actions
                 </span>
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-secondary text-sm">
+          <tbody className="divide-border-secondary divide-y text-sm">
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="animate-pulse">
+                <tr
+                  key={i}
+                  className="animate-pulse"
+                >
                   <td className="px-4 py-3.5 text-center">
-                    <div className="skeleton h-4 w-4 rounded mx-auto" />
+                    <div className="skeleton mx-auto h-4 w-4 rounded" />
                   </td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className="skeleton h-9 w-9 rounded-lg shrink-0" />
-                      <div className="flex flex-col gap-1.5 flex-1 max-w-xs">
-                        <div className="skeleton h-4 rounded w-3/4" />
-                        <div className="skeleton h-3 rounded w-1/2" />
+                      <div className="skeleton h-9 w-9 shrink-0 rounded-lg" />
+                      <div className="flex max-w-xs flex-1 flex-col gap-1.5">
+                        <div className="skeleton h-4 w-3/4 rounded" />
+                        <div className="skeleton h-3 w-1/2 rounded" />
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3.5">
-                    <div className="skeleton h-5 rounded-full w-16" />
+                    <div className="skeleton h-5 w-16 rounded-full" />
                   </td>
                   <td className="px-4 py-3.5">
-                    <div className="skeleton h-4 rounded w-20" />
+                    <div className="skeleton h-4 w-20 rounded" />
                   </td>
                   <td className="px-4 py-3.5">
                     <div className="flex flex-col gap-1">
-                      <div className="skeleton h-4 rounded w-20" />
-                      <div className="skeleton h-3 rounded w-14" />
+                      <div className="skeleton h-4 w-20 rounded" />
+                      <div className="skeleton h-3 w-14 rounded" />
                     </div>
                   </td>
                   <td className="px-4 py-3.5">
-                    <div className="skeleton h-4 rounded w-20" />
+                    <div className="skeleton h-4 w-20 rounded" />
                   </td>
                   <td className="px-4 py-3.5 text-right">
-                    <div className="skeleton h-7 w-16 rounded ml-auto" />
+                    <div className="skeleton ml-auto h-7 w-16 rounded" />
                   </td>
                 </tr>
               ))
             ) : items.length === 0 ? (
               <tr>
-                <td className="p-8" colSpan={7}>
+                <td
+                  className="p-8"
+                  colSpan={7}
+                >
                   <EmptyState
-                    icon={<Database className="text-primary" size={28} />}
+                    icon={
+                      <Database
+                        className="text-primary"
+                        size={28}
+                      />
+                    }
                     size="md"
                     action={
                       activeFilterCount > 0
@@ -254,7 +271,7 @@ export default function DatasetTable({
                 return (
                   <tr
                     key={d.id}
-                    className={`group transition-colors duration-150 cursor-pointer ${
+                    className={`group cursor-pointer transition-colors duration-150 ${
                       selected
                         ? "bg-primary/[0.08] hover:bg-primary/[0.12]"
                         : "hover:bg-surface-hover/70"
@@ -295,10 +312,10 @@ export default function DatasetTable({
                         >
                           <FIcon size={16} />
                         </div>
-                        <div className="min-w-0 max-w-sm lg:max-w-md">
-                          <div className="flex items-center gap-1.5 flex-wrap">
+                        <div className="max-w-sm min-w-0 lg:max-w-md">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             <button
-                              className="font-semibold text-text-primary text-sm truncate max-w-[18rem] text-left hover:text-primary transition-colors cursor-pointer"
+                              className="text-text-primary hover:text-primary max-w-[18rem] cursor-pointer truncate text-left text-sm font-semibold transition-colors"
                               title={d.name}
                               type="button"
                               onClick={(e) => {
@@ -308,35 +325,43 @@ export default function DatasetTable({
                             >
                               {d.name}
                             </button>
-                            {stored ? <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-info/10 text-info border border-info/20">
+                            {stored ? (
+                              <span className="bg-info/10 text-info border-info/20 inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[0.65rem] font-medium">
                                 <PackageOpen size={10} />
                                 Stored
-                              </span> : null}
-                            {vectorized ? <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium px-1.5 py-0.5 rounded-md bg-accent/10 text-accent border border-accent/20">
+                              </span>
+                            ) : null}
+                            {vectorized ? (
+                              <span className="bg-accent/10 text-accent border-accent/20 inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[0.65rem] font-medium">
                                 <Layers size={10} />
                                 Tiled
-                              </span> : null}
+                              </span>
+                            ) : null}
                           </div>
 
-                          {d.description ? <p className="text-xs text-text-tertiary truncate max-w-[22rem] mt-0.5">
+                          {d.description ? (
+                            <p className="text-text-tertiary mt-0.5 max-w-[22rem] truncate text-xs">
                               {d.description}
-                            </p> : null}
+                            </p>
+                          ) : null}
 
-                          {d.tags && d.tags.length > 0 ? <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                          {d.tags && d.tags.length > 0 ? (
+                            <div className="mt-1.5 flex flex-wrap items-center gap-1">
                               {d.tags.slice(0, 3).map((t) => (
                                 <span
                                   key={t}
-                                  className="text-[0.65rem] font-medium px-1.5 py-0.2 rounded bg-surface-hover text-text-secondary border border-border-secondary"
+                                  className="py-0.2 bg-surface-hover text-text-secondary border-border-secondary rounded border px-1.5 text-[0.65rem] font-medium"
                                 >
                                   #{t}
                                 </span>
                               ))}
                               {d.tags.length > 3 && (
-                                <span className="text-[0.65rem] text-text-tertiary">
+                                <span className="text-text-tertiary text-[0.65rem]">
                                   +{d.tags.length - 3}
                                 </span>
                               )}
-                            </div> : null}
+                            </div>
+                          ) : null}
                         </div>
                       </div>
                     </td>
@@ -344,7 +369,7 @@ export default function DatasetTable({
                     {/* Format Badge */}
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${colors.bg} ${colors.text} ${colors.border}`}
+                        className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${colors.bg} ${colors.text} ${colors.border}`}
                       >
                         {d.format}
                       </span>
@@ -353,17 +378,20 @@ export default function DatasetTable({
                     {/* Type & CRS */}
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       <div className="flex flex-col gap-1">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary">
-                          <TIcon className="text-text-tertiary" size={13} />
+                        <span className="text-text-primary inline-flex items-center gap-1.5 text-xs font-medium">
+                          <TIcon
+                            className="text-text-tertiary"
+                            size={13}
+                          />
                           {typeLabel(d.type)}
                         </span>
                         {d.crs ? (
-                          <span className="inline-flex items-center gap-1 text-[0.7rem] text-text-tertiary font-mono">
+                          <span className="text-text-tertiary inline-flex items-center gap-1 font-mono text-[0.7rem]">
                             <Globe2 size={11} />
                             {d.crs}
                           </span>
                         ) : (
-                          <span className="text-[0.7rem] text-text-tertiary">
+                          <span className="text-text-tertiary text-[0.7rem]">
                             Standard CRS
                           </span>
                         )}
@@ -373,11 +401,14 @@ export default function DatasetTable({
                     {/* Records & Size */}
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       <div className="flex flex-col gap-0.5">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-primary">
-                          <Hash className="text-text-tertiary" size={12} />
+                        <span className="text-text-primary inline-flex items-center gap-1.5 text-xs font-semibold">
+                          <Hash
+                            className="text-text-tertiary"
+                            size={12}
+                          />
                           {featureCountLabel(d)}
                         </span>
-                        <span className="text-[0.72rem] text-text-tertiary font-mono">
+                        <span className="text-text-tertiary font-mono text-[0.72rem]">
                           {formatBytes(d.file_size_bytes)}
                         </span>
                       </div>
@@ -385,9 +416,14 @@ export default function DatasetTable({
 
                     {/* Last Updated */}
                     <td className="px-4 py-3.5 whitespace-nowrap">
-                      <div className="inline-flex items-center gap-1.5 text-xs text-text-secondary">
-                        <Clock className="text-text-tertiary" size={12} />
-                        <span>{d.updated_at ? d.updated_at.slice(0, 10) : "-"}</span>
+                      <div className="text-text-secondary inline-flex items-center gap-1.5 text-xs">
+                        <Clock
+                          className="text-text-tertiary"
+                          size={12}
+                        />
+                        <span>
+                          {d.updated_at ? d.updated_at.slice(0, 10) : "-"}
+                        </span>
                       </div>
                     </td>
 
@@ -398,8 +434,11 @@ export default function DatasetTable({
                     >
                       <div className="inline-flex items-center justify-end gap-1">
                         {/* Quick action buttons */}
-                        <div className="hidden sm:flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                          <Tooltip content="Inspect dataset" placement="top">
+                        <div className="hidden items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100 sm:flex">
+                          <Tooltip
+                            content="Inspect dataset"
+                            placement="top"
+                          >
                             <IconButton
                               className="text-text-tertiary hover:text-primary hover:bg-surface-hover h-7 w-7"
                               icon={<Eye size={14} />}
@@ -410,7 +449,11 @@ export default function DatasetTable({
                             />
                           </Tooltip>
 
-                          {vectorized ? <Tooltip content="MVT Tile URL" placement="top">
+                          {vectorized ? (
+                            <Tooltip
+                              content="MVT Tile URL"
+                              placement="top"
+                            >
                               <IconButton
                                 className="text-text-tertiary hover:text-accent hover:bg-surface-hover h-7 w-7"
                                 icon={<MapPin size={14} />}
@@ -419,9 +462,13 @@ export default function DatasetTable({
                                 variant="ghost"
                                 onClick={() => onOpenTileUrl(d)}
                               />
-                            </Tooltip> : null}
+                            </Tooltip>
+                          ) : null}
 
-                          <Tooltip content="Download file" placement="top">
+                          <Tooltip
+                            content="Download file"
+                            placement="top"
+                          >
                             <IconButton
                               className="text-text-tertiary hover:text-primary hover:bg-surface-hover h-7 w-7"
                               icon={<Download size={14} />}
@@ -455,19 +502,19 @@ export default function DatasetTable({
 
       {/* Active-filter footer badge */}
       {activeFilterCount > 0 && !loading && items.length > 0 && (
-        <div className="flex items-center justify-between border-t border-border-secondary px-4 py-2.5 bg-surface-hover/30 text-xs text-text-secondary">
+        <div className="border-border-secondary bg-surface-hover/30 text-text-secondary flex items-center justify-between border-t px-4 py-2.5 text-xs">
           <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span className="bg-primary flex h-2 w-2 animate-pulse rounded-full" />
             <span>
               Filtered view:{" "}
-              <strong className="font-semibold text-text-primary">
+              <strong className="text-text-primary font-semibold">
                 {items.length}
               </strong>{" "}
               dataset{items.length === 1 ? "" : "s"} shown
             </span>
           </div>
           <button
-            className="inline-flex items-center gap-1 font-semibold text-error hover:text-error/80 transition-colors cursor-pointer"
+            className="text-error hover:text-error/80 inline-flex cursor-pointer items-center gap-1 font-semibold transition-colors"
             type="button"
             onClick={onClearFilters}
           >
@@ -478,4 +525,3 @@ export default function DatasetTable({
     </div>
   );
 }
-

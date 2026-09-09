@@ -1,15 +1,15 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { GeoJSON } from 'geojson';
-import type React from 'react';
+import type { GeoJSON } from "geojson";
+import type React from "react";
 
 export interface RoutingToolProps {
   /** Waypoints as [lng, lat] arrays */
   waypoints: [number, number][];
   /** Routing profile */
-  profile?: 'driving' | 'walking' | 'cycling';
+  profile?: "driving" | "walking" | "cycling";
   /** Routing service URL */
   serviceUrl?: string;
   /** Show turn-by-turn instructions */
@@ -53,27 +53,27 @@ export interface RouteInstruction {
 
 export const RoutingTool: React.FC<RoutingToolProps> = ({
   waypoints,
-  profile = 'driving',
-  serviceUrl = 'https://router.project-osrm.org/route/v1',
+  profile = "driving",
+  serviceUrl = "https://router.project-osrm.org/route/v1",
   showInstructions = true,
   _optimize = false,
   alternatives = 0,
   routeStyle = {
-    color: '#3b82f6',
+    color: "#3b82f6",
     width: 5,
-    alternativeColor: '#94a3b8'
+    alternativeColor: "#94a3b8",
   },
   onResult,
-  onError
+  onError,
 }) => {
   const { map, isLoaded } = useMap();
   const [_route, setRoute] = useState<RouteResult | null>(null);
   const [_loading, setLoading] = useState(false);
 
-  const sourceId = 'route-source';
-  const layerId = 'route-layer';
-  const altLayerId = 'route-alternatives-layer';
-  const waypointsLayerId = 'route-waypoints-layer';
+  const sourceId = "route-source";
+  const layerId = "route-layer";
+  const altLayerId = "route-alternatives-layer";
+  const waypointsLayerId = "route-waypoints-layer";
 
   const calculateRoute = useCallback(async () => {
     if (waypoints.length < 2) return;
@@ -82,13 +82,13 @@ export const RoutingTool: React.FC<RoutingToolProps> = ({
 
     try {
       // Format coordinates for OSRM
-      const coordinates = waypoints.map(wp => `${wp[0]},${wp[1]}`).join(';');
-      
+      const coordinates = waypoints.map((wp) => `${wp[0]},${wp[1]}`).join(";");
+
       const params = new URLSearchParams({
-        overview: 'full',
-        geometries: 'geojson',
-        steps: showInstructions ? 'true' : 'false',
-        alternatives: alternatives > 0 ? 'true' : 'false'
+        overview: "full",
+        geometries: "geojson",
+        steps: showInstructions ? "true" : "false",
+        alternatives: alternatives > 0 ? "true" : "false",
       });
 
       const url = `${serviceUrl}/${profile}/${coordinates}?${params}`;
@@ -100,22 +100,24 @@ export const RoutingTool: React.FC<RoutingToolProps> = ({
 
       const data = await response.json();
 
-      if (data.code !== 'Ok') {
-        throw new Error(data.message || 'Routing failed');
+      if (data.code !== "Ok") {
+        throw new Error(data.message || "Routing failed");
       }
 
       const primaryRoute = data.routes[0];
-      
+
       const result: RouteResult = {
         geometry: primaryRoute.geometry,
         distance: primaryRoute.distance,
         duration: primaryRoute.duration,
-        instructions: showInstructions ? parseInstructions(primaryRoute.legs) : undefined,
+        instructions: showInstructions
+          ? parseInstructions(primaryRoute.legs)
+          : undefined,
         alternatives: data.routes.slice(1).map((alt: any) => ({
           geometry: alt.geometry,
           distance: alt.distance,
-          duration: alt.duration
-        }))
+          duration: alt.duration,
+        })),
       };
 
       setRoute(result);
@@ -124,52 +126,54 @@ export const RoutingTool: React.FC<RoutingToolProps> = ({
       // Display on map
       if (map && isLoaded) {
         const routeData: GeoJSON.FeatureCollection = {
-          type: 'FeatureCollection',
+          type: "FeatureCollection",
           features: [
             // Alternatives first (rendered below)
-            ...result.alternatives?.map((alt, i) => ({
-              type: 'Feature' as const,
-              properties: { type: 'alternative', index: i },
-              geometry: alt.geometry
-            })) || [],
+            ...(result.alternatives?.map((alt, i) => ({
+              type: "Feature" as const,
+              properties: { type: "alternative", index: i },
+              geometry: alt.geometry,
+            })) || []),
             // Primary route
             {
-              type: 'Feature' as const,
-              properties: { type: 'primary' },
-              geometry: result.geometry
+              type: "Feature" as const,
+              properties: { type: "primary" },
+              geometry: result.geometry,
             },
             // Waypoints
             ...waypoints.map((wp, i) => ({
-              type: 'Feature' as const,
-              properties: { 
-                type: 'waypoint',
+              type: "Feature" as const,
+              properties: {
+                type: "waypoint",
                 index: i,
                 isStart: i === 0,
-                isEnd: i === waypoints.length - 1
+                isEnd: i === waypoints.length - 1,
               },
-              geometry: { type: 'Point' as const, coordinates: wp }
-            }))
-          ]
+              geometry: { type: "Point" as const, coordinates: wp },
+            })),
+          ],
         };
 
         if (!map.getSource(sourceId)) {
-          map.addSource(sourceId, { type: 'geojson', data: routeData });
+          map.addSource(sourceId, { type: "geojson", data: routeData });
         } else {
-          (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(routeData);
+          (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(
+            routeData
+          );
         }
 
         // Alternative routes layer
         if (!map.getLayer(altLayerId)) {
           map.addLayer({
             id: altLayerId,
-            type: 'line',
+            type: "line",
             source: sourceId,
-            filter: ['==', ['get', 'type'], 'alternative'],
+            filter: ["==", ["get", "type"], "alternative"],
             paint: {
-              'line-color': routeStyle.alternativeColor,
-              'line-width': routeStyle.width! - 1,
-              'line-opacity': 0.6
-            }
+              "line-color": routeStyle.alternativeColor,
+              "line-width": routeStyle.width! - 1,
+              "line-opacity": 0.6,
+            },
           });
         }
 
@@ -177,13 +181,13 @@ export const RoutingTool: React.FC<RoutingToolProps> = ({
         if (!map.getLayer(layerId)) {
           map.addLayer({
             id: layerId,
-            type: 'line',
+            type: "line",
             source: sourceId,
-            filter: ['==', ['get', 'type'], 'primary'],
+            filter: ["==", ["get", "type"], "primary"],
             paint: {
-              'line-color': routeStyle.color,
-              'line-width': routeStyle.width
-            }
+              "line-color": routeStyle.color,
+              "line-width": routeStyle.width,
+            },
           });
         }
 
@@ -191,25 +195,27 @@ export const RoutingTool: React.FC<RoutingToolProps> = ({
         if (!map.getLayer(waypointsLayerId)) {
           map.addLayer({
             id: waypointsLayerId,
-            type: 'circle',
+            type: "circle",
             source: sourceId,
-            filter: ['==', ['get', 'type'], 'waypoint'],
+            filter: ["==", ["get", "type"], "waypoint"],
             paint: {
-              'circle-radius': [
-                'case',
-                ['any', ['get', 'isStart'], ['get', 'isEnd']],
+              "circle-radius": [
+                "case",
+                ["any", ["get", "isStart"], ["get", "isEnd"]],
                 8,
-                6
+                6,
               ],
-              'circle-color': [
-                'case',
-                ['get', 'isStart'], '#22c55e',
-                ['get', 'isEnd'], '#ef4444',
-                '#ffffff'
+              "circle-color": [
+                "case",
+                ["get", "isStart"],
+                "#22c55e",
+                ["get", "isEnd"],
+                "#ef4444",
+                "#ffffff",
               ],
-              'circle-stroke-color': '#1f2937',
-              'circle-stroke-width': 2
-            }
+              "circle-stroke-color": "#1f2937",
+              "circle-stroke-width": 2,
+            },
           });
         }
 
@@ -226,7 +232,15 @@ export const RoutingTool: React.FC<RoutingToolProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [waypoints, profile, serviceUrl, showInstructions, alternatives, map, isLoaded]);
+  }, [
+    waypoints,
+    profile,
+    serviceUrl,
+    showInstructions,
+    alternatives,
+    map,
+    isLoaded,
+  ]);
 
   useEffect(() => {
     calculateRoute();
@@ -249,16 +263,16 @@ export const RoutingTool: React.FC<RoutingToolProps> = ({
 
 function parseInstructions(legs: any[]): RouteInstruction[] {
   const instructions: RouteInstruction[] = [];
-  
-  legs.forEach(leg => {
+
+  legs.forEach((leg) => {
     leg.steps?.forEach((step: any) => {
       instructions.push({
-        text: step.maneuver?.instruction || '',
+        text: step.maneuver?.instruction || "",
         distance: step.distance,
         duration: step.duration,
-        type: step.maneuver?.type || '',
+        type: step.maneuver?.type || "",
         modifier: step.maneuver?.modifier,
-        coordinates: step.maneuver?.location
+        coordinates: step.maneuver?.location,
       });
     });
   });

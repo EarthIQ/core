@@ -167,19 +167,23 @@ export const Stepper = ({
                     >
                       {step.title}
                     </h4>
-                    {step.optional ? <span
+                    {step.optional ? (
+                      <span
                         className="text-xs"
                         style={{ color: "var(--text-tertiary)" }}
                       >
                         (Optional)
-                      </span> : null}
+                      </span>
+                    ) : null}
                   </div>
-                  {step.description ? <p
+                  {step.description ? (
+                    <p
                       className={cn("mt-0.5", config.description)}
                       style={{ color: "var(--text-secondary)" }}
                     >
                       {step.description}
-                    </p> : null}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -256,19 +260,23 @@ export const Stepper = ({
                   >
                     {step.title}
                   </h4>
-                  {step.optional ? <span
+                  {step.optional ? (
+                    <span
                       className="text-xs"
                       style={{ color: "var(--text-tertiary)" }}
                     >
                       (Optional)
-                    </span> : null}
+                    </span>
+                  ) : null}
                 </div>
-                {step.description ? <p
+                {step.description ? (
+                  <p
                     className={cn("mt-0.5", config.description)}
                     style={{ color: "var(--text-secondary)" }}
                   >
                     {step.description}
-                  </p> : null}
+                  </p>
+                ) : null}
               </div>
             </div>
 
@@ -290,4 +298,4 @@ export const Stepper = ({
       })}
     </div>
   );
-}
+};

@@ -104,18 +104,22 @@ const SwitchLabel = ({ label, description }: SwitchLabelProps) => {
 
   return (
     <div className="flex flex-col gap-0.5">
-      {label ? <span
+      {label ? (
+        <span
           className="text-sm leading-none font-medium"
           style={{ color: "var(--text-primary)" }}
         >
           {label}
-        </span> : null}
-      {description ? <span
+        </span>
+      ) : null}
+      {description ? (
+        <span
           className="text-xs leading-tight"
           style={{ color: "var(--text-tertiary)" }}
         >
           {description}
-        </span> : null}
+        </span>
+      ) : null}
     </div>
   );
 };

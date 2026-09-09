@@ -1,9 +1,9 @@
-import { useEffect, useState, useCallback, useRef as _useRef } from 'react';
+import { useEffect, useState, useCallback, useRef as _useRef } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { GeoJSON } from 'geojson';
-import type React from 'react';
+import type { GeoJSON } from "geojson";
+import type React from "react";
 
 export interface EditInteractionProps {
   /** Feature to edit */
@@ -51,32 +51,39 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
   deleteVertex = true,
   addVertex = true,
   style = {
-    vertexColor: '#3b82f6',
+    vertexColor: "#3b82f6",
     vertexRadius: 6,
-    midpointColor: '#93c5fd',
+    midpointColor: "#93c5fd",
     midpointRadius: 4,
-    lineColor: '#3b82f6',
+    lineColor: "#3b82f6",
     lineWidth: 2,
-    fillColor: '#3b82f6',
-    fillOpacity: 0.2
+    fillColor: "#3b82f6",
+    fillOpacity: 0.2,
   },
   snap = false,
   snapTolerance = 10,
-  snapLayers = []
+  snapLayers = [],
 }) => {
   const { map, isLoaded } = useMap();
-  const [editedFeature, setEditedFeature] = useState<GeoJSON.Feature | null>(null);
-  const [selectedVertexIndex, setSelectedVertexIndex] = useState<number[] | null>(null);
+  const [editedFeature, setEditedFeature] = useState<GeoJSON.Feature | null>(
+    null
+  );
+  const [selectedVertexIndex, setSelectedVertexIndex] = useState<
+    number[] | null
+  >(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [_dragOffset, _setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [_dragOffset, _setDragOffset] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [hoveredVertex, setHoveredVertex] = useState<number[] | null>(null);
   const [hoveredMidpoint, setHoveredMidpoint] = useState<number[] | null>(null);
 
-  const sourceId = 'edit-interaction-source';
-  const vertexLayerId = 'edit-interaction-vertices';
-  const midpointLayerId = 'edit-interaction-midpoints';
-  const lineLayerId = 'edit-interaction-line';
-  const fillLayerId = 'edit-interaction-fill';
+  const sourceId = "edit-interaction-source";
+  const vertexLayerId = "edit-interaction-vertices";
+  const midpointLayerId = "edit-interaction-midpoints";
+  const lineLayerId = "edit-interaction-line";
+  const fillLayerId = "edit-interaction-fill";
 
   // Initialize edit layers
   useEffect(() => {
@@ -84,8 +91,8 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
 
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] }
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
       });
     }
 
@@ -93,13 +100,13 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
     if (!map.getLayer(fillLayerId)) {
       map.addLayer({
         id: fillLayerId,
-        type: 'fill',
+        type: "fill",
         source: sourceId,
-        filter: ['==', '$type', 'Polygon'],
+        filter: ["==", "$type", "Polygon"],
         paint: {
-          'fill-color': style.fillColor,
-          'fill-opacity': style.fillOpacity
-        }
+          "fill-color": style.fillColor,
+          "fill-opacity": style.fillOpacity,
+        },
       });
     }
 
@@ -107,13 +114,17 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
     if (!map.getLayer(lineLayerId)) {
       map.addLayer({
         id: lineLayerId,
-        type: 'line',
+        type: "line",
         source: sourceId,
-        filter: ['any', ['==', '$type', 'LineString'], ['==', '$type', 'Polygon']],
+        filter: [
+          "any",
+          ["==", "$type", "LineString"],
+          ["==", "$type", "Polygon"],
+        ],
         paint: {
-          'line-color': style.lineColor,
-          'line-width': style.lineWidth
-        }
+          "line-color": style.lineColor,
+          "line-width": style.lineWidth,
+        },
       });
     }
 
@@ -121,15 +132,15 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
     if (addVertex && !map.getLayer(midpointLayerId)) {
       map.addLayer({
         id: midpointLayerId,
-        type: 'circle',
+        type: "circle",
         source: sourceId,
-        filter: ['==', ['get', 'type'], 'midpoint'],
+        filter: ["==", ["get", "type"], "midpoint"],
         paint: {
-          'circle-color': style.midpointColor,
-          'circle-radius': style.midpointRadius,
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-width': 1
-        }
+          "circle-color": style.midpointColor,
+          "circle-radius": style.midpointRadius,
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 1,
+        },
       });
     }
 
@@ -137,27 +148,27 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
     if (!map.getLayer(vertexLayerId)) {
       map.addLayer({
         id: vertexLayerId,
-        type: 'circle',
+        type: "circle",
         source: sourceId,
-        filter: ['==', ['get', 'type'], 'vertex'],
+        filter: ["==", ["get", "type"], "vertex"],
         paint: {
-          'circle-color': [
-            'case',
-            ['boolean', ['get', 'selected'], false],
-            '#ef4444',
-            ['boolean', ['get', 'hovered'], false],
-            '#60a5fa',
-            style.vertexColor
+          "circle-color": [
+            "case",
+            ["boolean", ["get", "selected"], false],
+            "#ef4444",
+            ["boolean", ["get", "hovered"], false],
+            "#60a5fa",
+            style.vertexColor,
           ],
-          'circle-radius': [
-            'case',
-            ['boolean', ['get', 'selected'], false],
+          "circle-radius": [
+            "case",
+            ["boolean", ["get", "selected"], false],
             style.vertexRadius! + 2,
-            style.vertexRadius
+            style.vertexRadius,
           ],
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-width': 2
-        }
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 2,
+        },
       });
     }
 
@@ -186,61 +197,74 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
 
     const features: GeoJSON.Feature[] = [editedFeature];
     const vertices = getVertices(editedFeature.geometry);
-    
+
     // Add vertex points
     vertices.forEach((vertex, _index) => {
       features.push({
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: vertex.coords },
+        type: "Feature",
+        geometry: { type: "Point", coordinates: vertex.coords },
         properties: {
-          type: 'vertex',
+          type: "vertex",
           index: vertex.index,
-          selected: selectedVertexIndex && arraysEqual(vertex.index, selectedVertexIndex),
-          hovered: hoveredVertex && arraysEqual(vertex.index, hoveredVertex)
-        }
+          selected:
+            selectedVertexIndex &&
+            arraysEqual(vertex.index, selectedVertexIndex),
+          hovered: hoveredVertex && arraysEqual(vertex.index, hoveredVertex),
+        },
       });
     });
 
     // Add midpoints
     if (addVertex) {
       const midpoints = getMidpoints(editedFeature.geometry);
-      midpoints.forEach(midpoint => {
+      midpoints.forEach((midpoint) => {
         features.push({
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: midpoint.coords },
+          type: "Feature",
+          geometry: { type: "Point", coordinates: midpoint.coords },
           properties: {
-            type: 'midpoint',
+            type: "midpoint",
             index: midpoint.index,
-            hovered: hoveredMidpoint && arraysEqual(midpoint.index, hoveredMidpoint)
-          }
+            hovered:
+              hoveredMidpoint && arraysEqual(midpoint.index, hoveredMidpoint),
+          },
         });
       });
     }
 
     const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
     if (source) {
-      source.setData({ type: 'FeatureCollection', features });
+      source.setData({ type: "FeatureCollection", features });
     }
-  }, [map, isLoaded, editedFeature, selectedVertexIndex, hoveredVertex, hoveredMidpoint, addVertex]);
+  }, [
+    map,
+    isLoaded,
+    editedFeature,
+    selectedVertexIndex,
+    hoveredVertex,
+    hoveredMidpoint,
+    addVertex,
+  ]);
 
   useEffect(() => {
     updatePreview();
   }, [updatePreview]);
 
   // Get vertices from geometry
-  const getVertices = (geometry: GeoJSON.Geometry): { coords: number[]; index: number[] }[] => {
+  const getVertices = (
+    geometry: GeoJSON.Geometry
+  ): { coords: number[]; index: number[] }[] => {
     const vertices: { coords: number[]; index: number[] }[] = [];
 
     switch (geometry.type) {
-      case 'Point':
+      case "Point":
         vertices.push({ coords: geometry.coordinates, index: [0] });
         break;
-      case 'LineString':
+      case "LineString":
         (geometry.coordinates as number[][]).forEach((coord, i) => {
           vertices.push({ coords: coord, index: [i] });
         });
         break;
-      case 'Polygon':
+      case "Polygon":
         (geometry.coordinates as number[][][]).forEach((ring, ringIndex) => {
           ring.forEach((coord, coordIndex) => {
             // Skip the closing coordinate
@@ -250,28 +274,33 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
           });
         });
         break;
-      case 'MultiPoint':
+      case "MultiPoint":
         (geometry.coordinates as number[][]).forEach((coord, i) => {
           vertices.push({ coords: coord, index: [i] });
         });
         break;
-      case 'MultiLineString':
+      case "MultiLineString":
         (geometry.coordinates as number[][][]).forEach((line, lineIndex) => {
           line.forEach((coord, coordIndex) => {
             vertices.push({ coords: coord, index: [lineIndex, coordIndex] });
           });
         });
         break;
-      case 'MultiPolygon':
-        (geometry.coordinates as number[][][][]).forEach((polygon, polyIndex) => {
-          polygon.forEach((ring, ringIndex) => {
-            ring.forEach((coord, coordIndex) => {
-              if (coordIndex < ring.length - 1) {
-                vertices.push({ coords: coord, index: [polyIndex, ringIndex, coordIndex] });
-              }
+      case "MultiPolygon":
+        (geometry.coordinates as number[][][][]).forEach(
+          (polygon, polyIndex) => {
+            polygon.forEach((ring, ringIndex) => {
+              ring.forEach((coord, coordIndex) => {
+                if (coordIndex < ring.length - 1) {
+                  vertices.push({
+                    coords: coord,
+                    index: [polyIndex, ringIndex, coordIndex],
+                  });
+                }
+              });
             });
-          });
-        });
+          }
+        );
         break;
     }
 
@@ -279,7 +308,9 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
   };
 
   // Get midpoints between vertices
-  const getMidpoints = (geometry: GeoJSON.Geometry): { coords: number[]; index: number[] }[] => {
+  const getMidpoints = (
+    geometry: GeoJSON.Geometry
+  ): { coords: number[]; index: number[] }[] => {
     const midpoints: { coords: number[]; index: number[] }[] = [];
 
     const addMidpoints = (coords: number[][], indexPrefix: number[] = []) => {
@@ -287,18 +318,18 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
         midpoints.push({
           coords: [
             (coords[i][0] + coords[i + 1][0]) / 2,
-            (coords[i][1] + coords[i + 1][1]) / 2
+            (coords[i][1] + coords[i + 1][1]) / 2,
           ],
-          index: [...indexPrefix, i]
+          index: [...indexPrefix, i],
         });
       }
     };
 
     switch (geometry.type) {
-      case 'LineString':
+      case "LineString":
         addMidpoints(geometry.coordinates);
         break;
-      case 'Polygon':
+      case "Polygon":
         (geometry.coordinates as number[][][]).forEach((ring, ringIndex) => {
           addMidpoints(ring, [ringIndex]);
         });
@@ -309,166 +340,205 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
   };
 
   // Update vertex position
-  const updateVertex = useCallback((index: number[], newCoords: number[]) => {
-    if (!editedFeature) return;
+  const updateVertex = useCallback(
+    (index: number[], newCoords: number[]) => {
+      if (!editedFeature) return;
 
-    const updated = JSON.parse(JSON.stringify(editedFeature));
-    let coords = updated.geometry.coordinates;
+      const updated = JSON.parse(JSON.stringify(editedFeature));
+      let coords = updated.geometry.coordinates;
 
-    // Navigate to the right position in the coordinates array
-    for (let i = 0; i < index.length - 1; i++) {
-      coords = coords[index[i]];
-    }
-
-    coords[index[index.length - 1]] = newCoords;
-
-    // For polygons, update closing coordinate if first vertex changed
-    if (updated.geometry.type === 'Polygon' || updated.geometry.type === 'MultiPolygon') {
-      const lastIdx = index[index.length - 1];
-      const ring = updated.geometry.type === 'Polygon' 
-        ? updated.geometry.coordinates[index[0]]
-        : updated.geometry.coordinates[index[0]][index[1]];
-      
-      if (lastIdx === 0) {
-        ring[ring.length - 1] = [...newCoords];
+      // Navigate to the right position in the coordinates array
+      for (let i = 0; i < index.length - 1; i++) {
+        coords = coords[index[i]];
       }
-    }
 
-    setEditedFeature(updated);
-    onEdit?.(updated);
-  }, [editedFeature, onEdit]);
+      coords[index[index.length - 1]] = newCoords;
 
-  // Add vertex at midpoint
-  const addVertexAtMidpoint = useCallback((index: number[]) => {
-    if (!editedFeature) return;
+      // For polygons, update closing coordinate if first vertex changed
+      if (
+        updated.geometry.type === "Polygon" ||
+        updated.geometry.type === "MultiPolygon"
+      ) {
+        const lastIdx = index[index.length - 1];
+        const ring =
+          updated.geometry.type === "Polygon"
+            ? updated.geometry.coordinates[index[0]]
+            : updated.geometry.coordinates[index[0]][index[1]];
 
-    const updated = JSON.parse(JSON.stringify(editedFeature));
-    let coords = updated.geometry.coordinates;
-
-    // Navigate to the right ring/line
-    for (let i = 0; i < index.length - 1; i++) {
-      coords = coords[index[i]];
-    }
-
-    const insertIndex = index[index.length - 1] + 1;
-    const midpoint = [
-      (coords[insertIndex - 1][0] + coords[insertIndex][0]) / 2,
-      (coords[insertIndex - 1][1] + coords[insertIndex][1]) / 2
-    ];
-
-    coords.splice(insertIndex, 0, midpoint);
-
-    setEditedFeature(updated);
-    onEdit?.(updated);
-  }, [editedFeature, onEdit]);
-
-  // Delete vertex
-  const removeVertex = useCallback((index: number[]) => {
-    if (!editedFeature) return;
-
-    const updated = JSON.parse(JSON.stringify(editedFeature));
-    let coords = updated.geometry.coordinates;
-
-    // Check minimum vertices
-    const minVertices = updated.geometry.type === 'Polygon' ? 4 : 2;
-    
-    // Navigate to the right ring/line
-    for (let i = 0; i < index.length - 1; i++) {
-      coords = coords[index[i]];
-    }
-
-    if (coords.length <= minVertices) return;
-
-    const deleteIndex = index[index.length - 1];
-    coords.splice(deleteIndex, 1);
-
-    // Update closing coordinate for polygons
-    if (updated.geometry.type === 'Polygon' && deleteIndex === 0) {
-      coords[coords.length - 1] = [...coords[0]];
-    }
-
-    setEditedFeature(updated);
-    setSelectedVertexIndex(null);
-    onEdit?.(updated);
-  }, [editedFeature, onEdit]);
-
-  // Handle mouse down on vertex
-  const handleVertexMouseDown = useCallback((e: any) => {
-    if (!vertexEdit || !editedFeature) return;
-
-    const features = map?.queryRenderedFeatures(e.point, { layers: [vertexLayerId] });
-    
-    if (features && features.length > 0) {
-      const vertexIndex = features[0].properties?.index;
-      if (vertexIndex) {
-        const index = JSON.parse(vertexIndex);
-        setSelectedVertexIndex(index);
-        setIsDragging(true);
-        map?.dragPan.disable();
-        e.preventDefault();
-      }
-    }
-  }, [map, vertexEdit, editedFeature]);
-
-  // Handle mouse move for dragging
-  const handleMouseMove = useCallback((e: any) => {
-    if (!editedFeature || !map) return;
-
-    // Check hover on vertices
-    const vertexFeatures = map.queryRenderedFeatures(e.point, { layers: [vertexLayerId] });
-    if (vertexFeatures && vertexFeatures.length > 0) {
-      const index = JSON.parse(vertexFeatures[0].properties?.index || '[]');
-      setHoveredVertex(index);
-      map.getCanvas().style.cursor = 'move';
-    } else {
-      setHoveredVertex(null);
-      
-      // Check hover on midpoints
-      if (addVertex) {
-        const midpointFeatures = map.queryRenderedFeatures(e.point, { layers: [midpointLayerId] });
-        if (midpointFeatures && midpointFeatures.length > 0) {
-          const index = JSON.parse(midpointFeatures[0].properties?.index || '[]');
-          setHoveredMidpoint(index);
-          map.getCanvas().style.cursor = 'copy';
-        } else {
-          setHoveredMidpoint(null);
-          map.getCanvas().style.cursor = dragEnabled ? 'grab' : '';
+        if (lastIdx === 0) {
+          ring[ring.length - 1] = [...newCoords];
         }
       }
-    }
 
-    // Handle vertex dragging
-    if (isDragging && selectedVertexIndex) {
-      let newCoords = [e.lngLat.lng, e.lngLat.lat];
-      
-      // Apply snapping
-      if (snap && snapLayers.length > 0) {
-        newCoords = snapToFeatures(newCoords, e.point);
+      setEditedFeature(updated);
+      onEdit?.(updated);
+    },
+    [editedFeature, onEdit]
+  );
+
+  // Add vertex at midpoint
+  const addVertexAtMidpoint = useCallback(
+    (index: number[]) => {
+      if (!editedFeature) return;
+
+      const updated = JSON.parse(JSON.stringify(editedFeature));
+      let coords = updated.geometry.coordinates;
+
+      // Navigate to the right ring/line
+      for (let i = 0; i < index.length - 1; i++) {
+        coords = coords[index[i]];
       }
 
-      updateVertex(selectedVertexIndex, newCoords);
-    }
-  }, [map, editedFeature, isDragging, selectedVertexIndex, addVertex, dragEnabled, snap, snapLayers, updateVertex]);
+      const insertIndex = index[index.length - 1] + 1;
+      const midpoint = [
+        (coords[insertIndex - 1][0] + coords[insertIndex][0]) / 2,
+        (coords[insertIndex - 1][1] + coords[insertIndex][1]) / 2,
+      ];
 
-  const snapToFeatures = (coords: number[], point: { x: number; y: number }): number[] => {
+      coords.splice(insertIndex, 0, midpoint);
+
+      setEditedFeature(updated);
+      onEdit?.(updated);
+    },
+    [editedFeature, onEdit]
+  );
+
+  // Delete vertex
+  const removeVertex = useCallback(
+    (index: number[]) => {
+      if (!editedFeature) return;
+
+      const updated = JSON.parse(JSON.stringify(editedFeature));
+      let coords = updated.geometry.coordinates;
+
+      // Check minimum vertices
+      const minVertices = updated.geometry.type === "Polygon" ? 4 : 2;
+
+      // Navigate to the right ring/line
+      for (let i = 0; i < index.length - 1; i++) {
+        coords = coords[index[i]];
+      }
+
+      if (coords.length <= minVertices) return;
+
+      const deleteIndex = index[index.length - 1];
+      coords.splice(deleteIndex, 1);
+
+      // Update closing coordinate for polygons
+      if (updated.geometry.type === "Polygon" && deleteIndex === 0) {
+        coords[coords.length - 1] = [...coords[0]];
+      }
+
+      setEditedFeature(updated);
+      setSelectedVertexIndex(null);
+      onEdit?.(updated);
+    },
+    [editedFeature, onEdit]
+  );
+
+  // Handle mouse down on vertex
+  const handleVertexMouseDown = useCallback(
+    (e: any) => {
+      if (!vertexEdit || !editedFeature) return;
+
+      const features = map?.queryRenderedFeatures(e.point, {
+        layers: [vertexLayerId],
+      });
+
+      if (features && features.length > 0) {
+        const vertexIndex = features[0].properties?.index;
+        if (vertexIndex) {
+          const index = JSON.parse(vertexIndex);
+          setSelectedVertexIndex(index);
+          setIsDragging(true);
+          map?.dragPan.disable();
+          e.preventDefault();
+        }
+      }
+    },
+    [map, vertexEdit, editedFeature]
+  );
+
+  // Handle mouse move for dragging
+  const handleMouseMove = useCallback(
+    (e: any) => {
+      if (!editedFeature || !map) return;
+
+      // Check hover on vertices
+      const vertexFeatures = map.queryRenderedFeatures(e.point, {
+        layers: [vertexLayerId],
+      });
+      if (vertexFeatures && vertexFeatures.length > 0) {
+        const index = JSON.parse(vertexFeatures[0].properties?.index || "[]");
+        setHoveredVertex(index);
+        map.getCanvas().style.cursor = "move";
+      } else {
+        setHoveredVertex(null);
+
+        // Check hover on midpoints
+        if (addVertex) {
+          const midpointFeatures = map.queryRenderedFeatures(e.point, {
+            layers: [midpointLayerId],
+          });
+          if (midpointFeatures && midpointFeatures.length > 0) {
+            const index = JSON.parse(
+              midpointFeatures[0].properties?.index || "[]"
+            );
+            setHoveredMidpoint(index);
+            map.getCanvas().style.cursor = "copy";
+          } else {
+            setHoveredMidpoint(null);
+            map.getCanvas().style.cursor = dragEnabled ? "grab" : "";
+          }
+        }
+      }
+
+      // Handle vertex dragging
+      if (isDragging && selectedVertexIndex) {
+        let newCoords = [e.lngLat.lng, e.lngLat.lat];
+
+        // Apply snapping
+        if (snap && snapLayers.length > 0) {
+          newCoords = snapToFeatures(newCoords, e.point);
+        }
+
+        updateVertex(selectedVertexIndex, newCoords);
+      }
+    },
+    [
+      map,
+      editedFeature,
+      isDragging,
+      selectedVertexIndex,
+      addVertex,
+      dragEnabled,
+      snap,
+      snapLayers,
+      updateVertex,
+    ]
+  );
+
+  const snapToFeatures = (
+    coords: number[],
+    point: { x: number; y: number }
+  ): number[] => {
     if (!map) return coords;
 
     const bbox: [[number, number], [number, number]] = [
       [point.x - snapTolerance, point.y - snapTolerance],
-      [point.x + snapTolerance, point.y + snapTolerance]
+      [point.x + snapTolerance, point.y + snapTolerance],
     ];
 
     const features = map.queryRenderedFeatures(bbox, { layers: snapLayers });
-    
+
     let closestPoint = coords;
     let closestDistance = Infinity;
 
-    features.forEach(feature => {
+    features.forEach((feature) => {
       const featureCoords = getCoordinatesFromGeometry(feature.geometry);
-      featureCoords.forEach(coord => {
+      featureCoords.forEach((coord) => {
         const d = Math.sqrt(
-          Math.pow(coords[0] - coord[0], 2) + 
-          Math.pow(coords[1] - coord[1], 2)
+          Math.pow(coords[0] - coord[0], 2) + Math.pow(coords[1] - coord[1], 2)
         );
         if (d < closestDistance) {
           closestDistance = d;
@@ -489,64 +559,94 @@ export const EditInteraction: React.FC<EditInteractionProps> = ({
   }, [map, isDragging]);
 
   // Handle click on midpoint
-  const handleMidpointClick = useCallback((e: any) => {
-    if (!addVertex) return;
+  const handleMidpointClick = useCallback(
+    (e: any) => {
+      if (!addVertex) return;
 
-    const features = map?.queryRenderedFeatures(e.point, { layers: [midpointLayerId] });
-    
-    if (features && features.length > 0) {
-      const index = JSON.parse(features[0].properties?.index || '[]');
-      addVertexAtMidpoint(index);
-    }
-  }, [map, addVertex, addVertexAtMidpoint]);
+      const features = map?.queryRenderedFeatures(e.point, {
+        layers: [midpointLayerId],
+      });
+
+      if (features && features.length > 0) {
+        const index = JSON.parse(features[0].properties?.index || "[]");
+        addVertexAtMidpoint(index);
+      }
+    },
+    [map, addVertex, addVertexAtMidpoint]
+  );
 
   // Handle vertex right-click (delete)
-  const handleContextMenu = useCallback((e: any) => {
-    if (!deleteVertex) return;
+  const handleContextMenu = useCallback(
+    (e: any) => {
+      if (!deleteVertex) return;
 
-    const features = map?.queryRenderedFeatures(e.point, { layers: [vertexLayerId] });
-    
-    if (features && features.length > 0) {
-      e.preventDefault();
-      const index = JSON.parse(features[0].properties?.index || '[]');
-      removeVertex(index);
-    }
-  }, [map, deleteVertex, removeVertex]);
+      const features = map?.queryRenderedFeatures(e.point, {
+        layers: [vertexLayerId],
+      });
+
+      if (features && features.length > 0) {
+        e.preventDefault();
+        const index = JSON.parse(features[0].properties?.index || "[]");
+        removeVertex(index);
+      }
+    },
+    [map, deleteVertex, removeVertex]
+  );
 
   // Handle keyboard shortcuts
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      onCancel?.();
-    } else if (e.key === 'Enter' && editedFeature) {
-      onComplete?.(editedFeature);
-    } else if (e.key === 'Delete' && selectedVertexIndex && deleteVertex) {
-      removeVertex(selectedVertexIndex);
-    }
-  }, [editedFeature, selectedVertexIndex, deleteVertex, onComplete, onCancel, removeVertex]);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onCancel?.();
+      } else if (e.key === "Enter" && editedFeature) {
+        onComplete?.(editedFeature);
+      } else if (e.key === "Delete" && selectedVertexIndex && deleteVertex) {
+        removeVertex(selectedVertexIndex);
+      }
+    },
+    [
+      editedFeature,
+      selectedVertexIndex,
+      deleteVertex,
+      onComplete,
+      onCancel,
+      removeVertex,
+    ]
+  );
 
   // Setup event listeners
   useEffect(() => {
     if (!map || !isLoaded || !editedFeature) return;
 
-    map.on('mousedown', handleVertexMouseDown);
-    map.on('mousemove', handleMouseMove);
-    map.on('mouseup', handleMouseUp);
-    map.on('click', handleMidpointClick);
-    map.on('contextmenu', handleContextMenu);
-    document.addEventListener('keydown', handleKeyDown);
+    map.on("mousedown", handleVertexMouseDown);
+    map.on("mousemove", handleMouseMove);
+    map.on("mouseup", handleMouseUp);
+    map.on("click", handleMidpointClick);
+    map.on("contextmenu", handleContextMenu);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      map.off('mousedown', handleVertexMouseDown);
-      map.off('mousemove', handleMouseMove);
-      map.off('mouseup', handleMouseUp);
-      map.off('click', handleMidpointClick);
-      map.off('contextmenu', handleContextMenu);
-      document.removeEventListener('keydown', handleKeyDown);
-      
-      map.getCanvas().style.cursor = '';
+      map.off("mousedown", handleVertexMouseDown);
+      map.off("mousemove", handleMouseMove);
+      map.off("mouseup", handleMouseUp);
+      map.off("click", handleMidpointClick);
+      map.off("contextmenu", handleContextMenu);
+      document.removeEventListener("keydown", handleKeyDown);
+
+      map.getCanvas().style.cursor = "";
       map.dragPan.enable();
     };
-  }, [map, isLoaded, editedFeature, handleVertexMouseDown, handleMouseMove, handleMouseUp, handleMidpointClick, handleContextMenu, handleKeyDown]);
+  }, [
+    map,
+    isLoaded,
+    editedFeature,
+    handleVertexMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleMidpointClick,
+    handleContextMenu,
+    handleKeyDown,
+  ]);
 
   return null;
 };
@@ -558,15 +658,15 @@ function arraysEqual(a: number[], b: number[]): boolean {
 
 function getCoordinatesFromGeometry(geometry: GeoJSON.Geometry): number[][] {
   switch (geometry.type) {
-    case 'Point':
+    case "Point":
       return [geometry.coordinates];
-    case 'LineString':
-    case 'MultiPoint':
+    case "LineString":
+    case "MultiPoint":
       return geometry.coordinates;
-    case 'Polygon':
-    case 'MultiLineString':
+    case "Polygon":
+    case "MultiLineString":
       return (geometry.coordinates as number[][][]).flat();
-    case 'MultiPolygon':
+    case "MultiPolygon":
       return (geometry.coordinates as number[][][][]).flat(2);
     default:
       return [];

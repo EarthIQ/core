@@ -69,8 +69,8 @@ export const MapNavbar = ({
   const commentsOpen = useMapEditor((s) => s.commentsOpen);
   const setCommentsOpen = useMapEditor((s) => s.setCommentsOpen);
   const setCommentPlacement = useMapEditor((s) => s.setCommentPlacement);
-  const openCommentCount = useMapEditor(
-    (s) => s.comments.reduce((n, c) => n + (c.resolved ? 0 : 1), 0),
+  const openCommentCount = useMapEditor((s) =>
+    s.comments.reduce((n, c) => n + (c.resolved ? 0 : 1), 0)
   );
 
   useEffect(() => {
@@ -105,10 +105,13 @@ export const MapNavbar = ({
 
   return (
     <>
-      <header className="absolute top-0 left-0 right-0 z-30 h-14 bg-elevated border-b border-border-primary flex items-center justify-between px-4">
+      <header className="bg-elevated border-border-primary absolute top-0 right-0 left-0 z-30 flex h-14 items-center justify-between border-b px-4">
         {/* Left: back + map switcher (unchanged) */}
         <div className="flex items-center gap-3">
-          <Tooltip content="Back to projects" placement="bottom">
+          <Tooltip
+            content="Back to projects"
+            placement="bottom"
+          >
             <Button
               iconOnly
               aria-label="Back"
@@ -120,15 +123,18 @@ export const MapNavbar = ({
               <ArrowLeft size={18} />
             </Button>
           </Tooltip>
-          <span className="w-px h-5 bg-border-primary" />
+          <span className="bg-border-primary h-5 w-px" />
 
-          <div ref={switcherRef} className="relative">
+          <div
+            ref={switcherRef}
+            className="relative"
+          >
             <button
-              className="flex flex-col items-start px-1.5 py-0.5 rounded-md hover:bg-surface-hover transition-colors"
+              className="hover:bg-surface-hover flex flex-col items-start rounded-md px-1.5 py-0.5 transition-colors"
               type="button"
               onClick={() => setSwitcherOpen((v) => !v)}
             >
-              <span className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider leading-none flex items-center gap-1">
+              <span className="text-text-tertiary flex items-center gap-1 text-[10px] leading-none font-medium tracking-wider uppercase">
                 Project
                 {availableMaps.length > 1 && (
                   <ChevronDown
@@ -138,21 +144,22 @@ export const MapNavbar = ({
                 )}
               </span>
               <span
-                className="text-sm font-bold text-text-primary truncate max-w-[200px]"
+                className="text-text-primary max-w-[200px] truncate text-sm font-bold"
                 title={projectName}
               >
                 {projectName}
               </span>
             </button>
 
-            {switcherOpen && availableMaps.length > 0 ? <div className="absolute left-0 top-full mt-1.5 w-64 bg-elevated border border-border-primary rounded-xl shadow-dropdown py-1.5 z-50 animate-fade-in max-h-80 overflow-y-auto scrollbar-thin">
-                <div className="px-3 py-1 text-[0.65rem] uppercase tracking-widest text-text-quaternary font-semibold">
+            {switcherOpen && availableMaps.length > 0 ? (
+              <div className="bg-elevated border-border-primary shadow-dropdown animate-fade-in absolute top-full left-0 z-50 mt-1.5 max-h-80 w-64 scrollbar-thin overflow-y-auto rounded-xl border py-1.5">
+                <div className="text-text-quaternary px-3 py-1 text-[0.65rem] font-semibold tracking-widest uppercase">
                   Switch Map
                 </div>
                 {availableMaps.map((m) => (
                   <button
                     key={m.id}
-                    className="dropdown-item w-full gap-2 justify-between"
+                    className="dropdown-item w-full justify-between gap-2"
                     type="button"
                     onClick={() => {
                       onSelectMap(m.id);
@@ -161,18 +168,25 @@ export const MapNavbar = ({
                   >
                     <span className="truncate">{m.title}</span>
                     {m.id === activeMapId && (
-                      <Check className="text-primary shrink-0" size={13} />
+                      <Check
+                        className="text-primary shrink-0"
+                        size={13}
+                      />
                     )}
                   </button>
                 ))}
-              </div> : null}
+              </div>
+            ) : null}
           </div>
         </div>
 
         {/* Center: location search (Nominatim - flies the map + drops a marker) */}
-        <div className="flex-1 max-w-md mx-4">
+        <div className="mx-4 max-w-md flex-1">
           {mapRef ? (
-            <PlaceSearch mapReady={mapReady} mapRef={mapRef} />
+            <PlaceSearch
+              mapReady={mapReady}
+              mapRef={mapRef}
+            />
           ) : (
             <div className="h-8" />
           )}
@@ -193,7 +207,7 @@ export const MapNavbar = ({
                       <span className="font-semibold">
                         {c.full_name || c.email}
                       </span>
-                      <span className="text-[10px] text-text-tertiary">
+                      <span className="text-text-tertiary text-[10px]">
                         {c.email}
                       </span>
                       <span className="text-[10px] text-emerald-400">
@@ -209,12 +223,12 @@ export const MapNavbar = ({
                       size={30}
                     />
                     {/* Live pulse dot */}
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-elevated rounded-full animate-pulse" />
+                    <span className="border-elevated absolute right-0 bottom-0 h-2.5 w-2.5 animate-pulse rounded-full border-2 bg-emerald-400" />
                   </div>
                 </Tooltip>
               ))}
               {collaborators.length > 4 && (
-                <div className="-ml-2 w-[30px] h-[30px] rounded-full bg-surface-hover border border-border-primary text-text-secondary text-[10px] font-semibold flex items-center justify-center shrink-0">
+                <div className="bg-surface-hover border-border-primary text-text-secondary -ml-2 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border text-[10px] font-semibold">
                   +{collaborators.length - 4}
                 </div>
               )}
@@ -222,11 +236,16 @@ export const MapNavbar = ({
           )}
 
           {/* Connection status dot */}
-          {isCollabConnected ? <Tooltip content="Live collaboration active" placement="bottom">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-            </Tooltip> : null}
+          {isCollabConnected ? (
+            <Tooltip
+              content="Live collaboration active"
+              placement="bottom"
+            >
+              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" />
+            </Tooltip>
+          ) : null}
 
-          <span className="w-px h-5 bg-border-primary" />
+          <span className="bg-border-primary h-5 w-px" />
 
           {/* General builder picker - open any project builder (Map, Story Map,
               Presentation, Report, Forms) for this project. */}
@@ -240,7 +259,7 @@ export const MapNavbar = ({
               trigger={
                 <button
                   aria-label="Project builders"
-                  className="relative flex items-center justify-center p-1.5 rounded-lg transition-all duration-150 text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+                  className="text-text-secondary hover:text-text-primary hover:bg-surface-hover relative flex items-center justify-center rounded-lg p-1.5 transition-all duration-150"
                   type="button"
                 >
                   <Blocks size={16} />
@@ -249,7 +268,10 @@ export const MapNavbar = ({
             />
           </Tooltip>
 
-          <Tooltip content="Share project  (⌘⇧S)" placement="bottom">
+          <Tooltip
+            content="Share project  (⌘⇧S)"
+            placement="bottom"
+          >
             <Button
               iconOnly
               aria-label="Share project"
@@ -271,7 +293,7 @@ export const MapNavbar = ({
               aria-label="Comments history"
               aria-pressed={commentsOpen}
               type="button"
-              className={`relative flex items-center justify-center p-1.5 rounded-lg transition-colors ${
+              className={`relative flex items-center justify-center rounded-lg p-1.5 transition-colors ${
                 commentsOpen
                   ? "bg-primary/10 text-primary"
                   : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
@@ -287,7 +309,7 @@ export const MapNavbar = ({
             >
               <MessageSquare size={16} />
               {openCommentCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center border border-elevated">
+                <span className="bg-primary border-elevated absolute -top-1 -right-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full border px-1 text-[9px] font-bold text-white">
                   {openCommentCount}
                 </span>
               )}
@@ -295,8 +317,11 @@ export const MapNavbar = ({
           </Tooltip>
 
           {/* Self avatar - right end of the bar */}
-          <Tooltip content={user?.email || "User Profile"} placement="bottom">
-            <div className="w-8 h-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0 border border-primary/20 cursor-pointer">
+          <Tooltip
+            content={user?.email || "User Profile"}
+            placement="bottom"
+          >
+            <div className="bg-primary/15 text-primary border-primary/20 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border text-sm font-bold">
               {userInitial}
             </div>
           </Tooltip>
@@ -313,4 +338,4 @@ export const MapNavbar = ({
       />
     </>
   );
-}
+};

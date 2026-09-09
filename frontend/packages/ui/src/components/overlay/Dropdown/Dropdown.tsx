@@ -142,7 +142,8 @@ export const Dropdown = ({
       </div>
 
       <AnimatePresence>
-        {isOpen ? <motion.div
+        {isOpen ? (
+          <motion.div
             ref={refs.setFloating}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             aria-orientation="vertical"
@@ -172,8 +173,9 @@ export const Dropdown = ({
                 item={item}
               />
             ))}
-          </motion.div> : null}
+          </motion.div>
+        ) : null}
       </AnimatePresence>
     </div>
   );
-}
+};

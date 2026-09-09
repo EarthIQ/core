@@ -12,7 +12,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const rasterStyle = (
   tiles: string[],
   attribution: string,
-  saturation = 0,
+  saturation = 0
 ): any => ({
   version: 8,
   sources: {
@@ -39,18 +39,18 @@ const rasterStyle = (
 export const BASEMAP_STYLES: Record<string, any> = {
   osm: rasterStyle(
     ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-    '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors (ODbL)',
+    '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors (ODbL)'
   ),
   "esri-satellite": rasterStyle(
     [
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     ],
-    "© Esri, Maxar, Earthstar Geographics",
+    "© Esri, Maxar, Earthstar Geographics"
   ),
   opentopomap: rasterStyle(
     ["https://a.tile.opentopomap.org/{z}/{x}/{y}.png"],
     '© <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a> (CC-BY-SA)',
-    -1,
+    -1
   ),
 };
 
@@ -85,7 +85,7 @@ export function useMapLibre(
   const [zoomLevel, setZoomLevel] = useState(2.5);
   const [bearing, setBearing] = useState(0);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
-    null,
+    null
   );
   const [basemap, setBasemap] = useState(initialBasemap);
 
@@ -132,7 +132,7 @@ export function useMapLibre(
     const style = BASEMAP_STYLES[basemap] || BASEMAP_STYLES["opentopomap"];
     map.setStyle(style);
     map.once("styledata", () =>
-      map.jumpTo({ center, zoom, bearing: bearingVal, pitch }),
+      map.jumpTo({ center, zoom, bearing: bearingVal, pitch })
     );
   }, [basemap, map]);
 
@@ -144,15 +144,15 @@ export function useMapLibre(
 
   const zoomIn = useCallback(
     () => mapRef.current?.zoomIn?.({ duration: 200 }),
-    [],
+    []
   );
   const zoomOut = useCallback(
     () => mapRef.current?.zoomOut?.({ duration: 200 }),
-    [],
+    []
   );
   const resetNorth = useCallback(
     () => mapRef.current?.resetNorthPitch?.({ duration: 300 }),
-    [],
+    []
   );
 
   return {

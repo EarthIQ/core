@@ -33,17 +33,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-primary p-4">
-      <div className="w-full max-w-sm flex flex-col gap-6 bg-elevated border border-border-primary rounded-2xl p-8 shadow-2xl backdrop-blur-xl animate-scale-in">
+    <div className="bg-bg-primary flex min-h-screen items-center justify-center p-4">
+      <div className="bg-elevated border-border-primary animate-scale-in flex w-full max-w-sm flex-col gap-6 rounded-2xl border p-8 shadow-2xl backdrop-blur-xl">
         {/* Logo / Brand */}
         <div className="flex flex-col items-center gap-1.5 text-center">
-          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/15 mb-1">
+          <div className="bg-primary/15 mb-1 flex h-12 w-12 items-center justify-center rounded-xl">
             <span className="text-2xl">🌍</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient">
+          <h1 className="text-gradient text-2xl font-bold tracking-tight">
             EarthIQ
           </h1>
-          <p className="text-xs text-text-tertiary tracking-wide">
+          <p className="text-text-tertiary text-xs tracking-wide">
             Enterprise Geospatial Intelligence
           </p>
         </div>
@@ -55,7 +55,11 @@ export default function LoginPage() {
           onSubmit={handleSubmit}
         >
           {/* Error Alert */}
-          {error ? <div className="alert alert-error animate-shake" role="alert">
+          {error ? (
+            <div
+              className="alert alert-error animate-shake"
+              role="alert"
+            >
               <svg
                 className="alert-icon shrink-0"
                 fill="none"
@@ -65,15 +69,33 @@ export default function LoginPage() {
                 viewBox="0 0 24 24"
                 width="16"
               >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" x2="12" y1="8" y2="12" />
-                <line x1="12" x2="12.01" y1="16" y2="16" />
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                />
+                <line
+                  x1="12"
+                  x2="12"
+                  y1="8"
+                  y2="12"
+                />
+                <line
+                  x1="12"
+                  x2="12.01"
+                  y1="16"
+                  y2="16"
+                />
               </svg>
               <span className="alert-content text-sm">{error}</span>
-            </div> : null}
+            </div>
+          ) : null}
 
           {/* Email */}
-          <label className="form-label" htmlFor="login-email">
+          <label
+            className="form-label"
+            htmlFor="login-email"
+          >
             Email address
           </label>
           <Input
@@ -87,7 +109,10 @@ export default function LoginPage() {
           />
 
           {/* Password */}
-          <label className="form-label" htmlFor="login-password">
+          <label
+            className="form-label"
+            htmlFor="login-password"
+          >
             Password
           </label>
           <Input
@@ -113,7 +138,7 @@ export default function LoginPage() {
         </form>
 
         {/* Footer */}
-        <p className="text-xs text-text-tertiary text-center">
+        <p className="text-text-tertiary text-center text-xs">
           Don't have an account?{" "}
           <a
             className="text-primary hover:text-primary-dark font-medium transition-colors duration-150"

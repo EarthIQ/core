@@ -49,7 +49,7 @@ const InfoIcon = ({ variant }: { variant: string }) => {
       />
     </svg>
   );
-}
+};
 
 const SuccessIcon = ({ variant }: { variant: string }) => {
   const color = iconColorMap[variant];
@@ -70,7 +70,7 @@ const SuccessIcon = ({ variant }: { variant: string }) => {
       />
     </svg>
   );
-}
+};
 
 const WarningIcon = ({ variant }: { variant: string }) => {
   const color = iconColorMap[variant];
@@ -91,7 +91,7 @@ const WarningIcon = ({ variant }: { variant: string }) => {
       />
     </svg>
   );
-}
+};
 
 const ErrorIcon = ({ variant }: { variant: string }) => {
   const color = iconColorMap[variant];
@@ -112,7 +112,7 @@ const ErrorIcon = ({ variant }: { variant: string }) => {
       />
     </svg>
   );
-}
+};
 
 const icons: Record<string, (variant: string) => ReactNode> = {
   info: (variant) => <InfoIcon variant={variant} />,
@@ -150,14 +150,17 @@ export const Alert = ({
       initial={{ opacity: 0, y: -10 }}
       role="alert"
     >
-      {showIcon && (icon || defaultIcon) ? <div className="mt-0.5 flex-shrink-0">{icon || defaultIcon}</div> : null}
+      {showIcon && (icon || defaultIcon) ? (
+        <div className="mt-0.5 flex-shrink-0">{icon || defaultIcon}</div>
+      ) : null}
 
       <div className="min-w-0 flex-1">
         {title ? <h4 className="mb-1 font-semibold">{title}</h4> : null}
         <div className="text-sm leading-relaxed">{children}</div>
       </div>
 
-      {onClose ? <button
+      {onClose ? (
+        <button
           aria-label="Close alert"
           className="flex-shrink-0 rounded-lg p-1 transition-colors hover:bg-[var(--surface-hover)]"
           onClick={onClose}
@@ -175,7 +178,8 @@ export const Alert = ({
               strokeWidth={2}
             />
           </svg>
-        </button> : null}
+        </button>
+      ) : null}
     </motion.div>
   );
-}
+};

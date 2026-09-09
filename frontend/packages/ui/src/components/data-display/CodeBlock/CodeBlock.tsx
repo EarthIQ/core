@@ -45,7 +45,8 @@ export const CodeBlock = ({
       }}
     >
       {/* Header */}
-      {(title || language || showCopy) ? <div
+      {title || language || showCopy ? (
+        <div
           className="flex items-center justify-between px-3 py-2"
           style={{
             borderBottom: "1px solid var(--border-primary)",
@@ -69,23 +70,28 @@ export const CodeBlock = ({
               />
             </div>
 
-            {title ? <span
+            {title ? (
+              <span
                 className="text-sm font-medium"
                 style={{ color: "var(--text-secondary)" }}
               >
                 {title}
-              </span> : null}
+              </span>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-2">
-            {language ? <span
+            {language ? (
+              <span
                 className="text-xs font-medium uppercase"
                 style={{ color: "var(--text-tertiary)" }}
               >
                 {language}
-              </span> : null}
+              </span>
+            ) : null}
 
-            {showCopy ? <button
+            {showCopy ? (
+              <button
                 className="cursor-pointer rounded-md p-1.5 transition-all duration-200 focus:outline-none"
                 title={isCopied ? "Copied!" : "Copy to clipboard"}
                 type="button"
@@ -141,9 +147,11 @@ export const CodeBlock = ({
                     </motion.svg>
                   )}
                 </AnimatePresence>
-              </button> : null}
+              </button>
+            ) : null}
           </div>
-        </div> : null}
+        </div>
+      ) : null}
 
       {/* Code Content */}
       <div
@@ -169,12 +177,14 @@ export const CodeBlock = ({
                     : undefined
                 }
               >
-                {showLineNumbers ? <span
+                {showLineNumbers ? (
+                  <span
                     className="w-8 flex-shrink-0 pr-4 text-right select-none"
                     style={{ color: "var(--text-tertiary)" }}
                   >
                     {index + 1}
-                  </span> : null}
+                  </span>
+                ) : null}
                 <span
                   className="flex-1"
                   style={{ color: "var(--text-primary)" }}
@@ -188,7 +198,7 @@ export const CodeBlock = ({
       </div>
     </div>
   );
-}
+};
 
 // ─── Simple Copy Button ───────────────────────────────────────────────────────
 
@@ -274,4 +284,4 @@ export const CopyButton = ({ text, className, children }: CopyButtonProps) => {
       </AnimatePresence>
     </button>
   );
-}
+};

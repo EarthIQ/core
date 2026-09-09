@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import { Icons } from '../Icons';
+import { Icons } from "../Icons";
 
 export interface AccordionItemProps {
   id: string;
@@ -19,12 +19,11 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
   icon,
   isOpen = false,
   onToggle,
-  className = '',
+  className = "",
 }) => {
-
   return (
-    <div 
-      className={`rounded-lg border border-[var(--border-primary)] bg-[var(--surface)] overflow-hidden ${className}`}
+    <div
+      className={`overflow-hidden rounded-lg border border-[var(--border-primary)] bg-[var(--surface)] ${className}`}
       data-accordion-item={id}
     >
       {/* Header */}
@@ -37,10 +36,10 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
         onClick={onToggle}
       >
         <div className="flex flex-1 items-center gap-3">
-          {icon ? <span className="text-[var(--text-secondary)]">
-              {icon}
-            </span> : null}
-          {typeof title === 'string' ? (
+          {icon ? (
+            <span className="text-[var(--text-secondary)]">{icon}</span>
+          ) : null}
+          {typeof title === "string" ? (
             <span className="font-medium text-[var(--text-primary)]">
               {title}
             </span>
@@ -50,19 +49,17 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
             </div>
           )}
         </div>
-        
-        <span 
-          className={`
-            ml-2 text-[var(--text-tertiary)] transition-transform duration-200
-            ${isOpen ? 'rotate-180' : 'rotate-0'}
-          `}
+
+        <span
+          className={`ml-2 text-[var(--text-tertiary)] transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"} `}
         >
           <Icons.chevronDown />
         </span>
       </button>
 
       {/* Content - using display instead of max-height for reliability */}
-      {isOpen ? <div
+      {isOpen ? (
+        <div
           aria-labelledby={`accordion-header-${id}`}
           id={`accordion-content-${id}`}
           role="region"
@@ -70,7 +67,8 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
           <div className="border-t border-[var(--border-primary)] p-4">
             {children}
           </div>
-        </div> : null}
+        </div>
+      ) : null}
     </div>
   );
 };

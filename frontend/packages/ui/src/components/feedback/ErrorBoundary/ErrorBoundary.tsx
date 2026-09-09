@@ -55,9 +55,8 @@ export class ErrorBoundary extends Component<
       process.env.NODE_ENV === "development";
 
     if (isDev) {
-       
       console.error("ErrorBoundary caught an error:", error);
-       
+
       console.error("Component stack:", errorInfo.componentStack);
     }
   }
@@ -198,17 +197,20 @@ export const DefaultErrorFallback = ({
               Reload Page
             </Button>
 
-            {isDev ? <Button
+            {isDev ? (
+              <Button
                 aria-expanded={showDetails}
                 variant="outline"
                 onClick={() => setShowDetails((v) => !v)}
               >
                 {showDetails ? "Hide" : "Show"} Details
-              </Button> : null}
+              </Button>
+            ) : null}
           </div>
 
           {/* Error Details (Development only) */}
-          {isDev && showDetails ? <div className="mt-6 w-full">
+          {isDev && showDetails ? (
+            <div className="mt-6 w-full">
               <div
                 className={cn(
                   "max-h-64 overflow-auto rounded-xl p-4 text-left",
@@ -219,22 +221,27 @@ export const DefaultErrorFallback = ({
                   {error.name}: {error.message}
                 </p>
 
-                {error.stack ? <pre className="font-mono text-xs whitespace-pre-wrap text-[var(--text-secondary)]">
+                {error.stack ? (
+                  <pre className="font-mono text-xs whitespace-pre-wrap text-[var(--text-secondary)]">
                     {error.stack}
-                  </pre> : null}
+                  </pre>
+                ) : null}
 
-                {errorInfo?.componentStack ? <>
+                {errorInfo?.componentStack ? (
+                  <>
                     <p className="mt-4 mb-2 font-mono text-xs text-[var(--text-primary)]">
                       Component Stack:
                     </p>
                     <pre className="font-mono text-xs whitespace-pre-wrap text-[var(--text-secondary)]">
                       {errorInfo.componentStack}
                     </pre>
-                  </> : null}
+                  </>
+                ) : null}
               </div>
-            </div> : null}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
   );
-}
+};

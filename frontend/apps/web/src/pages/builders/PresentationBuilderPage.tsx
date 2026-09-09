@@ -43,7 +43,7 @@ export default function PresentationBuilderPage() {
 
   const activeIndex = Math.max(
     0,
-    slides.findIndex((s) => s.id === activeId),
+    slides.findIndex((s) => s.id === activeId)
   );
 
   function addSlide() {
@@ -53,14 +53,17 @@ export default function PresentationBuilderPage() {
   }
 
   return (
-    <BuilderScaffold builder={builder} projectId={projectId}>
+    <BuilderScaffold
+      builder={builder}
+      projectId={projectId}
+    >
       <BuilderWorkspace
         main={
           <div className="flex flex-col gap-4">
             {/* Slide canvas */}
             <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] shadow-[var(--shadow-lg)]">
               <div className="px-6 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <div className="bg-primary/10 text-primary mx-auto flex h-12 w-12 items-center justify-center rounded-xl">
                   <Presentation size={22} />
                 </div>
                 <p className="mt-3 text-sm font-semibold text-[var(--text-secondary)]">
@@ -70,14 +73,14 @@ export default function PresentationBuilderPage() {
                   Map views, text and charts will render on this canvas
                 </p>
               </div>
-              <span className="absolute right-3 top-3 rounded-md bg-[var(--surface-hover)] px-2 py-0.5 text-[0.65rem] font-medium text-[var(--text-tertiary)]">
+              <span className="absolute top-3 right-3 rounded-md bg-[var(--surface-hover)] px-2 py-0.5 text-[0.65rem] font-medium text-[var(--text-tertiary)]">
                 {activeIndex + 1} / {slides.length}
               </span>
             </div>
 
             {/* Block toolbar */}
             <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-elevated)] p-3">
-              <span className="px-1 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+              <span className="px-1 text-xs font-semibold tracking-wider text-[var(--text-tertiary)] uppercase">
                 Blocks
               </span>
               {SLIDE_BLOCKS.map((block) => {
@@ -91,7 +94,7 @@ export default function PresentationBuilderPage() {
                   >
                     <BlockIcon size={13} />
                     {block.label}
-                    <span className="rounded bg-[var(--surface-hover)] px-1 text-[0.6rem] uppercase tracking-wide">
+                    <span className="rounded bg-[var(--surface-hover)] px-1 text-[0.6rem] tracking-wide uppercase">
                       soon
                     </span>
                   </button>

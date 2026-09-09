@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useRef as _useRef } from 'react';
+import { useState, useEffect, useCallback, useRef as _useRef } from "react";
 
-import { useMap } from './useMap';
+import { useMap } from "./useMap";
 
-import type { GeoJSON } from 'geojson';
+import type { GeoJSON } from "geojson";
 
 export interface UseDrawnFeaturesOptions {
   /** Auto-save to localStorage */
@@ -14,9 +14,13 @@ export interface UseDrawnFeaturesOptions {
 }
 
 export const useDrawnFeatures = (options: UseDrawnFeaturesOptions = {}) => {
-  const { persist = false, storageKey = 'drawn-features', maxFeatures = 100 } = options;
+  const {
+    persist = false,
+    storageKey = "drawn-features",
+    maxFeatures = 100,
+  } = options;
   const { map: _map, isLoaded: _isLoaded } = useMap();
-  
+
   const [features, setFeatures] = useState<GeoJSON.Feature[]>(() => {
     if (persist) {
       try {
@@ -34,45 +38,61 @@ export const useDrawnFeatures = (options: UseDrawnFeaturesOptions = {}) => {
     if (persist) {
       try {
         localStorage.setItem(storageKey, JSON.stringify(features));
-      } catch { /* ignore quota/serialization errors */ }
+      } catch {
+        /* ignore quota/serialization errors */
+      }
     }
   }, [features, persist, storageKey]);
 
-  const addFeature = useCallback((feature: GeoJSON.Feature) => {
-    setFeatures(prev => {
-      // Ensure feature has ID
-      const newFeature = {
-        ...feature,
-        id: feature.id ?? `feature-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      };
-      
-      const next = [...prev, newFeature];
-      return next.slice(-maxFeatures);
-    });
-  }, [maxFeatures]);
+  const addFeature = useCallback(
+    (feature: GeoJSON.Feature) => {
+      setFeatures((prev) => {
+        // Ensure feature has ID
+        const newFeature = {
+          ...feature,
+          id:
+            feature.id ??
+            `feature-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        };
 
-  const updateFeature = useCallback((id: string | number, updates: Partial<GeoJSON.Feature>) => {
-    setFeatures(prev => prev.map(f => 
-      f.id === id ? { ...f, ...updates } : f
-    ));
-  }, []);
+        const next = [...prev, newFeature];
+        return next.slice(-maxFeatures);
+      });
+    },
+    [maxFeatures]
+  );
+
+  const updateFeature = useCallback(
+    (id: string | number, updates: Partial<GeoJSON.Feature>) => {
+      setFeatures((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, ...updates } : f))
+      );
+    },
+    []
+  );
 
   const removeFeature = useCallback((id: string | number) => {
-    setFeatures(prev => prev.filter(f => f.id !== id));
+    setFeatures((prev) => prev.filter((f) => f.id !== id));
   }, []);
 
   const clearFeatures = useCallback(() => {
     setFeatures([]);
   }, []);
 
-  const getFeatureById = useCallback((id: string | number) => {
-    return features.find(f => f.id === id);
-  }, [features]);
+  const getFeatureById = useCallback(
+    (id: string | number) => {
+      return features.find((f) => f.id === id);
+    },
+    [features]
+  );
 
-  const toFeatureCollection = useCallback((): GeoJSON.FeatureCollection => ({
-    type: 'FeatureCollection',
-    features
-  }), [features]);
+  const toFeatureCollection = useCallback(
+    (): GeoJSON.FeatureCollection => ({
+      type: "FeatureCollection",
+      features,
+    }),
+    [features]
+  );
 
   return {
     features,
@@ -83,6 +103,6 @@ export const useDrawnFeatures = (options: UseDrawnFeaturesOptions = {}) => {
     clearFeatures,
     getFeatureById,
     toFeatureCollection,
-    setFeatures
+    setFeatures,
   };
 };

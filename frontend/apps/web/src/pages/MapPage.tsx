@@ -29,7 +29,12 @@ import {
   type NewLayerInput,
 } from "@/components/map/layer-panel/useLayerTree";
 import { MapActionBar } from "@/components/map/MapActionBar";
-import { MapBottomBar, TERRAIN_SOURCE_ID, TERRAIN_SOURCE_URL, TERRAIN_EXAGGERATION } from "@/components/map/MapBottomBar";
+import {
+  MapBottomBar,
+  TERRAIN_SOURCE_ID,
+  TERRAIN_SOURCE_URL,
+  TERRAIN_EXAGGERATION,
+} from "@/components/map/MapBottomBar";
 import { MapNavbar } from "@/components/map/MapNavbar";
 import { PublishedMapsPanel } from "@/components/map/PublishedMapsPanel";
 import { AccessRequestCard } from "@/components/map/share/AccessRequestCard";
@@ -65,7 +70,10 @@ import {
 } from "@/lib/projects";
 import { useCollaboration } from "@/lib/useCollaboration";
 
-import type { TreeNode, LayerTreeNode } from "@/components/map/layer-panel/types";
+import type {
+  TreeNode,
+  LayerTreeNode,
+} from "@/components/map/layer-panel/types";
 import type { MapBuilderConfig } from "@/components/map/MapBuilder";
 
 export default function MapPage() {
@@ -76,7 +84,7 @@ export default function MapPage() {
   /** Live maplibre instance, set by the <Map> primitive's onLoad. */
   const [mapInstance, setMapInstance] = useState<any>(null);
   const [currentProject, setCurrentProject] = useState<ProjectItem | null>(
-    null,
+    null
   );
   const [publishedMaps, setPublishedMaps] = useState<MapItem[]>([]);
   const [aiChatOpen, setAiChatOpen] = useState(false);
@@ -153,14 +161,14 @@ export default function MapPage() {
       if (map.isStyleLoaded?.()) reapply();
       else map.once("style.load", reapply);
     },
-    [setBasemap, terrainOn, mapRef],
+    [setBasemap, terrainOn, mapRef]
   );
 
   // ── Real-time collaboration ──────────────────────────────────────────────────
   const { collaborators, isConnected: isCollabConnected } = useCollaboration(
     projectId,
     mapRef,
-    mapReady,
+    mapReady
   );
 
   // ── Map drawing / annotation engine ──────────────────────────────────────────
@@ -177,11 +185,9 @@ export default function MapPage() {
   const commentPlacement = useMapEditor((s) => s.commentPlacement);
   const setCommentPlacement = useMapEditor((s) => s.setCommentPlacement);
   const setPendingCommentLocation = useMapEditor(
-    (s) => s.setPendingCommentLocation,
+    (s) => s.setPendingCommentLocation
   );
-  const pendingCommentLocation = useMapEditor(
-    (s) => s.pendingCommentLocation,
-  );
+  const pendingCommentLocation = useMapEditor((s) => s.pendingCommentLocation);
   /** Right-click "Add comment": drop a comment pin at the clicked spot. */
   const commentMenuItems = useMemo(
     () => [
@@ -194,7 +200,7 @@ export default function MapPage() {
         },
       },
     ],
-    [setPendingCommentLocation],
+    [setPendingCommentLocation]
   );
   const canUndo = useMapEditor(selectCanUndo);
   const canRedo = useMapEditor(selectCanRedo);
@@ -266,7 +272,7 @@ export default function MapPage() {
         const file = new File(
           [JSON.stringify({ type: "FeatureCollection", features })],
           "drawings.geojson",
-          { type: "application/geo+json" },
+          { type: "application/geo+json" }
         );
         const ds = await uploadDataset({
           file,
@@ -294,13 +300,12 @@ export default function MapPage() {
         setStatusMsg(
           `Saved ${features.length} shape${
             features.length === 1 ? "" : "s"
-          } to "${node?.name ?? "Drawings"}"`,
+          } to "${node?.name ?? "Drawings"}"`
         );
       } else if (session.datasetId) {
         await replaceDatasetFeatures(session.datasetId, features);
         const node = tree.getNode(session.layerNodeId) as
-          | LayerTreeNode
-          | undefined;
+          LayerTreeNode | undefined;
         const base =
           node?.tileUrl?.split("?")[0] ?? getVectorTileUrl(session.datasetId);
         // Cache-bust the MVT tiles so edited geometry renders immediately.
@@ -315,7 +320,7 @@ export default function MapPage() {
     } catch (err) {
       console.error("Failed to save shapes:", err);
       setStatusMsg(
-        err instanceof Error ? err.message : "Failed to save shapes",
+        err instanceof Error ? err.message : "Failed to save shapes"
       );
       window.setTimeout(() => setStatusMsg(null), 4000);
     } finally {
@@ -334,7 +339,7 @@ export default function MapPage() {
       const existing = store.drawSession;
       if (existing && existing.layerNodeId !== layer.id) {
         const discard = window.confirm(
-          "You have unsaved drawing changes. Discard them and edit this layer?",
+          "You have unsaved drawing changes. Discard them and edit this layer?"
         );
         if (!discard) return;
         if (existing.mode === "create") removeNode(existing.layerNodeId);
@@ -355,7 +360,7 @@ export default function MapPage() {
         patchLayer(layer.id, { visible: false });
         store.setActiveTool({ groupId: "navigate", variantId: "select" });
         setStatusMsg(
-          `Editing "${layer.name}" - drag points to edit, add new shapes, then Save`,
+          `Editing "${layer.name}" - drag points to edit, add new shapes, then Save`
         );
         window.setTimeout(() => setStatusMsg(null), 4000);
       } catch (err) {
@@ -363,14 +368,14 @@ export default function MapPage() {
         setStatusMsg(
           err instanceof Error
             ? err.message
-            : "Failed to open layer for editing",
+            : "Failed to open layer for editing"
         );
         window.setTimeout(() => setStatusMsg(null), 4000);
       } finally {
         setLayerEditBusy(null);
       }
     },
-    [layerEditBusy, removeNode, patchLayer],
+    [layerEditBusy, removeNode, patchLayer]
   );
 
   // Keyboard shortcuts: tool selection + undo/redo
@@ -505,7 +510,7 @@ export default function MapPage() {
         tree.setNodes(
           projData.layers_config?.length
             ? fromMapLayerItems(projData.layers_config as any)
-            : [],
+            : []
         );
         // Hydrate annotation/bookmark/comment state from the backend
         // (drawn shapes are in-memory for now → reset to empty)
@@ -544,7 +549,8 @@ export default function MapPage() {
       try {
         const style = map.getStyle();
         for (const lyr of style?.layers ?? []) {
-          if (lyr.source === id && map.getLayer(lyr.id)) map.removeLayer(lyr.id);
+          if (lyr.source === id && map.getLayer(lyr.id))
+            map.removeLayer(lyr.id);
         }
         if (map.getSource(id)) map.removeSource(id);
       } catch (err) {
@@ -559,7 +565,7 @@ export default function MapPage() {
       }
 
       const leafLayers = tree.nodes.filter(
-        (n) => n.kind === "layer" && (n as any).tileUrl,
+        (n) => n.kind === "layer" && (n as any).tileUrl
       ) as any[];
       const leafIds = new Set(leafLayers.map((l) => l.id));
 
@@ -578,10 +584,7 @@ export default function MapPage() {
           if (existing) {
             const srcKind = existing.type === "vector" ? "vector" : "raster";
             const tiles: string[] = existing.tiles || [];
-            if (
-              srcKind !== layer.layerType ||
-              tiles[0] !== layer.tileUrl
-            ) {
+            if (srcKind !== layer.layerType || tiles[0] !== layer.tileUrl) {
               removePanelSource(layer.id);
             }
           }
@@ -609,18 +612,18 @@ export default function MapPage() {
               map.setPaintProperty(
                 layer.id,
                 "raster-opacity",
-                layer.opacity ?? 0.8,
+                layer.opacity ?? 0.8
               );
               map.setPaintProperty(
                 layer.id,
                 "raster-brightness",
-                layer.brightness ?? 1,
+                layer.brightness ?? 1
               );
               // Panel treats contrast 1 as neutral; MapLibre treats 0 as neutral.
               map.setPaintProperty(
                 layer.id,
                 "raster-contrast",
-                (layer.contrast ?? 1) - 1,
+                (layer.contrast ?? 1) - 1
               );
             }
           } else {
@@ -675,21 +678,17 @@ export default function MapPage() {
               }
             }
             if (map.getLayer(`${layer.id}-fill`)) {
-              map.setPaintProperty(
-                `${layer.id}-fill`,
-                "fill-color",
-                color,
-              );
+              map.setPaintProperty(`${layer.id}-fill`, "fill-color", color);
               map.setPaintProperty(
                 `${layer.id}-fill`,
                 "fill-opacity",
-                Math.min(0.85, (layer.opacity ?? 0.8) * 0.6),
+                Math.min(0.85, (layer.opacity ?? 0.8) * 0.6)
               );
               map.setPaintProperty(`${layer.id}-line`, "line-color", color);
               map.setPaintProperty(
                 `${layer.id}-line`,
                 "line-width",
-                layer.lineWidth ?? 2,
+                layer.lineWidth ?? 2
               );
               map.setPaintProperty(`${layer.id}-circle`, "circle-color", color);
             }
@@ -710,12 +709,12 @@ export default function MapPage() {
 
   function handleImportLayers(
     layers: NewLayerInput[],
-    parentId: string | null,
+    parentId: string | null
   ) {
     const existingIds = new Set(tree.nodes.map((n) => n.id));
     tree.addLayers(
       layers.filter((l) => !existingIds.has(l.id)),
-      parentId,
+      parentId
     );
   }
 
@@ -813,7 +812,7 @@ export default function MapPage() {
 
   async function handleUpdatePublishedMap(
     mapId: string,
-    config: MapBuilderConfig,
+    config: MapBuilderConfig
   ) {
     const updated = await updateMap(mapId, {
       title: config.title,
@@ -851,271 +850,308 @@ export default function MapPage() {
   /* Google-Docs style: no access → request it (owner is notified by email) */
   if (projectDenied && !currentProject) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-bg-primary p-6">
-        <AccessRequestCard entityId={projectId ?? ""} entityType="project" />
+      <div className="bg-bg-primary flex h-full w-full items-center justify-center p-6">
+        <AccessRequestCard
+          entityId={projectId ?? ""}
+          entityType="project"
+        />
       </div>
     );
   }
 
   return (
     <MapProvider>
-      <div className="relative w-full h-full overflow-hidden bg-bg-primary">
+      <div className="bg-bg-primary relative h-full w-full overflow-hidden">
         {/* Scale bar (right side) - @packages/map control */}
-        <ScaleControl maxWidth={120} position="top-right" unit="metric" />
+        <ScaleControl
+          maxWidth={120}
+          position="top-right"
+          unit="metric"
+        />
 
         <MapNavbar
-        activeMapId={projectId}
-        availableMaps={[]}
-        canManageSharing={currentProject?.user_permission === "admin"}
-        collaborators={collaborators}
-        isCollabConnected={isCollabConnected}
-        mapId={projectId}
-        mapReady={mapReady}
-        mapRef={mapRef}
-        projectId={projectId}
-        projectName={currentProject?.title || "EarthIQ Project"}
-        onSelectMap={() => {}}
-        onBack={async () => {
-          await handleSaveConfig();
-          navigate("/projects");
-        }}
-      />
-
-      {/* Map canvas - @packages/map <Map> primitive (provides MapContext to
-          package controls and pushes the instance into the outer provider) */}
-      <MapCanvas
-        attributionControl={false}
-        style={BASEMAP_STYLES["opentopomap"]}
-        containerStyle={{
-          position: "absolute",
-          top: 0,
-          right: toolboxOpen ? TOOLBOX_PANEL_WIDTH : 0,
-          bottom: 0,
-          left: aiChatOpen ? 360 : 0,
-          zIndex: 0,
-        }}
-        initialViewState={{
-          longitude: 0,
-          latitude: 20,
-          zoom: 2.5,
-          pitch: 0,
-          bearing: 0,
-        }}
-        loadingIcon={
-          <div className="flex items-center gap-3 text-text-tertiary">
-            <Spinner size="lg" />
-            <span className="text-xs">Loading map…</span>
-          </div>
-        }
-        onLoad={setMapInstance}
-      />
-
-      {/* Right-click context menu - copy coordinates / center here (map pkg) */}
-      <ContextMenuControl coordinateFormat="both" items={commentMenuItems} />
-
-      {/* Collaborator cursor overlay - cursors are placed with map.project()
-          (canvas-relative), so this box must mirror the map canvas box exactly,
-          same as the AnnotationOverlays wrapper below. */}
-      <div
-        className="absolute z-10 pointer-events-none"
-        style={{
-          top: 0,
-          right: toolboxOpen ? TOOLBOX_PANEL_WIDTH : 0,
-          bottom: 0,
-          left: aiChatOpen ? 360 : 0,
-        }}
-      >
-        {mapReady ? <CollaboratorCursors collaborators={collaborators} mapRef={mapRef} /> : null}
-      </div>
-
-      {!mapReady && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-bg-primary/60 backdrop-blur-sm pointer-events-none">
-          <span className="text-xs text-text-tertiary animate-pulse">
-            Loading map…
-          </span>
-        </div>
-      )}
-
-      {/* Point annotations overlay (mirrors the map canvas box exactly) */}
-      <div
-        className="absolute z-10 pointer-events-none"
-        style={{
-          top: 0,
-          right: toolboxOpen ? TOOLBOX_PANEL_WIDTH : 0,
-          bottom: 0,
-          left: aiChatOpen ? 360 : 0,
-        }}
-      >
-        <AnnotationOverlays mapReady={mapReady} mapRef={mapRef} />
-      </div>
-
-      <LayerDndProvider>
-        <LayerPanel
-          aiOpen={aiChatOpen}
-          canEdit={!!canEdit}
-          childrenOf={tree.childrenOf}
-          descendantLayers={tree.descendantLayers}
-          isAvailableModule={isAvailable}
-          nodes={tree.nodes}
-          onAddFolder={(parentId) => tree.addFolder("New Folder", parentId)}
-          onEditLayer={canEdit ? handleEditLayer : undefined}
-          onMoveNode={tree.moveNode}
-          onOpenStyle={(l) => setStyledLayer(l)}
-          onRenameNode={tree.renameNode}
-          onToggleCollapse={tree.toggleCollapse}
-          onToggleVisibility={tree.toggleVisibility}
-          onOpenImport={() => {
-            setImportDestFolder(null);
-            setImportPortalOpen(true);
-          }}
-          onOpenImportForFolder={(folderId) => {
-            setImportDestFolder(folderId);
-            setImportPortalOpen(true);
-          }}
-          onRemoveNode={(id) => {
-            tree.removeNode(id);
-            if (styledLayer?.id === id) setStyledLayer(null);
+          activeMapId={projectId}
+          availableMaps={[]}
+          canManageSharing={currentProject?.user_permission === "admin"}
+          collaborators={collaborators}
+          isCollabConnected={isCollabConnected}
+          mapId={projectId}
+          mapReady={mapReady}
+          mapRef={mapRef}
+          projectId={projectId}
+          projectName={currentProject?.title || "EarthIQ Project"}
+          onSelectMap={() => {}}
+          onBack={async () => {
+            await handleSaveConfig();
+            navigate("/projects");
           }}
         />
-      </LayerDndProvider>
 
-      {/* Published Maps Side Panel */}
-      {projectId ? <PublishedMapsPanel
-          canEdit={!!canEdit}
-          currentAnnotations={storeAnnotations}
-          currentBasemap={basemap}
-          currentBearing={bearing}
-          currentLayers={toMapLayerItems(tree.nodes)}
-          currentPitch={0}
-          currentZoom={currentProject?.zoom ?? 2.5}
-          isOpen={publishedPanelOpen}
-          maps={publishedMaps}
-          projectId={projectId}
-          currentCenter={[
-            currentProject?.center_lng ?? 0,
-            currentProject?.center_lat ?? 20,
-          ]}
-          onClose={() => setPublishedPanelOpen(false)}
-          onDelete={handleDeletePublishedMap}
-          onPublish={handlePublishMap}
-          onUpdate={handleUpdatePublishedMap}
-        /> : null}
-
-      {styledLayer && styledLayer.kind === "layer" ? <StylePanel
-          layer={styledLayer}
-          onClose={() => setStyledLayer(null)}
-          onRename={(id, name) => tree.renameNode(id, name)}
-          onChange={(id, patch) => {
-            tree.patchLayer(id, patch);
-            setStyledLayer((prev) =>
-              prev && prev.id === id
-                ? ({ ...prev, ...patch } as TreeNode)
-                : prev,
-            );
+        {/* Map canvas - @packages/map <Map> primitive (provides MapContext to
+          package controls and pushes the instance into the outer provider) */}
+        <MapCanvas
+          attributionControl={false}
+          style={BASEMAP_STYLES["opentopomap"]}
+          containerStyle={{
+            position: "absolute",
+            top: 0,
+            right: toolboxOpen ? TOOLBOX_PANEL_WIDTH : 0,
+            bottom: 0,
+            left: aiChatOpen ? 360 : 0,
+            zIndex: 0,
           }}
-        /> : null}
-
-      {importPortalOpen ? <ImportDataPortal
-          folders={folderOptions}
-          initialFolderId={importDestFolder}
-          isAvailableModule={isAvailable}
-          onClose={() => setImportPortalOpen(false)}
-          onImport={handleImportLayers}
-        /> : null}
-
-      <MapActionBar
-        activeTool={activeTool}
-        canRedo={canRedo}
-        canUndo={canUndo}
-        commentPlacement={commentPlacement}
-        saving={drawSaving}
-        sessionActive={sessionActive}
-        toolboxActive={toolboxOpen}
-        onClearAnnotations={clearAnnotations}
-        onRedo={redo}
-        onSave={handleSaveDrawings}
-        onToggleToolbox={() => setToolboxOpen((v) => !v)}
-        onToolChange={(tool) => setActiveTool(tool)}
-        onUndo={undo}
-        onToggleCommentPlacement={() => {
-          if (commentPlacement) {
-            setCommentPlacement(false);
-          } else {
-            setBookmarkOpen(false);
-            setCommentsOpen(false);
-            setCommentPlacement(true);
+          initialViewState={{
+            longitude: 0,
+            latitude: 20,
+            zoom: 2.5,
+            pitch: 0,
+            bearing: 0,
+          }}
+          loadingIcon={
+            <div className="text-text-tertiary flex items-center gap-3">
+              <Spinner size="lg" />
+              <span className="text-xs">Loading map…</span>
+            </div>
           }
-        }}
-      />
+          onLoad={setMapInstance}
+        />
 
-      {/* Shape-session status toast (save success / failure feedback) */}
-      {statusMsg ? <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30 bg-elevated border border-base rounded-full shadow-xl px-4 py-2 text-xs text-base animate-fade-in-up whitespace-nowrap max-w-[80vw] overflow-hidden text-ellipsis">
-          {statusMsg}
-        </div> : null}
+        {/* Right-click context menu - copy coordinates / center here (map pkg) */}
+        <ContextMenuControl
+          coordinateFormat="both"
+          items={commentMenuItems}
+        />
 
-      {/* Comment placement hint */}
-      {commentPlacement && !statusMsg ? <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30 bg-elevated border border-base rounded-full shadow-xl px-4 py-2 text-xs text-base animate-fade-in-up whitespace-nowrap">
-          Click anywhere on the map to drop a comment pin · Esc to cancel
-        </div> : null}
+        {/* Collaborator cursor overlay - cursors are placed with map.project()
+          (canvas-relative), so this box must mirror the map canvas box exactly,
+          same as the AnnotationOverlays wrapper below. */}
+        <div
+          className="pointer-events-none absolute z-10"
+          style={{
+            top: 0,
+            right: toolboxOpen ? TOOLBOX_PANEL_WIDTH : 0,
+            bottom: 0,
+            left: aiChatOpen ? 360 : 0,
+          }}
+        >
+          {mapReady ? (
+            <CollaboratorCursors
+              collaborators={collaborators}
+              mapRef={mapRef}
+            />
+          ) : null}
+        </div>
 
-      {/* Annotation inspector (only visible when something is selected) */}
-      <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30">
-        <AnnotationInspector mapReady={mapReady} mapRef={mapRef} />
-      </div>
+        {!mapReady && (
+          <div className="bg-bg-primary/60 pointer-events-none absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
+            <span className="text-text-tertiary animate-pulse text-xs">
+              Loading map…
+            </span>
+          </div>
+        )}
 
-      {/* Bookmark + Comments panels (self-positioning) + comment pins */}
-      <BookmarkPanel mapReady={mapReady} mapRef={mapRef} />
-      <CommentPins
-        mapReady={mapReady}
-        mapRef={mapRef}
-        projectId={projectId ?? undefined}
-        projectName={currentProject?.title}
-      />
-      <CommentsPanel mapReady={mapReady} mapRef={mapRef} />
+        {/* Point annotations overlay (mirrors the map canvas box exactly) */}
+        <div
+          className="pointer-events-none absolute z-10"
+          style={{
+            top: 0,
+            right: toolboxOpen ? TOOLBOX_PANEL_WIDTH : 0,
+            bottom: 0,
+            left: aiChatOpen ? 360 : 0,
+          }}
+        >
+          <AnnotationOverlays
+            mapReady={mapReady}
+            mapRef={mapRef}
+          />
+        </div>
 
-      {/* Toolbox - tools exposed by enabled modules (auto-discovered) */}
-      <ToolboxPanel
-        basemap={basemap}
-        isOpen={toolboxOpen}
-        layers={aiLayers}
-        mapReady={mapReady}
-        mapRef={mapRef}
-        onClose={() => setToolboxOpen(false)}
-      />
+        <LayerDndProvider>
+          <LayerPanel
+            aiOpen={aiChatOpen}
+            canEdit={!!canEdit}
+            childrenOf={tree.childrenOf}
+            descendantLayers={tree.descendantLayers}
+            isAvailableModule={isAvailable}
+            nodes={tree.nodes}
+            onAddFolder={(parentId) => tree.addFolder("New Folder", parentId)}
+            onEditLayer={canEdit ? handleEditLayer : undefined}
+            onMoveNode={tree.moveNode}
+            onOpenStyle={(l) => setStyledLayer(l)}
+            onRenameNode={tree.renameNode}
+            onToggleCollapse={tree.toggleCollapse}
+            onToggleVisibility={tree.toggleVisibility}
+            onOpenImport={() => {
+              setImportDestFolder(null);
+              setImportPortalOpen(true);
+            }}
+            onOpenImportForFolder={(folderId) => {
+              setImportDestFolder(folderId);
+              setImportPortalOpen(true);
+            }}
+            onRemoveNode={(id) => {
+              tree.removeNode(id);
+              if (styledLayer?.id === id) setStyledLayer(null);
+            }}
+          />
+        </LayerDndProvider>
 
-      <MapBottomBar
-        activeBasemap={basemap}
-        bearing={bearing}
-        bookmarkActive={bookmarkActive}
-        mapReady={mapReady}
-        zoomLevel={zoomLevel}
-        onBasemapChange={setBasemap}
-        onResetNorth={resetNorth}
-        onToggleAI={() => setAiChatOpen((v) => !v)}
-        onZoomIn={zoomIn}
-        onZoomOut={zoomOut}
-        onToggleBookmark={() => {
-          setCommentsOpen(false);
-          setBookmarkOpen(!bookmarkActive);
-        }}
-      />
+        {/* Published Maps Side Panel */}
+        {projectId ? (
+          <PublishedMapsPanel
+            canEdit={!!canEdit}
+            currentAnnotations={storeAnnotations}
+            currentBasemap={basemap}
+            currentBearing={bearing}
+            currentLayers={toMapLayerItems(tree.nodes)}
+            currentPitch={0}
+            currentZoom={currentProject?.zoom ?? 2.5}
+            isOpen={publishedPanelOpen}
+            maps={publishedMaps}
+            projectId={projectId}
+            currentCenter={[
+              currentProject?.center_lng ?? 0,
+              currentProject?.center_lat ?? 20,
+            ]}
+            onClose={() => setPublishedPanelOpen(false)}
+            onDelete={handleDeletePublishedMap}
+            onPublish={handlePublishMap}
+            onUpdate={handleUpdatePublishedMap}
+          />
+        ) : null}
 
-      <div className="absolute top-14 left-0 bottom-10 z-20">
-        <AIChatPanel
+        {styledLayer && styledLayer.kind === "layer" ? (
+          <StylePanel
+            layer={styledLayer}
+            onClose={() => setStyledLayer(null)}
+            onRename={(id, name) => tree.renameNode(id, name)}
+            onChange={(id, patch) => {
+              tree.patchLayer(id, patch);
+              setStyledLayer((prev) =>
+                prev && prev.id === id
+                  ? ({ ...prev, ...patch } as TreeNode)
+                  : prev
+              );
+            }}
+          />
+        ) : null}
+
+        {importPortalOpen ? (
+          <ImportDataPortal
+            folders={folderOptions}
+            initialFolderId={importDestFolder}
+            isAvailableModule={isAvailable}
+            onClose={() => setImportPortalOpen(false)}
+            onImport={handleImportLayers}
+          />
+        ) : null}
+
+        <MapActionBar
+          activeTool={activeTool}
+          canRedo={canRedo}
+          canUndo={canUndo}
+          commentPlacement={commentPlacement}
+          saving={drawSaving}
+          sessionActive={sessionActive}
+          toolboxActive={toolboxOpen}
+          onClearAnnotations={clearAnnotations}
+          onRedo={redo}
+          onSave={handleSaveDrawings}
+          onToggleToolbox={() => setToolboxOpen((v) => !v)}
+          onToolChange={(tool) => setActiveTool(tool)}
+          onUndo={undo}
+          onToggleCommentPlacement={() => {
+            if (commentPlacement) {
+              setCommentPlacement(false);
+            } else {
+              setBookmarkOpen(false);
+              setCommentsOpen(false);
+              setCommentPlacement(true);
+            }
+          }}
+        />
+
+        {/* Shape-session status toast (save success / failure feedback) */}
+        {statusMsg ? (
+          <div className="bg-elevated border-base animate-fade-in-up absolute bottom-24 left-1/2 z-30 max-w-[80vw] -translate-x-1/2 overflow-hidden rounded-full border px-4 py-2 text-base text-xs text-ellipsis whitespace-nowrap shadow-xl">
+            {statusMsg}
+          </div>
+        ) : null}
+
+        {/* Comment placement hint */}
+        {commentPlacement && !statusMsg ? (
+          <div className="bg-elevated border-base animate-fade-in-up absolute bottom-24 left-1/2 z-30 -translate-x-1/2 rounded-full border px-4 py-2 text-base text-xs whitespace-nowrap shadow-xl">
+            Click anywhere on the map to drop a comment pin · Esc to cancel
+          </div>
+        ) : null}
+
+        {/* Annotation inspector (only visible when something is selected) */}
+        <div className="absolute top-16 left-1/2 z-30 -translate-x-1/2">
+          <AnnotationInspector
+            mapReady={mapReady}
+            mapRef={mapRef}
+          />
+        </div>
+
+        {/* Bookmark + Comments panels (self-positioning) + comment pins */}
+        <BookmarkPanel
+          mapReady={mapReady}
+          mapRef={mapRef}
+        />
+        <CommentPins
+          mapReady={mapReady}
+          mapRef={mapRef}
+          projectId={projectId ?? undefined}
+          projectName={currentProject?.title}
+        />
+        <CommentsPanel
+          mapReady={mapReady}
+          mapRef={mapRef}
+        />
+
+        {/* Toolbox - tools exposed by enabled modules (auto-discovered) */}
+        <ToolboxPanel
           basemap={basemap}
-          isOpen={aiChatOpen}
+          isOpen={toolboxOpen}
           layers={aiLayers}
           mapReady={mapReady}
           mapRef={mapRef}
-          setBasemap={setBasemap}
-          setLayerVisible={(id, visible) => {
-            const node = tree.getNode(id);
-            if (node?.kind === "layer") tree.patchLayer(id, { visible });
-            else tree.toggleVisibility(id);
-          }}
-          onClose={() => setAiChatOpen(false)}
+          onClose={() => setToolboxOpen(false)}
         />
-      </div>
+
+        <MapBottomBar
+          activeBasemap={basemap}
+          bearing={bearing}
+          bookmarkActive={bookmarkActive}
+          mapReady={mapReady}
+          zoomLevel={zoomLevel}
+          onBasemapChange={setBasemap}
+          onResetNorth={resetNorth}
+          onToggleAI={() => setAiChatOpen((v) => !v)}
+          onZoomIn={zoomIn}
+          onZoomOut={zoomOut}
+          onToggleBookmark={() => {
+            setCommentsOpen(false);
+            setBookmarkOpen(!bookmarkActive);
+          }}
+        />
+
+        <div className="absolute top-14 bottom-10 left-0 z-20">
+          <AIChatPanel
+            basemap={basemap}
+            isOpen={aiChatOpen}
+            layers={aiLayers}
+            mapReady={mapReady}
+            mapRef={mapRef}
+            setBasemap={setBasemap}
+            setLayerVisible={(id, visible) => {
+              const node = tree.getNode(id);
+              if (node?.kind === "layer") tree.patchLayer(id, { visible });
+              else tree.toggleVisibility(id);
+            }}
+            onClose={() => setAiChatOpen(false)}
+          />
+        </div>
       </div>
     </MapProvider>
   );

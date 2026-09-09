@@ -1,20 +1,20 @@
-import { Cookie, Settings, Shield } from 'lucide-react';
-import React, { useEffect } from 'react';
+import { Cookie, Settings, Shield } from "lucide-react";
+import React, { useEffect } from "react";
 
-import { CookieSettingsModal } from './CookieSettingsModal';
-import { useCookieConsentStore } from '../stores/cookieConsentStore';
+import { CookieSettingsModal } from "./CookieSettingsModal";
+import { useCookieConsentStore } from "../stores/cookieConsentStore";
 
-import type { CookieConsentConfig, BannerPosition } from '../types';
+import type { CookieConsentConfig, BannerPosition } from "../types";
 
 export interface CookieBannerProps {
   config?: CookieConsentConfig;
 }
 
 const POSITION_CLASSES: Record<BannerPosition, string> = {
-  'bottom': 'cc-banner--bottom',
-  'bottom-left': 'cc-banner--bottom-left',
-  'bottom-right': 'cc-banner--bottom-right',
-  'top': 'cc-banner--top',
+  bottom: "cc-banner--bottom",
+  "bottom-left": "cc-banner--bottom-left",
+  "bottom-right": "cc-banner--bottom-right",
+  top: "cc-banner--top",
 };
 
 export const CookieBanner: React.FC<CookieBannerProps> = ({ config }) => {
@@ -31,7 +31,8 @@ export const CookieBanner: React.FC<CookieBannerProps> = ({ config }) => {
     initialize(config);
   }, []);
 
-  const position: BannerPosition = config?.position ?? storeConfig.position ?? 'bottom';
+  const position: BannerPosition =
+    config?.position ?? storeConfig.position ?? "bottom";
 
   if (!isVisible) {
     return <CookieSettingsModal />;
@@ -40,7 +41,7 @@ export const CookieBanner: React.FC<CookieBannerProps> = ({ config }) => {
   return (
     <>
       <CookieSettingsModal />
-      
+
       <div
         aria-describedby="cc-banner-description"
         aria-labelledby="cc-banner-title"
@@ -56,12 +57,19 @@ export const CookieBanner: React.FC<CookieBannerProps> = ({ config }) => {
                 <Cookie className="cc-icon" />
               </div>
               <div className="cc-banner__text">
-                <h2 className="cc-banner__title" id="cc-banner-title">
+                <h2
+                  className="cc-banner__title"
+                  id="cc-banner-title"
+                >
                   We value your privacy
                 </h2>
-                <p className="cc-banner__description" id="cc-banner-description">
-                  We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. 
-                  By clicking "Accept All", you consent to our use of cookies.
+                <p
+                  className="cc-banner__description"
+                  id="cc-banner-description"
+                >
+                  We use cookies to enhance your browsing experience, serve
+                  personalized content, and analyze our traffic. By clicking
+                  "Accept All", you consent to our use of cookies.
                 </p>
               </div>
             </div>
@@ -105,14 +113,26 @@ export const CookieBanner: React.FC<CookieBannerProps> = ({ config }) => {
             </div>
 
             {/* Policy Links */}
-            {(storeConfig.privacyPolicyUrl || storeConfig.cookiePolicyUrl) ? <div className="cc-banner__policy-links">
-                {storeConfig.privacyPolicyUrl ? <a className="cc-banner__policy-link" href={storeConfig.privacyPolicyUrl}>
+            {storeConfig.privacyPolicyUrl || storeConfig.cookiePolicyUrl ? (
+              <div className="cc-banner__policy-links">
+                {storeConfig.privacyPolicyUrl ? (
+                  <a
+                    className="cc-banner__policy-link"
+                    href={storeConfig.privacyPolicyUrl}
+                  >
                     Privacy Policy
-                  </a> : null}
-                {storeConfig.cookiePolicyUrl ? <a className="cc-banner__policy-link" href={storeConfig.cookiePolicyUrl}>
+                  </a>
+                ) : null}
+                {storeConfig.cookiePolicyUrl ? (
+                  <a
+                    className="cc-banner__policy-link"
+                    href={storeConfig.cookiePolicyUrl}
+                  >
                     Cookie Policy
-                  </a> : null}
-              </div> : null}
+                  </a>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

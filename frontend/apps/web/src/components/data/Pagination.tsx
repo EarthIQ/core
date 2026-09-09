@@ -26,18 +26,19 @@ export default function Pagination({
   const end = Math.min(page * pageSize, totalItems);
 
   return (
-    <div className="flex items-center justify-between flex-wrap gap-3 py-2 px-1 text-xs">
+    <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-2 text-xs">
       <div className="text-text-tertiary">
-        Showing <span className="font-semibold text-text-primary">{start}</span>–
-        <span className="font-semibold text-text-primary">{end}</span> of{" "}
-        <span className="font-semibold text-text-primary">{totalItems}</span> datasets
+        Showing <span className="text-text-primary font-semibold">{start}</span>
+        –<span className="text-text-primary font-semibold">{end}</span> of{" "}
+        <span className="text-text-primary font-semibold">{totalItems}</span>{" "}
+        datasets
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5 text-text-secondary">
+        <div className="text-text-secondary flex items-center gap-1.5">
           <span>Rows:</span>
           <select
-            className="h-8 rounded-lg border border-border-primary bg-surface px-2 text-xs font-medium text-text-primary focus:outline-none focus:border-primary cursor-pointer transition-colors"
+            className="border-border-primary bg-surface text-text-primary focus:border-primary h-8 cursor-pointer rounded-lg border px-2 text-xs font-medium transition-colors focus:outline-none"
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
           >
@@ -47,10 +48,10 @@ export default function Pagination({
           </select>
         </div>
 
-        <div className="flex items-center gap-1.5 border border-border-primary rounded-lg p-0.5 bg-surface">
+        <div className="border-border-primary bg-surface flex items-center gap-1.5 rounded-lg border p-0.5">
           <button
             aria-label="Previous page"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-text-secondary hover:bg-surface-hover hover:text-text-primary disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+            className="text-text-secondary hover:bg-surface-hover hover:text-text-primary flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors disabled:pointer-events-none disabled:opacity-30"
             disabled={page <= 1}
             type="button"
             onClick={onPrev}
@@ -58,13 +59,13 @@ export default function Pagination({
             <ChevronLeft size={15} />
           </button>
 
-          <span className="px-2 text-xs font-semibold text-text-primary tabular-nums">
+          <span className="text-text-primary px-2 text-xs font-semibold tabular-nums">
             {page} / {totalPages}
           </span>
 
           <button
             aria-label="Next page"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-text-secondary hover:bg-surface-hover hover:text-text-primary disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+            className="text-text-secondary hover:bg-surface-hover hover:text-text-primary flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors disabled:pointer-events-none disabled:opacity-30"
             disabled={page >= totalPages}
             type="button"
             onClick={onNext}
@@ -76,4 +77,3 @@ export default function Pagination({
     </div>
   );
 }
-

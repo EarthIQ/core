@@ -81,7 +81,7 @@ export const ThemeProvider = ({
       {children}
     </ThemeContext.Provider>
   );
-}
+};
 
 export function useTheme() {
   const context = useContext(ThemeContext);

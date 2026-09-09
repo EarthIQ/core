@@ -15,8 +15,14 @@ import type { MutableRefObject } from "react";
 
 // Deterministic color from email string
 const AVATAR_COLORS = [
-  "#3b82f6", "#22d3a0", "#f59e0b", "#ef4444",
-  "#8b5cf6", "#ec4899", "#14b8a6", "#f97316",
+  "#3b82f6",
+  "#22d3a0",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#ec4899",
+  "#14b8a6",
+  "#f97316",
 ];
 
 function hashColor(seed: string): string {
@@ -85,9 +91,7 @@ export const CollaboratorCursors = ({
         const px = map.project([lngLat.lng, lngLat.lat]);
         // Check whether cursor is inside the current viewport
         const inView =
-          bounds.contains([lngLat.lng, lngLat.lat]) &&
-          px.x >= 0 &&
-          px.y >= 0;
+          bounds.contains([lngLat.lng, lngLat.lat]) && px.x >= 0 && px.y >= 0;
         return {
           ...c,
           px: { x: px.x, y: px.y, visible: inView },
@@ -97,7 +101,7 @@ export const CollaboratorCursors = ({
   return (
     <div
       aria-hidden="true"
-      className="absolute inset-0 pointer-events-none z-10"
+      className="pointer-events-none absolute inset-0 z-10"
     >
       {projected.map(({ user_id, email, full_name, px }) => {
         if (!px.visible) return null;
@@ -130,12 +134,10 @@ export const CollaboratorCursors = ({
 
             {/* Name tag */}
             <div
-              className="absolute left-4 top-0 flex items-center gap-1.5 px-2 py-0.5 rounded-full text-white text-[11px] font-semibold whitespace-nowrap shadow-lg"
+              className="absolute top-0 left-4 flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-white shadow-lg"
               style={{ background: color }}
             >
-              <span
-                className="w-4 h-4 rounded-full bg-white/20 text-white text-[9px] font-bold flex items-center justify-center shrink-0"
-              >
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/20 text-[9px] font-bold text-white">
                 {initials || "?"}
               </span>
               <span>{label}</span>
@@ -145,4 +147,4 @@ export const CollaboratorCursors = ({
       })}
     </div>
   );
-}
+};

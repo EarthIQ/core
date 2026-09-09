@@ -12,7 +12,7 @@ const pathsFile = resolve(__dirname, "./modules.paths.json");
 if (fs.existsSync(pathsFile)) {
   try {
     const paths: Record<string, string> = JSON.parse(
-      fs.readFileSync(pathsFile, "utf-8"),
+      fs.readFileSync(pathsFile, "utf-8")
     );
     for (const [key, val] of Object.entries(paths)) {
       const absPath = resolve(__dirname, val);

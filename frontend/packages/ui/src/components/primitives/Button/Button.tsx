@@ -183,7 +183,8 @@ const buttonVariants = cva(
  * Button component props
  */
 export interface ButtonProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color">,
+  extends
+    Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color">,
     VariantProps<typeof buttonVariants> {
   /**
    * Icon element to display before the button text
@@ -323,13 +324,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           </>
         ) : (
           <>
-            {leftIcon ? <span className="inline-flex flex-shrink-0 items-center justify-center">
+            {leftIcon ? (
+              <span className="inline-flex flex-shrink-0 items-center justify-center">
                 {leftIcon}
-              </span> : null}
+              </span>
+            ) : null}
             {children ? <span>{children}</span> : null}
-            {rightIcon ? <span className="inline-flex flex-shrink-0 items-center justify-center">
+            {rightIcon ? (
+              <span className="inline-flex flex-shrink-0 items-center justify-center">
                 {rightIcon}
-              </span> : null}
+              </span>
+            ) : null}
           </>
         )}
       </motion.button>

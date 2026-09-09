@@ -86,7 +86,8 @@ export const Drawer = ({
 
   return createPortal(
     <AnimatePresence>
-      {isOpen ? <div className="fixed inset-0 z-50">
+      {isOpen ? (
+        <div className="fixed inset-0 z-50">
           {/* Backdrop */}
           <motion.div
             animate={{ opacity: 1 }}
@@ -131,13 +132,16 @@ export const Drawer = ({
               className="flex items-center justify-between border-b p-4"
               style={{ borderColor: "var(--border-primary)" }}
             >
-              {title ? <h2
+              {title ? (
+                <h2
                   className="text-lg font-semibold"
                   style={{ color: "var(--text-primary)" }}
                 >
                   {title}
-                </h2> : null}
-              {showCloseButton ? <IconButton
+                </h2>
+              ) : null}
+              {showCloseButton ? (
+                <IconButton
                   label="Close drawer"
                   size="sm"
                   variant="ghost"
@@ -157,7 +161,8 @@ export const Drawer = ({
                     </svg>
                   }
                   onClick={onClose}
-                /> : null}
+                />
+              ) : null}
             </div>
 
             {/* Body */}
@@ -165,8 +170,9 @@ export const Drawer = ({
               {children}
             </div>
           </motion.div>
-        </div> : null}
+        </div>
+      ) : null}
     </AnimatePresence>,
     document.body
   );
-}
+};

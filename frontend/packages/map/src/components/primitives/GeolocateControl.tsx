@@ -1,14 +1,13 @@
-import * as maplibregl from 'maplibre-gl';
-import { useEffect, useRef, useCallback } from 'react';
+import * as maplibregl from "maplibre-gl";
+import { useEffect, useRef, useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type React from 'react';
-
+import type React from "react";
 
 export interface GeolocateControlProps {
   /** Position on map */
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   /** Tracking mode */
   trackUserLocation?: boolean;
   /** Show accuracy circle */
@@ -30,19 +29,19 @@ export interface GeolocateControlProps {
 }
 
 export const GeolocateControl: React.FC<GeolocateControlProps> = ({
-  position = 'top-right',
+  position = "top-right",
   trackUserLocation = true,
   showAccuracyCircle = true,
   showUserHeading = false,
   fitBoundsOptions,
   positionOptions = {
     enableHighAccuracy: true,
-    timeout: 6000
+    timeout: 6000,
   },
   onGeolocate,
   onError,
   onTrackingStart,
-  onTrackingEnd
+  onTrackingEnd,
 }) => {
   const { map, isLoaded } = useMap();
   const controlRef = useRef<maplibregl.GeolocateControl | null>(null);
@@ -55,25 +54,25 @@ export const GeolocateControl: React.FC<GeolocateControlProps> = ({
       showAccuracyCircle,
       showUserHeading,
       fitBoundsOptions,
-      positionOptions
+      positionOptions,
     });
 
     controlRef.current = control;
 
     // Event handlers
-    control.on('geolocate', (e: any) => {
+    control.on("geolocate", (e: any) => {
       onGeolocate?.(e);
     });
 
-    control.on('error', (e: any) => {
+    control.on("error", (e: any) => {
       onError?.(e);
     });
 
-    control.on('trackuserlocationstart', () => {
+    control.on("trackuserlocationstart", () => {
       onTrackingStart?.();
     });
 
-    control.on('trackuserlocationend', () => {
+    control.on("trackuserlocationend", () => {
       onTrackingEnd?.();
     });
 
@@ -82,7 +81,14 @@ export const GeolocateControl: React.FC<GeolocateControlProps> = ({
     return () => {
       map.removeControl(control);
     };
-  }, [map, isLoaded, position, trackUserLocation, showAccuracyCircle, showUserHeading]);
+  }, [
+    map,
+    isLoaded,
+    position,
+    trackUserLocation,
+    showAccuracyCircle,
+    showUserHeading,
+  ]);
 
   return null;
 };

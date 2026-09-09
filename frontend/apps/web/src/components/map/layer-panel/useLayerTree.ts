@@ -54,12 +54,12 @@ export function useLayerTree(initial: TreeNode[] = []) {
       nodes
         .filter((n) => n.parentId === parentId)
         .sort((a, b) => a.order - b.order),
-    [nodes],
+    [nodes]
   );
 
   const getNode = useCallback(
     (id: string) => nodes.find((n) => n.id === id),
-    [nodes],
+    [nodes]
   );
 
   const descendantIds = useCallback(
@@ -71,7 +71,7 @@ export function useLayerTree(initial: TreeNode[] = []) {
       });
       return acc;
     },
-    [nodes],
+    [nodes]
   );
 
   const descendantLayers = useCallback(
@@ -79,7 +79,7 @@ export function useLayerTree(initial: TreeNode[] = []) {
       descendantIds(folderId)
         .map((id) => getNode(id))
         .filter((n): n is LayerTreeNode => !!n && n.kind === "layer"),
-    [descendantIds, getNode],
+    [descendantIds, getNode]
   );
 
   /* ── Add ─────────────────────────────────────────────── */
@@ -107,7 +107,7 @@ export function useLayerTree(initial: TreeNode[] = []) {
         return [...prev, ...additions];
       });
     },
-    [],
+    []
   );
 
   const addFolder = useCallback(
@@ -127,7 +127,7 @@ export function useLayerTree(initial: TreeNode[] = []) {
       });
       return id;
     },
-    [],
+    []
   );
 
   /* ── Remove (cascades to children) ─────────────────────── */
@@ -138,7 +138,7 @@ export function useLayerTree(initial: TreeNode[] = []) {
         return prev.filter((n) => !toRemove.has(n.id));
       });
     },
-    [descendantIds],
+    [descendantIds]
   );
 
   const renameNode = useCallback((id: string, name: string) => {
@@ -155,8 +155,8 @@ export function useLayerTree(initial: TreeNode[] = []) {
           prev.map((n) =>
             n.id === id && n.kind === "layer"
               ? { ...n, visible: !n.visible }
-              : n,
-          ),
+              : n
+          )
         );
       } else {
         const layers = descendantLayers(id);
@@ -166,12 +166,12 @@ export function useLayerTree(initial: TreeNode[] = []) {
           prev.map((n) =>
             ids.has(n.id) && n.kind === "layer"
               ? { ...n, visible: nextVisible }
-              : n,
-          ),
+              : n
+          )
         );
       }
     },
-    [getNode, descendantLayers],
+    [getNode, descendantLayers]
   );
 
   const toggleCollapse = useCallback((id: string) => {
@@ -179,8 +179,8 @@ export function useLayerTree(initial: TreeNode[] = []) {
       prev.map((n) =>
         n.id === id && n.kind === "folder"
           ? { ...n, collapsed: !n.collapsed }
-          : n,
-      ),
+          : n
+      )
     );
   }, []);
 
@@ -188,11 +188,11 @@ export function useLayerTree(initial: TreeNode[] = []) {
     (id: string, patch: Partial<LayerTreeNode>) => {
       setNodes((prev) =>
         prev.map((n) =>
-          n.id === id && n.kind === "layer" ? { ...n, ...patch } : n,
-        ),
+          n.id === id && n.kind === "layer" ? { ...n, ...patch } : n
+        )
       );
     },
-    [],
+    []
   );
 
   /* ── Move / reorder (drag & drop backbone) ─────────────── */
@@ -231,12 +231,12 @@ export function useLayerTree(initial: TreeNode[] = []) {
         ];
       });
     },
-    [],
+    []
   );
 
   const totalLayerCount = useMemo(
     () => nodes.filter((n) => n.kind === "layer").length,
-    [nodes],
+    [nodes]
   );
 
   return {

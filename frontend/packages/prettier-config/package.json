@@ -16,28 +16,28 @@
       "require": "./dist/base.cjs"
     }
   },
-  "types": "./dist/index.d.ts",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
     "clean": "rm -rf dist",
+    "dev": "tsup --watch",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "prettier-plugin-packagejson": "^3.0.2",
     "prettier-plugin-tailwindcss": "^0.8.1"
   },
-  "peerDependencies": {
-    "prettier": "^3.0.0"
-  },
   "devDependencies": {
     "prettier": "^3.9.6",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3"
+  },
+  "peerDependencies": {
+    "prettier": "^3.0.0"
   }
 }

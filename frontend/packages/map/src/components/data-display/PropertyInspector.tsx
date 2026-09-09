@@ -1,9 +1,9 @@
-import * as turf from '@turf/turf';
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import * as turf from "@turf/turf";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { Feature } from 'geojson';
+import type { Feature } from "geojson";
 
 export interface PropertyInspectorProps {
   /** Layer IDs to inspect */
@@ -27,7 +27,8 @@ export interface PropertyInspectorProps {
   /** Custom className */
   className?: string;
   /** Position */
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'follow-cursor';
+  position?:
+    "top-left" | "top-right" | "bottom-left" | "bottom-right" | "follow-cursor";
   /** Callback when feature is inspected */
   onInspect?: (feature: Feature | null) => void;
   /** Enable copy to clipboard */
@@ -43,11 +44,11 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   formatters = {},
   labels = {},
   showGeometryInfo = true,
-  title = 'Feature Properties',
+  title = "Feature Properties",
   className,
-  position = 'top-right',
+  position = "top-right",
   onInspect,
-  enableCopy = true
+  enableCopy = true,
 }) => {
   const { map, isLoaded } = useMap();
   const [feature, setFeature] = useState<Feature | null>(null);
@@ -56,29 +57,35 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Handle feature inspection
-  const handleFeature = useCallback((e: any) => {
-    if (!map) return;
+  const handleFeature = useCallback(
+    (e: any) => {
+      if (!map) return;
 
-    const queryLayers = layers || map.getStyle().layers?.map(l => l.id) || [];
-    const features = map.queryRenderedFeatures(e.point, { layers: queryLayers });
+      const queryLayers =
+        layers || map.getStyle().layers?.map((l) => l.id) || [];
+      const features = map.queryRenderedFeatures(e.point, {
+        layers: queryLayers,
+      });
 
-    if (features && features.length > 0) {
-      const topFeature = features[0] as unknown as Feature;
-      setFeature(topFeature);
-      setIsVisible(true);
-      onInspect?.(topFeature);
+      if (features && features.length > 0) {
+        const topFeature = features[0] as unknown as Feature;
+        setFeature(topFeature);
+        setIsVisible(true);
+        onInspect?.(topFeature);
 
-      if (position === 'follow-cursor') {
-        setCursorPosition({ x: e.point.x, y: e.point.y });
+        if (position === "follow-cursor") {
+          setCursorPosition({ x: e.point.x, y: e.point.y });
+        }
+      } else {
+        if (showOnHover) {
+          setFeature(null);
+          setIsVisible(false);
+          onInspect?.(null);
+        }
       }
-    } else {
-      if (showOnHover) {
-        setFeature(null);
-        setIsVisible(false);
-        onInspect?.(null);
-      }
-    }
-  }, [map, layers, position, showOnHover, onInspect]);
+    },
+    [map, layers, position, showOnHover, onInspect]
+  );
 
   // Handle click away
   const handleClickAway = useCallback(() => {
@@ -93,23 +100,26 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   useEffect(() => {
     if (!map || !isLoaded) return;
 
-    const eventType = showOnHover ? 'mousemove' : 'click';
+    const eventType = showOnHover ? "mousemove" : "click";
     map.on(eventType, handleFeature);
 
     if (!showOnHover) {
       // Add click listener to close panel
       const handleMapClick = (e: any) => {
-        const queryLayers = layers || map.getStyle().layers?.map(l => l.id) || [];
-        const features = map.queryRenderedFeatures(e.point, { layers: queryLayers });
+        const queryLayers =
+          layers || map.getStyle().layers?.map((l) => l.id) || [];
+        const features = map.queryRenderedFeatures(e.point, {
+          layers: queryLayers,
+        });
         if (!features || features.length === 0) {
           handleClickAway();
         }
       };
-      map.on('click', handleMapClick);
+      map.on("click", handleMapClick);
 
       return () => {
         map.off(eventType, handleFeature);
-        map.off('click', handleMapClick);
+        map.off("click", handleMapClick);
       };
     }
 
@@ -139,16 +149,23 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
     return props.map(([key, value]) => {
       const label = labels[key] || key;
       const formatter = formatters[key];
-      let displayValue = formatter ? formatter(value) : String(value ?? 'null');
+      let displayValue = formatter ? formatter(value) : String(value ?? "null");
 
       // Truncate long values
       if (displayValue.length > 100) {
-        displayValue = displayValue.slice(0, 100) + '...';
+        displayValue = displayValue.slice(0, 100) + "...";
       }
 
       return { key, label, value, displayValue };
     });
-  }, [feature, includeProperties, excludeProperties, maxProperties, labels, formatters]);
+  }, [
+    feature,
+    includeProperties,
+    excludeProperties,
+    maxProperties,
+    labels,
+    formatters,
+  ]);
 
   // Copy value to clipboard
   const copyToClipboard = useCallback(async (key: string, value: any) => {
@@ -157,7 +174,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
       setCopiedField(key);
       setTimeout(() => setCopiedField(null), 1500);
     } catch (e) {
-      console.error('Copy failed:', e);
+      console.error("Copy failed:", e);
     }
   }, []);
 
@@ -166,27 +183,33 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
     if (!feature?.geometry || !showGeometryInfo) return null;
 
     const info: Record<string, string> = {
-      Type: feature.geometry.type
+      Type: feature.geometry.type,
     };
 
-    if (feature.geometry.type === 'Point') {
+    if (feature.geometry.type === "Point") {
       const coords = (feature.geometry as any).coordinates;
-      info['Coordinates'] = `${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}`;
-    } else if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
+      info["Coordinates"] = `${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}`;
+    } else if (
+      feature.geometry.type === "Polygon" ||
+      feature.geometry.type === "MultiPolygon"
+    ) {
       try {
         const area = turf.area(feature);
         if (area >= 1000000) {
-          info['Area'] = `${(area / 1000000).toFixed(2)} km²`;
+          info["Area"] = `${(area / 1000000).toFixed(2)} km²`;
         } else {
-          info['Area'] = `${area.toFixed(0)} m²`;
+          info["Area"] = `${area.toFixed(0)} m²`;
         }
       } catch (_e) {
         // Turf not available
       }
-    } else if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
+    } else if (
+      feature.geometry.type === "LineString" ||
+      feature.geometry.type === "MultiLineString"
+    ) {
       try {
-        const length = turf.length(feature, { units: 'kilometers' });
-        info['Length'] = `${length.toFixed(2)} km`;
+        const length = turf.length(feature, { units: "kilometers" });
+        info["Length"] = `${length.toFixed(2)} km`;
       } catch (_e) {
         // Turf not available
       }
@@ -197,24 +220,29 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 
   // Position styles
   const positionStyles = useMemo(() => {
-    const base = { position: 'absolute' as const, zIndex: 1000 };
+    const base = { position: "absolute" as const, zIndex: 1000 };
     const offset = 10;
 
-    if (position === 'follow-cursor') {
+    if (position === "follow-cursor") {
       return {
         ...base,
         left: cursorPosition.x + 15,
         top: cursorPosition.y + 15,
-        maxWidth: 300
+        maxWidth: 300,
       };
     }
-    
+
     switch (position) {
-      case 'top-left': return { ...base, top: offset, left: offset };
-      case 'top-right': return { ...base, top: offset, right: offset };
-      case 'bottom-left': return { ...base, bottom: offset, left: offset };
-      case 'bottom-right': return { ...base, bottom: offset, right: offset };
-      default: return { ...base, top: offset, right: offset };
+      case "top-left":
+        return { ...base, top: offset, left: offset };
+      case "top-right":
+        return { ...base, top: offset, right: offset };
+      case "bottom-left":
+        return { ...base, bottom: offset, left: offset };
+      case "bottom-right":
+        return { ...base, bottom: offset, right: offset };
+      default:
+        return { ...base, top: offset, right: offset };
     }
   }, [position, cursorPosition]);
 
@@ -225,34 +253,36 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
       className={className}
       style={{
         ...positionStyles,
-        backgroundColor: 'white',
+        backgroundColor: "white",
         borderRadius: 8,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+        boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
         minWidth: 250,
         maxWidth: 350,
         maxHeight: 400,
-        overflow: 'hidden'
+        overflow: "hidden",
       }}
     >
       {/* Header */}
-      <div style={{
-        padding: '10px 16px',
-        backgroundColor: '#3498db',
-        color: 'white',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
+      <div
+        style={{
+          padding: "10px 16px",
+          backgroundColor: "#3498db",
+          color: "white",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <span style={{ fontWeight: 600, fontSize: 13 }}>{title}</span>
         {!showOnHover && (
           <button
             style={{
-              background: 'none',
-              border: 'none',
-              color: 'white',
-              cursor: 'pointer',
+              background: "none",
+              border: "none",
+              color: "white",
+              cursor: "pointer",
               fontSize: 18,
-              lineHeight: 1
+              lineHeight: 1,
             }}
             onClick={handleClickAway}
           >
@@ -262,78 +292,105 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
       </div>
 
       {/* Content */}
-      <div style={{ padding: 12, overflowY: 'auto', maxHeight: 340 }}>
+      <div style={{ padding: 12, overflowY: "auto", maxHeight: 340 }}>
         {/* Geometry info */}
-        {geometryInfo ? <div style={{
-            marginBottom: 12,
-            paddingBottom: 12,
-            borderBottom: '1px solid #eee'
-          }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#666', marginBottom: 6 }}>
+        {geometryInfo ? (
+          <div
+            style={{
+              marginBottom: 12,
+              paddingBottom: 12,
+              borderBottom: "1px solid #eee",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: "#666",
+                marginBottom: 6,
+              }}
+            >
               Geometry
             </div>
             {Object.entries(geometryInfo).map(([key, value]) => (
               <div
                 key={key}
                 style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
+                  display: "flex",
+                  justifyContent: "space-between",
                   fontSize: 12,
-                  marginBottom: 4
+                  marginBottom: 4,
                 }}
               >
-                <span style={{ color: '#666' }}>{key}:</span>
+                <span style={{ color: "#666" }}>{key}:</span>
                 <span style={{ fontWeight: 500 }}>{value}</span>
               </div>
             ))}
-          </div> : null}
+          </div>
+        ) : null}
 
         {/* Properties */}
-        <div style={{ fontSize: 11, fontWeight: 600, color: '#666', marginBottom: 6 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#666",
+            marginBottom: 6,
+          }}
+        >
           Attributes
         </div>
-        
+
         {displayProperties.length === 0 ? (
-          <div style={{ color: '#999', fontSize: 12, fontStyle: 'italic' }}>
+          <div style={{ color: "#999", fontSize: 12, fontStyle: "italic" }}>
             No properties available
           </div>
         ) : (
-          <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+          <table
+            style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}
+          >
             <tbody>
               {displayProperties.map(({ key, label, value, displayValue }) => (
                 <tr
                   key={key}
-                  style={{ borderBottom: '1px solid #f0f0f0' }}
+                  style={{ borderBottom: "1px solid #f0f0f0" }}
                 >
-                  <td style={{
-                    padding: '6px 8px 6px 0',
-                    color: '#666',
-                    verticalAlign: 'top',
-                    width: '40%'
-                  }}>
+                  <td
+                    style={{
+                      padding: "6px 8px 6px 0",
+                      color: "#666",
+                      verticalAlign: "top",
+                      width: "40%",
+                    }}
+                  >
                     {label}
                   </td>
-                  <td style={{
-                    padding: '6px 0',
-                    wordBreak: 'break-word',
-                    position: 'relative'
-                  }}>
+                  <td
+                    style={{
+                      padding: "6px 0",
+                      wordBreak: "break-word",
+                      position: "relative",
+                    }}
+                  >
                     <span>{displayValue}</span>
-                    {enableCopy && value !== null && value !== undefined ? <button
+                    {enableCopy && value !== null && value !== undefined ? (
+                      <button
                         style={{
                           marginLeft: 8,
-                          padding: '2px 6px',
+                          padding: "2px 6px",
                           fontSize: 10,
-                          backgroundColor: copiedField === key ? '#27ae60' : '#eee',
-                          color: copiedField === key ? 'white' : '#666',
-                          border: 'none',
+                          backgroundColor:
+                            copiedField === key ? "#27ae60" : "#eee",
+                          color: copiedField === key ? "white" : "#666",
+                          border: "none",
                           borderRadius: 3,
-                          cursor: 'pointer'
+                          cursor: "pointer",
                         }}
                         onClick={() => copyToClipboard(key, value)}
                       >
-                        {copiedField === key ? '✓' : 'Copy'}
-                      </button> : null}
+                        {copiedField === key ? "✓" : "Copy"}
+                      </button>
+                    ) : null}
                   </td>
                 </tr>
               ))}
@@ -342,15 +399,19 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         )}
 
         {/* Layer info */}
-        {(feature as any).layer ? <div style={{
-            marginTop: 12,
-            paddingTop: 12,
-            borderTop: '1px solid #eee',
-            fontSize: 11,
-            color: '#999'
-          }}>
+        {(feature as any).layer ? (
+          <div
+            style={{
+              marginTop: 12,
+              paddingTop: 12,
+              borderTop: "1px solid #eee",
+              fontSize: 11,
+              color: "#999",
+            }}
+          >
             Layer: {(feature as any).layer.id}
-          </div> : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );

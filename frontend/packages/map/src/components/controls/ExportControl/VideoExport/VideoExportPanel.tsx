@@ -144,353 +144,358 @@ export const VideoExportPanel = ({
 
   return (
     <div
-        className={`relative mb-9 flex w-full flex-col ${className}`}
+      className={`relative mb-9 flex w-full flex-col ${className}`}
+      style={{
+        backgroundColor: "var(--bg-elevated)",
+        maxHeight: isExpanded ? "350px" : "40px",
+      }}
+    >
+      {/* Export Settings Overlay */}
+      <div className="relative">
+        <ExportSettingsPanel
+          isExporting={exporter.isExporting}
+          isOpen={showExportSettings}
+          keyframeCount={engine.keyframes.length}
+          progress={exporter.progress}
+          totalDuration={engine.totalDuration}
+          onCancel={exporter.cancelExport}
+          onClose={() => setShowExportSettings(false)}
+          onExport={handleExport}
+        />
+      </div>
+
+      {/* Top bar */}
+      <div
+        className="flex items-center justify-between px-3 py-1.5"
         style={{
-          backgroundColor: "var(--bg-elevated)",
-          maxHeight: isExpanded ? "350px" : "40px",
+          borderBottom: isExpanded ? "1px solid var(--divider)" : "none",
         }}
       >
-        {/* Export Settings Overlay */}
-        <div className="relative">
-          <ExportSettingsPanel
-            isExporting={exporter.isExporting}
-            isOpen={showExportSettings}
-            keyframeCount={engine.keyframes.length}
-            progress={exporter.progress}
-            totalDuration={engine.totalDuration}
-            onCancel={exporter.cancelExport}
-            onClose={() => setShowExportSettings(false)}
-            onExport={handleExport}
-          />
+        {/* Left: Auto-computed duration & keyframe count */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <Clock
+              size={12}
+              style={{ color: "var(--text-tertiary)" }}
+            />
+            <span
+              className="font-mono text-[11px]"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {formatTime(engine.totalDuration)}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Layers
+              size={12}
+              style={{ color: "var(--text-tertiary)" }}
+            />
+            <span
+              className="font-mono text-[11px]"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {engine.keyframes.length} keyframes
+            </span>
+          </div>
         </div>
 
-        {/* Top bar */}
+        {/* Center: Transport controls */}
+        <div className="flex items-center gap-1">
+          <button
+            className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
+            style={{ color: "var(--text-secondary)" }}
+            title="Previous Keyframe (Shift+←)"
+            onClick={engine.goToPrevKeyframe}
+          >
+            <SkipBack size={14} />
+          </button>
+          <button
+            className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
+            style={{ color: "var(--text-secondary)" }}
+            title="Step Backward (←)"
+            onClick={engine.stepBackward}
+          >
+            <ChevronLeft size={14} />
+          </button>
+          <button
+            className="rounded-lg p-2 transition-all"
+            disabled={engine.keyframes.length < 2}
+            title="Play/Pause (Space)"
+            style={{
+              backgroundColor: engine.timeline.isPlaying
+                ? "var(--error)"
+                : "var(--primary)",
+              color: "var(--text-on-primary)",
+            }}
+            onClick={engine.togglePlayPause}
+          >
+            {engine.timeline.isPlaying ? (
+              <Pause size={16} />
+            ) : (
+              <Play size={16} />
+            )}
+          </button>
+          <button
+            className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
+            style={{ color: "var(--text-secondary)" }}
+            title="Stop"
+            onClick={engine.stop}
+          >
+            <Square size={14} />
+          </button>
+          <button
+            className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
+            style={{ color: "var(--text-secondary)" }}
+            title="Step Forward (→)"
+            onClick={engine.stepForward}
+          >
+            <ChevronRight size={14} />
+          </button>
+          <button
+            className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
+            style={{ color: "var(--text-secondary)" }}
+            title="Next Keyframe (Shift+→)"
+            onClick={engine.goToNextKeyframe}
+          >
+            <SkipForward size={14} />
+          </button>
+
+          {/* Speed */}
+          <div className="relative ml-1">
+            <button
+              className="flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] transition-colors hover:bg-[var(--surface-hover)]"
+              style={{
+                color: "var(--text-secondary)",
+                border: "1px solid var(--border-secondary)",
+              }}
+              onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+            >
+              <Gauge size={10} />
+              {engine.playbackSpeed}x
+            </button>
+            {showSpeedMenu ? (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowSpeedMenu(false)}
+                />
+                <div
+                  className="absolute bottom-full left-0 z-50 mb-1 min-w-[80px] overflow-hidden rounded-lg py-1"
+                  style={{
+                    backgroundColor: "var(--bg-elevated)",
+                    border: "1px solid var(--border-primary)",
+                    boxShadow: "var(--shadow-lg)",
+                  }}
+                >
+                  {SPEED_OPTIONS.map((speed) => (
+                    <button
+                      key={speed}
+                      className="w-full px-3 py-1 text-left font-mono text-[11px] transition-colors hover:bg-[var(--surface-hover)]"
+                      style={{
+                        color:
+                          engine.playbackSpeed === speed
+                            ? "var(--primary)"
+                            : "var(--text-primary)",
+                        fontWeight: engine.playbackSpeed === speed ? 600 : 400,
+                      }}
+                      onClick={() => {
+                        engine.setPlaybackSpeed(speed);
+                        setShowSpeedMenu(false);
+                      }}
+                    >
+                      {speed}x
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-1.5">
+          <button
+            className="flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all"
+            title="Add Keyframe (K)"
+            style={{
+              backgroundColor: "var(--success-bg)",
+              color: "var(--success-text)",
+              border: "1px solid var(--success-border)",
+            }}
+            onClick={() => engine.addKeyframe()}
+          >
+            <Plus size={12} />
+            Keyframe
+          </button>
+
+          {engine.keyframes.length > 0 && (
+            <button
+              className="rounded-md p-1.5 transition-colors hover:bg-[var(--error-bg)]"
+              style={{ color: "var(--text-tertiary)" }}
+              title="Clear All"
+              onClick={() => {
+                if (window.confirm("Clear all keyframes?"))
+                  engine.clearKeyframes();
+              }}
+            >
+              <Trash2 size={13} />
+            </button>
+          )}
+
+          <div
+            className="mx-1 h-5 w-px"
+            style={{ backgroundColor: "var(--divider)" }}
+          />
+
+          <button
+            className="flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all"
+            disabled={engine.keyframes.length < 2}
+            style={{
+              backgroundColor: "var(--primary)",
+              color: "var(--text-on-primary)",
+            }}
+            onClick={() => setShowExportSettings(true)}
+          >
+            <Download size={12} />
+            Export
+          </button>
+
+          <button
+            className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
+            style={{ color: "var(--text-tertiary)" }}
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            {isExpanded ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+          </button>
+          <button
+            className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
+            style={{ color: "var(--text-tertiary)" }}
+            onClick={onClose}
+          >
+            <X size={13} />
+          </button>
+        </div>
+      </div>
+
+      {/* Timeline area */}
+      {isExpanded ? (
+        <div className="px-4 pt-2 pb-3">
+          <Timeline
+            getKeyframeTime={engine.getKeyframeTime}
+            keyframes={engine.keyframes}
+            selectedKeyframeId={engine.selectedKeyframeId}
+            timeline={engine.timeline}
+            onKeyframeDuplicate={engine.duplicateKeyframe}
+            onKeyframeRemove={engine.removeKeyframe}
+            onKeyframeSelect={engine.setSelectedKeyframeId}
+            onKeyframeUpdate={engine.updateKeyframe}
+            onKeyframeUpdateFromMap={engine.updateKeyframeFromMap}
+            onSeek={engine.seekTo}
+          />
+
+          {/* Selected keyframe properties */}
+          {selectedKeyframe && selectedKeyframeIndex >= 0 ? (
+            <div className="mt-3">
+              <KeyframeProperties
+                isLast={selectedKeyframeIndex === engine.keyframes.length - 1}
+                keyframe={selectedKeyframe}
+                keyframeIndex={selectedKeyframeIndex}
+                keyframeTime={engine.getKeyframeTime(selectedKeyframeIndex)}
+                onUpdate={engine.updateKeyframe}
+                onUpdateFromMap={engine.updateKeyframeFromMap}
+              />
+            </div>
+          ) : null}
+
+          {/* Empty state */}
+          {engine.keyframes.length === 0 && (
+            <div className="py-4 text-center">
+              <p
+                className="text-xs"
+                style={{ color: "var(--text-tertiary)" }}
+              >
+                Navigate the map and press{" "}
+                <kbd
+                  className="rounded px-1.5 py-0.5 font-mono text-[10px]"
+                  style={{
+                    backgroundColor: "var(--bg-tertiary)",
+                    border: "1px solid var(--border-primary)",
+                    color: "var(--text-secondary)",
+                  }}
+                >
+                  K
+                </kbd>{" "}
+                or click{" "}
+                <span style={{ color: "var(--success-text)" }}>+ Keyframe</span>{" "}
+                to start
+              </p>
+              <p
+                className="mt-1 text-[10px]"
+                style={{ color: "var(--text-tertiary)" }}
+              >
+                Each keyframe auto-adds 5s. Timeline grows automatically - no
+                limit.
+              </p>
+            </div>
+          )}
+
+          {engine.keyframes.length === 1 && (
+            <div
+              className="mt-2 rounded-md py-2 text-center text-[10px]"
+              style={{
+                backgroundColor: "var(--warning-bg)",
+                color: "var(--warning-text)",
+                border: "1px solid var(--warning-border)",
+              }}
+            >
+              Move the map and add another keyframe - 5s transition will be
+              created automatically
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      {/* Shortcuts bar */}
+      {isExpanded ? (
         <div
-          className="flex items-center justify-between px-3 py-1.5"
+          className="flex items-center justify-center gap-4 px-4 py-1.5 text-[9px]"
           style={{
-            borderBottom: isExpanded ? "1px solid var(--divider)" : "none",
+            borderTop: "1px solid var(--divider)",
+            color: "var(--text-tertiary)",
           }}
         >
-          {/* Left: Auto-computed duration & keyframe count */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <Clock
-                size={12}
-                style={{ color: "var(--text-tertiary)" }}
-              />
-              <span
-                className="font-mono text-[11px]"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {formatTime(engine.totalDuration)}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Layers
-                size={12}
-                style={{ color: "var(--text-tertiary)" }}
-              />
-              <span
-                className="font-mono text-[11px]"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {engine.keyframes.length} keyframes
-              </span>
-            </div>
-          </div>
-
-          {/* Center: Transport controls */}
-          <div className="flex items-center gap-1">
-            <button
-              className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
-              style={{ color: "var(--text-secondary)" }}
-              title="Previous Keyframe (Shift+←)"
-              onClick={engine.goToPrevKeyframe}
-            >
-              <SkipBack size={14} />
-            </button>
-            <button
-              className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
-              style={{ color: "var(--text-secondary)" }}
-              title="Step Backward (←)"
-              onClick={engine.stepBackward}
-            >
-              <ChevronLeft size={14} />
-            </button>
-            <button
-              className="rounded-lg p-2 transition-all"
-              disabled={engine.keyframes.length < 2}
-              title="Play/Pause (Space)"
-              style={{
-                backgroundColor: engine.timeline.isPlaying
-                  ? "var(--error)"
-                  : "var(--primary)",
-                color: "var(--text-on-primary)",
-              }}
-              onClick={engine.togglePlayPause}
-            >
-              {engine.timeline.isPlaying ? (
-                <Pause size={16} />
-              ) : (
-                <Play size={16} />
-              )}
-            </button>
-            <button
-              className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
-              style={{ color: "var(--text-secondary)" }}
-              title="Stop"
-              onClick={engine.stop}
-            >
-              <Square size={14} />
-            </button>
-            <button
-              className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
-              style={{ color: "var(--text-secondary)" }}
-              title="Step Forward (→)"
-              onClick={engine.stepForward}
-            >
-              <ChevronRight size={14} />
-            </button>
-            <button
-              className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
-              style={{ color: "var(--text-secondary)" }}
-              title="Next Keyframe (Shift+→)"
-              onClick={engine.goToNextKeyframe}
-            >
-              <SkipForward size={14} />
-            </button>
-
-            {/* Speed */}
-            <div className="relative ml-1">
-              <button
-                className="flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] transition-colors hover:bg-[var(--surface-hover)]"
-                style={{
-                  color: "var(--text-secondary)",
-                  border: "1px solid var(--border-secondary)",
-                }}
-                onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-              >
-                <Gauge size={10} />
-                {engine.playbackSpeed}x
-              </button>
-              {showSpeedMenu ? <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setShowSpeedMenu(false)}
-                  />
-                  <div
-                    className="absolute bottom-full left-0 z-50 mb-1 min-w-[80px] overflow-hidden rounded-lg py-1"
-                    style={{
-                      backgroundColor: "var(--bg-elevated)",
-                      border: "1px solid var(--border-primary)",
-                      boxShadow: "var(--shadow-lg)",
-                    }}
-                  >
-                    {SPEED_OPTIONS.map((speed) => (
-                      <button
-                        key={speed}
-                        className="w-full px-3 py-1 text-left font-mono text-[11px] transition-colors hover:bg-[var(--surface-hover)]"
-                        style={{
-                          color:
-                            engine.playbackSpeed === speed
-                              ? "var(--primary)"
-                              : "var(--text-primary)",
-                          fontWeight:
-                            engine.playbackSpeed === speed ? 600 : 400,
-                        }}
-                        onClick={() => {
-                          engine.setPlaybackSpeed(speed);
-                          setShowSpeedMenu(false);
-                        }}
-                      >
-                        {speed}x
-                      </button>
-                    ))}
-                  </div>
-                </> : null}
-            </div>
-          </div>
-
-          {/* Right: Actions */}
-          <div className="flex items-center gap-1.5">
-            <button
-              className="flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all"
-              title="Add Keyframe (K)"
-              style={{
-                backgroundColor: "var(--success-bg)",
-                color: "var(--success-text)",
-                border: "1px solid var(--success-border)",
-              }}
-              onClick={() => engine.addKeyframe()}
-            >
-              <Plus size={12} />
-              Keyframe
-            </button>
-
-            {engine.keyframes.length > 0 && (
-              <button
-                className="rounded-md p-1.5 transition-colors hover:bg-[var(--error-bg)]"
-                style={{ color: "var(--text-tertiary)" }}
-                title="Clear All"
-                onClick={() => {
-                  if (window.confirm("Clear all keyframes?"))
-                    engine.clearKeyframes();
-                }}
-              >
-                <Trash2 size={13} />
-              </button>
-            )}
-
-            <div
-              className="mx-1 h-5 w-px"
-              style={{ backgroundColor: "var(--divider)" }}
-            />
-
-            <button
-              className="flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all"
-              disabled={engine.keyframes.length < 2}
-              style={{
-                backgroundColor: "var(--primary)",
-                color: "var(--text-on-primary)",
-              }}
-              onClick={() => setShowExportSettings(true)}
-            >
-              <Download size={12} />
-              Export
-            </button>
-
-            <button
-              className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
-              style={{ color: "var(--text-tertiary)" }}
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {isExpanded ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-            </button>
-            <button
-              className="rounded-md p-1.5 transition-colors hover:bg-[var(--surface-hover)]"
-              style={{ color: "var(--text-tertiary)" }}
-              onClick={onClose}
-            >
-              <X size={13} />
-            </button>
-          </div>
+          <span>
+            <kbd className="rounded bg-[var(--bg-tertiary)] px-1 font-mono">
+              Space
+            </kbd>{" "}
+            Play
+          </span>
+          <span>
+            <kbd className="rounded bg-[var(--bg-tertiary)] px-1 font-mono">
+              K
+            </kbd>{" "}
+            Add KF (+5s)
+          </span>
+          <span>
+            <kbd className="rounded bg-[var(--bg-tertiary)] px-1 font-mono">
+              ←→
+            </kbd>{" "}
+            Step
+          </span>
+          <span>
+            <kbd className="rounded bg-[var(--bg-tertiary)] px-1 font-mono">
+              Shift+←→
+            </kbd>{" "}
+            Jump KF
+          </span>
+          <span>
+            <kbd className="rounded bg-[var(--bg-tertiary)] px-1 font-mono">
+              Del
+            </kbd>{" "}
+            Delete
+          </span>
         </div>
-
-        {/* Timeline area */}
-        {isExpanded ? <div className="px-4 pt-2 pb-3">
-            <Timeline
-              getKeyframeTime={engine.getKeyframeTime}
-              keyframes={engine.keyframes}
-              selectedKeyframeId={engine.selectedKeyframeId}
-              timeline={engine.timeline}
-              onKeyframeDuplicate={engine.duplicateKeyframe}
-              onKeyframeRemove={engine.removeKeyframe}
-              onKeyframeSelect={engine.setSelectedKeyframeId}
-              onKeyframeUpdate={engine.updateKeyframe}
-              onKeyframeUpdateFromMap={engine.updateKeyframeFromMap}
-              onSeek={engine.seekTo}
-            />
-
-            {/* Selected keyframe properties */}
-            {selectedKeyframe && selectedKeyframeIndex >= 0 ? <div className="mt-3">
-                <KeyframeProperties
-                  isLast={selectedKeyframeIndex === engine.keyframes.length - 1}
-                  keyframe={selectedKeyframe}
-                  keyframeIndex={selectedKeyframeIndex}
-                  keyframeTime={engine.getKeyframeTime(selectedKeyframeIndex)}
-                  onUpdate={engine.updateKeyframe}
-                  onUpdateFromMap={engine.updateKeyframeFromMap}
-                />
-              </div> : null}
-
-            {/* Empty state */}
-            {engine.keyframes.length === 0 && (
-              <div className="py-4 text-center">
-                <p
-                  className="text-xs"
-                  style={{ color: "var(--text-tertiary)" }}
-                >
-                  Navigate the map and press{" "}
-                  <kbd
-                    className="rounded px-1.5 py-0.5 font-mono text-[10px]"
-                    style={{
-                      backgroundColor: "var(--bg-tertiary)",
-                      border: "1px solid var(--border-primary)",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    K
-                  </kbd>{" "}
-                  or click{" "}
-                  <span style={{ color: "var(--success-text)" }}>
-                    + Keyframe
-                  </span>{" "}
-                  to start
-                </p>
-                <p
-                  className="mt-1 text-[10px]"
-                  style={{ color: "var(--text-tertiary)" }}
-                >
-                  Each keyframe auto-adds 5s. Timeline grows automatically - no
-                  limit.
-                </p>
-              </div>
-            )}
-
-            {engine.keyframes.length === 1 && (
-              <div
-                className="mt-2 rounded-md py-2 text-center text-[10px]"
-                style={{
-                  backgroundColor: "var(--warning-bg)",
-                  color: "var(--warning-text)",
-                  border: "1px solid var(--warning-border)",
-                }}
-              >
-                Move the map and add another keyframe - 5s transition will be
-                created automatically
-              </div>
-            )}
-          </div> : null}
-
-        {/* Shortcuts bar */}
-        {isExpanded ? <div
-            className="flex items-center justify-center gap-4 px-4 py-1.5 text-[9px]"
-            style={{
-              borderTop: "1px solid var(--divider)",
-              color: "var(--text-tertiary)",
-            }}
-          >
-            <span>
-              <kbd className="rounded bg-[var(--bg-tertiary)] px-1 font-mono">
-                Space
-              </kbd>{" "}
-              Play
-            </span>
-            <span>
-              <kbd className="rounded bg-[var(--bg-tertiary)] px-1 font-mono">
-                K
-              </kbd>{" "}
-              Add KF (+5s)
-            </span>
-            <span>
-              <kbd className="rounded bg-[var(--bg-tertiary)] px-1 font-mono">
-                ←→
-              </kbd>{" "}
-              Step
-            </span>
-            <span>
-              <kbd className="rounded bg-[var(--bg-tertiary)] px-1 font-mono">
-                Shift+←→
-              </kbd>{" "}
-              Jump KF
-            </span>
-            <span>
-              <kbd className="rounded bg-[var(--bg-tertiary)] px-1 font-mono">
-                Del
-              </kbd>{" "}
-              Delete
-            </span>
-          </div> : null}
-      </div>
+      ) : null}
+    </div>
   );
-}
+};

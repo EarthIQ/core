@@ -51,8 +51,9 @@ const FALLBACK_TIMEZONES = [
 
 function timezoneOptions(): string[] {
   try {
-    const list = (Intl as unknown as { supportedValuesOf?: (k: string) => string[] })
-      .supportedValuesOf?.("timeZone");
+    const list = (
+      Intl as unknown as { supportedValuesOf?: (k: string) => string[] }
+    ).supportedValuesOf?.("timeZone");
     if (list && list.length) {
       const sorted = [...list].sort();
       if (!sorted.includes("UTC")) sorted.unshift("UTC");
@@ -109,7 +110,9 @@ export default function ProfileSection() {
             "",
         });
       })
-      .catch(() => setStatus({ kind: "error", message: "Could not load your profile." }));
+      .catch(() =>
+        setStatus({ kind: "error", message: "Could not load your profile." })
+      );
   }, []);
 
   function set<K extends keyof typeof form>(key: K, value: string) {
@@ -137,13 +140,19 @@ export default function ProfileSection() {
       refreshUser?.();
       setTimeout(() => setStatus({ kind: "idle" }), 2500);
     } catch (e) {
-      setStatus({ kind: "error", message: e instanceof Error ? e.message : "Save failed" });
+      setStatus({
+        kind: "error",
+        message: e instanceof Error ? e.message : "Save failed",
+      });
     }
   }, [form, profile, refreshUser]);
 
   const changePassword = useCallback(async () => {
     if (pw.next.length < 8) {
-      setPwStatus({ kind: "error", message: "New password must be at least 8 characters." });
+      setPwStatus({
+        kind: "error",
+        message: "New password must be at least 8 characters.",
+      });
       return;
     }
     if (pw.next !== pw.confirm) {
@@ -169,7 +178,7 @@ export default function ProfileSection() {
 
   if (!profile) {
     return (
-      <div className="p-8 text-center text-sm text-text-secondary">
+      <div className="text-text-secondary p-8 text-center text-sm">
         {status.kind === "error" ? status.message : "Loading profile…"}
       </div>
     );
@@ -178,40 +187,48 @@ export default function ProfileSection() {
   return (
     <div className="grid gap-6">
       {/* ── Identity card ── */}
-      <div className="card p-5 flex items-center gap-4">
+      <div className="card flex items-center gap-4 p-5">
         {profile.avatar_url ? (
           <img
             alt="avatar"
-            className="w-16 h-16 rounded-full object-cover border border-border-primary"
+            className="border-border-primary h-16 w-16 rounded-full border object-cover"
             src={profile.avatar_url}
           />
         ) : (
-          <div className="w-16 h-16 rounded-full bg-primary/15 text-primary text-xl font-bold flex items-center justify-center border border-primary/20">
+          <div className="bg-primary/15 text-primary border-primary/20 flex h-16 w-16 items-center justify-center rounded-full border text-xl font-bold">
             {initials(profile.full_name || profile.email)}
           </div>
         )}
         <div className="min-w-0">
-          <div className="text-base font-semibold text-text-primary truncate">
+          <div className="text-text-primary truncate text-base font-semibold">
             {profile.full_name || "Unnamed user"}
           </div>
-          <div className="text-xs text-text-secondary truncate">{profile.email}</div>
-          {profile.job_title ? <div className="text-xs text-text-tertiary mt-0.5">{profile.job_title}</div> : null}
-          <div className="text-[0.65rem] text-text-tertiary mt-1">
+          <div className="text-text-secondary truncate text-xs">
+            {profile.email}
+          </div>
+          {profile.job_title ? (
+            <div className="text-text-tertiary mt-0.5 text-xs">
+              {profile.job_title}
+            </div>
+          ) : null}
+          <div className="text-text-tertiary mt-1 text-[0.65rem]">
             Joined {new Date(profile.created_at).toLocaleDateString()}
           </div>
         </div>
       </div>
 
       {/* ── Profile form ── */}
-      <div className="card p-6 flex flex-col gap-4">
+      <div className="card flex flex-col gap-4 p-6">
         <div>
-          <h3 className="text-sm font-semibold text-text-primary">Profile details</h3>
-          <p className="text-xs text-text-secondary mt-0.5">
+          <h3 className="text-text-primary text-sm font-semibold">
+            Profile details
+          </h3>
+          <p className="text-text-secondary mt-0.5 text-xs">
             This is how you appear to teammates across the platform.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="form-field">
             <label className="form-label">Full name</label>
             <input
@@ -276,7 +293,10 @@ export default function ProfileSection() {
             >
               <option value="">Auto (browser)</option>
               {timezoneOptions().map((tz) => (
-                <option key={tz} value={tz}>
+                <option
+                  key={tz}
+                  value={tz}
+                >
                   {tz}
                 </option>
               ))}
@@ -293,21 +313,30 @@ export default function ProfileSection() {
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 mt-1">
-          {status.kind === "ok" && <span className="text-xs text-success">✓ Saved</span>}
-          {status.kind === "error" && <span className="text-xs text-error">{status.message}</span>}
-          <button className="btn btn-primary" disabled={!dirty || status.kind === "saving"} onClick={save}>
+        <div className="mt-1 flex items-center justify-end gap-3">
+          {status.kind === "ok" && (
+            <span className="text-success text-xs">✓ Saved</span>
+          )}
+          {status.kind === "error" && (
+            <span className="text-error text-xs">{status.message}</span>
+          )}
+          <button
+            className="btn btn-primary"
+            disabled={!dirty || status.kind === "saving"}
+            onClick={save}
+          >
             {status.kind === "saving" ? "Saving…" : "Save changes"}
           </button>
         </div>
       </div>
 
       {/* ── Security card ── */}
-      <div className="card p-6 flex flex-col gap-4">
+      <div className="card flex flex-col gap-4 p-6">
         <div>
-          <h3 className="text-sm font-semibold text-text-primary">Security</h3>
-          <p className="text-xs text-text-secondary mt-0.5">
-            Change your password. Minimum 8 characters with upper, lower and a number.
+          <h3 className="text-text-primary text-sm font-semibold">Security</h3>
+          <p className="text-text-secondary mt-0.5 text-xs">
+            Change your password. Minimum 8 characters with upper, lower and a
+            number.
           </p>
         </div>
         <div className="form-field">
@@ -320,7 +349,7 @@ export default function ProfileSection() {
             onChange={(e) => setPw((p) => ({ ...p, current: e.target.value }))}
           />
         </div>
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="form-field">
             <label className="form-label">New password</label>
             <input
@@ -338,18 +367,27 @@ export default function ProfileSection() {
               className="input"
               type="password"
               value={pw.confirm}
-              onChange={(e) => setPw((p) => ({ ...p, confirm: e.target.value }))}
+              onChange={(e) =>
+                setPw((p) => ({ ...p, confirm: e.target.value }))
+              }
             />
           </div>
         </div>
         <div className="flex items-center justify-end gap-3">
-          {pwStatus.kind === "ok" && <span className="text-xs text-success">✓ Password updated</span>}
+          {pwStatus.kind === "ok" && (
+            <span className="text-success text-xs">✓ Password updated</span>
+          )}
           {pwStatus.kind === "error" && (
-            <span className="text-xs text-error">{pwStatus.message}</span>
+            <span className="text-error text-xs">{pwStatus.message}</span>
           )}
           <button
             className="btn btn-secondary"
-            disabled={pwStatus.kind === "saving" || !pw.current || !pw.next || !pw.confirm}
+            disabled={
+              pwStatus.kind === "saving" ||
+              !pw.current ||
+              !pw.next ||
+              !pw.confirm
+            }
             onClick={changePassword}
           >
             {pwStatus.kind === "saving" ? "Updating…" : "Change password"}

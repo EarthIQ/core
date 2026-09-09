@@ -95,12 +95,14 @@ export const ConfirmDialog = ({
           {title}
         </h3>
 
-        {description ? <p
+        {description ? (
+          <p
             className="mb-4 text-sm"
             style={{ color: "var(--text-secondary)" }}
           >
             {description}
-          </p> : null}
+          </p>
+        ) : null}
 
         {children}
       </div>
@@ -123,7 +125,7 @@ export const ConfirmDialog = ({
       </ModalFooter>
     </Modal>
   );
-}
+};
 
 // Hook for easier confirmation dialog usage
 interface UseConfirmOptions {

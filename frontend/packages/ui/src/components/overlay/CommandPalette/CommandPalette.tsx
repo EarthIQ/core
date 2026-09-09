@@ -147,7 +147,8 @@ export const CommandPalette = ({
 
   return createPortal(
     <AnimatePresence>
-      {isOpen ? <div
+      {isOpen ? (
+        <div
           aria-labelledby="command-palette-title"
           aria-modal="true"
           className="fixed inset-0 flex items-start justify-center pt-[15vh]"
@@ -249,18 +250,23 @@ export const CommandPalette = ({
                             onClose();
                           }}
                         >
-                          {item.icon ? <span className="text-muted h-5 w-5 flex-shrink-0">
+                          {item.icon ? (
+                            <span className="text-muted h-5 w-5 flex-shrink-0">
                               {item.icon}
-                            </span> : null}
+                            </span>
+                          ) : null}
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-base text-sm font-medium">
                               {item.label}
                             </p>
-                            {item.description ? <p className="text-muted truncate text-xs">
+                            {item.description ? (
+                              <p className="text-muted truncate text-xs">
                                 {item.description}
-                              </p> : null}
+                              </p>
+                            ) : null}
                           </div>
-                          {item.shortcut ? <div className="flex flex-shrink-0 items-center gap-1">
+                          {item.shortcut ? (
+                            <div className="flex flex-shrink-0 items-center gap-1">
                               {item.shortcut.map((key, i) => (
                                 <kbd
                                   key={i}
@@ -272,7 +278,8 @@ export const CommandPalette = ({
                                   {key}
                                 </kbd>
                               ))}
-                            </div> : null}
+                            </div>
+                          ) : null}
                         </button>
                       );
                     })}
@@ -312,11 +319,12 @@ export const CommandPalette = ({
               </span>
             </div>
           </motion.div>
-        </div> : null}
+        </div>
+      ) : null}
     </AnimatePresence>,
     document.body
   );
-}
+};
 
 // Hook to trigger command palette with keyboard shortcut
 export function useCommandPalette() {

@@ -1,17 +1,17 @@
-import { type ReactNode, type HTMLAttributes } from 'react';
+import { type ReactNode, type HTMLAttributes } from "react";
 
-import { cn } from '../../../utils/cn';
+import { cn } from "../../../utils/cn";
 
 interface StackProps extends HTMLAttributes<HTMLDivElement> {
   /** The content to display inside the stack */
   children: ReactNode;
-  
+
   /**
    * The direction in which to layout children.
    * @default 'column'
    */
-  direction?: 'row' | 'column';
-  
+  direction?: "row" | "column";
+
   /**
    * The space between elements.
    * - `none`: 0px
@@ -22,22 +22,22 @@ interface StackProps extends HTMLAttributes<HTMLDivElement> {
    * - `xl`: 2rem (32px)
    * @default 'md'
    */
-  gap?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  
+  gap?: "none" | "xs" | "sm" | "md" | "lg" | "xl";
+
   /**
    * CSS `align-items` property.
    * Controls how items are aligned on the cross-axis.
    * @default 'stretch'
    */
-  align?: 'start' | 'center' | 'end' | 'stretch' | 'baseline';
-  
+  align?: "start" | "center" | "end" | "stretch" | "baseline";
+
   /**
    * CSS `justify-content` property.
    * Controls how items are distributed on the main axis.
    * @default 'start'
    */
-  justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
-  
+  justify?: "start" | "center" | "end" | "between" | "around" | "evenly";
+
   /**
    * Whether children should wrap to the next line/column.
    * @default false
@@ -46,34 +46,34 @@ interface StackProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const gapClasses = {
-  none: 'gap-0',
-  xs: 'gap-1',
-  sm: 'gap-2',
-  md: 'gap-4',
-  lg: 'gap-6',
-  xl: 'gap-8',
+  none: "gap-0",
+  xs: "gap-1",
+  sm: "gap-2",
+  md: "gap-4",
+  lg: "gap-6",
+  xl: "gap-8",
 };
 
 const alignClasses = {
-  start: 'items-start',
-  center: 'items-center',
-  end: 'items-end',
-  stretch: 'items-stretch',
-  baseline: 'items-baseline',
+  start: "items-start",
+  center: "items-center",
+  end: "items-end",
+  stretch: "items-stretch",
+  baseline: "items-baseline",
 };
 
 const justifyClasses = {
-  start: 'justify-start',
-  center: 'justify-center',
-  end: 'justify-end',
-  between: 'justify-between',
-  around: 'justify-around',
-  evenly: 'justify-evenly',
+  start: "justify-start",
+  center: "justify-center",
+  end: "justify-end",
+  between: "justify-between",
+  around: "justify-around",
+  evenly: "justify-evenly",
 };
 
 /**
  * A Flexbox container component used to arrange elements linearly.
- * 
+ *
  * @example
  * // Basic usage
  * <Stack gap="lg" align="center">
@@ -83,10 +83,10 @@ const justifyClasses = {
  */
 export const Stack = ({
   children,
-  direction = 'column',
-  gap = 'md',
-  align = 'stretch',
-  justify = 'start',
+  direction = "column",
+  gap = "md",
+  align = "stretch",
+  justify = "start",
   wrap = false,
   className,
   ...props
@@ -94,12 +94,12 @@ export const Stack = ({
   return (
     <div
       className={cn(
-        'flex',
-        direction === 'row' ? 'flex-row' : 'flex-col',
+        "flex",
+        direction === "row" ? "flex-row" : "flex-col",
         gapClasses[gap],
         alignClasses[align],
         justifyClasses[justify],
-        wrap && 'flex-wrap',
+        wrap && "flex-wrap",
         className
       )}
       {...props}
@@ -107,20 +107,30 @@ export const Stack = ({
       {children}
     </div>
   );
-}
+};
 
 /**
  * Horizontal Stack. A shorthand for `<Stack direction="row" />`.
  * Arranges items in a horizontal line.
  */
-export const HStack = (props: Omit<StackProps, 'direction'>) => {
-  return <Stack direction="row" {...props} />;
-}
+export const HStack = (props: Omit<StackProps, "direction">) => {
+  return (
+    <Stack
+      direction="row"
+      {...props}
+    />
+  );
+};
 
 /**
  * Vertical Stack. A shorthand for `<Stack direction="column" />`.
  * Arranges items in a vertical column.
  */
-export const VStack = (props: Omit<StackProps, 'direction'>) => {
-  return <Stack direction="column" {...props} />;
-}
+export const VStack = (props: Omit<StackProps, "direction">) => {
+  return (
+    <Stack
+      direction="column"
+      {...props}
+    />
+  );
+};

@@ -39,7 +39,10 @@ export const RoleSelect = ({
   const isOwner = value === "owner";
 
   return (
-    <div ref={ref} className="relative shrink-0">
+    <div
+      ref={ref}
+      className="relative shrink-0"
+    >
       <button
         disabled={disabled || isOwner}
         type="button"
@@ -61,15 +64,16 @@ export const RoleSelect = ({
         )}
       </button>
 
-      {open ? <div
-          className={`absolute top-full mt-1 w-64 bg-elevated border border-border-primary rounded-xl shadow-2xl py-1.5 z-[80] animate-fade-in ${
+      {open ? (
+        <div
+          className={`bg-elevated border-border-primary animate-fade-in absolute top-full z-[80] mt-1 w-64 rounded-xl border py-1.5 shadow-2xl ${
             align === "right" ? "right-0" : "left-0"
           }`}
         >
           {ASSIGNABLE_ROLES.map((role) => (
             <button
               key={role}
-              className="flex items-start gap-2.5 w-full px-3 py-2 text-left hover:bg-surface-hover transition-colors"
+              className="hover:bg-surface-hover flex w-full items-start gap-2.5 px-3 py-2 text-left transition-colors"
               type="button"
               onClick={() => {
                 onChange(role);
@@ -77,23 +81,31 @@ export const RoleSelect = ({
               }}
             >
               <span className="w-4 shrink-0 pt-0.5">
-                {value === role && <Check className="text-primary" size={14} />}
+                {value === role && (
+                  <Check
+                    className="text-primary"
+                    size={14}
+                  />
+                )}
               </span>
-              <span className="flex-1 min-w-0">
-                <span className="block text-[0.8rem] font-medium text-text-primary">
+              <span className="min-w-0 flex-1">
+                <span className="text-text-primary block text-[0.8rem] font-medium">
                   {ROLE_META[role].label}
                 </span>
-                <span className="block text-[0.68rem] text-text-tertiary leading-snug">
+                <span className="text-text-tertiary block text-[0.68rem] leading-snug">
                   {ROLE_META[role].description}
                 </span>
               </span>
             </button>
           ))}
 
-          {(onTransferOwnership || onRemove) ? <div className="h-px bg-border-secondary mx-2 my-1" /> : null}
+          {onTransferOwnership || onRemove ? (
+            <div className="bg-border-secondary mx-2 my-1 h-px" />
+          ) : null}
 
-          {onTransferOwnership ? <button
-              className="flex items-center gap-2.5 w-full px-3 py-2 text-left hover:bg-surface-hover transition-colors"
+          {onTransferOwnership ? (
+            <button
+              className="hover:bg-surface-hover flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors"
               type="button"
               onClick={() => {
                 onTransferOwnership();
@@ -101,15 +113,20 @@ export const RoleSelect = ({
               }}
             >
               <span className="w-4 shrink-0">
-                <Crown className="text-warning" size={14} />
+                <Crown
+                  className="text-warning"
+                  size={14}
+                />
               </span>
-              <span className="text-[0.8rem] text-text-primary">
+              <span className="text-text-primary text-[0.8rem]">
                 Transfer ownership
               </span>
-            </button> : null}
+            </button>
+          ) : null}
 
-          {onRemove ? <button
-              className="flex items-center gap-2.5 w-full px-3 py-2 text-left text-red-400 hover:bg-red-500/10 transition-colors"
+          {onRemove ? (
+            <button
+              className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-red-400 transition-colors hover:bg-red-500/10"
               type="button"
               onClick={() => {
                 onRemove();
@@ -120,8 +137,10 @@ export const RoleSelect = ({
                 <UserMinus size={14} />
               </span>
               <span className="text-[0.8rem]">Remove access</span>
-            </button> : null}
-        </div> : null}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
-}
+};

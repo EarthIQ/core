@@ -1,18 +1,19 @@
 {
   "name": "web",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --clearScreen false",
     "build": "vite build",
-    "preview": "vite preview",
-    "lint": "eslint ."
+    "dev": "vite --clearScreen false",
+    "lint": "eslint .",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@packages/ui": "workspace:*",
     "@packages/charts": "workspace:*",
     "@packages/cookie-consent": "workspace:*",
+    "@packages/map": "workspace:*",
+    "@packages/ui": "workspace:*",
     "@tanstack/react-query": "^5.101.4",
     "dom-to-code": "^1.5.4",
     "lucide-react": "^1.33.0",
@@ -20,8 +21,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.2",
-    "zustand": "^5.0.15",
-    "@packages/map": "workspace:*"
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@packages/eslint-config": "workspace:*",

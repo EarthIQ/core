@@ -121,7 +121,7 @@ function ownerName(p: ProjectItem): string {
 type RoleVariant = "primary" | "info" | "success" | "default";
 function roleFor(
   p: ProjectItem,
-  myId?: string,
+  myId?: string
 ): {
   label: string;
   variant: RoleVariant;
@@ -160,7 +160,7 @@ function sortProjects(list: ProjectItem[], key: SortKey): ProjectItem[] {
   };
   const asc = key.endsWith("_asc");
   return arr.sort((a, b) =>
-    asc ? numeric(a) - numeric(b) : numeric(b) - numeric(a),
+    asc ? numeric(a) - numeric(b) : numeric(b) - numeric(a)
   );
 }
 
@@ -183,21 +183,21 @@ const StatTile = ({
     success: "bg-success-bg text-success-text",
   };
   return (
-    <div className="bg-surface border border-border-primary rounded-2xl px-4 py-3.5 flex items-center gap-3">
+    <div className="bg-surface border-border-primary flex items-center gap-3 rounded-2xl border px-4 py-3.5">
       <div
-        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${toneCls[tone]}`}
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${toneCls[tone]}`}
       >
         {icon}
       </div>
       <div className="min-w-0">
-        <div className="text-2xl font-extrabold text-text-primary leading-none">
+        <div className="text-text-primary text-2xl leading-none font-extrabold">
           {value}
         </div>
-        <div className="text-xs text-text-tertiary mt-1 truncate">{label}</div>
+        <div className="text-text-tertiary mt-1 truncate text-xs">{label}</div>
       </div>
     </div>
   );
-}
+};
 
 // ── Project card ──────────────────────────────────────────────────────────────
 
@@ -251,12 +251,12 @@ const ProjectCard = ({
 
   const actions = (
     <div
-      className="flex items-center gap-1 shrink-0"
+      className="flex shrink-0 items-center gap-1"
       onClick={(e) => e.stopPropagation()}
     >
       <button
         aria-label="Share project"
-        className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-text-secondary hover:text-primary hover:bg-primary/10 transition-colors border-none bg-transparent cursor-pointer"
+        className="text-text-secondary hover:text-primary hover:bg-primary/10 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-none bg-transparent transition-colors"
         title="Share project"
         type="button"
         onClick={onShare}
@@ -269,7 +269,7 @@ const ProjectCard = ({
         trigger={
           <button
             aria-label="More actions"
-            className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors border-none bg-transparent cursor-pointer"
+            className="text-text-secondary hover:text-text-primary hover:bg-surface-hover inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-none bg-transparent transition-colors"
             title="More actions"
             type="button"
           >
@@ -281,7 +281,7 @@ const ProjectCard = ({
   );
 
   const metaChips = (
-    <div className="flex flex-wrap gap-x-3.5 gap-y-1 text-xs text-text-tertiary">
+    <div className="text-text-tertiary flex flex-wrap gap-x-3.5 gap-y-1 text-xs">
       <span className="inline-flex items-center gap-1">
         <Layers size={13} /> {project.layers_config?.length ?? 0} layers
       </span>
@@ -299,14 +299,26 @@ const ProjectCard = ({
 
   const badges = (
     <div className="flex flex-wrap items-center gap-1.5">
-      <Badge leftIcon={<RoleIcon size={12} />} size="xs" variant={role.variant}>
+      <Badge
+        leftIcon={<RoleIcon size={12} />}
+        size="xs"
+        variant={role.variant}
+      >
         {role.label}
       </Badge>
-      <Badge leftIcon={<BmIcon size={12} />} size="xs" variant="outline">
+      <Badge
+        leftIcon={<BmIcon size={12} />}
+        size="xs"
+        variant="outline"
+      >
         {bmLabel}
       </Badge>
       {!isMine && sharedGroups > 0 && (
-        <Badge leftIcon={<Users size={12} />} size="xs" variant="info">
+        <Badge
+          leftIcon={<Users size={12} />}
+          size="xs"
+          variant="info"
+        >
           {sharedGroups} group{sharedGroups === 1 ? "" : "s"}
         </Badge>
       )}
@@ -316,34 +328,44 @@ const ProjectCard = ({
   if (view === "list") {
     return (
       <article
-        className="group flex items-center gap-4 bg-surface border border-border-primary rounded-xl p-3 cursor-pointer transition-all hover:border-primary/40 hover:shadow-md"
+        className="group bg-surface border-border-primary hover:border-primary/40 flex cursor-pointer items-center gap-4 rounded-xl border p-3 transition-all hover:shadow-md"
         onClick={onOpen}
       >
-        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/25 to-accent/10 flex items-center justify-center shrink-0">
-          <BmIcon className="text-primary" size={20} />
+        <div className="from-primary/25 to-accent/10 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br">
+          <BmIcon
+            className="text-primary"
+            size={20}
+          />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-bold text-sm text-text-primary truncate max-w-[10rem] sm:max-w-[220px]">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-text-primary max-w-[10rem] truncate text-sm font-bold sm:max-w-[220px]">
               {project.title}
             </h3>
-            <Badge size="xs" variant={role.variant}>
+            <Badge
+              size="xs"
+              variant={role.variant}
+            >
               {role.label}
             </Badge>
           </div>
-          <p className="text-xs text-text-secondary mt-0.5 truncate">
+          <p className="text-text-secondary mt-0.5 truncate text-xs">
             {project.description || "No description"}
           </p>
         </div>
-        <div className="hidden lg:flex flex-col items-end gap-0.5 shrink-0 w-28">
-          <span className="text-xs text-text-tertiary inline-flex items-center gap-1">
+        <div className="hidden w-28 shrink-0 flex-col items-end gap-0.5 lg:flex">
+          <span className="text-text-tertiary inline-flex items-center gap-1 text-xs">
             <Layers size={12} /> {project.layers_config?.length ?? 0} layers
           </span>
-          <span className="text-[11px] text-text-tertiary inline-flex items-center gap-1">
+          <span className="text-text-tertiary inline-flex items-center gap-1 text-[11px]">
             <Clock size={11} /> {relativeTime(project.updated_at)}
           </span>
         </div>
-        <Avatar bordered name={oName} size="sm" />
+        <Avatar
+          bordered
+          name={oName}
+          size="sm"
+        />
         {actions}
       </article>
     );
@@ -351,33 +373,40 @@ const ProjectCard = ({
 
   return (
     <article
-      className="group relative flex flex-col bg-surface border border-border-primary rounded-2xl overflow-hidden cursor-pointer transition-all hover:border-primary/40 hover:shadow-lg"
+      className="group bg-surface border-border-primary hover:border-primary/40 relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border transition-all hover:shadow-lg"
       onClick={onOpen}
     >
-      <div className="h-1.5 bg-gradient-to-r from-primary/60 via-primary/20 to-accent/40" />
-      <div className="p-5 flex flex-col gap-3 flex-1">
+      <div className="from-primary/60 via-primary/20 to-accent/40 h-1.5 bg-gradient-to-r" />
+      <div className="flex flex-1 flex-col gap-3 p-5">
         <div className="flex items-start gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/25 to-accent/10 flex items-center justify-center shrink-0">
-            <BmIcon className="text-primary" size={20} />
+          <div className="from-primary/25 to-accent/10 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br">
+            <BmIcon
+              className="text-primary"
+              size={20}
+            />
           </div>
-          <h3 className="min-w-0 flex-1 font-bold text-sm text-text-primary leading-snug line-clamp-2">
+          <h3 className="text-text-primary line-clamp-2 min-w-0 flex-1 text-sm leading-snug font-bold">
             {project.title}
           </h3>
         </div>
-        <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed min-h-[2rem]">
+        <p className="text-text-secondary line-clamp-2 min-h-[2rem] text-xs leading-relaxed">
           {project.description || "No description"}
         </p>
         {badges}
         {metaChips}
         <div className="mt-auto" />
-        <div className="flex items-center justify-between gap-2 pt-3 border-t border-border-subtle">
-          <div className="flex items-center gap-2 min-w-0">
-            <Avatar bordered name={oName} size="xs" />
+        <div className="border-border-subtle flex items-center justify-between gap-2 border-t pt-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <Avatar
+              bordered
+              name={oName}
+              size="xs"
+            />
             <div className="min-w-0">
-              <div className="text-xs font-medium text-text-primary truncate">
+              <div className="text-text-primary truncate text-xs font-medium">
                 {oName}
               </div>
-              <div className="text-[10px] text-text-tertiary truncate">
+              <div className="text-text-tertiary truncate text-[10px]">
                 {relativeTime(project.updated_at)} · {bmLabel}
               </div>
             </div>
@@ -387,7 +416,7 @@ const ProjectCard = ({
       </div>
     </article>
   );
-}
+};
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
@@ -450,15 +479,15 @@ export default function ProjectsPage() {
 
   const mineCount = useMemo(
     () => projects.filter((p) => myId && p.owner_id === myId).length,
-    [projects, myId],
+    [projects, myId]
   );
   const sharedCount = useMemo(
     () => projects.filter((p) => (myId ? p.owner_id !== myId : true)).length,
-    [projects, myId],
+    [projects, myId]
   );
   const totalMaps = useMemo(
     () => projects.reduce((n, p) => n + (p.maps?.length ?? 0), 0),
-    [projects],
+    [projects]
   );
 
   const visibleProjects = useMemo(() => {
@@ -472,7 +501,7 @@ export default function ProjectsPage() {
       list = list.filter(
         (p) =>
           (p.title && p.title.toLowerCase().includes(q)) ||
-          (p.description && p.description.toLowerCase().includes(q)),
+          (p.description && p.description.toLowerCase().includes(q))
       );
     return sortProjects(list, sort);
   }, [projects, search, access, sort, myId]);
@@ -481,7 +510,7 @@ export default function ProjectsPage() {
 
   const openProject = useCallback(
     (p: ProjectItem) => navigate(`/map?projectId=${p.id}`),
-    [navigate],
+    [navigate]
   );
 
   async function handleCreate(e: React.FormEvent) {
@@ -508,7 +537,7 @@ export default function ProjectsPage() {
       navigate(`/map?projectId=${created.id}`);
     } catch (err) {
       setCError(
-        err instanceof Error ? err.message : "Could not create project",
+        err instanceof Error ? err.message : "Could not create project"
       );
     } finally {
       setCreating(false);
@@ -526,7 +555,7 @@ export default function ProjectsPage() {
     } catch (err) {
       flash(
         "error",
-        err instanceof Error ? err.message : "Could not delete project",
+        err instanceof Error ? err.message : "Could not delete project"
       );
     } finally {
       setDeleting(false);
@@ -539,17 +568,17 @@ export default function ProjectsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
+          <div className="text-primary mb-1 text-xs font-semibold tracking-widest uppercase">
             Workspace
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary">
+          <h1 className="text-text-primary text-2xl font-extrabold sm:text-3xl">
             Projects
           </h1>
-          <p className="text-sm text-text-secondary mt-1">
+          <p className="text-text-secondary mt-1 text-sm">
             Your geospatial workspaces - the ones you own and the ones shared
             with you.
           </p>
@@ -565,7 +594,7 @@ export default function ProjectsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile
           icon={<FolderOpen size={18} />}
           label="Total projects"
@@ -593,12 +622,12 @@ export default function ProjectsPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="bg-surface border border-border-primary rounded-2xl p-3 mb-5">
-        <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
+      <div className="bg-surface border-border-primary mb-5 rounded-2xl border p-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           {/* Search */}
           <div className="relative flex-1">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
+              className="text-text-tertiary absolute top-1/2 left-3 -translate-y-1/2"
               size={15}
             />
             <input
@@ -608,20 +637,22 @@ export default function ProjectsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            {search ? <button
+            {search ? (
+              <button
                 aria-label="Clear search"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary cursor-pointer"
+                className="text-text-tertiary hover:text-text-primary absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer"
                 type="button"
                 onClick={() => setSearch("")}
               >
                 <X size={15} />
-              </button> : null}
+              </button>
+            ) : null}
           </div>
 
           {/* Access filter */}
           <div
             aria-label="Filter by access"
-            className="inline-flex items-center rounded-xl border border-border-primary bg-surface p-0.5"
+            className="border-border-primary bg-surface inline-flex items-center rounded-xl border p-0.5"
             role="tablist"
           >
             {(
@@ -636,7 +667,7 @@ export default function ProjectsPage() {
                 aria-selected={access === t.key}
                 role="tab"
                 type="button"
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border-none ${
+                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border-none px-3 py-1.5 text-xs font-semibold transition-colors ${
                   access === t.key
                     ? "bg-primary text-[var(--text-on-primary)]"
                     : "text-text-secondary hover:text-text-primary bg-transparent"
@@ -645,7 +676,7 @@ export default function ProjectsPage() {
               >
                 {t.label}
                 <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded-full ${access === t.key ? "bg-white/20" : "bg-surface-hover text-text-tertiary"}`}
+                  className={`rounded-full px-1.5 py-0.5 text-[10px] ${access === t.key ? "bg-white/20" : "bg-surface-hover text-text-tertiary"}`}
                 >
                   {t.count}
                 </span>
@@ -661,10 +692,10 @@ export default function ProjectsPage() {
               value={sort}
               onChange={(v: string) => setSort(v as SortKey)}
             />
-            <div className="inline-flex items-center rounded-xl border border-border-primary bg-surface p-0.5">
+            <div className="border-border-primary bg-surface inline-flex items-center rounded-xl border p-0.5">
               <button
                 aria-label="Grid view"
-                className={`w-8 h-8 inline-flex items-center justify-center rounded-lg cursor-pointer border-none transition-colors ${view === "grid" ? "bg-primary text-[var(--text-on-primary)]" : "bg-transparent text-text-secondary hover:text-text-primary"}`}
+                className={`inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-none transition-colors ${view === "grid" ? "bg-primary text-[var(--text-on-primary)]" : "text-text-secondary hover:text-text-primary bg-transparent"}`}
                 type="button"
                 onClick={() => setView("grid")}
               >
@@ -672,7 +703,7 @@ export default function ProjectsPage() {
               </button>
               <button
                 aria-label="List view"
-                className={`w-8 h-8 inline-flex items-center justify-center rounded-lg cursor-pointer border-none transition-colors ${view === "list" ? "bg-primary text-[var(--text-on-primary)]" : "bg-transparent text-text-secondary hover:text-text-primary"}`}
+                className={`inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-none transition-colors ${view === "list" ? "bg-primary text-[var(--text-on-primary)]" : "text-text-secondary hover:text-text-primary bg-transparent"}`}
                 type="button"
                 onClick={() => setView("list")}
               >
@@ -685,25 +716,27 @@ export default function ProjectsPage() {
 
       {/* Result count */}
       {!loading && !error && (
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs text-text-tertiary">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-text-tertiary text-xs">
             Showing {visibleProjects.length} of {projects.length} project
             {projects.length === 1 ? "" : "s"}
             {hasActiveFilters ? " (filtered)" : null}
           </p>
-          {hasActiveFilters ? <button
-              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 cursor-pointer border-none bg-transparent"
+          {hasActiveFilters ? (
+            <button
+              className="text-primary hover:text-primary/80 inline-flex cursor-pointer items-center gap-1 border-none bg-transparent text-xs font-semibold"
               type="button"
               onClick={resetFilters}
             >
               <X size={13} /> Clear filters
-            </button> : null}
+            </button>
+          ) : null}
         </div>
       )}
 
       {/* ── Content ─────────────────────────────────────────────────────── */}
       {error ? (
-        <div className="bg-surface border border-border-primary rounded-2xl">
+        <div className="bg-surface border-border-primary rounded-2xl border">
           <EmptyState
             action={{ label: "Try again", onClick: () => loadProjects() }}
             description={error}
@@ -713,15 +746,15 @@ export default function ProjectsPage() {
         </div>
       ) : loading ? (
         view === "grid" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-surface border border-border-primary rounded-2xl p-5 flex flex-col gap-3"
+                className="bg-surface border-border-primary flex flex-col gap-3 rounded-2xl border p-5"
               >
                 <div className="flex items-start gap-3">
                   <Skeleton
-                    className="w-11 h-11 shrink-0"
+                    className="h-11 w-11 shrink-0"
                     height={44}
                     variant="rounded"
                     width={44}
@@ -733,14 +766,17 @@ export default function ProjectsPage() {
                 </div>
                 <Skeleton width="55%" />
                 <Skeleton width="80%" />
-                <div className="mt-3 pt-3 border-t border-border-subtle flex items-center justify-between">
+                <div className="border-border-subtle mt-3 flex items-center justify-between border-t pt-3">
                   <Skeleton
-                    className="w-6 h-6"
+                    className="h-6 w-6"
                     height={24}
                     variant="circular"
                     width={24}
                   />
-                  <Skeleton className="w-16 h-8" width={64} />
+                  <Skeleton
+                    className="h-8 w-16"
+                    width={64}
+                  />
                 </div>
               </div>
             ))}
@@ -750,10 +786,10 @@ export default function ProjectsPage() {
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-surface border border-border-primary rounded-xl p-3 flex items-center gap-4"
+                className="bg-surface border-border-primary flex items-center gap-4 rounded-xl border p-3"
               >
                 <Skeleton
-                  className="w-11 h-11 shrink-0"
+                  className="h-11 w-11 shrink-0"
                   height={44}
                   variant="rounded"
                   width={44}
@@ -763,21 +799,29 @@ export default function ProjectsPage() {
                   <Skeleton width="65%" />
                 </div>
                 <Skeleton
-                  className="w-8 h-8"
+                  className="h-8 w-8"
                   height={32}
                   variant="circular"
                   width={32}
                 />
-                <Skeleton className="w-16 h-8" width={64} />
+                <Skeleton
+                  className="h-8 w-16"
+                  width={64}
+                />
               </div>
             ))}
           </div>
         )
       ) : projects.length === 0 ? (
-        <div className="bg-surface border border-border-primary rounded-2xl">
+        <div className="bg-surface border-border-primary rounded-2xl border">
           <EmptyState
             description="Create your first geospatial workspace to start organizing layers, maps, and analysis."
-            icon={<FolderOpen className="text-primary" size={40} />}
+            icon={
+              <FolderOpen
+                className="text-primary"
+                size={40}
+              />
+            }
             size="lg"
             title="No projects yet"
             action={{
@@ -787,7 +831,7 @@ export default function ProjectsPage() {
           />
         </div>
       ) : visibleProjects.length === 0 ? (
-        <div className="bg-surface border border-border-primary rounded-2xl">
+        <div className="bg-surface border-border-primary rounded-2xl border">
           <EmptyState
             action={{ label: "Clear filters", onClick: resetFilters }}
             size="md"
@@ -800,7 +844,7 @@ export default function ProjectsPage() {
           />
         </div>
       ) : view === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visibleProjects.map((p) => (
             <ProjectCard
               key={p.id}
@@ -830,25 +874,26 @@ export default function ProjectsPage() {
       )}
 
       {/* ── Create Project modal ──────────────────────────────────────────── */}
-      {createOpen ? <div
-          className="fixed inset-0 z-[999] flex items-center justify-center p-4 overlay animate-fade-in"
+      {createOpen ? (
+        <div
+          className="overlay animate-fade-in fixed inset-0 z-[999] flex items-center justify-center p-4"
           onMouseDown={(e) =>
             e.target === e.currentTarget && setCreateOpen(false)
           }
         >
-          <div className="w-full max-w-[480px] bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border-primary">
+          <div className="bg-elevated border-border-primary animate-scale-in w-full max-w-[480px] overflow-hidden rounded-2xl border shadow-2xl">
+            <div className="border-border-primary flex items-center justify-between border-b px-6 py-4">
               <div>
-                <h2 className="text-lg font-bold text-text-primary">
+                <h2 className="text-text-primary text-lg font-bold">
                   Create a project
                 </h2>
-                <p className="text-xs text-text-secondary mt-0.5">
+                <p className="text-text-secondary mt-0.5 text-xs">
                   A workspace to organize layers, maps, and analysis.
                 </p>
               </div>
               <button
                 aria-label="Close"
-                className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-hover cursor-pointer border-none bg-transparent"
+                className="text-text-tertiary hover:text-text-primary hover:bg-surface-hover inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-none bg-transparent"
                 type="button"
                 onClick={() => setCreateOpen(false)}
               >
@@ -856,13 +901,21 @@ export default function ProjectsPage() {
               </button>
             </div>
 
-            <form className="p-6 flex flex-col gap-4" onSubmit={handleCreate}>
-              {cError ? <div className="p-3 rounded-lg bg-error-subtle text-error text-sm border border-error/20">
+            <form
+              className="flex flex-col gap-4 p-6"
+              onSubmit={handleCreate}
+            >
+              {cError ? (
+                <div className="bg-error-subtle text-error border-error/20 rounded-lg border p-3 text-sm">
                   {cError}
-                </div> : null}
+                </div>
+              ) : null}
 
               <div>
-                <label className="form-label" htmlFor="np-title">
+                <label
+                  className="form-label"
+                  htmlFor="np-title"
+                >
                   Project title
                 </label>
                 <input
@@ -879,7 +932,10 @@ export default function ProjectsPage() {
               </div>
 
               <div>
-                <label className="form-label" htmlFor="np-desc">
+                <label
+                  className="form-label"
+                  htmlFor="np-desc"
+                >
                   Description
                 </label>
                 <textarea
@@ -893,7 +949,10 @@ export default function ProjectsPage() {
               </div>
 
               <div>
-                <label className="form-label" htmlFor="np-basemap">
+                <label
+                  className="form-label"
+                  htmlFor="np-basemap"
+                >
                   Default basemap
                 </label>
                 <select
@@ -903,14 +962,17 @@ export default function ProjectsPage() {
                   onChange={(e) => setCBasemap(e.target.value)}
                 >
                   {BASEMAP_CHOICES.map((b) => (
-                    <option key={b.value} value={b.value}>
+                    <option
+                      key={b.value}
+                      value={b.value}
+                    >
                       {b.label}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="flex gap-3 justify-end mt-2">
+              <div className="mt-2 flex justify-end gap-3">
                 <Button
                   variant="secondary"
                   onClick={() => setCreateOpen(false)}
@@ -923,7 +985,10 @@ export default function ProjectsPage() {
                   variant="primary"
                   leftIcon={
                     creating ? (
-                      <Loader2 className="animate-spin" size={15} />
+                      <Loader2
+                        className="animate-spin"
+                        size={15}
+                      />
                     ) : (
                       <Plus size={15} />
                     )
@@ -934,10 +999,12 @@ export default function ProjectsPage() {
               </div>
             </form>
           </div>
-        </div> : null}
+        </div>
+      ) : null}
 
       {/* ── Share dialog (reuses the map/project share surface) ──────────── */}
-      {shareProject ? <ShareDialog
+      {shareProject ? (
+        <ShareDialog
           entityId={shareProject.id}
           entityTitle={shareProject.title}
           entityType="project"
@@ -948,7 +1015,8 @@ export default function ProjectsPage() {
             shareProject.user_permission === "admin"
           }
           onClose={() => setShareProject(null)}
-        /> : null}
+        />
+      ) : null}
 
       {/* ── Delete confirmation ──────────────────────────────────────────── */}
       <ConfirmDialog
@@ -969,17 +1037,19 @@ export default function ProjectsPage() {
       />
 
       {/* ── Inline notice ────────────────────────────────────────────────── */}
-      {notice ? <div
+      {notice ? (
+        <div
           aria-live="polite"
           role="status"
-          className={`fixed left-1/2 bottom-6 -translate-x-1/2 z-[1001] px-4 py-2.5 rounded-xl border shadow-2xl text-sm font-medium whitespace-nowrap animate-fade-in ${
+          className={`animate-fade-in fixed bottom-6 left-1/2 z-[1001] -translate-x-1/2 rounded-xl border px-4 py-2.5 text-sm font-medium whitespace-nowrap shadow-2xl ${
             notice.type === "success"
               ? "bg-success-bg text-success-text border-success-border"
               : "bg-error-bg text-error-text border-error-border"
           }`}
         >
           {notice.text}
-        </div> : null}
+        </div>
+      ) : null}
     </div>
   );
 }

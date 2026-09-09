@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
 export interface MVTSourceProps {
   /** Unique source ID */
@@ -35,7 +35,7 @@ export interface MVTSourceLayerConfig {
   /** Layer ID for the map layer */
   layerId: string;
   /** Layer type */
-  type: 'fill' | 'line' | 'circle' | 'symbol' | 'fill-extrusion';
+  type: "fill" | "line" | "circle" | "symbol" | "fill-extrusion";
   /** Paint properties */
   paint?: Record<string, any>;
   /** Layout properties */
@@ -79,7 +79,7 @@ export const MVTSource: React.FC<MVTSourceProps> = ({
   sourceLayers,
   onLoad,
   onError,
-  children
+  children,
 }) => {
   const { map, isLoaded } = useMap();
   const [metadata, setMetadata] = useState<MVTMetadata | null>(null);
@@ -111,11 +111,11 @@ export const MVTSource: React.FC<MVTSourceProps> = ({
     try {
       if (!map.getSource(id)) {
         const sourceConfig: maplibregl.VectorSourceSpecification = {
-          type: 'vector',
+          type: "vector",
           minzoom,
           maxzoom,
           attribution,
-          promoteId
+          promoteId,
         };
 
         if (url) {
@@ -132,31 +132,34 @@ export const MVTSource: React.FC<MVTSourceProps> = ({
 
         // Add configured source layers
         if (sourceLayers) {
-          sourceLayers.forEach(layerConfig => {
+          sourceLayers.forEach((layerConfig) => {
             if (!map.getLayer(layerConfig.layerId)) {
-              map.addLayer({
-                id: layerConfig.layerId,
-                type: layerConfig.type,
-                source: id,
-                'source-layer': layerConfig.name,
-                paint: layerConfig.paint || {},
-                layout: layerConfig.layout || {},
-                ...(layerConfig.filter && { filter: layerConfig.filter }),
-                ...(layerConfig.minzoom && { minzoom: layerConfig.minzoom }),
-                ...(layerConfig.maxzoom && { maxzoom: layerConfig.maxzoom })
-              }, layerConfig.beforeId);
+              map.addLayer(
+                {
+                  id: layerConfig.layerId,
+                  type: layerConfig.type,
+                  source: id,
+                  "source-layer": layerConfig.name,
+                  paint: layerConfig.paint || {},
+                  layout: layerConfig.layout || {},
+                  ...(layerConfig.filter && { filter: layerConfig.filter }),
+                  ...(layerConfig.minzoom && { minzoom: layerConfig.minzoom }),
+                  ...(layerConfig.maxzoom && { maxzoom: layerConfig.maxzoom }),
+                },
+                layerConfig.beforeId
+              );
             }
           });
         }
 
         // Wait for source to load
-        map.once('sourcedata', (e) => {
+        map.once("sourcedata", (e) => {
           if (e.sourceId === id && e.isSourceLoaded) {
             const loadedMetadata: MVTMetadata = {
               bounds,
               minzoom,
               maxzoom,
-              ...metadata
+              ...metadata,
             };
             onLoad?.(loadedMetadata);
           }
@@ -170,7 +173,7 @@ export const MVTSource: React.FC<MVTSourceProps> = ({
       if (map.getSource(id)) {
         // Remove all layers from this source
         if (sourceLayers) {
-          sourceLayers.forEach(layerConfig => {
+          sourceLayers.forEach((layerConfig) => {
             if (map.getLayer(layerConfig.layerId)) {
               map.removeLayer(layerConfig.layerId);
             }
@@ -179,9 +182,8 @@ export const MVTSource: React.FC<MVTSourceProps> = ({
 
         // Remove any other layers using this source
         const style = map.getStyle();
-        const layersToRemove = style?.layers?.filter(
-          (layer: any) => layer.source === id
-        ) || [];
+        const layersToRemove =
+          style?.layers?.filter((layer: any) => layer.source === id) || [];
 
         layersToRemove.forEach((layer: any) => {
           if (map.getLayer(layer.id)) {
@@ -192,7 +194,22 @@ export const MVTSource: React.FC<MVTSourceProps> = ({
         map.removeSource(id);
       }
     };
-  }, [map, isLoaded, id, tiles, url, bounds, minzoom, maxzoom, attribution, promoteId, sourceLayers, metadata, onLoad, onError]);
+  }, [
+    map,
+    isLoaded,
+    id,
+    tiles,
+    url,
+    bounds,
+    minzoom,
+    maxzoom,
+    attribution,
+    promoteId,
+    sourceLayers,
+    metadata,
+    onLoad,
+    onError,
+  ]);
 
   return <>{children}</>;
 };
@@ -206,36 +223,36 @@ export const useMVTSource = (id: string) => {
     return map.getSource(id);
   }, [map, isLoaded, id]);
 
-  const querySourceFeatures = useCallback((
-    sourceLayer: string,
-    filter?: any[]
-  ) => {
-    if (!map || !isLoaded) return [];
-    
-    return map.querySourceFeatures(id, {
-      sourceLayer,
-      filter
-    });
-  }, [map, isLoaded, id]);
+  const querySourceFeatures = useCallback(
+    (sourceLayer: string, filter?: any[]) => {
+      if (!map || !isLoaded) return [];
+
+      return map.querySourceFeatures(id, {
+        sourceLayer,
+        filter,
+      });
+    },
+    [map, isLoaded, id]
+  );
 
   const getAvailableSourceLayers = useCallback((): string[] => {
     if (!map || !isLoaded) return [];
-    
+
     const features = map.querySourceFeatures(id);
     const layers = new Set<string>();
-    
-    features.forEach(f => {
+
+    features.forEach((f) => {
       if (f.sourceLayer) {
         layers.add(f.sourceLayer);
       }
     });
-    
+
     return Array.from(layers);
   }, [map, isLoaded, id]);
 
   return {
     source: getSource(),
     querySourceFeatures,
-    getAvailableSourceLayers
+    getAvailableSourceLayers,
   };
 };

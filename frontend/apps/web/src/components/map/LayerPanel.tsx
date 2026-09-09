@@ -70,27 +70,33 @@ export const LayerPanel = ({
   return (
     <div
       style={leftStyle}
-      className={`absolute top-16 z-20 flex flex-col bg-elevated border border-border-primary rounded-xl shadow-xl transition-all duration-300 ease-in-out ${
+      className={`bg-elevated border-border-primary absolute top-16 z-20 flex flex-col rounded-xl border shadow-xl transition-all duration-300 ease-in-out ${
         minimized ? "w-10" : "w-64"
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-1 py-1 border-b border-border-secondary shrink-0">
+      <div className="border-border-secondary flex shrink-0 items-center justify-between border-b px-1 py-1">
         {!minimized && (
-          <div ref={layersMenuRef} className="relative flex items-center">
+          <div
+            ref={layersMenuRef}
+            className="relative flex items-center"
+          >
             {/* "Layers ▾" dropdown trigger */}
             <button
-              className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-surface-hover transition-colors group"
+              className="hover:bg-surface-hover group flex items-center gap-1.5 rounded-lg px-2 py-1 transition-colors"
               id="layers-dropdown-trigger"
               type="button"
               onClick={() => setLayersMenuOpen((v) => !v)}
             >
-              <Layers className="text-text-secondary" size={14} />
-              <span className="text-xs font-bold text-text-primary">
+              <Layers
+                className="text-text-secondary"
+                size={14}
+              />
+              <span className="text-text-primary text-xs font-bold">
                 Layers
               </span>
               {totalLayers > 0 && (
-                <span className="text-[0.6rem] font-mono bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">
+                <span className="bg-primary/15 text-primary rounded-full px-1.5 py-0.5 font-mono text-[0.6rem]">
                   {totalLayers}
                 </span>
               )}
@@ -101,7 +107,8 @@ export const LayerPanel = ({
             </button>
 
             {/* Layers dropdown menu */}
-            {layersMenuOpen ? <div className="absolute left-0 top-full mt-1.5 w-48 bg-elevated border border-border-primary rounded-xl shadow-dropdown py-1.5 z-50 animate-fade-in">
+            {layersMenuOpen ? (
+              <div className="bg-elevated border-border-primary shadow-dropdown animate-fade-in absolute top-full left-0 z-50 mt-1.5 w-48 rounded-xl border py-1.5">
                 <button
                   className="dropdown-item w-full gap-2.5"
                   id="add-data-to-map"
@@ -111,7 +118,10 @@ export const LayerPanel = ({
                     onOpenImport();
                   }}
                 >
-                  <Plus className="text-primary" size={13} />
+                  <Plus
+                    className="text-primary"
+                    size={13}
+                  />
                   <span>Add Data</span>
                 </button>
 
@@ -131,9 +141,9 @@ export const LayerPanel = ({
 
                 {totalLayers > 0 && (
                   <>
-                    <div className="h-px bg-border-secondary mx-2 my-1" />
+                    <div className="bg-border-secondary mx-2 my-1 h-px" />
                     <button
-                      className="dropdown-item w-full gap-2 text-text-tertiary text-[0.72rem]"
+                      className="dropdown-item text-text-tertiary w-full gap-2 text-[0.72rem]"
                       type="button"
                       onClick={() => {
                         setLayersMenuOpen(false);
@@ -146,7 +156,8 @@ export const LayerPanel = ({
                     </button>
                   </>
                 )}
-              </div> : null}
+              </div>
+            ) : null}
           </div>
         )}
 
@@ -167,16 +178,19 @@ export const LayerPanel = ({
 
       {/* Body */}
       {!minimized && (
-        <div className="flex flex-col gap-3 p-3 overflow-y-auto max-h-[calc(100vh-12rem)] scrollbar-thin">
+        <div className="flex max-h-[calc(100vh-12rem)] scrollbar-thin flex-col gap-3 overflow-y-auto p-3">
           {/* Empty state */}
           {totalLayers === 0 ? (
             <div className="flex flex-col items-center gap-2 py-5 text-center">
-              <Layers className="text-text-quaternary opacity-40" size={24} />
-              <div className="text-[0.72rem] text-text-tertiary leading-snug">
+              <Layers
+                className="text-text-quaternary opacity-40"
+                size={24}
+              />
+              <div className="text-text-tertiary text-[0.72rem] leading-snug">
                 No layers yet.
               </div>
               <button
-                className="flex items-center gap-1.5 mt-1 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/25 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+                className="bg-primary/10 border-primary/25 text-primary hover:bg-primary/20 mt-1 flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors"
                 id="add-first-layer"
                 type="button"
                 onClick={onOpenImport}
@@ -195,7 +209,8 @@ export const LayerPanel = ({
           )}
 
           {/* Save Button */}
-          {canEdit ? <div className="flex flex-col gap-1.5 pt-1">
+          {canEdit ? (
+            <div className="flex flex-col gap-1.5 pt-1">
               <Button
                 fullWidth
                 id="save-viewport-btn"
@@ -207,12 +222,15 @@ export const LayerPanel = ({
               >
                 💾 Save Viewport
               </Button>
-              {statusMsg ? <div className="text-[0.7rem] text-primary text-center animate-fade-in">
+              {statusMsg ? (
+                <div className="text-primary animate-fade-in text-center text-[0.7rem]">
                   {statusMsg}
-                </div> : null}
-            </div> : null}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       )}
     </div>
   );
-}
+};

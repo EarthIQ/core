@@ -16,8 +16,7 @@ const reactFlat = (
 const reactHooksFlat = (
   reactHooks.configs as unknown as Record<string, Record<string, FlatPreset>>
 )["flat"];
-const a11yRecommended = jsxA11y.configs
-  .recommended as Linter.LegacyConfig;
+const a11yRecommended = jsxA11y.configs.recommended as Linter.LegacyConfig;
 
 /**
  * Flat config for React + TypeScript apps and libraries.

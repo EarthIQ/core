@@ -1,7 +1,7 @@
 // apps/web/src/App.tsx
 
-import { CookieBanner, CookieSettingsButton } from '@packages/cookie-consent';
-import '@your-org/cookie-consent/styles.css';
+import { CookieBanner, CookieSettingsButton } from "@packages/cookie-consent";
+import "@your-org/cookie-consent/styles.css";
 
 const App = () => {
   return (
@@ -12,18 +12,18 @@ const App = () => {
 
       <CookieBanner
         config={{
-          privacyPolicyUrl: '/privacy',
-          cookiePolicyUrl: '/cookies',
-          consentVersion: '1.0',
-          position: 'bottom',
+          privacyPolicyUrl: "/privacy",
+          cookiePolicyUrl: "/cookies",
+          consentVersion: "1.0",
+          position: "bottom",
           onConsentChange: (preferences) => {
-            console.log('Consent changed:', preferences);
+            console.log("Consent changed:", preferences);
           },
         }}
       />
       <CookieSettingsButton position="bottom-left" />
     </div>
   );
-}
+};
 
 export default App;

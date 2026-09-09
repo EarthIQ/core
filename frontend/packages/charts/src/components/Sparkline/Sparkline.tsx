@@ -117,9 +117,11 @@ export const Sparkline: React.FC<SparklineProps> = ({
           {renderChart()}
         </ResponsiveContainer>
       </div>
-      {showValue ? <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+      {showValue ? (
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
           {formatValue(lastValue)}
-        </span> : null}
+        </span>
+      ) : null}
     </div>
   );
 };

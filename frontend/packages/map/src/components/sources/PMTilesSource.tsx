@@ -8,7 +8,6 @@ import { useEffect, useId, useCallback as _useCallback, useRef } from "react";
 
 import { useMap } from "../../hooks/useMap";
 
-
 import type { Feature } from "geojson";
 import type { MapMouseEvent, MapGeoJSONFeature } from "maplibre-gl";
 import type React from "react";
@@ -363,12 +362,12 @@ function toFeature(f?: maplibregl.MapGeoJSONFeature): Feature {
   }
   return f.toJSON && typeof f.toJSON === "function"
     ? f.toJSON()
-    : ({
+    : {
         type: "Feature",
         id: f.id,
         properties: f.properties,
         geometry: (f as any).geometry,
-      });
+      };
 }
 
 // ============================================================================

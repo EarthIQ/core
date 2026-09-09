@@ -53,13 +53,15 @@ export const ErrorFallback = ({
         <span className="flex-1 text-sm text-[var(--error-text)]">
           {error.message || "An error occurred"}
         </span>
-        {resetError ? <Button
+        {resetError ? (
+          <Button
             size="sm"
             variant="ghost"
             onClick={resetError}
           >
             Retry
-          </Button> : null}
+          </Button>
+        ) : null}
       </div>
     );
   }
@@ -116,27 +118,33 @@ export const ErrorFallback = ({
           </p>
 
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
-            {resetError ? <Button
+            {resetError ? (
+              <Button
                 size="lg"
                 variant="primary"
                 onClick={resetError}
               >
                 Try Again
-              </Button> : null}
-            {showReload ? <Button
+              </Button>
+            ) : null}
+            {showReload ? (
+              <Button
                 size="lg"
                 variant="secondary"
                 onClick={() => window.location.reload()}
               >
                 Reload Page
-              </Button> : null}
-            {showHome ? <Button
+              </Button>
+            ) : null}
+            {showHome ? (
+              <Button
                 size="lg"
                 variant="ghost"
                 onClick={() => (window.location.href = homeUrl)}
               >
                 Go Home
-              </Button> : null}
+              </Button>
+            ) : null}
           </div>
         </div>
       </div>
@@ -185,22 +193,26 @@ export const ErrorFallback = ({
         </p>
 
         <div className="flex gap-3">
-          {resetError ? <Button
+          {resetError ? (
+            <Button
               size="sm"
               variant="primary"
               onClick={resetError}
             >
               Try Again
-            </Button> : null}
-          {showReload ? <Button
+            </Button>
+          ) : null}
+          {showReload ? (
+            <Button
               size="sm"
               variant="ghost"
               onClick={() => window.location.reload()}
             >
               Reload
-            </Button> : null}
+            </Button>
+          ) : null}
         </div>
       </div>
     </div>
   );
-}
+};

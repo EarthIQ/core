@@ -1,8 +1,8 @@
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useCallback, useRef } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { GeoJSON } from 'geojson';
+import type { GeoJSON } from "geojson";
 
 export interface GeoJSONSourceProps {
   /** Unique source ID */
@@ -67,26 +67,31 @@ export const GeoJSONSource: React.FC<GeoJSONSourceProps> = ({
   onLoad,
   onError,
   onDataChange,
-  children
+  children,
 }) => {
   const { map, isLoaded } = useMap();
   const refreshTimerRef = useRef<NodeJS.Timeout>();
-  const previousDataRef = useRef<string>('');
+  const previousDataRef = useRef<string>("");
 
   // Fetch data if URL provided
-  const fetchData = useCallback(async (url: string): Promise<GeoJSON.GeoJSON> => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch GeoJSON: ${response.status} ${response.statusText}`);
+  const fetchData = useCallback(
+    async (url: string): Promise<GeoJSON.GeoJSON> => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch GeoJSON: ${response.status} ${response.statusText}`
+          );
+        }
+        const json = await response.json();
+        return json;
+      } catch (error) {
+        onError?.(error as Error);
+        throw error;
       }
-      const json = await response.json();
-      return json;
-    } catch (error) {
-      onError?.(error as Error);
-      throw error;
-    }
-  }, [onError]);
+    },
+    [onError]
+  );
 
   // Initialize source
   useEffect(() => {
@@ -98,14 +103,14 @@ export const GeoJSONSource: React.FC<GeoJSONSourceProps> = ({
 
         // If data is a URL, we can pass it directly to MapLibre
         // MapLibre will handle fetching
-        if (typeof data === 'string' && !data.startsWith('{')) {
+        if (typeof data === "string" && !data.startsWith("{")) {
           sourceData = data;
         }
 
         // Add source if it doesn't exist
         if (!map.getSource(id)) {
           map.addSource(id, {
-            type: 'geojson',
+            type: "geojson",
             data: sourceData,
             generateId,
             promoteId,
@@ -118,7 +123,7 @@ export const GeoJSONSource: React.FC<GeoJSONSourceProps> = ({
             clusterMaxZoom,
             clusterMinPoints,
             clusterProperties,
-            lineMetrics
+            lineMetrics,
           });
 
           const source = map.getSource(id) as maplibregl.GeoJSONSource;
@@ -137,9 +142,8 @@ export const GeoJSONSource: React.FC<GeoJSONSourceProps> = ({
       if (map.getSource(id)) {
         // Get all layers using this source
         const style = map.getStyle();
-        const layersToRemove = style?.layers?.filter(
-          (layer: any) => layer.source === id
-        ) || [];
+        const layersToRemove =
+          style?.layers?.filter((layer: any) => layer.source === id) || [];
 
         // Remove layers first
         layersToRemove.forEach((layer: any) => {
@@ -162,8 +166,8 @@ export const GeoJSONSource: React.FC<GeoJSONSourceProps> = ({
       try {
         let newData: GeoJSON.GeoJSON;
 
-        if (typeof data === 'string') {
-          if (data.startsWith('{') || data.startsWith('[')) {
+        if (typeof data === "string") {
+          if (data.startsWith("{") || data.startsWith("[")) {
             // It's a JSON string
             newData = JSON.parse(data);
           } else {
@@ -196,7 +200,8 @@ export const GeoJSONSource: React.FC<GeoJSONSourceProps> = ({
 
   // Set up auto-refresh
   useEffect(() => {
-    if (!refreshInterval || typeof data !== 'string' || !map || !isLoaded) return;
+    if (!refreshInterval || typeof data !== "string" || !map || !isLoaded)
+      return;
 
     const refresh = async () => {
       try {
@@ -233,64 +238,84 @@ export const useGeoJSONSource = (id: string) => {
     return map.getSource(id);
   }, [map, isLoaded, id]);
 
-  const setData = useCallback((data: GeoJSON.GeoJSON | string) => {
-    const source = getSource();
-    if (source) {
-      source.setData(data);
-    }
-  }, [getSource]);
-
-  const getClusterExpansionZoom = useCallback((clusterId: number): Promise<number> => {
-    return new Promise((resolve, reject) => {
+  const setData = useCallback(
+    (data: GeoJSON.GeoJSON | string) => {
       const source = getSource();
-      if (!source) {
-        reject(new Error('Source not found'));
-        return;
+      if (source) {
+        source.setData(data);
       }
-      source.getClusterExpansionZoom(clusterId, (error, zoom) => {
-        if (error) reject(error instanceof Error ? error : new Error(String(error)));
-        else resolve(zoom);
-      });
-    });
-  }, [getSource]);
+    },
+    [getSource]
+  );
 
-  const getClusterChildren = useCallback((clusterId: number): Promise<GeoJSON.Feature[]> => {
-    return new Promise((resolve, reject) => {
-      const source = getSource();
-      if (!source) {
-        reject(new Error('Source not found'));
-        return;
-      }
-      source.getClusterChildren(clusterId, (error, features) => {
-        if (error) reject(error instanceof Error ? error : new Error(String(error)));
-        else resolve(features as GeoJSON.Feature[]);
+  const getClusterExpansionZoom = useCallback(
+    (clusterId: number): Promise<number> => {
+      return new Promise((resolve, reject) => {
+        const source = getSource();
+        if (!source) {
+          reject(new Error("Source not found"));
+          return;
+        }
+        source.getClusterExpansionZoom(clusterId, (error, zoom) => {
+          if (error)
+            reject(error instanceof Error ? error : new Error(String(error)));
+          else resolve(zoom);
+        });
       });
-    });
-  }, [getSource]);
+    },
+    [getSource]
+  );
 
-  const getClusterLeaves = useCallback((
-    clusterId: number,
-    limit?: number,
-    offset?: number
-  ): Promise<GeoJSON.Feature[]> => {
-    return new Promise((resolve, reject) => {
-      const source = getSource();
-      if (!source) {
-        reject(new Error('Source not found'));
-        return;
-      }
-      source.getClusterLeaves(clusterId, limit || 10, offset || 0, (error, features) => {
-        if (error) reject(error instanceof Error ? error : new Error(String(error)));
-        else resolve(features as GeoJSON.Feature[]);
+  const getClusterChildren = useCallback(
+    (clusterId: number): Promise<GeoJSON.Feature[]> => {
+      return new Promise((resolve, reject) => {
+        const source = getSource();
+        if (!source) {
+          reject(new Error("Source not found"));
+          return;
+        }
+        source.getClusterChildren(clusterId, (error, features) => {
+          if (error)
+            reject(error instanceof Error ? error : new Error(String(error)));
+          else resolve(features as GeoJSON.Feature[]);
+        });
       });
-    });
-  }, [getSource]);
+    },
+    [getSource]
+  );
+
+  const getClusterLeaves = useCallback(
+    (
+      clusterId: number,
+      limit?: number,
+      offset?: number
+    ): Promise<GeoJSON.Feature[]> => {
+      return new Promise((resolve, reject) => {
+        const source = getSource();
+        if (!source) {
+          reject(new Error("Source not found"));
+          return;
+        }
+        source.getClusterLeaves(
+          clusterId,
+          limit || 10,
+          offset || 0,
+          (error, features) => {
+            if (error)
+              reject(error instanceof Error ? error : new Error(String(error)));
+            else resolve(features as GeoJSON.Feature[]);
+          }
+        );
+      });
+    },
+    [getSource]
+  );
 
   return {
     source: getSource(),
     setData,
     getClusterExpansionZoom,
     getClusterChildren,
-    getClusterLeaves
+    getClusterLeaves,
   };
 };

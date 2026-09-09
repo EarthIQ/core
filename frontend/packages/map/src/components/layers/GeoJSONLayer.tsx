@@ -24,11 +24,7 @@ import type React from "react";
  * - 'fill-extrusion': 3D extruded polygons (3D buildings)
  */
 export type GeoJSONLayerType =
-  | "fill"
-  | "line"
-  | "circle"
-  | "symbol"
-  | "fill-extrusion";
+  "fill" | "line" | "circle" | "symbol" | "fill-extrusion";
 
 /**
  * Paint properties for each layer type
@@ -93,15 +89,15 @@ export interface LayoutProperties {
   "text-size"?: number | any[];
   "text-font"?: string[];
   "text-anchor"?:
-  | "center"
-  | "left"
-  | "right"
-  | "top"
-  | "bottom"
-  | "top-left"
-  | "top-right"
-  | "bottom-left"
-  | "bottom-right";
+    | "center"
+    | "left"
+    | "right"
+    | "top"
+    | "bottom"
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right";
   "text-offset"?: [number, number];
   "text-rotation-alignment"?: "map" | "viewport" | "auto";
   "icon-image"?: string | any[];
@@ -325,12 +321,12 @@ function toGeoJSONFeature(feature?: MapGeoJSONFeature): Feature {
   }
   return feature && feature.toJSON && typeof feature.toJSON === "function"
     ? feature.toJSON()
-    : ({
-      type: "Feature",
-      id: feature?.id,
-      properties: feature?.properties,
-      geometry: feature?.geometry,
-    });
+    : {
+        type: "Feature",
+        id: feature?.id,
+        properties: feature?.properties,
+        geometry: feature?.geometry,
+      };
 }
 
 // ============================================================================
@@ -566,16 +562,19 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
       }
 
       if (outlineLayer && !map.getLayer(`${id}-outline`)) {
-        map.addLayer({
-          id: `${id}-outline`,
-          type: "line",
-          source: sourceId,
-          paint: outlineLayer.paint || {},
-          layout: {
-            ...outlineLayer.layout,
-            visibility: visible ? "visible" : "none",
+        map.addLayer(
+          {
+            id: `${id}-outline`,
+            type: "line",
+            source: sourceId,
+            paint: outlineLayer.paint || {},
+            layout: {
+              ...outlineLayer.layout,
+              visibility: visible ? "visible" : "none",
+            },
           },
-        }, beforeId);
+          beforeId
+        );
       }
     } catch (e) {
       console.warn("Error initializing GeoJSONLayer:", e);
@@ -779,7 +778,10 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
             map.setPaintProperty(`${id}-outline`, property, value);
           }
         } catch (error) {
-          console.warn(`Failed to set outline paint property ${property}:`, error);
+          console.warn(
+            `Failed to set outline paint property ${property}:`,
+            error
+          );
         }
       });
     }

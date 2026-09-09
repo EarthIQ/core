@@ -57,7 +57,7 @@ export const Timeline = ({
       ))}
     </div>
   );
-}
+};
 
 function getStatusClasses(status: TimelineItem["status"]) {
   switch (status) {
@@ -120,7 +120,7 @@ const TimelineDot = ({ item }: { item: TimelineItem }) => {
       ) : null}
     </div>
   );
-}
+};
 
 const VerticalTimelineItem = ({
   item,
@@ -163,18 +163,24 @@ const VerticalTimelineItem = ({
           <h4 className="font-medium text-[var(--text-primary)]">
             {item.title}
           </h4>
-          {item.date ? <span className="text-xs text-[var(--text-tertiary)]">
+          {item.date ? (
+            <span className="text-xs text-[var(--text-tertiary)]">
               {item.date}
-            </span> : null}
+            </span>
+          ) : null}
         </div>
-        {item.description ? <p className="mb-2 text-sm text-[var(--text-secondary)]">
+        {item.description ? (
+          <p className="mb-2 text-sm text-[var(--text-secondary)]">
             {item.description}
-          </p> : null}
-        {item.content ? <div className="card mt-3 p-4">{item.content}</div> : null}
+          </p>
+        ) : null}
+        {item.content ? (
+          <div className="card mt-3 p-4">{item.content}</div>
+        ) : null}
       </div>
     </motion.div>
   );
-}
+};
 
 const HorizontalTimelineItem = ({
   item,
@@ -222,13 +228,17 @@ const HorizontalTimelineItem = ({
         <h4 className="mb-1 text-sm font-medium text-[var(--text-primary)]">
           {item.title}
         </h4>
-        {item.date ? <span className="mb-1 block text-xs text-[var(--text-tertiary)]">
+        {item.date ? (
+          <span className="mb-1 block text-xs text-[var(--text-tertiary)]">
             {item.date}
-          </span> : null}
-        {item.description ? <p className="text-xs text-[var(--text-secondary)]">
+          </span>
+        ) : null}
+        {item.description ? (
+          <p className="text-xs text-[var(--text-secondary)]">
             {item.description}
-          </p> : null}
+          </p>
+        ) : null}
       </div>
     </motion.div>
   );
-}
+};

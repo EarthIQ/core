@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from "react";
 
-import { useMap } from './useMap';
+import { useMap } from "./useMap";
 
-import type { GeoJSON } from 'geojson';
+import type { GeoJSON } from "geojson";
 
 export interface UseFeaturesInViewOptions {
   /** Layer IDs to query */
@@ -19,7 +19,12 @@ export const useFeaturesInView = (
   options: UseFeaturesInViewOptions = {}
 ): GeoJSON.Feature[] => {
   const { map, isLoaded } = useMap();
-  const { layers, filter, debounceMs = 100, includePartial: _includePartial = true } = options;
+  const {
+    layers,
+    filter,
+    debounceMs = 100,
+    includePartial: _includePartial = true,
+  } = options;
   const [features, setFeatures] = useState<GeoJSON.Feature[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
@@ -29,21 +34,26 @@ export const useFeaturesInView = (
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       const queryOptions: any = {};
-      
+
       if (layers?.length) {
         queryOptions.layers = layers;
       }
-      
+
       if (filter) {
         queryOptions.filter = filter;
       }
 
-      const renderedFeatures = map.queryRenderedFeatures(undefined, queryOptions);
-      
+      const renderedFeatures = map.queryRenderedFeatures(
+        undefined,
+        queryOptions
+      );
+
       // Deduplicate by feature ID
       const uniqueFeatures = new Map<string | number, GeoJSON.Feature>();
-      renderedFeatures.forEach(feature => {
-        const id = feature.id ?? `${feature.source}-${feature.sourceLayer}-${JSON.stringify(feature.properties)}`;
+      renderedFeatures.forEach((feature) => {
+        const id =
+          feature.id ??
+          `${feature.source}-${feature.sourceLayer}-${JSON.stringify(feature.properties)}`;
         if (!uniqueFeatures.has(id)) {
           uniqueFeatures.set(id, feature);
         }
@@ -58,13 +68,13 @@ export const useFeaturesInView = (
 
     queryFeatures();
 
-    map.on('moveend', queryFeatures);
-    map.on('sourcedata', queryFeatures);
+    map.on("moveend", queryFeatures);
+    map.on("sourcedata", queryFeatures);
 
     return () => {
       clearTimeout(timeoutRef.current);
-      map.off('moveend', queryFeatures);
-      map.off('sourcedata', queryFeatures);
+      map.off("moveend", queryFeatures);
+      map.off("sourcedata", queryFeatures);
     };
   }, [map, isLoaded, queryFeatures]);
 

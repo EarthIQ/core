@@ -11,35 +11,38 @@ export default function ConfirmDeleteModal({
 }: Props) {
   return (
     <div
-      className="fixed inset-0 z-[999] flex items-center justify-center p-4 overlay animate-fade-in"
+      className="overlay animate-fade-in fixed inset-0 z-[999] flex items-center justify-center p-4"
       onClick={onCancel}
     >
       <div
         aria-modal="true"
-        className="w-full max-w-sm bg-elevated border border-border-primary rounded-2xl shadow-2xl animate-scale-in overflow-hidden"
+        className="bg-elevated border-border-primary animate-scale-in w-full max-w-sm overflow-hidden rounded-2xl border shadow-2xl"
         role="dialog"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 flex flex-col gap-4">
+        <div className="flex flex-col gap-4 p-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-error/10 text-error flex items-center justify-center text-xl shrink-0">
+            <div className="bg-error/10 text-error flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl">
               🗑️
             </div>
             <div>
-              <h2 className="text-base font-bold text-text-primary">
+              <h2 className="text-text-primary text-base font-bold">
                 Delete {label}?
               </h2>
-              <p className="text-xs text-text-tertiary mt-0.5">
+              <p className="text-text-tertiary mt-0.5 text-xs">
                 This action cannot be undone.
               </p>
             </div>
           </div>
-          <div className="flex gap-3 justify-end">
-            <button className="btn btn-secondary btn-md" onClick={onCancel}>
+          <div className="flex justify-end gap-3">
+            <button
+              className="btn btn-secondary btn-md"
+              onClick={onCancel}
+            >
               Cancel
             </button>
             <button
-              className="btn btn-md bg-error text-white hover:bg-error/90"
+              className="btn btn-md bg-error hover:bg-error/90 text-white"
               onClick={onConfirm}
             >
               Delete

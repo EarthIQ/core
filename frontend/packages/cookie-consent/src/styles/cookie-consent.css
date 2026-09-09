@@ -172,15 +172,15 @@
   .cc-banner__title {
     font-size: 1.125rem;
   }
-  
+
   .cc-banner__actions {
     flex-direction: row;
   }
-  
+
   .cc-banner__btn--reject {
     order: 1;
   }
-  
+
   .cc-banner__btn--accept {
     order: 3;
     flex: none;
@@ -310,7 +310,7 @@
   .cc-modal__footer {
     flex-direction: row;
   }
-  
+
   .cc-modal__footer .cc-btn {
     flex: 1;
   }
@@ -466,7 +466,8 @@
   background-color: var(--bg-tertiary);
   border-radius: 0.25rem;
   font-size: 0.75rem;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   color: var(--text-primary);
 }
 

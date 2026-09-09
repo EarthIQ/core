@@ -1,6 +1,6 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
 export interface VectorTileSourceProps {
   /** Unique source ID */
@@ -12,7 +12,7 @@ export interface VectorTileSourceProps {
   /** Tile bounds [west, south, east, north] */
   bounds?: [number, number, number, number];
   /** Tile URL scheme */
-  scheme?: 'xyz' | 'tms';
+  scheme?: "xyz" | "tms";
   /** Minimum zoom level */
   minzoom?: number;
   /** Maximum zoom level */
@@ -36,7 +36,7 @@ export const VectorTileSource: React.FC<VectorTileSourceProps> = ({
   url,
   tiles,
   bounds,
-  scheme = 'xyz',
+  scheme = "xyz",
   minzoom = 0,
   maxzoom = 22,
   attribution,
@@ -44,7 +44,7 @@ export const VectorTileSource: React.FC<VectorTileSourceProps> = ({
   volatile = false,
   onLoad,
   onError,
-  children
+  children,
 }) => {
   const { map, isLoaded } = useMap();
 
@@ -54,13 +54,13 @@ export const VectorTileSource: React.FC<VectorTileSourceProps> = ({
     try {
       if (!map.getSource(id)) {
         const sourceConfig: maplibregl.VectorSourceSpecification = {
-          type: 'vector',
+          type: "vector",
           scheme,
           minzoom,
           maxzoom,
           attribution,
           promoteId,
-          volatile
+          volatile,
         };
 
         if (url) {
@@ -68,7 +68,7 @@ export const VectorTileSource: React.FC<VectorTileSourceProps> = ({
         } else if (tiles) {
           sourceConfig.tiles = tiles;
         } else {
-          throw new Error('Either url or tiles must be provided');
+          throw new Error("Either url or tiles must be provided");
         }
 
         if (bounds) {
@@ -82,7 +82,7 @@ export const VectorTileSource: React.FC<VectorTileSourceProps> = ({
           if (map.isSourceLoaded(id)) {
             onLoad?.();
           } else {
-            map.once('sourcedata', (e) => {
+            map.once("sourcedata", (e) => {
               if (e.sourceId === id && e.isSourceLoaded) {
                 onLoad?.();
               }
@@ -100,9 +100,8 @@ export const VectorTileSource: React.FC<VectorTileSourceProps> = ({
       if (map.getSource(id)) {
         // Remove layers first
         const style = map.getStyle();
-        const layersToRemove = style?.layers?.filter(
-          (layer: any) => layer.source === id
-        ) || [];
+        const layersToRemove =
+          style?.layers?.filter((layer: any) => layer.source === id) || [];
 
         layersToRemove.forEach((layer: any) => {
           if (map.getLayer(layer.id)) {
@@ -113,7 +112,22 @@ export const VectorTileSource: React.FC<VectorTileSourceProps> = ({
         map.removeSource(id);
       }
     };
-  }, [map, isLoaded, id, url, tiles, bounds, scheme, minzoom, maxzoom, attribution, promoteId, volatile, onLoad, onError]);
+  }, [
+    map,
+    isLoaded,
+    id,
+    url,
+    tiles,
+    bounds,
+    scheme,
+    minzoom,
+    maxzoom,
+    attribution,
+    promoteId,
+    volatile,
+    onLoad,
+    onError,
+  ]);
 
   return <>{children}</>;
 };
@@ -130,22 +144,22 @@ export const useVectorTileSource = (id: string) => {
   const getSourceLayers = useCallback((): string[] => {
     const source = getSource();
     if (!source) return [];
-    
+
     // Query rendered features to get source layers
     const features = map?.querySourceFeatures(id) || [];
     const layers = new Set<string>();
-    
-    features.forEach(f => {
+
+    features.forEach((f) => {
       if (f.sourceLayer) {
         layers.add(f.sourceLayer);
       }
     });
-    
+
     return Array.from(layers);
   }, [map, getSource, id]);
 
   return {
     source: getSource(),
-    getSourceLayers
+    getSourceLayers,
   };
 };

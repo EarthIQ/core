@@ -118,13 +118,15 @@ const SkeletonRows = ({
         key={index}
         style={{ borderBottom: "1px solid var(--border-secondary)" }}
       >
-        {selectable ? <td className="px-4 py-3">
+        {selectable ? (
+          <td className="px-4 py-3">
             <Skeleton
               height={16}
               variant="rounded"
               width={16}
             />
-          </td> : null}
+          </td>
+        ) : null}
         {Array.from({ length: columnCount }).map((_, colIndex) => (
           <td
             key={colIndex}
@@ -195,7 +197,8 @@ export const Table = <T extends Record<string, any>>({
         {/* ---- Head ---- */}
         <thead>
           <tr style={{ backgroundColor: "var(--bg-tertiary)" }}>
-            {selectable ? <th
+            {selectable ? (
+              <th
                 className="w-12 px-4 py-3"
                 style={{ borderBottom: "1px solid var(--border-primary)" }}
               >
@@ -204,7 +207,8 @@ export const Table = <T extends Record<string, any>>({
                   indeterminate={someSelected}
                   onChange={handleSelectAll}
                 />
-              </th> : null}
+              </th>
+            ) : null}
             {columns.map((column) => (
               <TableHeader
                 key={column.key}
@@ -254,29 +258,27 @@ export const Table = <T extends Record<string, any>>({
                   onClick={() => onRowClick?.(record)}
                   onMouseEnter={(e) => {
                     if (hoverable) {
-                      (
-                        e.currentTarget
-                      ).style.backgroundColor = isSelected
+                      e.currentTarget.style.backgroundColor = isSelected
                         ? "color-mix(in oklch, var(--primary) 12%, transparent)"
                         : "var(--surface-hover)";
                     }
                   }}
                   onMouseLeave={(e) => {
-                    (
-                      e.currentTarget
-                    ).style.backgroundColor = isSelected
+                    e.currentTarget.style.backgroundColor = isSelected
                       ? "color-mix(in oklch, var(--primary) 8%, transparent)"
                       : isEvenStripe
                         ? "var(--bg-tertiary)"
                         : "transparent";
                   }}
                 >
-                  {selectable ? <TableCell onClick={(e) => e.stopPropagation()}>
+                  {selectable ? (
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={isSelected}
                         onChange={() => handleSelectRow(key)}
                       />
-                    </TableCell> : null}
+                    </TableCell>
+                  ) : null}
                   {columns.map((column) => {
                     const value = column.dataIndex
                       ? record[column.dataIndex]
@@ -302,4 +304,4 @@ export const Table = <T extends Record<string, any>>({
       </table>
     </div>
   );
-}
+};

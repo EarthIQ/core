@@ -123,7 +123,8 @@ export const LayerGroupComponent: React.FC<LayerGroupProps> = memo(
         </div>
 
         {/* Content */}
-        {group.expanded ? <div className="pb-1">
+        {group.expanded ? (
+          <div className="pb-1">
             {/* Direct Layers */}
             {group.layers.length > 0 && (
               <div
@@ -180,7 +181,8 @@ export const LayerGroupComponent: React.FC<LayerGroupProps> = memo(
                 ))}
               </div>
             )}
-          </div> : null}
+          </div>
+        ) : null}
       </div>
     );
   }

@@ -281,7 +281,7 @@ export const Form = ({
       </form>
     </FormContext.Provider>
   );
-}
+};
 
 // Form Field wrapper component
 interface FormFieldProps {
@@ -292,7 +292,7 @@ interface FormFieldProps {
 export const FormField = ({ name, children }: FormFieldProps) => {
   const { getFieldProps } = useFormContext();
   return <>{children(getFieldProps(name))}</>;
-}
+};
 
 // Submit button that auto-disables during submission
 interface FormSubmitProps {
@@ -345,4 +345,4 @@ export const FormSubmit = ({ children, className }: FormSubmitProps) => {
       )}
     </button>
   );
-}
+};

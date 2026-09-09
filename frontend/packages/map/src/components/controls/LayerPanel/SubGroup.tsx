@@ -84,12 +84,14 @@ export const SubGroupComponent: React.FC<SubGroupProps> = memo(
           </span>
 
           {/* Single-select badge */}
-          {subGroup.singleSelect ? <span
+          {subGroup.singleSelect ? (
+            <span
               className="flex items-center gap-0.5 rounded bg-[var(--bg-tertiary)] px-1.5 py-0.5 text-[9px] font-semibold tracking-wider text-[var(--text-tertiary)] uppercase"
               title="Only one layer can be visible at a time"
             >
               <Radio className="h-2.5 w-2.5" />1
-            </span> : null}
+            </span>
+          ) : null}
 
           <button
             aria-label={`${subGroup.visible ? "Hide" : "Show"} all in ${subGroup.name}`}
@@ -109,7 +111,8 @@ export const SubGroupComponent: React.FC<SubGroupProps> = memo(
         </div>
 
         {/* Layers */}
-        {subGroup.expanded ? <div className="ml-6 border-l border-[var(--border-secondary)] pb-0.5">
+        {subGroup.expanded ? (
+          <div className="ml-6 border-l border-[var(--border-secondary)] pb-0.5">
             {subGroup.layers.map((layer) => (
               <LayerItem
                 key={layer.id}
@@ -129,7 +132,8 @@ export const SubGroupComponent: React.FC<SubGroupProps> = memo(
                 onZoomTo={onLayerZoomTo}
               />
             ))}
-          </div> : null}
+          </div>
+        ) : null}
       </div>
     );
   }

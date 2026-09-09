@@ -44,7 +44,7 @@ export const BuilderPicker = ({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useClickOutside<HTMLDivElement>(
     () => setIsOpen(false),
-    isOpen,
+    isOpen
   );
 
   function handleSelect(builder: ProjectBuilder) {
@@ -71,21 +71,22 @@ export const BuilderPicker = ({
     >
       {trigger}
 
-      {isOpen ? <div
+      {isOpen ? (
+        <div
           aria-label="Project builders"
           role="menu"
           className={cn(
-            "absolute right-0 top-full z-50 mt-2 w-80",
+            "absolute top-full right-0 z-50 mt-2 w-80",
             "rounded-2xl border border-[var(--border-primary)]",
             "bg-[var(--bg-elevated)] shadow-[var(--shadow-xl)]",
-            "overflow-hidden animate-fade-in-up",
-            className,
+            "animate-fade-in-up overflow-hidden",
+            className
           )}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Picker header */}
           <div className="px-4 pt-3.5 pb-2">
-            <div className="text-xs font-semibold uppercase tracking-widest text-[var(--text-tertiary)]">
+            <div className="text-xs font-semibold tracking-widest text-[var(--text-tertiary)] uppercase">
               Builders
             </div>
             <div className="mt-0.5 text-[0.7rem] text-[var(--text-tertiary)]">
@@ -94,7 +95,7 @@ export const BuilderPicker = ({
           </div>
 
           {/* Builder list */}
-          <div className="px-1.5 pb-1.5 flex flex-col gap-0.5">
+          <div className="flex flex-col gap-0.5 px-1.5 pb-1.5">
             {ENABLED_BUILDERS.map((builder) => {
               const Icon = builder.icon;
               const isActive = builder.id === hostId;
@@ -105,9 +106,9 @@ export const BuilderPicker = ({
                   type="button"
                   className={cn(
                     "flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left",
-                    "transition-colors duration-150 cursor-pointer",
+                    "cursor-pointer transition-colors duration-150",
                     "hover:bg-[var(--surface-hover)]",
-                    isActive && "bg-[var(--surface-active)]",
+                    isActive && "bg-[var(--surface-active)]"
                   )}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -117,8 +118,7 @@ export const BuilderPicker = ({
                   <span
                     className={cn(
                       "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                      builder.iconClassName ??
-                        "text-primary bg-primary/10",
+                      builder.iconClassName ?? "text-primary bg-primary/10"
                     )}
                   >
                     <Icon size={17} />
@@ -128,12 +128,12 @@ export const BuilderPicker = ({
                     <span
                       className={cn(
                         "block text-sm font-semibold",
-                        "text-[var(--text-primary)]",
+                        "text-[var(--text-primary)]"
                       )}
                     >
                       {builder.label}
                     </span>
-                    <span className="block text-xs text-[var(--text-tertiary)] leading-snug">
+                    <span className="block text-xs leading-snug text-[var(--text-tertiary)]">
                       {builder.description}
                     </span>
                   </span>
@@ -148,10 +148,13 @@ export const BuilderPicker = ({
           </div>
 
           {/* Optional footer slot */}
-          {footer ? <div className="border-t border-[var(--border-primary)] px-1.5 py-1.5">
+          {footer ? (
+            <div className="border-t border-[var(--border-primary)] px-1.5 py-1.5">
               {footer}
-            </div> : null}
-        </div> : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
-}
+};

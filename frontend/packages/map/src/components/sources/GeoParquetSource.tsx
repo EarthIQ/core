@@ -5,7 +5,6 @@ import { useMap } from "../../hooks/useMap";
 
 import type React from "react";
 
-
 export interface GeoParquetSourceProps {
   /** Unique source ID */
   id?: string;
@@ -99,7 +98,11 @@ export const GeoParquetSource: React.FC<GeoParquetSourceProps> = ({
             if (!coords) return false;
             return coords.some(
               (c: number[]) =>
-                c && c[0] >= minX && c[0] <= maxX && c[1] >= minY && c[1] <= maxY
+                c &&
+                c[0] >= minX &&
+                c[0] <= maxX &&
+                c[1] >= minY &&
+                c[1] <= maxY
             );
           });
 
@@ -143,7 +146,7 @@ export const GeoParquetSource: React.FC<GeoParquetSourceProps> = ({
           type: "line",
           source: sourceId,
           paint: outlineLayer.paint || {},
-          layout: outlineLayer.layout || {}
+          layout: outlineLayer.layout || {},
         } as any);
       }
     }
@@ -183,7 +186,7 @@ export const GeoParquetSource: React.FC<GeoParquetSourceProps> = ({
     if (layer.onClick) {
       map.on("click", id, handleClick);
     }
-    
+
     map.on("mousemove", id, handleMouseMove);
     map.on("mouseleave", id, handleMouseLeave);
     if (outlineLayer) {

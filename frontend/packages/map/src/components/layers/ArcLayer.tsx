@@ -1,11 +1,10 @@
-import { ArcLayer as DeckArcLayer } from '@deck.gl/layers';
-import { useEffect, useId, useState, useCallback as _useCallback } from 'react';
+import { ArcLayer as DeckArcLayer } from "@deck.gl/layers";
+import { useEffect, useId, useState, useCallback as _useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-
-import type { GeoJSON } from 'geojson';
-import type React from 'react';
+import type { GeoJSON } from "geojson";
+import type React from "react";
 
 export interface ArcData {
   source: [number, number];
@@ -27,9 +26,13 @@ export interface ArcLayerProps {
   /** Get target position */
   getTargetPosition?: (d: any) => [number, number];
   /** Get source color */
-  getSourceColor?: [number, number, number, number] | ((d: any) => [number, number, number, number]);
+  getSourceColor?:
+    | [number, number, number, number]
+    | ((d: any) => [number, number, number, number]);
   /** Get target color */
-  getTargetColor?: [number, number, number, number] | ((d: any) => [number, number, number, number]);
+  getTargetColor?:
+    | [number, number, number, number]
+    | ((d: any) => [number, number, number, number]);
   /** Get width */
   getWidth?: number | ((d: any) => number);
   /** Get height (arc curve height) */
@@ -41,7 +44,7 @@ export interface ArcLayerProps {
   /** Number of segments per arc */
   numSegments?: number;
   /** Width units */
-  widthUnits?: 'pixels' | 'meters' | 'common';
+  widthUnits?: "pixels" | "meters" | "common";
   /** Width scale */
   widthScale?: number;
   /** Width min pixels */
@@ -78,7 +81,7 @@ export const ArcLayer: React.FC<ArcLayerProps> = ({
   getTilt = 0,
   greatCircle = true,
   numSegments = 50,
-  widthUnits = 'pixels',
+  widthUnits = "pixels",
   widthScale = 1,
   widthMinPixels = 1,
   widthMaxPixels = 100,
@@ -89,7 +92,7 @@ export const ArcLayer: React.FC<ArcLayerProps> = ({
   onHover,
   useDeckGL = true,
   animated = false,
-  animationSpeed = 1
+  animationSpeed = 1,
 }) => {
   const { map, deck, isLoaded } = useMap();
   const autoId = useId();
@@ -102,21 +105,28 @@ export const ArcLayer: React.FC<ArcLayerProps> = ({
     const process = async () => {
       let rawData: any[];
 
-      if (typeof data === 'string') {
+      if (typeof data === "string") {
         try {
           const response = await fetch(data);
           const json = await response.json();
-          rawData = json.type === 'FeatureCollection' ? json.features : json;
+          rawData = json.type === "FeatureCollection" ? json.features : json;
         } catch (error) {
-          console.error('Failed to fetch arc layer data:', error);
+          console.error("Failed to fetch arc layer data:", error);
           return;
         }
-      } else if ((data as GeoJSON.FeatureCollection).type === 'FeatureCollection') {
+      } else if (
+        (data as GeoJSON.FeatureCollection).type === "FeatureCollection"
+      ) {
         // Convert LineStrings to arc data
-        rawData = (data as GeoJSON.FeatureCollection<GeoJSON.LineString>).features.map(f => ({
+        rawData = (
+          data as GeoJSON.FeatureCollection<GeoJSON.LineString>
+        ).features.map((f) => ({
           source: f.geometry.coordinates[0] as [number, number],
-          target: f.geometry.coordinates[f.geometry.coordinates.length - 1] as [number, number],
-          ...f.properties
+          target: f.geometry.coordinates[f.geometry.coordinates.length - 1] as [
+            number,
+            number,
+          ],
+          ...f.properties,
         }));
       } else {
         rawData = data as ArcData[];
@@ -138,8 +148,8 @@ export const ArcLayer: React.FC<ArcLayerProps> = ({
     const animate = (time: number) => {
       const delta = time - lastTime;
       lastTime = time;
-      
-      setAnimationTime(prev => (prev + delta * animationSpeed * 0.001) % 1);
+
+      setAnimationTime((prev) => (prev + delta * animationSpeed * 0.001) % 1);
       animationFrame = requestAnimationFrame(animate);
     };
 
@@ -159,11 +169,17 @@ export const ArcLayer: React.FC<ArcLayerProps> = ({
       data: processedData,
       getSourcePosition,
       getTargetPosition,
-      getSourceColor: typeof getSourceColor === 'function' ? getSourceColor : () => getSourceColor,
-      getTargetColor: typeof getTargetColor === 'function' ? getTargetColor : () => getTargetColor,
-      getWidth: typeof getWidth === 'function' ? getWidth : () => getWidth,
-      getHeight: typeof getHeight === 'function' ? getHeight : () => getHeight,
-      getTilt: typeof getTilt === 'function' ? getTilt : () => getTilt,
+      getSourceColor:
+        typeof getSourceColor === "function"
+          ? getSourceColor
+          : () => getSourceColor,
+      getTargetColor:
+        typeof getTargetColor === "function"
+          ? getTargetColor
+          : () => getTargetColor,
+      getWidth: typeof getWidth === "function" ? getWidth : () => getWidth,
+      getHeight: typeof getHeight === "function" ? getHeight : () => getHeight,
+      getTilt: typeof getTilt === "function" ? getTilt : () => getTilt,
       greatCircle,
       numSegments,
       widthUnits,
@@ -179,8 +195,8 @@ export const ArcLayer: React.FC<ArcLayerProps> = ({
         getSourceColor,
         getTargetColor,
         getWidth,
-        getHeight
-      }
+        getHeight,
+      },
     });
 
     const currentLayers = deck.props.layers || [];
@@ -190,15 +206,32 @@ export const ArcLayer: React.FC<ArcLayerProps> = ({
     return () => {
       const layers = deck.props.layers || [];
       deck.setProps({
-        layers: layers.filter((l: any) => l.id !== id)
+        layers: layers.filter((l: any) => l.id !== id),
       });
     };
   }, [
-    deck, useDeckGL, visible, processedData, id, 
-    getSourcePosition, getTargetPosition, getSourceColor, getTargetColor,
-    getWidth, getHeight, getTilt, greatCircle, numSegments,
-    widthUnits, widthScale, widthMinPixels, widthMaxPixels,
-    opacity, pickable, onClick, onHover
+    deck,
+    useDeckGL,
+    visible,
+    processedData,
+    id,
+    getSourcePosition,
+    getTargetPosition,
+    getSourceColor,
+    getTargetColor,
+    getWidth,
+    getHeight,
+    getTilt,
+    greatCircle,
+    numSegments,
+    widthUnits,
+    widthScale,
+    widthMinPixels,
+    widthMaxPixels,
+    opacity,
+    pickable,
+    onClick,
+    onHover,
   ]);
 
   // Native MapLibre fallback (simplified - draws straight lines)
@@ -209,30 +242,35 @@ export const ArcLayer: React.FC<ArcLayerProps> = ({
 
     // Convert arcs to LineStrings
     const geojson: GeoJSON.FeatureCollection = {
-      type: 'FeatureCollection',
+      type: "FeatureCollection",
       features: processedData.map((arc, index) => {
         const source = getSourcePosition(arc);
         const target = getTargetPosition(arc);
-        
+
         // Generate curved path
-        const points = generateArcPoints(source, target, numSegments, greatCircle);
-        
+        const points = generateArcPoints(
+          source,
+          target,
+          numSegments,
+          greatCircle
+        );
+
         return {
-          type: 'Feature',
+          type: "Feature",
           id: index,
           geometry: {
-            type: 'LineString',
-            coordinates: points
+            type: "LineString",
+            coordinates: points,
           },
-          properties: arc
+          properties: arc,
         };
-      })
+      }),
     };
 
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
-        type: 'geojson',
-        data: geojson
+        type: "geojson",
+        data: geojson,
       });
     } else {
       (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(geojson);
@@ -241,20 +279,20 @@ export const ArcLayer: React.FC<ArcLayerProps> = ({
     if (!map.getLayer(id)) {
       map.addLayer({
         id,
-        type: 'line',
+        type: "line",
         source: sourceId,
         paint: {
-          'line-color': Array.isArray(getSourceColor) 
-            ? `rgba(${getSourceColor.join(',')})` 
-            : '#0080ff',
-          'line-width': typeof getWidth === 'number' ? getWidth : 2,
-          'line-opacity': opacity
+          "line-color": Array.isArray(getSourceColor)
+            ? `rgba(${getSourceColor.join(",")})`
+            : "#0080ff",
+          "line-width": typeof getWidth === "number" ? getWidth : 2,
+          "line-opacity": opacity,
         },
         layout: {
-          visibility: visible ? 'visible' : 'none',
-          'line-cap': 'round',
-          'line-join': 'round'
-        }
+          visibility: visible ? "visible" : "none",
+          "line-cap": "round",
+          "line-join": "round",
+        },
       });
     }
 
@@ -262,7 +300,21 @@ export const ArcLayer: React.FC<ArcLayerProps> = ({
       if (map.getLayer(id)) map.removeLayer(id);
       if (map.getSource(sourceId)) map.removeSource(sourceId);
     };
-  }, [map, isLoaded, useDeckGL, processedData, id, getSourcePosition, getTargetPosition, numSegments, greatCircle, getSourceColor, getWidth, opacity, visible]);
+  }, [
+    map,
+    isLoaded,
+    useDeckGL,
+    processedData,
+    id,
+    getSourcePosition,
+    getTargetPosition,
+    numSegments,
+    greatCircle,
+    getSourceColor,
+    getWidth,
+    opacity,
+    visible,
+  ]);
 
   return null;
 };
@@ -275,10 +327,10 @@ function generateArcPoints(
   greatCircle: boolean
 ): number[][] {
   const points: number[][] = [];
-  
+
   for (let i = 0; i <= numSegments; i++) {
     const t = i / numSegments;
-    
+
     if (greatCircle) {
       // Great circle interpolation
       const point = interpolateGreatCircle(source, target, t);
@@ -290,7 +342,7 @@ function generateArcPoints(
       points.push([lng, lat]);
     }
   }
-  
+
   return points;
 }
 
@@ -299,30 +351,38 @@ function interpolateGreatCircle(
   target: [number, number],
   t: number
 ): [number, number] {
-  const toRad = (deg: number) => deg * Math.PI / 180;
-  const toDeg = (rad: number) => rad * 180 / Math.PI;
-  
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const toDeg = (rad: number) => (rad * 180) / Math.PI;
+
   const lat1 = toRad(source[1]);
   const lng1 = toRad(source[0]);
   const lat2 = toRad(target[1]);
   const lng2 = toRad(target[0]);
-  
-  const d = 2 * Math.asin(Math.sqrt(
-    Math.pow(Math.sin((lat1 - lat2) / 2), 2) +
-    Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin((lng1 - lng2) / 2), 2)
-  ));
-  
+
+  const d =
+    2 *
+    Math.asin(
+      Math.sqrt(
+        Math.pow(Math.sin((lat1 - lat2) / 2), 2) +
+          Math.cos(lat1) *
+            Math.cos(lat2) *
+            Math.pow(Math.sin((lng1 - lng2) / 2), 2)
+      )
+    );
+
   if (d === 0) return source;
-  
+
   const A = Math.sin((1 - t) * d) / Math.sin(d);
   const B = Math.sin(t * d) / Math.sin(d);
-  
-  const x = A * Math.cos(lat1) * Math.cos(lng1) + B * Math.cos(lat2) * Math.cos(lng2);
-  const y = A * Math.cos(lat1) * Math.sin(lng1) + B * Math.cos(lat2) * Math.sin(lng2);
+
+  const x =
+    A * Math.cos(lat1) * Math.cos(lng1) + B * Math.cos(lat2) * Math.cos(lng2);
+  const y =
+    A * Math.cos(lat1) * Math.sin(lng1) + B * Math.cos(lat2) * Math.sin(lng2);
   const z = A * Math.sin(lat1) + B * Math.sin(lat2);
-  
+
   const lat = Math.atan2(z, Math.sqrt(x * x + y * y));
   const lng = Math.atan2(y, x);
-  
+
   return [toDeg(lng), toDeg(lat)];
 }

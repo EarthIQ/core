@@ -152,19 +152,19 @@ export const BUILDERS: ProjectBuilder[] = [
 
 /** Builders that are currently visible/routable. */
 export const ENABLED_BUILDERS: ProjectBuilder[] = BUILDERS.filter(
-  (b) => b.enabled,
+  (b) => b.enabled
 );
 
 /** Look up a builder by its stable id. */
 export function getProjectBuilder(
-  builderId: string,
+  builderId: string
 ): ProjectBuilder | undefined {
   return BUILDERS.find((b) => b.id === builderId);
 }
 
 /** Look up a builder by its URL route path (e.g. "builder/story-map"). */
 export function getProjectBuilderByPath(
-  path: string,
+  path: string
 ): ProjectBuilder | undefined {
   return BUILDERS.find((b) => b.path === path.replace(/^\//, ""));
 }
@@ -180,7 +180,7 @@ export function getProjectBuilderByPath(
 export function buildBuilderUrl(
   builderId: string,
   projectId?: string | null,
-  extraParams?: Record<string, string>,
+  extraParams?: Record<string, string>
 ): string {
   const builder = getProjectBuilder(builderId);
   // Safety net: NEVER fall back to the projects list. Even an unknown builder

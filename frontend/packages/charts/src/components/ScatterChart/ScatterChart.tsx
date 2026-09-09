@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   ScatterChart as RechartsScatterChart,
   Scatter,
@@ -9,23 +9,23 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
+} from "recharts";
 
-import { getColor } from '../../utils/colors';
-import { ChartContainer } from '../ChartContainer';
+import { getColor } from "../../utils/colors";
+import { ChartContainer } from "../ChartContainer";
 
-import type { ScatterChartProps } from '../../types';
+import type { ScatterChartProps } from "../../types";
 
 export const ScatterChart: React.FC<ScatterChartProps> = ({
   data,
-  width = '100%',
+  width = "100%",
   height = 400,
   className,
   colors,
   title,
   description,
   showGrid = true,
-  gridType = 'both',
+  gridType = "both",
   animate = true,
   animationDuration = 300,
   legend = true,
@@ -35,14 +35,16 @@ export const ScatterChart: React.FC<ScatterChartProps> = ({
   empty = false,
   error = false,
   onDataPointClick,
-  exportFilename = 'scatter-chart',
+  exportFilename = "scatter-chart",
   scatters,
   xAxis,
   yAxis,
   zAxis,
 }) => {
-  const showLegend = typeof legend === 'boolean' ? legend : legend?.show !== false;
-  const showTooltip = typeof tooltip === 'boolean' ? tooltip : tooltip?.show !== false;
+  const showLegend =
+    typeof legend === "boolean" ? legend : legend?.show !== false;
+  const showTooltip =
+    typeof tooltip === "boolean" ? tooltip : tooltip?.show !== false;
 
   return (
     <ChartContainer
@@ -57,23 +59,30 @@ export const ScatterChart: React.FC<ScatterChartProps> = ({
       toolbar={toolbar}
     >
       <div style={{ width, height }}>
-        <ResponsiveContainer height="100%" width="100%">
-          <RechartsScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
-            {showGrid ? <CartesianGrid
+        <ResponsiveContainer
+          height="100%"
+          width="100%"
+        >
+          <RechartsScatterChart
+            margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+          >
+            {showGrid ? (
+              <CartesianGrid
                 className="stroke-gray-200 dark:stroke-gray-700"
-                horizontal={gridType !== 'vertical'}
+                horizontal={gridType !== "vertical"}
                 strokeDasharray="3 3"
-                vertical={gridType !== 'horizontal'}
-              /> : null}
+                vertical={gridType !== "horizontal"}
+              />
+            ) : null}
 
             {!xAxis?.hide && (
               <XAxis
                 axisLine={false}
                 className="text-gray-600 dark:text-gray-400"
-                dataKey={xAxis?.dataKey || 'x'}
+                dataKey={xAxis?.dataKey || "x"}
                 domain={xAxis?.domain}
-                name={xAxis?.label || 'X'}
-                tick={{ fill: 'currentColor', fontSize: 12 }}
+                name={xAxis?.label || "X"}
+                tick={{ fill: "currentColor", fontSize: 12 }}
                 tickFormatter={xAxis?.tickFormatter}
                 tickLine={false}
                 tickMargin={8}
@@ -85,10 +94,10 @@ export const ScatterChart: React.FC<ScatterChartProps> = ({
               <YAxis
                 axisLine={false}
                 className="text-gray-600 dark:text-gray-400"
-                dataKey={yAxis?.dataKey || 'y'}
+                dataKey={yAxis?.dataKey || "y"}
                 domain={yAxis?.domain}
-                name={yAxis?.label || 'Y'}
-                tick={{ fill: 'currentColor', fontSize: 12 }}
+                name={yAxis?.label || "Y"}
+                tick={{ fill: "currentColor", fontSize: 12 }}
                 tickFormatter={yAxis?.tickFormatter}
                 tickLine={false}
                 tickMargin={8}
@@ -96,29 +105,35 @@ export const ScatterChart: React.FC<ScatterChartProps> = ({
               />
             )}
 
-            {zAxis ? <ZAxis
+            {zAxis ? (
+              <ZAxis
                 dataKey={zAxis.dataKey}
                 range={zAxis.range || [50, 500]}
                 type="number"
-              /> : null}
+              />
+            ) : null}
 
-            {showTooltip ? <Tooltip
-                cursor={{ strokeDasharray: '3 3' }}
+            {showTooltip ? (
+              <Tooltip
+                cursor={{ strokeDasharray: "3 3" }}
                 contentStyle={{
-                  backgroundColor: 'hsl(var(--popover, 0 0% 100%))',
-                  border: '1px solid hsl(var(--border, 220 13% 91%))',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  backgroundColor: "hsl(var(--popover, 0 0% 100%))",
+                  border: "1px solid hsl(var(--border, 220 13% 91%))",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-              /> : null}
+              />
+            ) : null}
 
-            {showLegend ? <Legend
+            {showLegend ? (
+              <Legend
                 height={36}
                 iconSize={8}
                 iconType="circle"
                 verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              /> : null}
+              />
+            ) : null}
 
             {scatters.map((scatter, index) => {
               const color = scatter.color || getColor(index, colors);
@@ -130,7 +145,7 @@ export const ScatterChart: React.FC<ScatterChartProps> = ({
                   fill={color}
                   isAnimationActive={animate}
                   name={scatter.name || scatter.dataKey}
-                  shape={scatter.shape || 'circle'}
+                  shape={scatter.shape || "circle"}
                   onClick={(entry) => {
                     if (onDataPointClick) {
                       onDataPointClick(entry, index);

@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { FeatureCollection } from 'geojson';
+import type { FeatureCollection } from "geojson";
 
 export interface ChartData {
   label: string;
@@ -12,7 +12,7 @@ export interface ChartData {
 
 export interface ChartOverlayProps {
   /** Chart type */
-  type: 'bar' | 'pie' | 'donut' | 'line' | 'area';
+  type: "bar" | "pie" | "donut" | "line" | "area";
   /** Data source - layer ID, GeoJSON, or direct data */
   source?: string | FeatureCollection | ChartData[];
   /** Field to aggregate */
@@ -20,7 +20,7 @@ export interface ChartOverlayProps {
   /** Field for labels/categories */
   labelField?: string;
   /** Aggregation method */
-  aggregation?: 'sum' | 'count' | 'mean' | 'min' | 'max';
+  aggregation?: "sum" | "count" | "mean" | "min" | "max";
   /** Chart title */
   title?: string;
   /** Chart width */
@@ -36,7 +36,7 @@ export interface ChartOverlayProps {
   /** Custom className */
   className?: string;
   /** Position */
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   /** Collapsible */
   collapsible?: boolean;
   /** Callback on bar/segment click */
@@ -48,17 +48,26 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
   source,
   valueField,
   labelField,
-  aggregation = 'sum',
+  aggregation = "sum",
   title,
   width = 280,
   height = 200,
-  colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#34495e'],
+  colors = [
+    "#3498db",
+    "#e74c3c",
+    "#2ecc71",
+    "#f39c12",
+    "#9b59b6",
+    "#1abc9c",
+    "#e67e22",
+    "#34495e",
+  ],
   showLegend = true,
   showValues = true,
   className,
-  position = 'bottom-left',
+  position = "bottom-left",
   collapsible = true,
-  onSegmentClick
+  onSegmentClick,
 }) => {
   const { map, isLoaded } = useMap();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -70,18 +79,18 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
     if (Array.isArray(source)) {
       return source.map((item, i) => ({
         ...item,
-        color: item.color || colors[i % colors.length]
+        color: item.color || colors[i % colors.length],
       }));
     }
 
     // GeoJSON or layer source
     let features: any[] = [];
 
-    if (typeof source === 'object' && 'features' in source) {
+    if (typeof source === "object" && "features" in source) {
       features = source.features;
-    } else if (typeof source === 'string' && map) {
+    } else if (typeof source === "string" && map) {
       const mapSource = map.getSource(source);
-      if (mapSource && mapSource.type === 'geojson') {
+      if (mapSource && mapSource.type === "geojson") {
         features = ((mapSource as any)._data as FeatureCollection).features;
       }
     }
@@ -93,9 +102,11 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
     // Aggregate data by label field
     const aggregatedData = new Map<string, number[]>();
 
-    features.forEach(feature => {
-      const label = String(feature.properties?.[labelField] || 'Unknown');
-      const value = valueField ? parseFloat(feature.properties?.[valueField]) : 1;
+    features.forEach((feature) => {
+      const label = String(feature.properties?.[labelField] || "Unknown");
+      const value = valueField
+        ? parseFloat(feature.properties?.[valueField])
+        : 1;
 
       if (!isNaN(value)) {
         if (!aggregatedData.has(label)) {
@@ -106,49 +117,57 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
     });
 
     // Apply aggregation
-    return Array.from(aggregatedData.entries()).map(([label, values], index) => {
-      let value: number;
+    return Array.from(aggregatedData.entries())
+      .map(([label, values], index) => {
+        let value: number;
 
-      switch (aggregation) {
-        case 'count':
-          value = values.length;
-          break;
-        case 'sum':
-          value = values.reduce((a, b) => a + b, 0);
-          break;
-        case 'mean':
-          value = values.reduce((a, b) => a + b, 0) / values.length;
-          break;
-        case 'min':
-          value = Math.min(...values);
-          break;
-        case 'max':
-          value = Math.max(...values);
-          break;
-        default:
-          value = values.reduce((a, b) => a + b, 0);
-      }
+        switch (aggregation) {
+          case "count":
+            value = values.length;
+            break;
+          case "sum":
+            value = values.reduce((a, b) => a + b, 0);
+            break;
+          case "mean":
+            value = values.reduce((a, b) => a + b, 0) / values.length;
+            break;
+          case "min":
+            value = Math.min(...values);
+            break;
+          case "max":
+            value = Math.max(...values);
+            break;
+          default:
+            value = values.reduce((a, b) => a + b, 0);
+        }
 
-      return {
-        label,
-        value,
-        color: colors[index % colors.length]
-      };
-    }).sort((a, b) => b.value - a.value);
+        return {
+          label,
+          value,
+          color: colors[index % colors.length],
+        };
+      })
+      .sort((a, b) => b.value - a.value);
   }, [source, map, labelField, valueField, aggregation, colors]);
 
   // Calculate totals and max for scaling
-  const { total, maxValue } = useMemo(() => ({
-    total: chartData.reduce((sum, d) => sum + d.value, 0),
-    maxValue: Math.max(...chartData.map(d => d.value), 1)
-  }), [chartData]);
+  const { total, maxValue } = useMemo(
+    () => ({
+      total: chartData.reduce((sum, d) => sum + d.value, 0),
+      maxValue: Math.max(...chartData.map((d) => d.value), 1),
+    }),
+    [chartData]
+  );
 
   // Render bar chart
   const renderBarChart = () => {
     const barHeight = Math.max(20, (height - 40) / chartData.length - 4);
-    
+
     return (
-      <svg height={height} width={width - 32}>
+      <svg
+        height={height}
+        width={width - 32}
+      >
         {chartData.map((data, index) => {
           const barWidth = (data.value / maxValue) * (width - 120);
           const y = index * (barHeight + 4) + 10;
@@ -157,7 +176,7 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
           return (
             <g
               key={data.label}
-              style={{ cursor: onSegmentClick ? 'pointer' : 'default' }}
+              style={{ cursor: onSegmentClick ? "pointer" : "default" }}
               onClick={() => onSegmentClick?.(data, index)}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
@@ -180,17 +199,23 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
                 x={75}
                 y={y + barHeight / 2 + 4}
               >
-                {data.label.length > 10 ? `${data.label.slice(0, 10)}...` : data.label}
+                {data.label.length > 10
+                  ? `${data.label.slice(0, 10)}...`
+                  : data.label}
               </text>
               {/* Value */}
-              {showValues ? <text
+              {showValues ? (
+                <text
                   fill="#666"
                   fontSize={10}
                   x={85 + barWidth}
                   y={y + barHeight / 2 + 4}
                 >
-                  {data.value.toLocaleString(undefined, { maximumFractionDigits: 1 })}
-                </text> : null}
+                  {data.value.toLocaleString(undefined, {
+                    maximumFractionDigits: 1,
+                  })}
+                </text>
+              ) : null}
             </g>
           );
         })}
@@ -203,12 +228,15 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
     const centerX = (width - 32) / 2;
     const centerY = height / 2;
     const radius = Math.min(centerX, centerY) - 20;
-    const innerRadius = type === 'donut' ? radius * 0.6 : 0;
+    const innerRadius = type === "donut" ? radius * 0.6 : 0;
 
     let currentAngle = -Math.PI / 2;
 
     return (
-      <svg height={height} width={width - 32}>
+      <svg
+        height={height}
+        width={width - 32}
+      >
         {chartData.map((data, index) => {
           const sliceAngle = (data.value / total) * Math.PI * 2;
           const startAngle = currentAngle;
@@ -258,7 +286,7 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
           return (
             <g
               key={data.label}
-              style={{ cursor: onSegmentClick ? 'pointer' : 'default' }}
+              style={{ cursor: onSegmentClick ? "pointer" : "default" }}
               onClick={() => onSegmentClick?.(data, index)}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
@@ -270,7 +298,8 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
                 stroke="white"
                 strokeWidth={2}
               />
-              {showValues && sliceAngle > 0.3 ? <text
+              {showValues && sliceAngle > 0.3 ? (
+                <text
                   dominantBaseline="middle"
                   fill="white"
                   fontSize={10}
@@ -280,13 +309,14 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
                   y={labelY}
                 >
                   {((data.value / total) * 100).toFixed(0)}%
-                </text> : null}
+                </text>
+              ) : null}
             </g>
           );
         })}
 
         {/* Center text for donut */}
-        {type === 'donut' && (
+        {type === "donut" && (
           <text
             dominantBaseline="middle"
             fill="#333"
@@ -314,16 +344,21 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
     const points = chartData.map((data, index) => ({
       x: padding.left + index * xStep,
       y: padding.top + chartHeight - (data.value / maxValue) * chartHeight,
-      data
+      data,
     }));
 
-    const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+    const linePath = points
+      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+      .join(" ");
     const areaPath = `${linePath} L ${points[points.length - 1]?.x || 0} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`;
 
     return (
-      <svg height={height} width={width - 32}>
+      <svg
+        height={height}
+        width={width - 32}
+      >
         {/* Grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map(ratio => {
+        {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
           const y = padding.top + chartHeight * (1 - ratio);
           return (
             <g key={ratio}>
@@ -349,7 +384,7 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
         })}
 
         {/* Area fill */}
-        {type === 'area' && (
+        {type === "area" && (
           <path
             d={areaPath}
             fill={colors[0]}
@@ -369,7 +404,7 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
         {points.map((point, index) => (
           <g
             key={index}
-            style={{ cursor: onSegmentClick ? 'pointer' : 'default' }}
+            style={{ cursor: onSegmentClick ? "pointer" : "default" }}
             onClick={() => onSegmentClick?.(point.data, index)}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
@@ -418,20 +453,20 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
   const renderChart = () => {
     if (chartData.length === 0) {
       return (
-        <div style={{ padding: 20, textAlign: 'center', color: '#999' }}>
+        <div style={{ padding: 20, textAlign: "center", color: "#999" }}>
           No data available
         </div>
       );
     }
 
     switch (type) {
-      case 'bar':
+      case "bar":
         return renderBarChart();
-      case 'pie':
-      case 'donut':
+      case "pie":
+      case "donut":
         return renderPieChart();
-      case 'line':
-      case 'area':
+      case "line":
+      case "area":
         return renderLineChart();
       default:
         return renderBarChart();
@@ -443,22 +478,24 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
     if (!showLegend || chartData.length === 0) return null;
 
     return (
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 8,
-        marginTop: 8,
-        padding: '8px 0',
-        borderTop: '1px solid #eee'
-      }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 8,
+          marginTop: 8,
+          padding: "8px 0",
+          borderTop: "1px solid #eee",
+        }}
+      >
         {chartData.slice(0, 8).map((data, _index) => (
           <div
             key={data.label}
             style={{
-              display: 'flex',
-              alignItems: 'center',
+              display: "flex",
+              alignItems: "center",
               gap: 4,
-              fontSize: 10
+              fontSize: 10,
             }}
           >
             <div
@@ -466,16 +503,18 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
                 width: 10,
                 height: 10,
                 borderRadius: 2,
-                backgroundColor: data.color
+                backgroundColor: data.color,
               }}
             />
-            <span style={{ color: '#666' }}>
-              {data.label.length > 12 ? `${data.label.slice(0, 12)}...` : data.label}
+            <span style={{ color: "#666" }}>
+              {data.label.length > 12
+                ? `${data.label.slice(0, 12)}...`
+                : data.label}
             </span>
           </div>
         ))}
         {chartData.length > 8 && (
-          <span style={{ fontSize: 10, color: '#999' }}>
+          <span style={{ fontSize: 10, color: "#999" }}>
             +{chartData.length - 8} more
           </span>
         )}
@@ -485,15 +524,20 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
 
   // Position styles
   const positionStyles = useMemo(() => {
-    const base = { position: 'absolute' as const, zIndex: 1000 };
+    const base = { position: "absolute" as const, zIndex: 1000 };
     const offset = 10;
-    
+
     switch (position) {
-      case 'top-left': return { ...base, top: offset, left: offset };
-      case 'top-right': return { ...base, top: offset, right: offset };
-      case 'bottom-left': return { ...base, bottom: offset, left: offset };
-      case 'bottom-right': return { ...base, bottom: offset, right: offset };
-      default: return { ...base, bottom: offset, left: offset };
+      case "top-left":
+        return { ...base, top: offset, left: offset };
+      case "top-right":
+        return { ...base, top: offset, right: offset };
+      case "bottom-left":
+        return { ...base, bottom: offset, left: offset };
+      case "bottom-right":
+        return { ...base, bottom: offset, right: offset };
+      default:
+        return { ...base, bottom: offset, left: offset };
     }
   }, [position]);
 
@@ -505,34 +549,40 @@ export const ChartOverlay: React.FC<ChartOverlayProps> = ({
       style={{
         ...positionStyles,
         width,
-        backgroundColor: 'white',
+        backgroundColor: "white",
         borderRadius: 8,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        overflow: 'hidden'
+        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+        overflow: "hidden",
       }}
     >
       {/* Header */}
-      {title ? <div
+      {title ? (
+        <div
           style={{
-            padding: '10px 16px',
-            backgroundColor: '#f8f9fa',
-            borderBottom: '1px solid #eee',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            cursor: collapsible ? 'pointer' : 'default'
+            padding: "10px 16px",
+            backgroundColor: "#f8f9fa",
+            borderBottom: "1px solid #eee",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            cursor: collapsible ? "pointer" : "default",
           }}
           onClick={() => collapsible && setIsCollapsed(!isCollapsed)}
         >
           <span style={{ fontWeight: 600, fontSize: 13 }}>{title}</span>
-          {collapsible ? <span style={{
-              transform: isCollapsed ? 'rotate(180deg)' : 'none',
-              transition: 'transform 0.2s',
-              fontSize: 10
-            }}>
+          {collapsible ? (
+            <span
+              style={{
+                transform: isCollapsed ? "rotate(180deg)" : "none",
+                transition: "transform 0.2s",
+                fontSize: 10,
+              }}
+            >
               ▼
-            </span> : null}
-        </div> : null}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       {/* Chart content */}
       {!isCollapsed && (

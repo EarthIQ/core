@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 
 interface UseCopyToClipboardReturn {
   copiedText: string | null;
@@ -14,7 +14,7 @@ export function useCopyToClipboard(): UseCopyToClipboardReturn {
 
   const copy = useCallback(async (text: string): Promise<boolean> => {
     if (!navigator?.clipboard) {
-      console.warn('Clipboard not supported');
+      console.warn("Clipboard not supported");
       return false;
     }
 
@@ -23,7 +23,7 @@ export function useCopyToClipboard(): UseCopyToClipboardReturn {
       setCopiedText(text);
       return true;
     } catch (error) {
-      console.warn('Copy failed', error);
+      console.warn("Copy failed", error);
       setCopiedText(null);
       return false;
     }

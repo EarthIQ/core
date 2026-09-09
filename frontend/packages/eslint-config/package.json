@@ -26,16 +26,16 @@
       "require": "./dist/react.cjs"
     }
   },
-  "types": "./dist/index.d.ts",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
     "clean": "rm -rf dist",
+    "dev": "tsup --watch",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -51,15 +51,15 @@
     "globals": "^16.5.0",
     "typescript-eslint": "^8.69.0"
   },
-  "peerDependencies": {
-    "eslint": "^10.0.0",
-    "typescript": ">=5.0.0"
-  },
   "devDependencies": {
     "@types/eslint": "^9.6.1",
     "@types/node": "^26.2.0",
     "eslint": "^10.10.0",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3"
+  },
+  "peerDependencies": {
+    "eslint": "^10.0.0",
+    "typescript": ">=5.0.0"
   }
 }

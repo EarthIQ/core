@@ -1,8 +1,8 @@
-import { useEffect, useId, useCallback } from 'react';
+import { useEffect, useId, useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type React from 'react';
+import type React from "react";
 
 export interface VectorTileLayerProps {
   /** Unique layer ID */
@@ -12,7 +12,7 @@ export interface VectorTileLayerProps {
   /** Source layer name within the vector tiles */
   sourceLayer: string;
   /** Layer type */
-  type: 'fill' | 'line' | 'circle' | 'symbol' | 'fill-extrusion' | 'heatmap';
+  type: "fill" | "line" | "circle" | "symbol" | "fill-extrusion" | "heatmap";
   /** Paint properties */
   paint?: Record<string, any>;
   /** Layout properties */
@@ -61,7 +61,7 @@ export const VectorTileLayer: React.FC<VectorTileLayerProps> = ({
   hoverable = false,
   hoverPaint,
   _selectable = false,
-  metadata
+  metadata,
 }) => {
   const { map, isLoaded } = useMap();
   const autoId = useId();
@@ -78,10 +78,10 @@ export const VectorTileLayer: React.FC<VectorTileLayerProps> = ({
       const baseValue = paint[key];
       if (baseValue !== undefined) {
         enhancedPaint[key] = [
-          'case',
-          ['boolean', ['feature-state', 'hover'], false],
+          "case",
+          ["boolean", ["feature-state", "hover"], false],
           hoverValue,
-          baseValue
+          baseValue,
         ];
       }
     });
@@ -104,13 +104,13 @@ export const VectorTileLayer: React.FC<VectorTileLayerProps> = ({
         id,
         type,
         source,
-        'source-layer': sourceLayer,
+        "source-layer": sourceLayer,
         paint: buildPaint(),
         layout: {
           ...layout,
-          visibility: visible ? 'visible' : 'none'
+          visibility: visible ? "visible" : "none",
         },
-        metadata
+        metadata,
       };
 
       if (filter) {
@@ -143,7 +143,7 @@ export const VectorTileLayer: React.FC<VectorTileLayerProps> = ({
           }
 
           hoveredFeatureId = e.features[0].id;
-          
+
           if (hoveredFeatureId !== null && hoveredFeatureId !== undefined) {
             map.setFeatureState(
               { source, sourceLayer, id: hoveredFeatureId },
@@ -151,7 +151,7 @@ export const VectorTileLayer: React.FC<VectorTileLayerProps> = ({
             );
           }
 
-          map.getCanvas().style.cursor = 'pointer';
+          map.getCanvas().style.cursor = "pointer";
           onHover?.(e.features[0], e);
         }
       };
@@ -164,12 +164,12 @@ export const VectorTileLayer: React.FC<VectorTileLayerProps> = ({
           );
         }
         hoveredFeatureId = null;
-        map.getCanvas().style.cursor = '';
+        map.getCanvas().style.cursor = "";
         onHover?.(null, null);
       };
 
-      map.on('mousemove', id, handleMouseMove);
-      map.on('mouseleave', id, handleMouseLeave);
+      map.on("mousemove", id, handleMouseMove);
+      map.on("mouseleave", id, handleMouseLeave);
     }
 
     // Click handling
@@ -180,7 +180,7 @@ export const VectorTileLayer: React.FC<VectorTileLayerProps> = ({
         }
       };
 
-      map.on('click', id, handleClick);
+      map.on("click", id, handleClick);
     }
 
     return () => {
@@ -200,12 +200,22 @@ export const VectorTileLayer: React.FC<VectorTileLayerProps> = ({
         map.removeLayer(id);
       }
     };
-  }, [map, isLoaded, id, source, sourceLayer, type, beforeId, buildPaint, interactive]);
+  }, [
+    map,
+    isLoaded,
+    id,
+    source,
+    sourceLayer,
+    type,
+    beforeId,
+    buildPaint,
+    interactive,
+  ]);
 
   // Update visibility
   useEffect(() => {
     if (!map || !isLoaded || !map.getLayer(id)) return;
-    map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
+    map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
   }, [map, isLoaded, id, visible]);
 
   // Update filter
@@ -233,7 +243,7 @@ export const VectorTileLayer: React.FC<VectorTileLayerProps> = ({
     if (!map || !isLoaded || !map.getLayer(id)) return;
 
     Object.entries(layout).forEach(([key, value]) => {
-      if (key !== 'visibility') {
+      if (key !== "visibility") {
         try {
           map.setLayoutProperty(id, key, value);
         } catch (error) {
@@ -255,42 +265,58 @@ export const useVectorTileLayer = (id: string) => {
     return map.getLayer(id);
   }, [map, isLoaded, id]);
 
-  const setFilter = useCallback((filter: any[] | null) => {
-    if (!map || !isLoaded || !map.getLayer(id)) return;
-    map.setFilter(id, filter);
-  }, [map, isLoaded, id]);
+  const setFilter = useCallback(
+    (filter: any[] | null) => {
+      if (!map || !isLoaded || !map.getLayer(id)) return;
+      map.setFilter(id, filter);
+    },
+    [map, isLoaded, id]
+  );
 
-  const setPaintProperty = useCallback((name: string, value: any) => {
-    if (!map || !isLoaded || !map.getLayer(id)) return;
-    map.setPaintProperty(id, name, value);
-  }, [map, isLoaded, id]);
+  const setPaintProperty = useCallback(
+    (name: string, value: any) => {
+      if (!map || !isLoaded || !map.getLayer(id)) return;
+      map.setPaintProperty(id, name, value);
+    },
+    [map, isLoaded, id]
+  );
 
-  const setLayoutProperty = useCallback((name: string, value: any) => {
-    if (!map || !isLoaded || !map.getLayer(id)) return;
-    map.setLayoutProperty(id, name, value);
-  }, [map, isLoaded, id]);
+  const setLayoutProperty = useCallback(
+    (name: string, value: any) => {
+      if (!map || !isLoaded || !map.getLayer(id)) return;
+      map.setLayoutProperty(id, name, value);
+    },
+    [map, isLoaded, id]
+  );
 
-  const queryFeatures = useCallback((filter?: any[]) => {
-    if (!map || !isLoaded) return [];
-    return map.queryRenderedFeatures(undefined, {
-      layers: [id],
-      filter
-    });
-  }, [map, isLoaded, id]);
+  const queryFeatures = useCallback(
+    (filter?: any[]) => {
+      if (!map || !isLoaded) return [];
+      return map.queryRenderedFeatures(undefined, {
+        layers: [id],
+        filter,
+      });
+    },
+    [map, isLoaded, id]
+  );
 
-  const setFeatureState = useCallback((
-    featureId: string | number,
-    state: Record<string, any>
-  ) => {
-    if (!map || !isLoaded) return;
-    const layer = map.getLayer(id) as any;
-    if (layer) {
-      map.setFeatureState(
-        { source: layer.source, sourceLayer: layer['source-layer'], id: featureId },
-        state
-      );
-    }
-  }, [map, isLoaded, id]);
+  const setFeatureState = useCallback(
+    (featureId: string | number, state: Record<string, any>) => {
+      if (!map || !isLoaded) return;
+      const layer = map.getLayer(id) as any;
+      if (layer) {
+        map.setFeatureState(
+          {
+            source: layer.source,
+            sourceLayer: layer["source-layer"],
+            id: featureId,
+          },
+          state
+        );
+      }
+    },
+    [map, isLoaded, id]
+  );
 
   return {
     layer: getLayer(),
@@ -298,6 +324,6 @@ export const useVectorTileLayer = (id: string) => {
     setPaintProperty,
     setLayoutProperty,
     queryFeatures,
-    setFeatureState
+    setFeatureState,
   };
 };

@@ -2,7 +2,10 @@ import { CheckCircle2, Loader2, ShieldCheck, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
-import { shareApi, type AccessRequestInfo } from "@/components/map/share/shareApi";
+import {
+  shareApi,
+  type AccessRequestInfo,
+} from "@/components/map/share/shareApi";
 
 import type { Role } from "@/components/map/share/types";
 
@@ -38,9 +41,13 @@ export default function AccessGrantPage() {
         if (cancelled) return;
         setInfo(r);
         setRole(r.requestedRole === "owner" ? "viewer" : r.requestedRole);
-        if (r.status !== "pending") setDone(r.status === "granted" ? "granted" : "denied");
+        if (r.status !== "pending")
+          setDone(r.status === "granted" ? "granted" : "denied");
       })
-      .catch((e) => !cancelled && setError(e?.message ?? "Could not load the request"))
+      .catch(
+        (e) =>
+          !cancelled && setError(e?.message ?? "Could not load the request")
+      )
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
@@ -77,31 +84,45 @@ export default function AccessGrantPage() {
     }
   }
 
-  const label = info ? (info.entityType === "project" ? "project" : "map") : "entity";
-  const requesterInitial = (info?.requesterName?.charAt(0) ??
+  const label = info
+    ? info.entityType === "project"
+      ? "project"
+      : "map"
+    : "entity";
+  const requesterInitial = (
+    info?.requesterName?.charAt(0) ??
     info?.requesterEmail?.charAt(0) ??
-    "U").toUpperCase();
+    "U"
+  ).toUpperCase();
 
   return (
-    <div className="min-h-full flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-elevated border border-border-primary rounded-2xl shadow-2xl p-8 flex flex-col items-center text-center animate-scale-in">
+    <div className="flex min-h-full items-center justify-center p-6">
+      <div className="bg-elevated border-border-primary animate-scale-in flex w-full max-w-md flex-col items-center rounded-2xl border p-8 text-center shadow-2xl">
         {loading ? (
           <>
-            <Loader2 className="animate-spin text-primary mb-4" size={40} />
-            <h2 className="text-lg font-semibold text-text-primary">Loading request…</h2>
-            <p className="text-sm text-text-secondary mt-2">
+            <Loader2
+              className="text-primary mb-4 animate-spin"
+              size={40}
+            />
+            <h2 className="text-text-primary text-lg font-semibold">
+              Loading request…
+            </h2>
+            <p className="text-text-secondary mt-2 text-sm">
               One moment, we&rsquo;re fetching the details.
             </p>
           </>
         ) : error && !info ? (
           <>
-            <XCircle className="text-red-400 mb-4" size={40} />
-            <h2 className="text-lg font-semibold text-text-primary">
+            <XCircle
+              className="mb-4 text-red-400"
+              size={40}
+            />
+            <h2 className="text-text-primary text-lg font-semibold">
               Couldn&rsquo;t load this request
             </h2>
-            <p className="text-sm text-text-secondary mt-2">{error}</p>
+            <p className="text-text-secondary mt-2 text-sm">{error}</p>
             <button
-              className="mt-6 px-6 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+              className="bg-primary mt-6 rounded-full px-6 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               type="button"
               onClick={() => navigate("/dashboard", { replace: true })}
             >
@@ -112,20 +133,23 @@ export default function AccessGrantPage() {
           <>
             {done === "granted" ? (
               <>
-                <CheckCircle2 className="text-success mb-4" size={40} />
-                <h2 className="text-lg font-semibold text-text-primary">
+                <CheckCircle2
+                  className="text-success mb-4"
+                  size={40}
+                />
+                <h2 className="text-text-primary text-lg font-semibold">
                   Access granted
                 </h2>
-                <p className="text-sm text-text-secondary mt-2 leading-relaxed">
-                  <span className="font-semibold text-text-primary">
+                <p className="text-text-secondary mt-2 text-sm leading-relaxed">
+                  <span className="text-text-primary font-semibold">
                     {info.requesterName ?? info.requesterEmail}
                   </span>{" "}
                   now has{" "}
-                  <span className="font-semibold text-text-primary capitalize">
+                  <span className="text-text-primary font-semibold capitalize">
                     {info.grantedRole ?? "viewer"}
                   </span>{" "}
                   access to the {label}{" "}
-                  <span className="font-semibold text-text-primary">
+                  <span className="text-text-primary font-semibold">
                     &ldquo;{info.title}&rdquo;
                   </span>
                   . They&rsquo;ve been notified by email.
@@ -133,13 +157,16 @@ export default function AccessGrantPage() {
               </>
             ) : done === "denied" ? (
               <>
-                <XCircle className="text-warning mb-4" size={40} />
-                <h2 className="text-lg font-semibold text-text-primary">
+                <XCircle
+                  className="text-warning mb-4"
+                  size={40}
+                />
+                <h2 className="text-text-primary text-lg font-semibold">
                   Request declined
                 </h2>
-                <p className="text-sm text-text-secondary mt-2">
+                <p className="text-text-secondary mt-2 text-sm">
                   You declined the access request from{" "}
-                  <span className="font-semibold text-text-primary">
+                  <span className="text-text-primary font-semibold">
                     {info.requesterName ?? info.requesterEmail}
                   </span>
                   .
@@ -147,59 +174,64 @@ export default function AccessGrantPage() {
               </>
             ) : (
               <>
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                  <ShieldCheck className="text-primary" size={26} />
+                <div className="bg-primary/10 mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
+                  <ShieldCheck
+                    className="text-primary"
+                    size={26}
+                  />
                 </div>
-                <h2 className="text-lg font-semibold text-text-primary">
+                <h2 className="text-text-primary text-lg font-semibold">
                   Access request
                 </h2>
 
                 {/* Requester */}
-                <div className="mt-5 w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-bg-tertiary border border-border-secondary text-left">
-                  <div className="w-10 h-10 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0">
+                <div className="bg-bg-tertiary border-border-secondary mt-5 flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left">
+                  <div className="bg-primary/15 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold">
                     {requesterInitial}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-text-primary truncate">
+                    <p className="text-text-primary truncate text-sm font-semibold">
                       {info.requesterName ?? info.requesterEmail}
                     </p>
-                    <p className="text-xs text-text-secondary truncate">
+                    <p className="text-text-secondary truncate text-xs">
                       {info.requesterEmail}
                     </p>
                   </div>
-                  <span className="ml-auto text-[11px] font-medium text-text-tertiary capitalize shrink-0">
+                  <span className="text-text-tertiary ml-auto shrink-0 text-[11px] font-medium capitalize">
                     wants {info.requestedRole}
                   </span>
                 </div>
 
                 {/* Entity */}
-                <p className="mt-4 text-sm text-text-secondary leading-relaxed">
+                <p className="text-text-secondary mt-4 text-sm leading-relaxed">
                   for your {label}{" "}
-                  <span className="font-semibold text-text-primary">
+                  <span className="text-text-primary font-semibold">
                     &ldquo;{info.title}&rdquo;
                   </span>
                 </p>
 
                 {/* Message */}
-                {info.message ? <div className="mt-3 w-full text-left">
-                    <p className="text-[11px] uppercase tracking-wider text-text-tertiary font-semibold mb-1.5">
+                {info.message ? (
+                  <div className="mt-3 w-full text-left">
+                    <p className="text-text-tertiary mb-1.5 text-[11px] font-semibold tracking-wider uppercase">
                       They wrote
                     </p>
-                    <div className="rounded-lg bg-bg-tertiary border-l-2 border-primary/60 px-3.5 py-2.5 text-[13px] text-text-secondary italic leading-relaxed">
+                    <div className="bg-bg-tertiary border-primary/60 text-text-secondary rounded-lg border-l-2 px-3.5 py-2.5 text-[13px] leading-relaxed italic">
                       {info.message}
                     </div>
-                  </div> : null}
+                  </div>
+                ) : null}
 
                 {/* Role picker */}
-                <div className="mt-5 w-full flex items-center justify-between gap-3">
+                <div className="mt-5 flex w-full items-center justify-between gap-3">
                   <label
-                    className="text-sm text-text-secondary font-medium"
+                    className="text-text-secondary text-sm font-medium"
                     htmlFor="grant-role"
                   >
                     Grant as
                   </label>
                   <select
-                    className="px-3 py-2 rounded-lg bg-bg-tertiary border border-border-primary text-sm text-text-primary focus:outline-none focus:border-primary/60"
+                    className="bg-bg-tertiary border-border-primary text-text-primary focus:border-primary/60 rounded-lg border px-3 py-2 text-sm focus:outline-none"
                     id="grant-role"
                     value={role}
                     onChange={(e) => setRole(e.target.value as Role)}
@@ -210,12 +242,14 @@ export default function AccessGrantPage() {
                   </select>
                 </div>
 
-                {error ? <p className="mt-3 text-xs text-red-400">{error}</p> : null}
+                {error ? (
+                  <p className="mt-3 text-xs text-red-400">{error}</p>
+                ) : null}
 
                 {/* Actions */}
-                <div className="mt-6 w-full flex items-center gap-3">
+                <div className="mt-6 flex w-full items-center gap-3">
                   <button
-                    className="flex-1 px-4 py-2.5 rounded-full text-sm font-medium text-text-secondary hover:bg-surface-hover disabled:opacity-60 transition-colors"
+                    className="text-text-secondary hover:bg-surface-hover flex-1 rounded-full px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60"
                     disabled={busy}
                     type="button"
                     onClick={handleDeny}
@@ -223,12 +257,17 @@ export default function AccessGrantPage() {
                     Decline
                   </button>
                   <button
-                    className="flex-[2] flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60 transition-opacity"
+                    className="bg-primary flex flex-[2] items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
                     disabled={busy}
                     type="button"
                     onClick={handleGrant}
                   >
-                    {busy ? <Loader2 className="animate-spin" size={15} /> : null}
+                    {busy ? (
+                      <Loader2
+                        className="animate-spin"
+                        size={15}
+                      />
+                    ) : null}
                     {busy ? "Working…" : "Grant access"}
                   </button>
                 </div>
@@ -237,7 +276,7 @@ export default function AccessGrantPage() {
 
             {(done === "granted" || done === "denied") && (
               <button
-                className="mt-6 px-6 py-2 rounded-full border border-border-primary text-sm font-medium text-text-secondary hover:bg-surface-hover transition-colors"
+                className="border-border-primary text-text-secondary hover:bg-surface-hover mt-6 rounded-full border px-6 py-2 text-sm font-medium transition-colors"
                 type="button"
                 onClick={() => navigate("/dashboard", { replace: true })}
               >

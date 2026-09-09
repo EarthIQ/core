@@ -1,8 +1,8 @@
-import { X, Shield, ExternalLink } from 'lucide-react';
-import React, { useEffect, useRef } from 'react';
+import { X, Shield, ExternalLink } from "lucide-react";
+import React, { useEffect, useRef } from "react";
 
-import { CookieCategory } from './CookieCategory';
-import { useCookieConsentStore } from '../stores/cookieConsentStore';
+import { CookieCategory } from "./CookieCategory";
+import { useCookieConsentStore } from "../stores/cookieConsentStore";
 
 export const CookieSettingsModal: React.FC = () => {
   const {
@@ -24,17 +24,18 @@ export const CookieSettingsModal: React.FC = () => {
     if (!isSettingsOpen) return;
 
     previousActiveElement.current = document.activeElement as HTMLElement;
-    
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         closeSettings();
         return;
       }
 
-      if (e.key === 'Tab' && modalRef.current) {
-        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
+      if (e.key === "Tab" && modalRef.current) {
+        const focusableElements =
+          modalRef.current.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
         const firstElement = focusableElements[0];
         const lastElement = focusableElements[focusableElements.length - 1];
 
@@ -48,8 +49,8 @@ export const CookieSettingsModal: React.FC = () => {
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
+    document.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
 
     setTimeout(() => {
       const firstFocusable = modalRef.current?.querySelector<HTMLElement>(
@@ -59,8 +60,8 @@ export const CookieSettingsModal: React.FC = () => {
     }, 0);
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
       previousActiveElement.current?.focus();
     };
   }, [isSettingsOpen, closeSettings]);
@@ -70,7 +71,7 @@ export const CookieSettingsModal: React.FC = () => {
   return (
     <div className="cc-modal-overlay">
       {/* Backdrop */}
-      <div 
+      <div
         aria-hidden="true"
         className="cc-modal-backdrop"
         onClick={closeSettings}
@@ -91,12 +92,13 @@ export const CookieSettingsModal: React.FC = () => {
               <Shield className="cc-icon" />
             </div>
             <div>
-              <h2 className="cc-modal__title" id="cc-settings-title">
+              <h2
+                className="cc-modal__title"
+                id="cc-settings-title"
+              >
                 Cookie Preferences
               </h2>
-              <p className="cc-modal__subtitle">
-                Manage your cookie settings
-              </p>
+              <p className="cc-modal__subtitle">Manage your cookie settings</p>
             </div>
           </div>
           <button
@@ -123,8 +125,10 @@ export const CookieSettingsModal: React.FC = () => {
           </div>
 
           {/* Policy Links */}
-          {(config.privacyPolicyUrl || config.cookiePolicyUrl) ? <div className="cc-modal__links">
-              {config.privacyPolicyUrl ? <a
+          {config.privacyPolicyUrl || config.cookiePolicyUrl ? (
+            <div className="cc-modal__links">
+              {config.privacyPolicyUrl ? (
+                <a
                   className="cc-link"
                   href={config.privacyPolicyUrl}
                   rel="noopener noreferrer"
@@ -132,8 +136,10 @@ export const CookieSettingsModal: React.FC = () => {
                 >
                   Privacy Policy
                   <ExternalLink className="cc-icon cc-icon--xs" />
-                </a> : null}
-              {config.cookiePolicyUrl ? <a
+                </a>
+              ) : null}
+              {config.cookiePolicyUrl ? (
+                <a
                   className="cc-link"
                   href={config.cookiePolicyUrl}
                   rel="noopener noreferrer"
@@ -141,8 +147,10 @@ export const CookieSettingsModal: React.FC = () => {
                 >
                   Cookie Policy
                   <ExternalLink className="cc-icon cc-icon--xs" />
-                </a> : null}
-            </div> : null}
+                </a>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
         {/* Footer */}

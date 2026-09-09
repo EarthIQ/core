@@ -78,20 +78,26 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
           </motion.div>
         </div>
 
-        {(label || description) ? <div className="flex flex-col">
-            {label ? <span
+        {label || description ? (
+          <div className="flex flex-col">
+            {label ? (
+              <span
                 className="text-sm font-medium"
                 style={{ color: "var(--text-primary)" }}
               >
                 {label}
-              </span> : null}
-            {description ? <span
+              </span>
+            ) : null}
+            {description ? (
+              <span
                 className="text-xs"
                 style={{ color: "var(--text-secondary)" }}
               >
                 {description}
-              </span> : null}
-          </div> : null}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </label>
     );
   }

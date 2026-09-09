@@ -1,10 +1,10 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
 export interface CompassControlProps {
   /** Position on map */
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   /** Size in pixels */
   size?: number;
   /** Show degree value */
@@ -18,7 +18,7 @@ export interface CompassControlProps {
   /** Custom className */
   className?: string;
   /** Compass style */
-  style?: 'minimal' | 'classic' | 'modern';
+  style?: "minimal" | "classic" | "modern";
   /** Callback on bearing change */
   onBearingChange?: (bearing: number) => void;
   /** Callback on pitch change */
@@ -26,16 +26,16 @@ export interface CompassControlProps {
 }
 
 export const CompassControl: React.FC<CompassControlProps> = ({
-  position = 'top-right',
+  position = "top-right",
   size = 40,
   showDegrees = false,
   showPitch = false,
   clickToResetNorth = true,
   duration = 300,
   className,
-  style: compassStyle = 'modern',
+  style: compassStyle = "modern",
   onBearingChange,
-  onPitchChange
+  onPitchChange,
 }) => {
   const { map, isLoaded } = useMap();
   const [bearing, setBearing] = useState(0);
@@ -56,23 +56,23 @@ export const CompassControl: React.FC<CompassControlProps> = ({
     };
 
     updateBearing();
-    map.on('rotate', updateBearing);
-    map.on('pitch', updateBearing);
+    map.on("rotate", updateBearing);
+    map.on("pitch", updateBearing);
 
     return () => {
-      map.off('rotate', updateBearing);
-      map.off('pitch', updateBearing);
+      map.off("rotate", updateBearing);
+      map.off("pitch", updateBearing);
     };
   }, [map, isLoaded, onBearingChange, onPitchChange]);
 
   // Reset to north on click
   const handleClick = useCallback(() => {
     if (!map || !clickToResetNorth) return;
-    
+
     map.easeTo({
       bearing: 0,
       pitch: 0,
-      duration
+      duration,
     });
   }, [map, clickToResetNorth, duration]);
 
@@ -85,24 +85,24 @@ export const CompassControl: React.FC<CompassControlProps> = ({
   // Get cardinal direction
   const cardinalDirection = useMemo(() => {
     const normalized = ((bearing % 360) + 360) % 360;
-    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
     const index = Math.round(normalized / 45) % 8;
     return directions[index];
   }, [bearing]);
 
   // Position styles
   const positionStyles = useMemo(() => {
-    const base = { position: 'absolute' as const, zIndex: 1000 };
+    const base = { position: "absolute" as const, zIndex: 1000 };
     const offset = 10;
-    
+
     switch (position) {
-      case 'top-left':
+      case "top-left":
         return { ...base, top: offset, left: offset };
-      case 'top-right':
+      case "top-right":
         return { ...base, top: offset, right: offset };
-      case 'bottom-left':
+      case "bottom-left":
         return { ...base, bottom: offset, left: offset };
-      case 'bottom-right':
+      case "bottom-right":
         return { ...base, bottom: offset, right: offset };
       default:
         return { ...base, top: offset, right: offset };
@@ -110,17 +110,20 @@ export const CompassControl: React.FC<CompassControlProps> = ({
   }, [position]);
 
   // Container styles
-  const containerStyles: React.CSSProperties = useMemo(() => ({
-    ...positionStyles,
-    width: size,
-    height: showPitch ? size + 20 : size,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 4,
-    cursor: clickToResetNorth ? 'pointer' : 'default',
-    userSelect: 'none',
-  }), [positionStyles, size, showPitch, clickToResetNorth]);
+  const containerStyles: React.CSSProperties = useMemo(
+    () => ({
+      ...positionStyles,
+      width: size,
+      height: showPitch ? size + 20 : size,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 4,
+      cursor: clickToResetNorth ? "pointer" : "default",
+      userSelect: "none",
+    }),
+    [positionStyles, size, showPitch, clickToResetNorth]
+  );
 
   // Render minimal style compass
   const renderMinimalCompass = () => (
@@ -130,7 +133,7 @@ export const CompassControl: React.FC<CompassControlProps> = ({
       width={size}
       style={{
         transform: `rotate(${-bearing}deg)`,
-        transition: 'transform 0.1s ease-out',
+        transition: "transform 0.1s ease-out",
       }}
     >
       {/* Simple arrow */}
@@ -153,7 +156,7 @@ export const CompassControl: React.FC<CompassControlProps> = ({
       width={size}
       style={{
         transform: `rotate(${-bearing}deg)`,
-        transition: 'transform 0.1s ease-out',
+        transition: "transform 0.1s ease-out",
       }}
     >
       {/* Outer ring */}
@@ -183,10 +186,43 @@ export const CompassControl: React.FC<CompassControlProps> = ({
         points="20,36 23,22 20,25 17,22"
       />
       {/* Cardinal markers */}
-      <text fill="#e74c3c" fontSize="6" fontWeight="bold" textAnchor="middle" x="20" y="10">N</text>
-      <text fill="#666" fontSize="5" textAnchor="middle" x="20" y="38">S</text>
-      <text fill="#666" fontSize="5" textAnchor="middle" x="4" y="22">W</text>
-      <text fill="#666" fontSize="5" textAnchor="middle" x="36" y="22">E</text>
+      <text
+        fill="#e74c3c"
+        fontSize="6"
+        fontWeight="bold"
+        textAnchor="middle"
+        x="20"
+        y="10"
+      >
+        N
+      </text>
+      <text
+        fill="#666"
+        fontSize="5"
+        textAnchor="middle"
+        x="20"
+        y="38"
+      >
+        S
+      </text>
+      <text
+        fill="#666"
+        fontSize="5"
+        textAnchor="middle"
+        x="4"
+        y="22"
+      >
+        W
+      </text>
+      <text
+        fill="#666"
+        fontSize="5"
+        textAnchor="middle"
+        x="36"
+        y="22"
+      >
+        E
+      </text>
     </svg>
   );
 
@@ -201,20 +237,20 @@ export const CompassControl: React.FC<CompassControlProps> = ({
       <circle
         cx="20"
         cy="20"
-        fill={isHovered ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.9)'}
+        fill={isHovered ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.9)"}
         r="18"
         stroke="rgba(0,0,0,0.1)"
         strokeWidth="1"
         style={{
-          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
         }}
       />
       {/* Rotating compass needle group */}
       <g
         style={{
           transform: `rotate(${-bearing}deg)`,
-          transformOrigin: '20px 20px',
-          transition: 'transform 0.1s ease-out',
+          transformOrigin: "20px 20px",
+          transition: "transform 0.1s ease-out",
         }}
       >
         {/* North indicator */}
@@ -253,11 +289,11 @@ export const CompassControl: React.FC<CompassControlProps> = ({
   // Render compass based on style
   const renderCompass = () => {
     switch (compassStyle) {
-      case 'minimal':
+      case "minimal":
         return renderMinimalCompass();
-      case 'classic':
+      case "classic":
         return renderClassicCompass();
-      case 'modern':
+      case "modern":
       default:
         return renderModernCompass();
     }
@@ -271,11 +307,11 @@ export const CompassControl: React.FC<CompassControlProps> = ({
       <div
         style={{
           fontSize: 10,
-          color: '#666',
-          backgroundColor: 'rgba(255,255,255,0.9)',
-          padding: '2px 6px',
+          color: "#666",
+          backgroundColor: "rgba(255,255,255,0.9)",
+          padding: "2px 6px",
           borderRadius: 4,
-          boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+          boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
         }}
       >
         {Math.round(pitch)}°
@@ -290,16 +326,16 @@ export const CompassControl: React.FC<CompassControlProps> = ({
     return (
       <div
         style={{
-          position: 'absolute',
+          position: "absolute",
           bottom: showPitch ? 24 : 4,
-          left: '50%',
-          transform: 'translateX(-50%)',
+          left: "50%",
+          transform: "translateX(-50%)",
           fontSize: 9,
-          color: '#666',
-          backgroundColor: 'rgba(255,255,255,0.9)',
-          padding: '1px 4px',
+          color: "#666",
+          backgroundColor: "rgba(255,255,255,0.9)",
+          padding: "1px 4px",
           borderRadius: 3,
-          whiteSpace: 'nowrap',
+          whiteSpace: "nowrap",
         }}
       >
         {formattedBearing}° {cardinalDirection}
@@ -315,27 +351,31 @@ export const CompassControl: React.FC<CompassControlProps> = ({
 
   return (
     <div
-      aria-label={`Compass showing ${formattedBearing} degrees ${cardinalDirection}. ${clickToResetNorth ? 'Click to reset to north.' : ''}`}
+      aria-label={`Compass showing ${formattedBearing} degrees ${cardinalDirection}. ${clickToResetNorth ? "Click to reset to north." : ""}`}
       className={className}
       role="button"
       tabIndex={clickToResetNorth ? 0 : -1}
-      title={clickToResetNorth ? 'Click to reset north' : `Bearing: ${formattedBearing}°`}
+      title={
+        clickToResetNorth
+          ? "Click to reset north"
+          : `Bearing: ${formattedBearing}°`
+      }
       style={{
         ...containerStyles,
         opacity: isRotated || isHovered ? 1 : 0.6,
-        transition: 'opacity 0.2s ease',
+        transition: "opacity 0.2s ease",
       }}
       onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           handleClick();
         }
       }}
     >
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: "relative" }}>
         {renderCompass()}
         {renderDegrees()}
       </div>

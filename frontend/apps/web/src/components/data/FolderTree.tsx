@@ -96,7 +96,7 @@ export default function FolderTree({
 }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [creating, setCreating] = useState<{ parentId: string | null } | null>(
-    null,
+    null
   );
   const [creatingName, setCreatingName] = useState("");
   const [renaming, setRenaming] = useState<string | null>(null);
@@ -157,7 +157,8 @@ export default function FolderTree({
   const isAllActive = selection.folderId === null && selection.type === "all";
   const isUngroupedActive =
     selection.folderId === ROOT_UNGROUPED && selection.type === "all";
-  const isTypeActive = (t: string) => selection.type === t && selection.type !== "all";
+  const isTypeActive = (t: string) =>
+    selection.type === t && selection.type !== "all";
 
   // ── Inline "new folder" input ──────────────────────────────────────────────
   function renderCreateInput(indent: number) {
@@ -166,11 +167,14 @@ export default function FolderTree({
         className="flex items-center gap-1.5 py-1"
         style={{ paddingLeft: `${10 + indent * 16}px` }}
       >
-        <FolderPlus className="shrink-0 text-text-tertiary" size={14} />
+        <FolderPlus
+          className="text-text-tertiary shrink-0"
+          size={14}
+        />
         <input
           autoFocus
           aria-label="New folder name"
-          className="flex-1 min-w-0 h-7 rounded-md border border-input-border bg-input-bg px-2 text-xs text-text-primary outline-none focus:border-input-focus-border"
+          className="border-input-border bg-input-bg text-text-primary focus:border-input-focus-border h-7 min-w-0 flex-1 rounded-md border px-2 text-xs outline-none"
           placeholder="Folder name…"
           value={creatingName}
           onChange={(e) => setCreatingName(e.target.value)}
@@ -181,7 +185,7 @@ export default function FolderTree({
         />
         <button
           aria-label="Create folder"
-          className="shrink-0 rounded-md p-1 text-success hover:bg-success/10 cursor-pointer"
+          className="text-success hover:bg-success/10 shrink-0 cursor-pointer rounded-md p-1"
           type="button"
           onClick={commitCreate}
         >
@@ -189,7 +193,7 @@ export default function FolderTree({
         </button>
         <button
           aria-label="Cancel new folder"
-          className="shrink-0 rounded-md p-1 text-text-tertiary hover:bg-surface-hover cursor-pointer"
+          className="text-text-tertiary hover:bg-surface-hover shrink-0 cursor-pointer rounded-md p-1"
           type="button"
           onClick={() => setCreating(null)}
         >
@@ -212,10 +216,10 @@ export default function FolderTree({
           style={{ paddingLeft: `${10 + depth * 16}px` }}
           tabIndex={0}
           className={cn(
-            "group flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 cursor-pointer transition-colors select-none",
+            "group flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 transition-colors select-none",
             active
               ? "bg-primary/[0.1] text-primary"
-              : "text-text-secondary hover:bg-surface-hover hover:text-text-primary",
+              : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
           )}
           onClick={() => {
             if (renaming === node.id) return;
@@ -230,18 +234,14 @@ export default function FolderTree({
           {hasChildren ? (
             <button
               aria-label={isOpen ? "Collapse" : "Expand"}
-              className="shrink-0 rounded p-0.5 text-text-tertiary hover:text-text-primary cursor-pointer"
+              className="text-text-tertiary hover:text-text-primary shrink-0 cursor-pointer rounded p-0.5"
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleExpand(node.id);
               }}
             >
-              {isOpen ? (
-                <ChevronDown size={13} />
-              ) : (
-                <ChevronRight size={13} />
-              )}
+              {isOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
             </button>
           ) : (
             <span className="w-[18px] shrink-0" />
@@ -265,7 +265,7 @@ export default function FolderTree({
             <input
               autoFocus
               aria-label="Rename folder"
-              className="flex-1 min-w-0 h-6 rounded-md border border-input-border bg-input-bg px-1.5 text-xs text-text-primary outline-none focus:border-input-focus-border"
+              className="border-input-border bg-input-bg text-text-primary focus:border-input-focus-border h-6 min-w-0 flex-1 rounded-md border px-1.5 text-xs outline-none"
               value={renameValue}
               onBlur={commitRename}
               onChange={(e) => setRenameValue(e.target.value)}
@@ -277,22 +277,24 @@ export default function FolderTree({
               }}
             />
           ) : (
-            <span className="flex-1 truncate text-xs font-medium">{node.name}</span>
+            <span className="flex-1 truncate text-xs font-medium">
+              {node.name}
+            </span>
           )}
 
-          <span className="shrink-0 text-[0.62rem] tabular-nums text-text-tertiary">
+          <span className="text-text-tertiary shrink-0 text-[0.62rem] tabular-nums">
             {node.dataset_count}
           </span>
 
           {/* Hover actions (hidden while renaming this row) */}
           {renaming !== node.id && (
             <span
-              className="hidden group-hover:flex items-center gap-0.5 shrink-0"
+              className="hidden shrink-0 items-center gap-0.5 group-hover:flex"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 aria-label={`New subfolder in ${node.name}`}
-                className="rounded p-0.5 text-text-tertiary hover:text-text-primary cursor-pointer"
+                className="text-text-tertiary hover:text-text-primary cursor-pointer rounded p-0.5"
                 title="New subfolder"
                 type="button"
                 onClick={() => startCreate(node.id)}
@@ -301,7 +303,7 @@ export default function FolderTree({
               </button>
               <button
                 aria-label={`Rename ${node.name}`}
-                className="rounded p-0.5 text-text-tertiary hover:text-text-primary cursor-pointer"
+                className="text-text-tertiary hover:text-text-primary cursor-pointer rounded p-0.5"
                 title="Rename"
                 type="button"
                 onClick={() => startRename(node)}
@@ -310,7 +312,7 @@ export default function FolderTree({
               </button>
               <button
                 aria-label={`Delete ${node.name}`}
-                className="rounded p-0.5 text-text-tertiary hover:text-error cursor-pointer"
+                className="text-text-tertiary hover:text-error cursor-pointer rounded p-0.5"
                 title="Delete"
                 type="button"
                 onClick={() => onDeleteFolder({ id: node.id, name: node.name })}
@@ -322,19 +324,21 @@ export default function FolderTree({
         </div>
 
         {/* Children */}
-        {isOpen ? <div>
+        {isOpen ? (
+          <div>
             {creating?.parentId === node.id && renderCreateInput(depth + 1)}
             {node.children.map((child) => renderFolder(child, depth + 1))}
-          </div> : null}
+          </div>
+        ) : null}
       </div>
     );
   }
 
   return (
-    <div className="card bg-surface border border-border-primary rounded-xl overflow-hidden shadow-xs">
+    <div className="card bg-surface border-border-primary overflow-hidden rounded-xl border shadow-xs">
       <nav
         aria-label="Data catalog folders"
-        className="p-3 flex flex-col gap-4 max-h-[calc(100vh-16rem)] overflow-y-auto scrollbar-thin pr-1"
+        className="flex max-h-[calc(100vh-16rem)] scrollbar-thin flex-col gap-4 overflow-y-auto p-3 pr-1"
       >
         {/* ── All data / ungrouped ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-1">
@@ -343,10 +347,10 @@ export default function FolderTree({
             role="button"
             tabIndex={0}
             className={cn(
-              "flex items-center gap-2 rounded-lg px-2.5 py-2 cursor-pointer transition-colors select-none",
+              "flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 transition-colors select-none",
               isAllActive
                 ? "bg-primary/[0.1] text-primary"
-                : "text-text-primary hover:bg-surface-hover",
+                : "text-text-primary hover:bg-surface-hover"
             )}
             onClick={() => onNavigate({ folderId: null, type: "all" })}
             onKeyDown={(e) =>
@@ -365,12 +369,14 @@ export default function FolderTree({
             role="button"
             tabIndex={0}
             className={cn(
-              "flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors select-none",
+              "flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors select-none",
               isUngroupedActive
                 ? "bg-primary/[0.1] text-primary"
-                : "text-text-secondary hover:bg-surface-hover hover:text-text-primary",
+                : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
             )}
-            onClick={() => onNavigate({ folderId: ROOT_UNGROUPED, type: "all" })}
+            onClick={() =>
+              onNavigate({ folderId: ROOT_UNGROUPED, type: "all" })
+            }
             onKeyDown={(e) =>
               e.key === "Enter" &&
               onNavigate({ folderId: ROOT_UNGROUPED, type: "all" })
@@ -390,14 +396,17 @@ export default function FolderTree({
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-1.5">
-              <Sparkles className="text-secondary" size={11} />
-              <span className="text-[0.65rem] font-bold uppercase tracking-wider text-text-tertiary">
+              <Sparkles
+                className="text-secondary"
+                size={11}
+              />
+              <span className="text-text-tertiary text-[0.65rem] font-bold tracking-wider uppercase">
                 Folders
               </span>
             </div>
             <button
               aria-label="New folder"
-              className="rounded-md p-1 text-text-tertiary hover:bg-surface-hover hover:text-primary cursor-pointer"
+              className="text-text-tertiary hover:bg-surface-hover hover:text-primary cursor-pointer rounded-md p-1"
               title="New folder"
               type="button"
               onClick={() => startCreate(null)}
@@ -406,20 +415,25 @@ export default function FolderTree({
             </button>
           </div>
 
-          {loading ? <div aria-busy="true" className="px-2 py-1">
+          {loading ? (
+            <div
+              aria-busy="true"
+              className="px-2 py-1"
+            >
               <div className="skeleton h-6 rounded-md" />
-              <div className="skeleton h-6 rounded-md mt-1.5" />
-              <div className="skeleton h-6 rounded-md mt-1.5 w-4/5" />
-            </div> : null}
+              <div className="skeleton mt-1.5 h-6 rounded-md" />
+              <div className="skeleton mt-1.5 h-6 w-4/5 rounded-md" />
+            </div>
+          ) : null}
 
           {!loading && tree.map((node) => renderFolder(node, 0))}
 
           {creating?.parentId === null && renderCreateInput(0)}
 
           {!loading && tree.length === 0 && creating === null && (
-            <p className="px-1 text-[0.68rem] leading-relaxed text-text-tertiary">
+            <p className="text-text-tertiary px-1 text-[0.68rem] leading-relaxed">
               No folders yet. Press{" "}
-              <span className="font-semibold text-text-secondary">+</span> to
+              <span className="text-text-secondary font-semibold">+</span> to
               create your first folder and organise your datasets.
             </p>
           )}
@@ -427,8 +441,11 @@ export default function FolderTree({
 
         {/* ── Types (quick filter) ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-1">
-          <div className="px-2.5 pb-1 text-[0.65rem] font-bold uppercase tracking-wider text-text-tertiary flex items-center gap-1.5">
-            <Layers className="text-secondary" size={11} />
+          <div className="text-text-tertiary flex items-center gap-1.5 px-2.5 pb-1 text-[0.65rem] font-bold tracking-wider uppercase">
+            <Layers
+              className="text-secondary"
+              size={11}
+            />
             <span>Types</span>
           </div>
           {TYPES.map((t) => {
@@ -441,10 +458,10 @@ export default function FolderTree({
                 role="button"
                 tabIndex={0}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors select-none",
+                  "flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors select-none",
                   active
                     ? "bg-primary/[0.1] text-primary"
-                    : "text-text-secondary hover:bg-surface-hover hover:text-text-primary",
+                    : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
                 )}
                 onClick={() =>
                   onNavigate({
@@ -461,7 +478,9 @@ export default function FolderTree({
                   className={active ? "text-primary" : "text-text-tertiary"}
                   size={14}
                 />
-                <span className="text-xs font-medium">{typeLabel(t.value)}</span>
+                <span className="text-xs font-medium">
+                  {typeLabel(t.value)}
+                </span>
               </div>
             );
           })}
@@ -469,25 +488,28 @@ export default function FolderTree({
       </nav>
 
       {/* ── Storage meter footer ──────────────────────────────────────────── */}
-      <div className="rounded-b-xl border-t border-border-secondary bg-surface-hover/40 p-3 flex flex-col gap-2">
-        <div className="flex items-center justify-between text-xs font-semibold text-text-primary">
+      <div className="border-border-secondary bg-surface-hover/40 flex flex-col gap-2 rounded-b-xl border-t p-3">
+        <div className="text-text-primary flex items-center justify-between text-xs font-semibold">
           <div className="flex items-center gap-1.5">
-            <HardDrive className="text-primary shrink-0" size={13} />
+            <HardDrive
+              className="text-primary shrink-0"
+              size={13}
+            />
             <span>Catalog Usage</span>
           </div>
-          <span className="text-[0.7rem] text-text-tertiary font-mono">
+          <span className="text-text-tertiary font-mono text-[0.7rem]">
             {formatBytes(totalBytes)}
           </span>
         </div>
-        <div className="w-full bg-border-secondary h-1.5 rounded-full overflow-hidden">
+        <div className="bg-border-secondary h-1.5 w-full overflow-hidden rounded-full">
           <div
-            className="h-full bg-primary rounded-full transition-all duration-300"
+            className="bg-primary h-full rounded-full transition-all duration-300"
             style={{
               width: `${Math.min(100, Math.max(8, (totalDatasets / 20) * 100))}%`,
             }}
           />
         </div>
-        <div className="flex items-center justify-between text-[0.68rem] text-text-tertiary">
+        <div className="text-text-tertiary flex items-center justify-between text-[0.68rem]">
           <span>
             {tiledCount} vectorized layer{tiledCount === 1 ? "" : "s"}
           </span>

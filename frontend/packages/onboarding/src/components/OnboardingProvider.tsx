@@ -1,7 +1,18 @@
-import React, { createContext, useContext as _useContext, useState, useCallback, useEffect } from 'react';
-import Joyride, { type CallBackProps, STATUS, type Step, type StoreHelpers } from 'react-joyride';
+import React, {
+  createContext,
+  useContext as _useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
+import Joyride, {
+  type CallBackProps,
+  STATUS,
+  type Step,
+  type StoreHelpers,
+} from "react-joyride";
 
-import { CustomTooltip } from './CustomTooltip';
+import { CustomTooltip } from "./CustomTooltip";
 
 interface OnboardingContextType {
   startTour: () => void;
@@ -10,7 +21,9 @@ interface OnboardingContextType {
   setSteps: (steps: Step[]) => void;
 }
 
-export const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
+export const OnboardingContext = createContext<
+  OnboardingContextType | undefined
+>(undefined);
 
 interface OnboardingProviderProps {
   children: React.ReactNode;
@@ -18,10 +31,10 @@ interface OnboardingProviderProps {
   tourId?: string;
 }
 
-export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ 
-  children, 
+export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({
+  children,
   defaultSteps = [],
-  tourId = 'default-tour'
+  tourId = "default-tour",
 }) => {
   const [steps, setStepsState] = useState<Step[]>(defaultSteps);
   const [isRunning, setIsRunning] = useState(false);
@@ -54,7 +67,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({
 
     if (finishedStatuses.includes(status)) {
       setIsRunning(false);
-      localStorage.setItem(`onboarding_completed_${tourId}`, 'true');
+      localStorage.setItem(`onboarding_completed_${tourId}`, "true");
     }
   };
 
@@ -63,7 +76,9 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({
   };
 
   return (
-    <OnboardingContext.Provider value={{ startTour, stopTour, isRunning, setSteps: setStepsState }}>
+    <OnboardingContext.Provider
+      value={{ startTour, stopTour, isRunning, setSteps: setStepsState }}
+    >
       <Joyride
         continuous
         hideCloseButton
@@ -81,22 +96,20 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({
         styles={{
           options: {
             zIndex: 10000,
-            overlayColor: 'rgba(0, 0, 0, 0.5)',
-            primaryColor: 'var(--primary)',
+            overlayColor: "rgba(0, 0, 0, 0.5)",
+            primaryColor: "var(--primary)",
           },
           overlay: {
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            mixBlendMode: 'hard-light' as any,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            mixBlendMode: "hard-light" as any,
           },
           spotlight: {
-            borderRadius: '16px',
-            backgroundColor: 'transparent',
-          }
+            borderRadius: "16px",
+            backgroundColor: "transparent",
+          },
         }}
       />
       {children}
     </OnboardingContext.Provider>
   );
 };
-
-

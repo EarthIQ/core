@@ -1,12 +1,10 @@
-import { HexagonLayer as DeckHexagonLayer } from '@deck.gl/aggregation-layers';
-import * as turf from '@turf/turf';
-import { useEffect, useId, useState, useCallback } from 'react';
+import { HexagonLayer as DeckHexagonLayer } from "@deck.gl/aggregation-layers";
+import * as turf from "@turf/turf";
+import { useEffect, useId, useState, useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type React from 'react';
-
-
+import type React from "react";
 
 export interface HexagonLayerProps {
   /** Unique layer ID */
@@ -28,11 +26,11 @@ export interface HexagonLayerProps {
   /** Color range */
   colorRange?: [number, number, number, number][];
   /** Color aggregation method */
-  colorAggregation?: 'SUM' | 'MEAN' | 'MIN' | 'MAX';
+  colorAggregation?: "SUM" | "MEAN" | "MIN" | "MAX";
   /** Elevation range [min, max] */
   elevationRange?: [number, number];
   /** Elevation aggregation method */
-  elevationAggregation?: 'SUM' | 'MEAN' | 'MIN' | 'MAX';
+  elevationAggregation?: "SUM" | "MEAN" | "MIN" | "MAX";
   /** Get position accessor */
   getPosition?: (d: any) => [number, number];
   /** Get color weight accessor */
@@ -77,7 +75,7 @@ const DEFAULT_COLOR_RANGE: [number, number, number, number][] = [
   [253, 141, 60, 255],
   [252, 78, 42, 255],
   [227, 26, 28, 255],
-  [189, 0, 38, 255]
+  [189, 0, 38, 255],
 ];
 
 export const HexagonLayer: React.FC<HexagonLayerProps> = ({
@@ -90,10 +88,12 @@ export const HexagonLayer: React.FC<HexagonLayerProps> = ({
   upperPercentile = 100,
   lowerPercentile = 0,
   colorRange = DEFAULT_COLOR_RANGE,
-  colorAggregation = 'SUM',
+  colorAggregation = "SUM",
   elevationRange = [0, 1000],
-  elevationAggregation = 'SUM',
-  getPosition = (d: any) => d.geometry?.coordinates || d.position || [d.lng || d.longitude, d.lat || d.latitude],
+  elevationAggregation = "SUM",
+  getPosition = (d: any) =>
+    d.geometry?.coordinates ||
+    d.position || [d.lng || d.longitude, d.lat || d.latitude],
   getColorWeight = () => 1,
   getElevationWeight = () => 1,
   material = true,
@@ -106,29 +106,33 @@ export const HexagonLayer: React.FC<HexagonLayerProps> = ({
   nativeHexSize = 1,
   colorProperty,
   minZoom,
-  maxZoom
+  maxZoom,
 }) => {
   const { map, deck, isLoaded } = useMap();
   const autoId = useId();
   const id = propId || `hexagon-layer-${autoId}`;
   const [processedData, setProcessedData] = useState<any[]>([]);
-  const [hexGrid, setHexGrid] = useState<GeoJSON.FeatureCollection | null>(null);
+  const [hexGrid, setHexGrid] = useState<GeoJSON.FeatureCollection | null>(
+    null
+  );
 
   // Process data
   useEffect(() => {
     const processData = async () => {
       let rawData: any[];
 
-      if (typeof data === 'string') {
+      if (typeof data === "string") {
         try {
           const response = await fetch(data);
           const json = await response.json();
-          rawData = json.type === 'FeatureCollection' ? json.features : json;
+          rawData = json.type === "FeatureCollection" ? json.features : json;
         } catch (error) {
-          console.error('Failed to fetch hexagon layer data:', error);
+          console.error("Failed to fetch hexagon layer data:", error);
           return;
         }
-      } else if ((data as GeoJSON.FeatureCollection).type === 'FeatureCollection') {
+      } else if (
+        (data as GeoJSON.FeatureCollection).type === "FeatureCollection"
+      ) {
         rawData = (data as GeoJSON.FeatureCollection).features;
       } else {
         rawData = data as any[];
@@ -168,8 +172,8 @@ export const HexagonLayer: React.FC<HexagonLayerProps> = ({
       onHover: pickable ? onHover : undefined,
       updateTriggers: {
         getColorWeight,
-        getElevationWeight
-      }
+        getElevationWeight,
+      },
     });
 
     // Update deck layers
@@ -180,14 +184,33 @@ export const HexagonLayer: React.FC<HexagonLayerProps> = ({
     return () => {
       const layers = deck.props.layers || [];
       deck.setProps({
-        layers: layers.filter((l: any) => l.id !== id)
+        layers: layers.filter((l: any) => l.id !== id),
       });
     };
   }, [
-    deck, useDeckGL, visible, processedData, id, radius, elevationScale,
-    extruded, coverage, upperPercentile, lowerPercentile, colorRange,
-    colorAggregation, elevationRange, elevationAggregation, opacity, pickable,
-    getPosition, getColorWeight, getElevationWeight, onClick, onHover, material
+    deck,
+    useDeckGL,
+    visible,
+    processedData,
+    id,
+    radius,
+    elevationScale,
+    extruded,
+    coverage,
+    upperPercentile,
+    lowerPercentile,
+    colorRange,
+    colorAggregation,
+    elevationRange,
+    elevationAggregation,
+    opacity,
+    pickable,
+    getPosition,
+    getColorWeight,
+    getElevationWeight,
+    onClick,
+    onHover,
+    material,
   ]);
 
   // Native MapLibre rendering (fallback)
@@ -197,60 +220,74 @@ export const HexagonLayer: React.FC<HexagonLayerProps> = ({
     // Generate hex grid
     const generateHexGrid = () => {
       // Get bounds from data
-      const coords = processedData.map(d => getPosition(d)).filter(c => c && c.length === 2);
+      const coords = processedData
+        .map((d) => getPosition(d))
+        .filter((c) => c && c.length === 2);
       if (coords.length === 0) return;
 
-      const lngs = coords.map(c => c[0]);
-      const lats = coords.map(c => c[1]);
+      const lngs = coords.map((c) => c[0]);
+      const lats = coords.map((c) => c[1]);
       const bbox: [number, number, number, number] = [
         Math.min(...lngs) - 0.1,
         Math.min(...lats) - 0.1,
         Math.max(...lngs) + 0.1,
-        Math.max(...lats) + 0.1
+        Math.max(...lats) + 0.1,
       ];
 
       // Create hex grid
-      const hexgrid = turf.hexGrid(bbox, nativeHexSize, { units: 'kilometers' });
+      const hexgrid = turf.hexGrid(bbox, nativeHexSize, {
+        units: "kilometers",
+      });
 
       // Aggregate points into hexagons
       const points = turf.featureCollection(
-        processedData.map(d => {
+        processedData.map((d) => {
           const pos = getPosition(d);
           return turf.point(pos, d.properties || d);
         })
       );
 
       // Count points in each hexagon
-      const hexagonsWithCounts = hexgrid.features.map(hex => {
-        const pointsInHex = turf.pointsWithinPolygon(points, hex);
-        const count = pointsInHex.features.length;
+      const hexagonsWithCounts = hexgrid.features
+        .map((hex) => {
+          const pointsInHex = turf.pointsWithinPolygon(points, hex);
+          const count = pointsInHex.features.length;
 
-        let weight = count;
-        if (colorProperty) {
-          weight = pointsInHex.features.reduce((sum, p) => {
-            return sum + (p.properties?.[colorProperty] || 0);
-          }, 0);
-        }
-
-        return {
-          ...hex,
-          properties: {
-            ...hex.properties,
-            count,
-            weight,
-            density: count / turf.area(hex) * 1000000 // per km²
+          let weight = count;
+          if (colorProperty) {
+            weight = pointsInHex.features.reduce((sum, p) => {
+              return sum + (p.properties?.[colorProperty] || 0);
+            }, 0);
           }
-        };
-      }).filter(hex => hex.properties.count > 0);
+
+          return {
+            ...hex,
+            properties: {
+              ...hex.properties,
+              count,
+              weight,
+              density: (count / turf.area(hex)) * 1000000, // per km²
+            },
+          };
+        })
+        .filter((hex) => hex.properties.count > 0);
 
       setHexGrid({
-        type: 'FeatureCollection',
-        features: hexagonsWithCounts
+        type: "FeatureCollection",
+        features: hexagonsWithCounts,
       });
     };
 
     generateHexGrid();
-  }, [map, isLoaded, useDeckGL, processedData, nativeHexSize, colorProperty, getPosition]);
+  }, [
+    map,
+    isLoaded,
+    useDeckGL,
+    processedData,
+    nativeHexSize,
+    colorProperty,
+    getPosition,
+  ]);
 
   // Add native hex layer
   useEffect(() => {
@@ -261,15 +298,15 @@ export const HexagonLayer: React.FC<HexagonLayerProps> = ({
     // Add source
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
-        type: 'geojson',
-        data: hexGrid
+        type: "geojson",
+        data: hexGrid,
       });
     } else {
       (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(hexGrid);
     }
 
     // Calculate color stops
-    const weights = hexGrid.features.map(f => f.properties?.weight || 0);
+    const weights = hexGrid.features.map((f) => f.properties?.weight || 0);
     const maxWeight = Math.max(...weights);
     const minWeight = Math.min(...weights);
 
@@ -277,26 +314,31 @@ export const HexagonLayer: React.FC<HexagonLayerProps> = ({
     if (!map.getLayer(id)) {
       map.addLayer({
         id,
-        type: 'fill',
+        type: "fill",
         source: sourceId,
         paint: {
-          'fill-color': [
-            'interpolate',
-            ['linear'],
-            ['get', 'weight'],
-            minWeight, `rgba(${colorRange[0].join(',')})`,
-            maxWeight * 0.25, `rgba(${colorRange[3].join(',')})`,
-            maxWeight * 0.5, `rgba(${colorRange[6].join(',')})`,
-            maxWeight * 0.75, `rgba(${colorRange[9].join(',')})`,
-            maxWeight, `rgba(${colorRange[11].join(',')})`
+          "fill-color": [
+            "interpolate",
+            ["linear"],
+            ["get", "weight"],
+            minWeight,
+            `rgba(${colorRange[0].join(",")})`,
+            maxWeight * 0.25,
+            `rgba(${colorRange[3].join(",")})`,
+            maxWeight * 0.5,
+            `rgba(${colorRange[6].join(",")})`,
+            maxWeight * 0.75,
+            `rgba(${colorRange[9].join(",")})`,
+            maxWeight,
+            `rgba(${colorRange[11].join(",")})`,
           ],
-          'fill-opacity': opacity
+          "fill-opacity": opacity,
         },
         layout: {
-          visibility: visible ? 'visible' : 'none'
+          visibility: visible ? "visible" : "none",
         },
         ...(minZoom !== undefined && { minzoom: minZoom }),
-        ...(maxZoom !== undefined && { maxzoom: maxZoom })
+        ...(maxZoom !== undefined && { maxzoom: maxZoom }),
       });
     }
 
@@ -304,44 +346,44 @@ export const HexagonLayer: React.FC<HexagonLayerProps> = ({
     if (!map.getLayer(`${id}-outline`)) {
       map.addLayer({
         id: `${id}-outline`,
-        type: 'line',
+        type: "line",
         source: sourceId,
         paint: {
-          'line-color': '#ffffff',
-          'line-width': 0.5,
-          'line-opacity': 0.5
+          "line-color": "#ffffff",
+          "line-width": 0.5,
+          "line-opacity": 0.5,
         },
         layout: {
-          visibility: visible ? 'visible' : 'none'
-        }
+          visibility: visible ? "visible" : "none",
+        },
       });
     }
 
     // Event handlers
     if (onClick) {
-      map.on('click', id, (e) => {
+      map.on("click", id, (e) => {
         if (e.features && e.features.length > 0) {
           onClick({
             object: e.features[0],
-            coordinate: [e.lngLat.lng, e.lngLat.lat]
+            coordinate: [e.lngLat.lng, e.lngLat.lat],
           });
         }
       });
     }
 
     if (onHover) {
-      map.on('mousemove', id, (e) => {
+      map.on("mousemove", id, (e) => {
         if (e.features && e.features.length > 0) {
-          map.getCanvas().style.cursor = 'pointer';
+          map.getCanvas().style.cursor = "pointer";
           onHover({
             object: e.features[0],
-            coordinate: [e.lngLat.lng, e.lngLat.lat]
+            coordinate: [e.lngLat.lng, e.lngLat.lat],
           });
         }
       });
 
-      map.on('mouseleave', id, () => {
-        map.getCanvas().style.cursor = '';
+      map.on("mouseleave", id, () => {
+        map.getCanvas().style.cursor = "";
         onHover({ object: null });
       });
     }
@@ -351,17 +393,34 @@ export const HexagonLayer: React.FC<HexagonLayerProps> = ({
       if (map.getLayer(id)) map.removeLayer(id);
       if (map.getSource(sourceId)) map.removeSource(sourceId);
     };
-  }, [map, isLoaded, useDeckGL, hexGrid, id, colorRange, opacity, visible, minZoom, maxZoom, onClick, onHover]);
+  }, [
+    map,
+    isLoaded,
+    useDeckGL,
+    hexGrid,
+    id,
+    colorRange,
+    opacity,
+    visible,
+    minZoom,
+    maxZoom,
+    onClick,
+    onHover,
+  ]);
 
   // Update visibility
   useEffect(() => {
     if (!map || !isLoaded || useDeckGL) return;
-    
+
     if (map.getLayer(id)) {
-      map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
+      map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
     }
     if (map.getLayer(`${id}-outline`)) {
-      map.setLayoutProperty(`${id}-outline`, 'visibility', visible ? 'visible' : 'none');
+      map.setLayoutProperty(
+        `${id}-outline`,
+        "visibility",
+        visible ? "visible" : "none"
+      );
     }
   }, [map, isLoaded, id, visible, useDeckGL]);
 
@@ -378,21 +437,24 @@ export const useHexagonLayer = (id: string) => {
     return null;
   }, []);
 
-  const setRadius = useCallback((radius: number) => {
-    if (deck) {
-      const layers = deck.props.layers || [];
-      const updatedLayers = layers.map((layer: any) => {
-        if (layer.id === id) {
-          return layer.clone({ radius });
-        }
-        return layer;
-      });
-      deck.setProps({ layers: updatedLayers });
-    }
-  }, [deck, id]);
+  const setRadius = useCallback(
+    (radius: number) => {
+      if (deck) {
+        const layers = deck.props.layers || [];
+        const updatedLayers = layers.map((layer: any) => {
+          if (layer.id === id) {
+            return layer.clone({ radius });
+          }
+          return layer;
+        });
+        deck.setProps({ layers: updatedLayers });
+      }
+    },
+    [deck, id]
+  );
 
   return {
     getStats,
-    setRadius
+    setRadius,
   };
 };

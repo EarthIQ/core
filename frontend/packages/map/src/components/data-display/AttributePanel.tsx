@@ -1,7 +1,7 @@
-import { Card, Stack, Text, Input, Button, Tabs } from '@packages/ui';
-import React, { useState, useMemo } from 'react';
+import { Card, Stack, Text, Input, Button, Tabs } from "@packages/ui";
+import React, { useState, useMemo } from "react";
 
-import type { GeoJSON } from 'geojson';
+import type { GeoJSON } from "geojson";
 
 export interface AttributePanelProps {
   /** Selected feature */
@@ -34,7 +34,7 @@ export interface AttributePanelProps {
 
 export interface PropertyConfig {
   label?: string;
-  type?: 'text' | 'number' | 'boolean' | 'date' | 'select' | 'color';
+  type?: "text" | "number" | "boolean" | "date" | "select" | "color";
   options?: { value: any; label: string }[];
   editable?: boolean;
   hidden?: boolean;
@@ -47,17 +47,21 @@ export const AttributePanel: React.FC<AttributePanelProps> = ({
   onPropertyChange,
   onSave,
   onDelete,
-  excludeProperties = ['id'],
+  excludeProperties = ["id"],
   propertyConfig = {},
   showGeometry = true,
   showCoordinates = false,
   header,
   footer,
-  maxHeight = '400px',
-  titleField
+  maxHeight = "400px",
+  titleField,
 }) => {
-  const [editedProperties, setEditedProperties] = useState<Record<string, any>>({});
-  const [activeTab, setActiveTab] = useState<'properties' | 'geometry'>('properties');
+  const [editedProperties, setEditedProperties] = useState<Record<string, any>>(
+    {}
+  );
+  const [activeTab, setActiveTab] = useState<"properties" | "geometry">(
+    "properties"
+  );
 
   // Merge original and edited properties
   const properties = useMemo(() => {
@@ -73,12 +77,12 @@ export const AttributePanel: React.FC<AttributePanelProps> = ({
       .map(([key, value]) => ({
         key,
         value,
-        config: propertyConfig[key] || {}
+        config: propertyConfig[key] || {},
       }));
   }, [properties, excludeProperties, propertyConfig]);
 
   const handlePropertyChange = (key: string, value: any) => {
-    setEditedProperties(prev => ({ ...prev, [key]: value }));
+    setEditedProperties((prev) => ({ ...prev, [key]: value }));
     onPropertyChange?.(key, value);
   };
 
@@ -86,7 +90,7 @@ export const AttributePanel: React.FC<AttributePanelProps> = ({
     if (!feature) return;
     const updatedFeature: GeoJSON.Feature = {
       ...feature,
-      properties: { ...feature.properties, ...editedProperties }
+      properties: { ...feature.properties, ...editedProperties },
     };
     onSave?.(updatedFeature);
     setEditedProperties({});
@@ -98,31 +102,37 @@ export const AttributePanel: React.FC<AttributePanelProps> = ({
 
   const getGeometryInfo = () => {
     if (!feature) return null;
-    
+
     const { geometry } = feature;
     const info: Record<string, any> = {
-      type: geometry.type
+      type: geometry.type,
     };
 
     switch (geometry.type) {
-      case 'Point':
+      case "Point":
         info.coordinates = geometry.coordinates;
         break;
-      case 'LineString':
+      case "LineString":
         info.points = geometry.coordinates.length;
         break;
-      case 'Polygon':
+      case "Polygon":
         info.rings = geometry.coordinates.length;
-        info.points = geometry.coordinates.reduce((sum, ring) => sum + ring.length, 0);
+        info.points = geometry.coordinates.reduce(
+          (sum, ring) => sum + ring.length,
+          0
+        );
         break;
-      case 'MultiPoint':
+      case "MultiPoint":
         info.points = geometry.coordinates.length;
         break;
-      case 'MultiLineString':
+      case "MultiLineString":
         info.lines = geometry.coordinates.length;
-        info.points = geometry.coordinates.reduce((sum, line) => sum + line.length, 0);
+        info.points = geometry.coordinates.reduce(
+          (sum, line) => sum + line.length,
+          0
+        );
         break;
-      case 'MultiPolygon':
+      case "MultiPolygon":
         info.polygons = geometry.coordinates.length;
         break;
     }
@@ -133,73 +143,86 @@ export const AttributePanel: React.FC<AttributePanelProps> = ({
   if (!feature) {
     return (
       <Card style={{ padding: 16 }}>
-        <Text color="muted" style={{ textAlign: 'center' }}>
+        <Text
+          color="muted"
+          style={{ textAlign: "center" }}
+        >
           Select a feature to view attributes
         </Text>
       </Card>
     );
   }
 
-  const title = titleField ? properties[titleField] : feature.id || 'Feature';
+  const title = titleField ? properties[titleField] : feature.id || "Feature";
   const geometryInfo = getGeometryInfo();
   const hasChanges = Object.keys(editedProperties).length > 0;
 
   return (
-    <Card style={{ maxHeight, overflow: 'auto' }}>
+    <Card style={{ maxHeight, overflow: "auto" }}>
       {/* Header */}
       {header || (
-        <div style={{ 
-          padding: '12px 16px', 
-          borderBottom: '1px solid #e5e7eb',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <div
+          style={{
+            padding: "12px 16px",
+            borderBottom: "1px solid #e5e7eb",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <Text weight="bold">{title}</Text>
-          {onDelete ? <Button
+          {onDelete ? (
+            <Button
               size="sm"
-              style={{ color: '#ef4444' }}
+              style={{ color: "#ef4444" }}
               variant="ghost"
               onClick={() => onDelete(feature)}
             >
               Delete
-            </Button> : null}
+            </Button>
+          ) : null}
         </div>
       )}
 
       {/* Tabs */}
-      {showGeometry ? <div style={{ borderBottom: '1px solid #e5e7eb' }}>
+      {showGeometry ? (
+        <div style={{ borderBottom: "1px solid #e5e7eb" }}>
           <Tabs
             value={activeTab}
             tabs={[
-              { value: 'properties', label: 'Properties' },
-              { value: 'geometry', label: 'Geometry' }
+              { value: "properties", label: "Properties" },
+              { value: "geometry", label: "Geometry" },
             ]}
             onChange={(tab) => setActiveTab(tab)}
           />
-        </div> : null}
+        </div>
+      ) : null}
 
       {/* Content */}
       <div style={{ padding: 16 }}>
-        {activeTab === 'properties' && (
+        {activeTab === "properties" && (
           <Stack spacing="sm">
             {displayProperties.map(({ key, value, config }) => (
               <div key={key}>
-                <Text color="muted" size="xs" style={{ marginBottom: 4 }}>
+                <Text
+                  color="muted"
+                  size="xs"
+                  style={{ marginBottom: 4 }}
+                >
                   {config.label || formatLabel(key)}
                 </Text>
-                
+
                 {editable && config.editable !== false ? (
                   <PropertyInput
                     options={config.options}
-                    type={config.type || 'text'}
+                    type={config.type || "text"}
                     value={value}
                     onChange={(v) => handlePropertyChange(key, v)}
                   />
                 ) : (
                   <Text>
-                    {config.format 
-                      ? config.format(value) 
+                    {config.format
+                      ? config.format(value)
                       : formatValue(value, config.type)}
                   </Text>
                 )}
@@ -212,47 +235,72 @@ export const AttributePanel: React.FC<AttributePanelProps> = ({
           </Stack>
         )}
 
-        {activeTab === 'geometry' && geometryInfo ? <Stack spacing="sm">
+        {activeTab === "geometry" && geometryInfo ? (
+          <Stack spacing="sm">
             {Object.entries(geometryInfo).map(([key, value]) => (
               <div key={key}>
-                <Text color="muted" size="xs" style={{ marginBottom: 4 }}>
+                <Text
+                  color="muted"
+                  size="xs"
+                  style={{ marginBottom: 4 }}
+                >
                   {formatLabel(key)}
                 </Text>
                 <Text>
-                  {Array.isArray(value) 
-                    ? value.map(v => typeof v === 'number' ? v.toFixed(6) : v).join(', ')
+                  {Array.isArray(value)
+                    ? value
+                        .map((v) => (typeof v === "number" ? v.toFixed(6) : v))
+                        .join(", ")
                     : value}
                 </Text>
               </div>
             ))}
 
-            {showCoordinates && feature.geometry.type === 'Point' ? <div>
-                <Text color="muted" size="xs" style={{ marginBottom: 4 }}>
+            {showCoordinates && feature.geometry.type === "Point" ? (
+              <div>
+                <Text
+                  color="muted"
+                  size="xs"
+                  style={{ marginBottom: 4 }}
+                >
                   Coordinates (lat, lng)
                 </Text>
-                <Text style={{ fontFamily: 'monospace' }}>
-                  {(feature.geometry).coordinates[1].toFixed(6)},{' '}
-                  {(feature.geometry).coordinates[0].toFixed(6)}
+                <Text style={{ fontFamily: "monospace" }}>
+                  {feature.geometry.coordinates[1].toFixed(6)},{" "}
+                  {feature.geometry.coordinates[0].toFixed(6)}
                 </Text>
-              </div> : null}
-          </Stack> : null}
+              </div>
+            ) : null}
+          </Stack>
+        ) : null}
       </div>
 
       {/* Footer with save/reset buttons */}
-      {editable && hasChanges ? <div style={{ 
-          padding: '12px 16px', 
-          borderTop: '1px solid #e5e7eb',
-          display: 'flex',
-          gap: 8,
-          justifyContent: 'flex-end'
-        }}>
-          <Button size="sm" variant="outline" onClick={handleReset}>
+      {editable && hasChanges ? (
+        <div
+          style={{
+            padding: "12px 16px",
+            borderTop: "1px solid #e5e7eb",
+            display: "flex",
+            gap: 8,
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleReset}
+          >
             Reset
           </Button>
-          <Button size="sm" onClick={handleSave}>
+          <Button
+            size="sm"
+            onClick={handleSave}
+          >
             Save
           </Button>
-        </div> : null}
+        </div>
+      ) : null}
 
       {footer}
     </Card>
@@ -271,10 +319,10 @@ const PropertyInput: React.FC<PropertyInputProps> = ({
   type,
   value,
   options,
-  onChange
+  onChange,
 }) => {
   switch (type) {
-    case 'boolean':
+    case "boolean":
       return (
         <input
           checked={!!value}
@@ -282,42 +330,47 @@ const PropertyInput: React.FC<PropertyInputProps> = ({
           onChange={(e) => onChange(e.target.checked)}
         />
       );
-    case 'number':
+    case "number":
       return (
         <Input
           size="sm"
           type="number"
-          value={value ?? ''}
+          value={value ?? ""}
           onChange={(e) => onChange(parseFloat(e.target.value))}
         />
       );
-    case 'date':
+    case "date":
       return (
         <Input
           size="sm"
           type="date"
-          value={value ? new Date(value).toISOString().split('T')[0] : ''}
+          value={value ? new Date(value).toISOString().split("T")[0] : ""}
           onChange={(e) => onChange(e.target.value)}
         />
       );
-    case 'select':
+    case "select":
       return (
         <select
-          style={{ width: '100%', padding: '6px 8px' }}
-          value={value ?? ''}
+          style={{ width: "100%", padding: "6px 8px" }}
+          value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
         >
           <option value="">Select...</option>
-          {options?.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          {options?.map((opt) => (
+            <option
+              key={opt.value}
+              value={opt.value}
+            >
+              {opt.label}
+            </option>
           ))}
         </select>
       );
-    case 'color':
+    case "color":
       return (
         <input
           type="color"
-          value={value ?? '#000000'}
+          value={value ?? "#000000"}
           onChange={(e) => onChange(e.target.value)}
         />
       );
@@ -326,7 +379,7 @@ const PropertyInput: React.FC<PropertyInputProps> = ({
         <Input
           size="sm"
           type="text"
-          value={value ?? ''}
+          value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
         />
       );
@@ -335,17 +388,17 @@ const PropertyInput: React.FC<PropertyInputProps> = ({
 
 function formatLabel(key: string): string {
   return key
-    .replace(/_/g, ' ')
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/^./, str => str.toUpperCase())
+    .replace(/_/g, " ")
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (str) => str.toUpperCase())
     .trim();
 }
 
 function formatValue(value: any, type?: string): string {
-  if (value === null || value === undefined) return '-';
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-  if (typeof value === 'object') return JSON.stringify(value);
-  if (type === 'date' && value) {
+  if (value === null || value === undefined) return "-";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "object") return JSON.stringify(value);
+  if (type === "date" && value) {
     return new Date(value).toLocaleDateString();
   }
   return String(value);

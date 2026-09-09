@@ -1,6 +1,13 @@
 // src/hooks/useLayerPanelConfig.ts
 
-import { useState, useEffect, useCallback, useMemo, useRef, useContext } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  useContext,
+} from "react";
 
 import { useLayers } from "./useLayers";
 import { MapContext } from "../context/MapContext";
@@ -55,7 +62,9 @@ function extractMapLayerColor(
           (v.startsWith("#") || v.startsWith("rgb") || v.startsWith("hsl"))
       );
     }
-  } catch { /* ignore parse errors */ }
+  } catch {
+    /* ignore parse errors */
+  }
   return undefined;
 }
 
@@ -75,7 +84,11 @@ function resolveLayer(
   const mapLayer = mapLayers.get(config.id);
   const existsOnMap = !!mapLayer;
 
-  const color = config.color || (existsOnMap && map ? extractMapLayerColor(map, config.id, mapLayer.type) : undefined);
+  const color =
+    config.color ||
+    (existsOnMap && map
+      ? extractMapLayerColor(map, config.id, mapLayer.type)
+      : undefined);
 
   return {
     id: config.id,
@@ -89,13 +102,19 @@ function resolveLayer(
     allowToggleVisibility: config.allowToggleVisibility ?? true,
     allowChangeOpacity: config.allowChangeOpacity ?? true,
     existsOnMap,
-    ...(existsOnMap && mapLayer.sourceLayer ? { sourceLayer: mapLayer.sourceLayer } : {}),
+    ...(existsOnMap && mapLayer.sourceLayer
+      ? { sourceLayer: mapLayer.sourceLayer }
+      : {}),
     ...(color ? { color } : {}),
     ...(config.icon ? { icon: config.icon } : {}),
     ...(config.metadata ? { metadata: config.metadata } : {}),
     ...(config.tags ? { tags: config.tags } : {}),
-    ...(existsOnMap && mapLayer.minzoom !== undefined ? { minzoom: mapLayer.minzoom } : {}),
-    ...(existsOnMap && mapLayer.maxzoom !== undefined ? { maxzoom: mapLayer.maxzoom } : {}),
+    ...(existsOnMap && mapLayer.minzoom !== undefined
+      ? { minzoom: mapLayer.minzoom }
+      : {}),
+    ...(existsOnMap && mapLayer.maxzoom !== undefined
+      ? { maxzoom: mapLayer.maxzoom }
+      : {}),
   };
 }
 
@@ -117,8 +136,7 @@ export function useLayerPanelConfig(
   config: LayerPanelConfig,
   callbacks?: {
     onVisibilityChange?:
-      | ((layerId: string, visible: boolean) => void)
-      | undefined;
+      ((layerId: string, visible: boolean) => void) | undefined;
     onOpacityChange?: ((layerId: string, opacity: number) => void) | undefined;
   },
   externalMap?: maplibregl.Map | null
@@ -178,7 +196,7 @@ export function useLayerPanelConfig(
   useEffect(() => {
     if (!map || !isLoaded || appliedDefaultsRef.current) return;
     if (rawLayers.length === 0) return;
-    
+
     // Instead of automatically applying, we should probably only apply
     // if the layer doesn't have a state yet.
     // However, to fix the "resetting" bug immediately, we'll skip this
@@ -325,7 +343,8 @@ export function useLayerPanelConfig(
             visible: visibleCount > 0,
             visibleCount,
             totalCount: subLayers.length,
-            singleSelect: isGroupSingleSelect || (subConfig.singleSelect ?? false),
+            singleSelect:
+              isGroupSingleSelect || (subConfig.singleSelect ?? false),
             ...(subConfig.icon ? { icon: subConfig.icon } : {}),
           };
         }
@@ -373,28 +392,28 @@ export function useLayerPanelConfig(
           return false;
         return true;
       })
-      .map(
-        (ml): ResolvedLayer => {
-          const color = map ? extractMapLayerColor(map, ml.id, ml.type) : undefined;
-          return {
-            id: ml.id,
-            mapLayerId: ml.id,
-            displayName: formatLayerName(ml.id),
-            type: ml.type,
-            source: ml.source,
-            visible: ml.visible,
-            opacity: ml.opacity,
-            locked: false,
-            allowToggleVisibility: true,
-            allowChangeOpacity: true,
-            existsOnMap: true,
-            ...(ml.sourceLayer ? { sourceLayer: ml.sourceLayer } : {}),
-            ...(color ? { color } : {}),
-            ...(ml.minzoom !== undefined ? { minzoom: ml.minzoom } : {}),
-            ...(ml.maxzoom !== undefined ? { maxzoom: ml.maxzoom } : {}),
-          };
-        }
-      );
+      .map((ml): ResolvedLayer => {
+        const color = map
+          ? extractMapLayerColor(map, ml.id, ml.type)
+          : undefined;
+        return {
+          id: ml.id,
+          mapLayerId: ml.id,
+          displayName: formatLayerName(ml.id),
+          type: ml.type,
+          source: ml.source,
+          visible: ml.visible,
+          opacity: ml.opacity,
+          locked: false,
+          allowToggleVisibility: true,
+          allowChangeOpacity: true,
+          existsOnMap: true,
+          ...(ml.sourceLayer ? { sourceLayer: ml.sourceLayer } : {}),
+          ...(color ? { color } : {}),
+          ...(ml.minzoom !== undefined ? { minzoom: ml.minzoom } : {}),
+          ...(ml.maxzoom !== undefined ? { maxzoom: ml.maxzoom } : {}),
+        };
+      });
   }, [rawLayers, config, map]);
 
   // ── Filters ──
@@ -673,7 +692,9 @@ export function useLayerPanelConfig(
         const spec = source as any;
         if (spec.bounds)
           map.fitBounds(spec.bounds, { padding: 50, duration: 1000 });
-      } catch { /* ignore bounds errors */ }
+      } catch {
+        /* ignore bounds errors */
+      }
     },
     [map, isLoaded, rawLayers]
   );

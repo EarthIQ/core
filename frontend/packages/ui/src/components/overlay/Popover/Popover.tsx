@@ -66,7 +66,8 @@ export const Popover = ({
       </div>
 
       <AnimatePresence>
-        {isOpen ? <motion.div
+        {isOpen ? (
+          <motion.div
             ref={refs.setFloating}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -5 }}
@@ -79,8 +80,9 @@ export const Popover = ({
             )}
           >
             {children}
-          </motion.div> : null}
+          </motion.div>
+        ) : null}
       </AnimatePresence>
     </div>
   );
-}
+};

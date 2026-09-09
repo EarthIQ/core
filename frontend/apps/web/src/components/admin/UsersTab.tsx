@@ -13,7 +13,12 @@ import { UserForm } from "./UserForm";
 
 const SearchIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
         strokeLinecap="round"
@@ -22,17 +27,33 @@ const SearchIcon = () => {
       />
     </svg>
   );
-}
+};
 
 const PlusIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M12 4v16m8-8H4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
     </svg>
   );
-}
+};
 
-const SortIcon = ({ active, order }: { active: boolean; order: "asc" | "desc" }) => {
+const SortIcon = ({
+  active,
+  order,
+}: {
+  active: boolean;
+  order: "asc" | "desc";
+}) => {
   return (
     <svg
       fill="none"
@@ -42,14 +63,24 @@ const SortIcon = ({ active, order }: { active: boolean; order: "asc" | "desc" })
         active ? "text-primary opacity-100" : "opacity-30"
       } ${active && order === "asc" ? "rotate-180" : ""}`}
     >
-      <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+      <path
+        d="M19 9l-7 7-7-7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
     </svg>
   );
-}
+};
 
 const EditIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
         strokeLinecap="round"
@@ -58,11 +89,16 @@ const EditIcon = () => {
       />
     </svg>
   );
-}
+};
 
 const TrashIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
         strokeLinecap="round"
@@ -71,7 +107,7 @@ const TrashIcon = () => {
       />
     </svg>
   );
-}
+};
 
 // ── UsersTab Component ───────────────────────────────────────────────────────
 
@@ -124,7 +160,9 @@ export const UsersTab = ({
   onEditCancel,
   onDelete,
 }: UsersTabProps) => {
-  const [deleteCandidate, setDeleteCandidate] = useState<UserSummary | null>(null);
+  const [deleteCandidate, setDeleteCandidate] = useState<UserSummary | null>(
+    null
+  );
 
   const handleSort = (field: "created_at" | "email" | "full_name") => {
     if (filters.sort_by === field) {
@@ -144,7 +182,8 @@ export const UsersTab = ({
   const getInitials = (user: UserSummary) => {
     if (user.full_name) {
       const parts = user.full_name.trim().split(/\s+/);
-      if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+      if (parts.length >= 2)
+        return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
       return parts[0].slice(0, 2).toUpperCase();
     }
     return user.email.slice(0, 2).toUpperCase();
@@ -153,28 +192,32 @@ export const UsersTab = ({
   return (
     <div className="space-y-4">
       {/* ── Top Bar: Search, Filters & Actions ── */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border-primary bg-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-border-primary bg-surface flex flex-col gap-3 rounded-2xl border p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         {/* Search & Filter Controls */}
         <div className="flex flex-1 flex-wrap items-center gap-3">
           {/* Search Input */}
           <div className="relative min-w-[240px] flex-1 sm:max-w-xs">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-tertiary">
+            <div className="text-text-tertiary pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <SearchIcon />
             </div>
             <input
-              className="w-full rounded-xl border border-border-primary bg-surface-hover/60 py-2 pr-3.5 pl-9 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="border-border-primary bg-surface-hover/60 text-text-primary placeholder:text-text-tertiary focus:border-primary focus:bg-surface focus:ring-primary/20 w-full rounded-xl border py-2 pr-3.5 pl-9 text-sm focus:ring-2 focus:outline-none"
               placeholder="Search by name or email…"
               type="text"
               value={filters.search}
-              onChange={(e) => onFilterChange({ search: e.target.value, page: 1 })}
+              onChange={(e) =>
+                onFilterChange({ search: e.target.value, page: 1 })
+              }
             />
           </div>
 
           {/* Role Filter */}
           <select
-            className="rounded-xl border border-border-primary bg-surface-hover/60 px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="border-border-primary bg-surface-hover/60 text-text-primary focus:border-primary focus:bg-surface focus:ring-primary/20 rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
             value={filters.is_superuser}
-            onChange={(e) => onFilterChange({ is_superuser: e.target.value, page: 1 })}
+            onChange={(e) =>
+              onFilterChange({ is_superuser: e.target.value, page: 1 })
+            }
           >
             <option value="all">All Roles</option>
             <option value="true">Superusers Only</option>
@@ -183,13 +226,18 @@ export const UsersTab = ({
 
           {/* Group Filter */}
           <select
-            className="rounded-xl border border-border-primary bg-surface-hover/60 px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="border-border-primary bg-surface-hover/60 text-text-primary focus:border-primary focus:bg-surface focus:ring-primary/20 rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
             value={filters.group_id}
-            onChange={(e) => onFilterChange({ group_id: e.target.value, page: 1 })}
+            onChange={(e) =>
+              onFilterChange({ group_id: e.target.value, page: 1 })
+            }
           >
             <option value="all">All Groups</option>
             {groups.map((g) => (
-              <option key={g.id} value={g.id}>
+              <option
+                key={g.id}
+                value={g.id}
+              >
                 {g.name}
               </option>
             ))}
@@ -198,7 +246,7 @@ export const UsersTab = ({
 
         {/* Create Button */}
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90 active:scale-[0.98]"
+          className="bg-primary inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90 active:scale-[0.98]"
           type="button"
           onClick={onOpenCreateModal}
         >
@@ -208,13 +256,13 @@ export const UsersTab = ({
       </div>
 
       {/* ── Table Container ── */}
-      <div className="overflow-hidden rounded-2xl border border-border-primary bg-surface shadow-sm">
+      <div className="border-border-primary bg-surface overflow-hidden rounded-2xl border shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-border-primary bg-surface-hover/40 text-xs font-semibold uppercase tracking-wider text-text-secondary">
+            <thead className="border-border-primary bg-surface-hover/40 text-text-secondary border-b text-xs font-semibold tracking-wider uppercase">
               <tr>
                 <th
-                  className="cursor-pointer px-6 py-3.5 transition select-none hover:text-text-primary"
+                  className="hover:text-text-primary cursor-pointer px-6 py-3.5 transition select-none"
                   scope="col"
                   onClick={() => handleSort("full_name")}
                 >
@@ -227,7 +275,7 @@ export const UsersTab = ({
                   </div>
                 </th>
                 <th
-                  className="cursor-pointer px-6 py-3.5 transition select-none hover:text-text-primary"
+                  className="hover:text-text-primary cursor-pointer px-6 py-3.5 transition select-none"
                   scope="col"
                   onClick={() => handleSort("email")}
                 >
@@ -239,14 +287,20 @@ export const UsersTab = ({
                     />
                   </div>
                 </th>
-                <th className="px-6 py-3.5" scope="col">
+                <th
+                  className="px-6 py-3.5"
+                  scope="col"
+                >
                   Role
                 </th>
-                <th className="px-6 py-3.5" scope="col">
+                <th
+                  className="px-6 py-3.5"
+                  scope="col"
+                >
                   Groups
                 </th>
                 <th
-                  className="cursor-pointer px-6 py-3.5 transition select-none hover:text-text-primary"
+                  className="hover:text-text-primary cursor-pointer px-6 py-3.5 transition select-none"
                   scope="col"
                   onClick={() => handleSort("created_at")}
                 >
@@ -258,18 +312,24 @@ export const UsersTab = ({
                     />
                   </div>
                 </th>
-                <th className="px-6 py-3.5 text-right" scope="col">
+                <th
+                  className="px-6 py-3.5 text-right"
+                  scope="col"
+                >
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-primary">
+            <tbody className="divide-border-primary divide-y">
               {loading ? (
                 <tr>
-                  <td className="px-6 py-12 text-center text-text-secondary" colSpan={6}>
+                  <td
+                    className="text-text-secondary px-6 py-12 text-center"
+                    colSpan={6}
+                  >
                     <div className="inline-flex items-center gap-2">
                       <svg
-                        className="h-5 w-5 animate-spin text-primary"
+                        className="text-primary h-5 w-5 animate-spin"
                         fill="none"
                         viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg"
@@ -294,11 +354,18 @@ export const UsersTab = ({
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td className="px-6 py-12 text-center text-text-secondary" colSpan={6}>
+                  <td
+                    className="text-text-secondary px-6 py-12 text-center"
+                    colSpan={6}
+                  >
                     <div className="mx-auto max-w-sm space-y-2">
-                      <p className="font-medium text-text-primary">No users found</p>
-                      <p className="text-xs text-text-tertiary">
-                        {filters.search || filters.is_superuser !== "all" || filters.group_id !== "all"
+                      <p className="text-text-primary font-medium">
+                        No users found
+                      </p>
+                      <p className="text-text-tertiary text-xs">
+                        {filters.search ||
+                        filters.is_superuser !== "all" ||
+                        filters.group_id !== "all"
                           ? "Try adjusting your search terms or filters."
                           : "Get started by adding your first user."}
                       </p>
@@ -309,19 +376,19 @@ export const UsersTab = ({
                 users.map((userItem) => (
                   <tr
                     key={userItem.id}
-                    className="group transition-colors hover:bg-surface-hover/50"
+                    className="group hover:bg-surface-hover/50 transition-colors"
                   >
                     {/* User Profile */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                        <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-semibold">
                           {getInitials(userItem)}
                         </div>
                         <div>
-                          <div className="font-medium text-text-primary">
+                          <div className="text-text-primary font-medium">
                             {userItem.full_name || "-"}
                           </div>
-                          <div className="text-xs text-text-tertiary sm:hidden">
+                          <div className="text-text-tertiary text-xs sm:hidden">
                             {userItem.email}
                           </div>
                         </div>
@@ -329,18 +396,18 @@ export const UsersTab = ({
                     </td>
 
                     {/* Email */}
-                    <td className="px-6 py-4 font-mono text-xs text-text-secondary">
+                    <td className="text-text-secondary px-6 py-4 font-mono text-xs">
                       {userItem.email}
                     </td>
 
                     {/* Role */}
                     <td className="px-6 py-4">
                       {userItem.is_superuser ? (
-                        <span className="inline-flex items-center rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                        <span className="bg-primary/15 text-primary inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold">
                           Superuser
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-surface-hover px-2.5 py-0.5 text-xs font-medium text-text-secondary">
+                        <span className="bg-surface-hover text-text-secondary inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
                           Standard
                         </span>
                       )}
@@ -353,31 +420,36 @@ export const UsersTab = ({
                           {userItem.groups.map((grp) => (
                             <span
                               key={grp.id}
-                              className="inline-flex items-center rounded-md border border-border-primary bg-surface px-2 py-0.5 text-xs font-medium text-text-primary"
+                              className="border-border-primary bg-surface text-text-primary inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium"
                             >
                               {grp.name}
                             </span>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-xs text-text-tertiary">No groups</span>
+                        <span className="text-text-tertiary text-xs">
+                          No groups
+                        </span>
                       )}
                     </td>
 
                     {/* Created Date */}
-                    <td className="px-6 py-4 text-xs text-text-secondary">
-                      {new Date(userItem.created_at).toLocaleDateString(undefined, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                    <td className="text-text-secondary px-6 py-4 text-xs">
+                      {new Date(userItem.created_at).toLocaleDateString(
+                        undefined,
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )}
                     </td>
 
                     {/* Actions */}
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          className="rounded-lg p-1.5 text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
+                          className="text-text-secondary hover:bg-surface-hover hover:text-text-primary rounded-lg p-1.5 transition"
                           title="Edit User"
                           type="button"
                           onClick={() => onEditStart(userItem)}
@@ -385,7 +457,7 @@ export const UsersTab = ({
                           <EditIcon />
                         </button>
                         <button
-                          className="rounded-lg p-1.5 text-danger transition hover:bg-danger/10"
+                          className="text-danger hover:bg-danger/10 rounded-lg p-1.5 transition"
                           title="Delete User"
                           type="button"
                           onClick={() => setDeleteCandidate(userItem)}
@@ -402,16 +474,18 @@ export const UsersTab = ({
         </div>
 
         {/* ── Pagination Footer ── */}
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-border-primary px-6 py-3.5 sm:flex-row">
-          <div className="flex items-center gap-3 text-xs text-text-secondary">
+        <div className="border-border-primary flex flex-col items-center justify-between gap-3 border-t px-6 py-3.5 sm:flex-row">
+          <div className="text-text-secondary flex items-center gap-3 text-xs">
             <span>
-              Showing {total === 0 ? 0 : (filters.page - 1) * filters.page_size + 1} to{" "}
-              {Math.min(filters.page * filters.page_size, total)} of {total} users
+              Showing{" "}
+              {total === 0 ? 0 : (filters.page - 1) * filters.page_size + 1} to{" "}
+              {Math.min(filters.page * filters.page_size, total)} of {total}{" "}
+              users
             </span>
             <div className="flex items-center gap-1.5">
               <span>Per page:</span>
               <select
-                className="rounded-lg border border-border-primary bg-surface-hover/60 px-2 py-1 text-xs text-text-primary focus:border-primary focus:outline-none"
+                className="border-border-primary bg-surface-hover/60 text-text-primary focus:border-primary rounded-lg border px-2 py-1 text-xs focus:outline-none"
                 value={filters.page_size}
                 onChange={(e) =>
                   onFilterChange({ page_size: Number(e.target.value), page: 1 })
@@ -482,24 +556,28 @@ export const UsersTab = ({
         onClose={() => setDeleteCandidate(null)}
       >
         <div className="space-y-4 pt-2">
-          {deleteCandidate ? <div className="rounded-xl border border-border-primary bg-surface-hover/60 p-3.5">
-              <div className="font-semibold text-text-primary">{deleteCandidate.email}</div>
-              <div className="text-xs text-text-secondary">
+          {deleteCandidate ? (
+            <div className="border-border-primary bg-surface-hover/60 rounded-xl border p-3.5">
+              <div className="text-text-primary font-semibold">
+                {deleteCandidate.email}
+              </div>
+              <div className="text-text-secondary text-xs">
                 {deleteCandidate.full_name || "No display name"} •{" "}
                 {deleteCandidate.is_superuser ? "Superuser" : "Standard User"}
               </div>
-            </div> : null}
+            </div>
+          ) : null}
 
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
-              className="rounded-lg border border-border-primary px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
+              className="border-border-primary text-text-secondary hover:bg-surface-hover hover:text-text-primary rounded-lg border px-4 py-2 text-sm font-medium transition"
               type="button"
               onClick={() => setDeleteCandidate(null)}
             >
               Cancel
             </button>
             <button
-              className="rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:opacity-50"
+              className="bg-danger rounded-lg px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:opacity-50"
               disabled={submitting}
               type="button"
               onClick={() => {
@@ -516,5 +594,4 @@ export const UsersTab = ({
       </Modal>
     </div>
   );
-}
-
+};

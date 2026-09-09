@@ -150,12 +150,14 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
               </filter>
             </defs>
 
-            {showGrid ? <CartesianGrid
+            {showGrid ? (
+              <CartesianGrid
                 className="stroke-gray-200 dark:stroke-gray-700"
                 horizontal={gridType !== "vertical"}
                 strokeDasharray="3 3"
                 vertical={gridType !== "horizontal"}
-              /> : null}
+              />
+            ) : null}
 
             {!xAxis?.hide && (
               <XAxis
@@ -206,7 +208,8 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
               />
             )}
 
-            {showTooltip ? <Tooltip
+            {showTooltip ? (
+              <Tooltip
                 formatter={customTooltipFormatter}
                 labelStyle={{ fontWeight: "bold", marginBottom: "8px" }}
                 contentStyle={{
@@ -216,7 +219,8 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                   color: "hsl(var(--popover-foreground))",
                 }}
-              /> : null}
+              />
+            ) : null}
 
             <Area
               connectNulls
@@ -259,13 +263,15 @@ export const UncertaintyChart: React.FC<UncertaintyChartProps> = ({
               );
             })}
 
-            {showLegend ? <Legend
+            {showLegend ? (
+              <Legend
                 height={36}
                 iconSize={8}
                 iconType="circle"
                 verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              /> : null}
+              />
+            ) : null}
           </RechartsComposedChart>
         </ResponsiveContainer>
       </div>

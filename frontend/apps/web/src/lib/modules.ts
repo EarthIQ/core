@@ -48,8 +48,14 @@ export function useModules(): UseModulesResult {
     }
     setIsLoading(true);
     _promise
-      .then((data) => { setModules(data); setIsLoading(false); })
-      .catch((err) => { setError(String(err)); setIsLoading(false); });
+      .then((data) => {
+        setModules(data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        setError(String(err));
+        setIsLoading(false);
+      });
   }, [tick]);
 
   const refetch = () => {

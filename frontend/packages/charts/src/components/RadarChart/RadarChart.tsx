@@ -72,7 +72,9 @@ export const RadarChart: React.FC<RadarChartProps> = ({
               if (payload) onDataPointClick(payload, index);
             }}
           >
-            {showPolarGrid ? <PolarGrid className="stroke-gray-200 dark:stroke-gray-700" /> : null}
+            {showPolarGrid ? (
+              <PolarGrid className="stroke-gray-200 dark:stroke-gray-700" />
+            ) : null}
 
             <PolarAngleAxis
               className="text-gray-600 dark:text-gray-400"
@@ -87,22 +89,26 @@ export const RadarChart: React.FC<RadarChartProps> = ({
               tick={{ fill: "currentColor", fontSize: 10 }}
             />
 
-            {showTooltip ? <Tooltip
+            {showTooltip ? (
+              <Tooltip
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover, 0 0% 100%))",
                   border: "1px solid hsl(var(--border, 220 13% 91%))",
                   borderRadius: "8px",
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-              /> : null}
+              />
+            ) : null}
 
-            {showLegend ? <Legend
+            {showLegend ? (
+              <Legend
                 height={36}
                 iconSize={8}
                 iconType="circle"
                 verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              /> : null}
+              />
+            ) : null}
 
             {radars.map((radar, index) => {
               const color = radar.color || getColor(index, colors);

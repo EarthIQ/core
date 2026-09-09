@@ -106,9 +106,11 @@ export const ThemeToggle = ({
   if (variant === "switch") {
     return (
       <div className={cn("flex items-center gap-2.5", className)}>
-        {showLabel ? <span className="text-sm font-medium text-[var(--text-secondary)]">
+        {showLabel ? (
+          <span className="text-sm font-medium text-[var(--text-secondary)]">
             {isDark ? "Dark" : "Light"}
-          </span> : null}
+          </span>
+        ) : null}
         <button
           aria-checked={isDark}
           aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
@@ -201,7 +203,8 @@ export const ThemeToggle = ({
               )}
               onClick={() => setTheme(option.value)}
             >
-              {isActive ? <motion.div
+              {isActive ? (
+                <motion.div
                   layoutId="activeTheme"
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   className={cn(
@@ -210,7 +213,8 @@ export const ThemeToggle = ({
                     "shadow-[var(--shadow-sm)]",
                     "border border-[var(--border-secondary)]"
                   )}
-                /> : null}
+                />
+              ) : null}
               <span className="relative z-10 flex items-center gap-1.5">
                 {option.icon}
                 {showLabel ? option.label : null}
@@ -257,14 +261,16 @@ export const ThemeToggle = ({
             />
           )}
         </motion.div>
-        {showLabel ? <span className="text-sm font-medium">
+        {showLabel ? (
+          <span className="text-sm font-medium">
             {isDark ? "Dark mode" : "Light mode"}
-          </span> : null}
+          </span>
+        ) : null}
       </button>
     );
   }
 
   return null;
-}
+};
 
 export default ThemeToggle;

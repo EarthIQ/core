@@ -36,14 +36,12 @@ export default function ReportBuilderPage() {
   const projectId = params.get("projectId") ?? "";
   const builder = getProjectBuilder("report");
 
-  const [sections, setSections] =
-    useState<ReportSection[]>(DEFAULT_SECTIONS);
+  const [sections, setSections] = useState<ReportSection[]>(DEFAULT_SECTIONS);
   const [activeId, setActiveId] = useState(DEFAULT_SECTIONS[0]?.id ?? "");
 
   if (!builder) return null;
 
-  const activeSection =
-    sections.find((s) => s.id === activeId) ?? sections[0];
+  const activeSection = sections.find((s) => s.id === activeId) ?? sections[0];
   const ActiveSectionIcon = activeSection?.icon ?? FileText;
 
   function addSection() {
@@ -56,18 +54,21 @@ export default function ReportBuilderPage() {
   }
 
   return (
-    <BuilderScaffold builder={builder} projectId={projectId}>
+    <BuilderScaffold
+      builder={builder}
+      projectId={projectId}
+    >
       <BuilderWorkspace
         main={
           <div className="flex flex-col gap-4">
             {/* Document preview */}
             <div className="rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] px-8 py-10 shadow-[var(--shadow-md)]">
               <div className="mx-auto max-w-2xl">
-                <div className="text-[0.65rem] font-semibold uppercase tracking-widest text-[var(--text-tertiary)]">
+                <div className="text-[0.65rem] font-semibold tracking-widest text-[var(--text-tertiary)] uppercase">
                   EarthIQ report
                 </div>
                 <div className="mt-4 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-lg">
                     <ActiveSectionIcon size={18} />
                   </div>
                   <div>
@@ -98,7 +99,7 @@ export default function ReportBuilderPage() {
                 >
                   Export to PDF
                 </Button>
-                <span className="rounded bg-[var(--surface-hover)] px-1.5 py-0.5 text-[0.6rem] uppercase tracking-wide text-[var(--text-tertiary)]">
+                <span className="rounded bg-[var(--surface-hover)] px-1.5 py-0.5 text-[0.6rem] tracking-wide text-[var(--text-tertiary)] uppercase">
                   soon
                 </span>
               </div>

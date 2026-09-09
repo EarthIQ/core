@@ -45,7 +45,7 @@ const LineIcon = () => {
       <path d="M4 20L20 4" />
     </svg>
   );
-}
+};
 
 const PointIcon = () => {
   return (
@@ -74,7 +74,7 @@ const PointIcon = () => {
       />
     </svg>
   );
-}
+};
 
 const FreehandIcon = () => {
   return (
@@ -93,7 +93,7 @@ const FreehandIcon = () => {
       <path d="M4 17c2-4 4-8 8-8s4 6 8 2" />
     </svg>
   );
-}
+};
 
 function getDefaultIcon(mode: DrawMode): ReactNode {
   const icons: Record<DrawMode, ReactNode> = {
@@ -198,20 +198,21 @@ export const DrawControl = forwardRef<DrawControlRef, DrawControlProps>(
     ref
   ) {
     // Use the standalone hook
-    const { state, setMode, deleteFeatures, deleteAll, isReady } = useDrawControl(
-      {
-        onCreate,
-        onUpdate,
-        onDelete,
-        onSelectionChange,
-        onModeChange,
-        onFeaturesChange,
-      },
-      {
-        ...drawOptions,
-        initialFeatures,
-      }
-    );
+    const { state, setMode, deleteFeatures, deleteAll, isReady } =
+      useDrawControl(
+        {
+          onCreate,
+          onUpdate,
+          onDelete,
+          onSelectionChange,
+          onModeChange,
+          onFeaturesChange,
+        },
+        {
+          ...drawOptions,
+          initialFeatures,
+        }
+      );
 
     useImperativeHandle(ref, () => ({
       deleteAll,
@@ -284,7 +285,8 @@ export const DrawControl = forwardRef<DrawControlRef, DrawControlProps>(
       }
 
       document.addEventListener("pointerdown", handlePointerDown);
-      return () => document.removeEventListener("pointerdown", handlePointerDown);
+      return () =>
+        document.removeEventListener("pointerdown", handlePointerDown);
     }, [closeOnClickOutside, isOpen, closePanel, state.activeMode]);
 
     // Escape key
@@ -340,7 +342,8 @@ export const DrawControl = forwardRef<DrawControlRef, DrawControlProps>(
               onClick={() => selectTool(tool.mode)}
             />
           ))}
-          {showTrash && hasAnyFeatures ? <>
+          {showTrash && hasAnyFeatures ? (
+            <>
               <div className="mx-2 h-px bg-[var(--border-primary)]" />
               <ControlButton
                 className="text-[var(--error)] hover:bg-[var(--error-bg)]"
@@ -348,7 +351,8 @@ export const DrawControl = forwardRef<DrawControlRef, DrawControlProps>(
                 label={hasSelectedFeatures ? "Delete selected" : "Delete all"}
                 onClick={handleDelete}
               />
-            </> : null}
+            </>
+          ) : null}
         </ControlButtonFlyout>
       </div>
     );

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 /**
  * Hook that locks body scroll when active
@@ -8,15 +8,16 @@ export function useLockBodyScroll(locked: boolean = true): void {
     if (!locked) return;
 
     const originalStyle = window.getComputedStyle(document.body).overflow;
-    const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+    const scrollBarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
 
     // Prevent layout shift by adding padding for scrollbar
     document.body.style.paddingRight = `${scrollBarWidth}px`;
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
 
     return () => {
       document.body.style.overflow = originalStyle;
-      document.body.style.paddingRight = '';
+      document.body.style.paddingRight = "";
     };
   }, [locked]);
 }

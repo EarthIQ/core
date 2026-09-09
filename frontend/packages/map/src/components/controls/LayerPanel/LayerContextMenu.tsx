@@ -1,8 +1,6 @@
 // src/components/controls/LayerPanel/LayerContextMenu.tsx
 
-import {
-  ZoomIn,
-} from "lucide-react";
+import { ZoomIn } from "lucide-react";
 import React, { useEffect, useRef } from "react";
 
 interface LayerContextMenuProps {
@@ -111,7 +109,9 @@ export const LayerContextMenu: React.FC<LayerContextMenuProps> = ({
             {item.icon}
             <span>{item.label}</span>
           </button>
-          {item.dividerAfter ? <div className="my-1 h-px bg-[var(--border-secondary)]" /> : null}
+          {item.dividerAfter ? (
+            <div className="my-1 h-px bg-[var(--border-secondary)]" />
+          ) : null}
         </React.Fragment>
       ))}
     </div>

@@ -132,9 +132,11 @@ export const DatePicker = ({
       ref={containerRef}
       className={cn("w-full", className)}
     >
-      {label ? <label className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">
+      {label ? (
+        <label className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">
           {label}
-        </label> : null}
+        </label>
+      ) : null}
 
       <div ref={refs.setReference}>
         <button
@@ -183,10 +185,13 @@ export const DatePicker = ({
         </button>
       </div>
 
-      {error ? <p className="mt-1.5 text-sm text-[var(--error-text)]">{error}</p> : null}
+      {error ? (
+        <p className="mt-1.5 text-sm text-[var(--error-text)]">{error}</p>
+      ) : null}
 
       <AnimatePresence>
-        {isOpen ? <motion.div
+        {isOpen ? (
+          <motion.div
             ref={refs.setFloating}
             animate={{ opacity: 1, y: 0 }}
             aria-label={label ? `${label} calendar` : "Calendar"}
@@ -308,8 +313,9 @@ export const DatePicker = ({
                 Today
               </button>
             </div>
-          </motion.div> : null}
+          </motion.div>
+        ) : null}
       </AnimatePresence>
     </div>
   );
-}
+};

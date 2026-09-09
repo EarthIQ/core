@@ -52,7 +52,10 @@ export const TOOLBOX_PANEL_WIDTH = 360;
 /*  Tool icon (emoji string or a known lucide icon name)                     */
 /* ──────────────────────────────────────────────────────────────────────── */
 
-const KNOWN_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+const KNOWN_ICONS: Record<
+  string,
+  React.ComponentType<{ size?: number; className?: string }>
+> = {
   wrench: Wrench,
   sparkles: Sparkles,
   droplets: Droplets,
@@ -69,10 +72,29 @@ const KNOWN_ICONS: Record<string, React.ComponentType<{ size?: number; className
 const ToolIcon = ({ icon, size = 15 }: { icon?: string; size?: number }) => {
   const name = (icon ?? "").trim().toLowerCase();
   const Comp = KNOWN_ICONS[name];
-  if (Comp) return <Comp className="text-primary shrink-0" size={size} />;
-  if (name) return <span className="leading-none shrink-0" style={{ fontSize: size }}>{icon}</span>;
-  return <Wrench className="text-primary shrink-0" size={size} />;
-}
+  if (Comp)
+    return (
+      <Comp
+        className="text-primary shrink-0"
+        size={size}
+      />
+    );
+  if (name)
+    return (
+      <span
+        className="shrink-0 leading-none"
+        style={{ fontSize: size }}
+      >
+        {icon}
+      </span>
+    );
+  return (
+    <Wrench
+      className="text-primary shrink-0"
+      size={size}
+    />
+  );
+};
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Props                                                                    */
@@ -116,7 +138,7 @@ function stringifyResult(result: unknown): string | null {
 const ResultView = ({ result }: { result: unknown }) => {
   if (typeof result === "string") {
     return (
-      <div className="text-xs leading-relaxed whitespace-pre-wrap text-text-secondary">
+      <div className="text-text-secondary text-xs leading-relaxed whitespace-pre-wrap">
         {result}
       </div>
     );
@@ -130,26 +152,34 @@ const ResultView = ({ result }: { result: unknown }) => {
     obj && Array.isArray(obj.notes)
       ? (obj.notes as unknown[]).filter((n) => typeof n === "string")
       : null;
-  const body = obj && notes ? Object.fromEntries(Object.entries(obj).filter(([k]) => k !== "notes")) : result;
+  const body =
+    obj && notes
+      ? Object.fromEntries(Object.entries(obj).filter(([k]) => k !== "notes"))
+      : result;
 
   return (
     <div className="space-y-2">
       {stringifyResult(body) !== null && (
-        <pre className="text-[11px] leading-relaxed font-mono text-text-secondary bg-surface-hover/50 border border-border-secondary rounded-lg p-3 overflow-x-auto max-h-64 overflow-y-auto">
+        <pre className="text-text-secondary bg-surface-hover/50 border-border-secondary max-h-64 overflow-x-auto overflow-y-auto rounded-lg border p-3 font-mono text-[11px] leading-relaxed">
           {stringifyResult(body)}
         </pre>
       )}
-      {notes && notes.length > 0 ? <ul className="space-y-1">
+      {notes && notes.length > 0 ? (
+        <ul className="space-y-1">
           {notes.map((n, i) => (
-            <li key={i} className="text-[11px] text-text-tertiary flex gap-1.5">
+            <li
+              key={i}
+              className="text-text-tertiary flex gap-1.5 text-[11px]"
+            >
               <span className="text-primary">•</span>
               <span>{n}</span>
             </li>
           ))}
-        </ul> : null}
+        </ul>
+      ) : null}
     </div>
   );
-}
+};
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Generated input field (driven by the tool's `inputs` spec)               */
@@ -162,7 +192,12 @@ interface FieldControlProps {
   onChange: (value: unknown) => void;
 }
 
-const FieldControl = ({ input, value, disabled, onChange }: FieldControlProps) => {
+const FieldControl = ({
+  input,
+  value,
+  disabled,
+  onChange,
+}: FieldControlProps) => {
   const label = input.label || input.key;
   const required = input.required !== false;
 
@@ -211,7 +246,9 @@ const FieldControl = ({ input, value, disabled, onChange }: FieldControlProps) =
           description={input.description}
           disabled={disabled}
           label={label}
-          placeholder={input.default !== undefined ? String(input.default) : "0"}
+          placeholder={
+            input.default !== undefined ? String(input.default) : "0"
+          }
           required={required}
           step={input.type === "integer" ? "1" : "any"}
           type="number"
@@ -236,14 +273,20 @@ const FieldControl = ({ input, value, disabled, onChange }: FieldControlProps) =
           label={label}
           placeholder={input.default !== undefined ? String(input.default) : ""}
           required={required}
-          value={typeof value === "string" ? value : value === undefined ? "" : String(value)}
+          value={
+            typeof value === "string"
+              ? value
+              : value === undefined
+                ? ""
+                : String(value)
+          }
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onChange(e.target.value)
           }
         />
       );
   }
-}
+};
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Main panel                                                               */
@@ -272,7 +315,8 @@ export const ToolboxPanel = ({
   function selectTool(tool: ResolvedTool) {
     setSelectedId(tool.id);
     const init: Record<string, unknown> = {};
-    for (const input of tool.inputs ?? []) init[input.key] = defaultValueFor(input);
+    for (const input of tool.inputs ?? [])
+      init[input.key] = defaultValueFor(input);
     setValues(init);
     setResult(null);
     setRunError(null);
@@ -304,7 +348,11 @@ export const ToolboxPanel = ({
           ? [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]
           : [0, 0, 0, 0],
         basemap,
-        layers: layers.map((l) => ({ id: l.id, name: l.name, visible: l.visible })),
+        layers: layers.map((l) => ({
+          id: l.id,
+          name: l.name,
+          visible: l.visible,
+        })),
       };
     } catch {
       return undefined;
@@ -326,7 +374,7 @@ export const ToolboxPanel = ({
           ? err.message
           : err instanceof Error
             ? err.message
-            : String(err),
+            : String(err)
       );
     } finally {
       setRunning(false);
@@ -335,30 +383,41 @@ export const ToolboxPanel = ({
 
   return (
     <div
-      className="absolute top-14 right-0 bottom-10 z-30 flex flex-col bg-surface border-l border-border-secondary shadow-2xl animate-slide-in-right"
+      className="bg-surface border-border-secondary animate-slide-in-right absolute top-14 right-0 bottom-10 z-30 flex flex-col border-l shadow-2xl"
       id="map-toolbox-panel"
       style={{ width: TOOLBOX_PANEL_WIDTH }}
     >
       {/* ── Header (back button lives here in the detail view) ── */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-border-secondary shrink-0">
+      <div className="border-border-secondary flex shrink-0 items-center justify-between border-b px-3 py-2.5">
         {selectedTool ? (
           <button
             aria-label="Back to all tools"
-            className="flex items-center gap-1.5 min-w-0 text-sm font-semibold text-text-primary hover:text-primary transition-colors"
+            className="text-text-primary hover:text-primary flex min-w-0 items-center gap-1.5 text-sm font-semibold transition-colors"
             type="button"
             onClick={goBack}
           >
-            <ChevronLeft className="shrink-0" size={16} />
+            <ChevronLeft
+              className="shrink-0"
+              size={16}
+            />
             <span className="truncate">All tools</span>
           </button>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Wrench className="text-primary" size={14} />
+            <span className="bg-primary/10 flex h-7 w-7 items-center justify-center rounded-lg">
+              <Wrench
+                className="text-primary"
+                size={14}
+              />
             </span>
-            <span className="text-sm font-semibold text-text-primary">Toolbox</span>
+            <span className="text-text-primary text-sm font-semibold">
+              Toolbox
+            </span>
             {!isLoading && tools.length > 0 && (
-              <Badge size="sm" variant="default">
+              <Badge
+                size="sm"
+                variant="default"
+              >
                 {tools.length}
               </Badge>
             )}
@@ -366,7 +425,7 @@ export const ToolboxPanel = ({
         )}
         <button
           aria-label="Close toolbox"
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors"
+          className="text-text-tertiary hover:text-text-primary hover:bg-surface-hover flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
           type="button"
           onClick={onClose}
         >
@@ -379,36 +438,45 @@ export const ToolboxPanel = ({
         {selectedTool ? (
           /* ─────────── Tool detail: inputs + process + result ─────────── */
           <>
-            <div className="px-4 py-3.5 border-b border-border-secondary">
+            <div className="border-border-secondary border-b px-4 py-3.5">
               {/* Module tag + category at the top */}
-              <div className="flex items-center gap-2 mb-2.5">
-                <Badge className="uppercase tracking-wider" size="sm" variant="default">
+              <div className="mb-2.5 flex items-center gap-2">
+                <Badge
+                  className="tracking-wider uppercase"
+                  size="sm"
+                  variant="default"
+                >
                   {selectedTool.moduleName.replace(/-module$/i, "")}
                 </Badge>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-text-quaternary">
+                <span className="text-text-quaternary text-[10px] font-bold tracking-wider uppercase">
                   {selectedTool.category}
                 </span>
               </div>
               {/* Tool name + icon */}
               <div className="flex items-center gap-2.5">
-                <span className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <ToolIcon icon={selectedTool.icon} size={17} />
+                <span className="bg-primary/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl">
+                  <ToolIcon
+                    icon={selectedTool.icon}
+                    size={17}
+                  />
                 </span>
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-text-primary truncate">
+                  <div className="text-text-primary truncate text-sm font-semibold">
                     {selectedTool.label}
                   </div>
                 </div>
               </div>
               {/* Description spans the full panel width */}
-              {selectedTool.description ? <div className="mt-2.5 text-[11px] leading-relaxed text-text-secondary">
+              {selectedTool.description ? (
+                <div className="text-text-secondary mt-2.5 text-[11px] leading-relaxed">
                   {selectedTool.description}
-                </div> : null}
+                </div>
+              ) : null}
             </div>
 
-            <div className="p-4 space-y-4">
+            <div className="space-y-4 p-4">
               {(selectedTool.inputs ?? []).length === 0 && (
-                <div className="text-[11px] text-text-tertiary">
+                <div className="text-text-tertiary text-[11px]">
                   This tool takes no inputs - just run it.
                 </div>
               )}
@@ -422,18 +490,29 @@ export const ToolboxPanel = ({
                 />
               ))}
 
-              {running ? <div className="flex items-center gap-2 text-[11px] text-text-tertiary">
-                  <Loader2 className="animate-spin" size={13} />
+              {running ? (
+                <div className="text-text-tertiary flex items-center gap-2 text-[11px]">
+                  <Loader2
+                    className="animate-spin"
+                    size={13}
+                  />
                   Running tool…
-                </div> : null}
+                </div>
+              ) : null}
 
-              {runError ? <Alert className="text-xs" title="Tool failed" variant="error">
+              {runError ? (
+                <Alert
+                  className="text-xs"
+                  title="Tool failed"
+                  variant="error"
+                >
                   {runError}
-                </Alert> : null}
+                </Alert>
+              ) : null}
 
               {!running && result !== null && (
-                <div className="rounded-xl border border-border-secondary bg-surface-hover/30 p-3 space-y-2">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-text-quaternary">
+                <div className="border-border-secondary bg-surface-hover/30 space-y-2 rounded-xl border p-3">
+                  <div className="text-text-quaternary text-[10px] font-bold tracking-wider uppercase">
                     Result
                   </div>
                   <ResultView result={result} />
@@ -442,9 +521,17 @@ export const ToolboxPanel = ({
             </div>
 
             <div className="px-4 pb-4">
-              <Button className="w-full" disabled={running} variant="primary" onClick={runTool}>
+              <Button
+                className="w-full"
+                disabled={running}
+                variant="primary"
+                onClick={runTool}
+              >
                 {running ? (
-                  <Loader2 className="animate-spin" size={14} />
+                  <Loader2
+                    className="animate-spin"
+                    size={14}
+                  />
                 ) : (
                   <Play size={14} />
                 )}
@@ -455,22 +542,38 @@ export const ToolboxPanel = ({
         ) : (
           /* ─────────── Tool list (grouped by category) ─────────── */
           <>
-            {isLoading ? <div className="flex items-center gap-2 px-4 py-6 text-[11px] text-text-tertiary">
-                <Loader2 className="animate-spin" size={13} />
+            {isLoading ? (
+              <div className="text-text-tertiary flex items-center gap-2 px-4 py-6 text-[11px]">
+                <Loader2
+                  className="animate-spin"
+                  size={13}
+                />
                 Discovering tools from modules…
-              </div> : null}
+              </div>
+            ) : null}
 
-            {!isLoading && error ? <div className="p-4">
-                <Alert className="text-xs" title="Could not load tools" variant="error">
+            {!isLoading && error ? (
+              <div className="p-4">
+                <Alert
+                  className="text-xs"
+                  title="Could not load tools"
+                  variant="error"
+                >
                   {error}
                 </Alert>
-              </div> : null}
+              </div>
+            ) : null}
 
             {!isLoading && !error && groups.length === 0 && (
               <div className="px-2 pt-4">
                 <EmptyState
                   description="Modules can surface tools here by exporting a valid `tools` array from their frontend entry - the toolbox picks them up automatically, no core changes needed."
-                  icon={<Wrench className="text-text-tertiary" size={22} />}
+                  icon={
+                    <Wrench
+                      className="text-text-tertiary"
+                      size={22}
+                    />
+                  }
                   size="sm"
                   title="No tools yet"
                 />
@@ -479,34 +582,46 @@ export const ToolboxPanel = ({
 
             {!isLoading &&
               groups.map(({ category, tools: catTools }) => (
-                <div key={category} className="pb-1">
+                <div
+                  key={category}
+                  className="pb-1"
+                >
                   <div className="flex items-center justify-between px-4 pt-3.5 pb-1.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-text-quaternary">
+                    <span className="text-text-quaternary text-[10px] font-bold tracking-wider uppercase">
                       {category}
                     </span>
-                    <span className="text-[10px] text-text-quaternary">
+                    <span className="text-text-quaternary text-[10px]">
                       {catTools.length}
                     </span>
                   </div>
                   {catTools.map((tool) => (
                     <button
                       key={tool.id}
-                      className="w-full flex items-start gap-3 px-4 py-2.5 text-left hover:bg-surface-hover/60 active:bg-surface-hover transition-colors"
+                      className="hover:bg-surface-hover/60 active:bg-surface-hover flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors"
                       type="button"
                       onClick={() => selectTool(tool)}
                     >
-                      <span className="mt-0.5 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <ToolIcon icon={tool.icon} size={15} />
+                      <span className="bg-primary/10 mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
+                        <ToolIcon
+                          icon={tool.icon}
+                          size={15}
+                        />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block text-xs font-semibold text-text-primary truncate">
+                        <span className="text-text-primary block truncate text-xs font-semibold">
                           {tool.label}
                         </span>
-                        {tool.description ? <span className="block text-[11px] leading-snug text-text-tertiary mt-0.5 line-clamp-2">
+                        {tool.description ? (
+                          <span className="text-text-tertiary mt-0.5 line-clamp-2 block text-[11px] leading-snug">
                             {tool.description}
-                          </span> : null}
+                          </span>
+                        ) : null}
                       </span>
-                      <Badge className="shrink-0 mt-0.5" size="sm" variant="default">
+                      <Badge
+                        className="mt-0.5 shrink-0"
+                        size="sm"
+                        variant="default"
+                      >
                         {tool.moduleName.replace(/-module$/i, "")}
                       </Badge>
                     </button>
@@ -518,6 +633,6 @@ export const ToolboxPanel = ({
       </div>
     </div>
   );
-}
+};
 
 export default ToolboxPanel;

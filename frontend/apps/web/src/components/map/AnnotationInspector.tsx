@@ -15,10 +15,11 @@ import {
 } from "lucide-react";
 
 import { useMapEditor } from "@/lib/mapEditor/store";
-import { POINT_KINDS ,type 
-  _Annotation,type 
-  PointAnnotation,type 
-  ShapeAnnotation,
+import {
+  POINT_KINDS,
+  type _Annotation,
+  type PointAnnotation,
+  type ShapeAnnotation,
 } from "@/lib/mapEditor/types";
 
 const KIND_META: Record<string, { label: string; icon: any }> = {
@@ -53,13 +54,13 @@ interface FieldProps {
 const Field = ({ label, children }: FieldProps) => {
   return (
     <label className="block">
-      <span className="block text-[11px] font-semibold uppercase tracking-wide text-text-tertiary mb-1.5">
+      <span className="text-text-tertiary mb-1.5 block text-[11px] font-semibold tracking-wide uppercase">
         {label}
       </span>
       {children}
     </label>
   );
-}
+};
 
 export const AnnotationInspector = ({
   _mapRef,
@@ -69,7 +70,7 @@ export const AnnotationInspector = ({
   mapReady: boolean;
 }) => {
   const ann = useMapEditor((s) =>
-    s.annotations.find((a) => a.id === s.selectionId),
+    s.annotations.find((a) => a.id === s.selectionId)
   );
   const updateAnnotation = useMapEditor((s) => s.updateAnnotation);
   const removeAnnotation = useMapEditor((s) => s.removeAnnotation);
@@ -94,18 +95,21 @@ export const AnnotationInspector = ({
   }
 
   return (
-    <div className="w-[280px] max-h-full flex flex-col bg-elevated border border-border-primary rounded-2xl shadow-xl overflow-hidden animate-fade-in-up">
+    <div className="bg-elevated border-border-primary animate-fade-in-up flex max-h-full w-[280px] flex-col overflow-hidden rounded-2xl border shadow-xl">
       {/* header */}
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border-primary">
-        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
-          <Icon className="text-primary" size={16} />
+      <div className="border-border-primary flex items-center gap-2.5 border-b px-4 py-3">
+        <span className="bg-primary/10 flex h-7 w-7 items-center justify-center rounded-lg">
+          <Icon
+            className="text-primary"
+            size={16}
+          />
         </span>
-        <span className="text-sm font-semibold text-text-primary flex-1">
+        <span className="text-text-primary flex-1 text-sm font-semibold">
           {meta.label}
         </span>
         <button
           aria-label="Close inspector"
-          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
+          className="text-text-tertiary hover:bg-surface-hover hover:text-text-primary flex h-7 w-7 items-center justify-center rounded-md transition-colors"
           type="button"
           onClick={() => setSelectionId(null)}
         >
@@ -114,15 +118,17 @@ export const AnnotationInspector = ({
       </div>
 
       {/* body */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {isPoint ? <div className="text-xs text-text-tertiary font-mono bg-surface-hover rounded-md px-2 py-1">
+      <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
+        {isPoint ? (
+          <div className="text-text-tertiary bg-surface-hover rounded-md px-2 py-1 font-mono text-xs">
             {point.lngLat.map((n) => n.toFixed(5)).join(", ")}
-          </div> : null}
+          </div>
+        ) : null}
 
         {(ann.kind === "text" || ann.kind === "note") && (
           <Field label={ann.kind === "text" ? "Text" : "Note"}>
             <textarea
-              className="w-full min-h-[64px] px-3 py-2 text-sm rounded-lg bg-input-bg border border-input-border text-text-primary resize-y focus:outline-none focus:border-input-focus-border"
+              className="bg-input-bg border-input-border text-text-primary focus:border-input-focus-border min-h-[64px] w-full resize-y rounded-lg border px-3 py-2 text-sm focus:outline-none"
               value={point.text ?? ""}
               placeholder={
                 ann.kind === "text" ? "Type your text…" : "Add a note…"
@@ -145,7 +151,7 @@ export const AnnotationInspector = ({
             }
           >
             <input
-              className="w-full px-3 py-2 text-sm rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
+              className="bg-input-bg border-input-border text-text-primary focus:border-input-focus-border w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
               placeholder="https://…"
               value={point.url ?? ""}
               onChange={(e) => patch({ url: e.target.value })}
@@ -166,7 +172,7 @@ export const AnnotationInspector = ({
                 value={shape.radius ?? 100}
                 onChange={(e) => patch({ radius: Number(e.target.value) })}
               />
-              <span className="text-xs text-text-tertiary w-16 text-right tabular-nums">
+              <span className="text-text-tertiary w-16 text-right text-xs tabular-nums">
                 {formatRadius(shape.radius ?? 100)}
               </span>
             </div>
@@ -206,22 +212,22 @@ export const AnnotationInspector = ({
 
         {/* color */}
         <Field label="Color">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2">
             {SWATCHES.map((c) => (
               <button
                 key={c}
                 aria-label={`Set color ${c}`}
                 style={{ background: c }}
                 type="button"
-                className={`w-6 h-6 rounded-full transition-transform hover:scale-110 ${
-                  ann.color === c ? "ring-2 ring-offset-2 ring-primary" : ""
+                className={`h-6 w-6 rounded-full transition-transform hover:scale-110 ${
+                  ann.color === c ? "ring-primary ring-2 ring-offset-2" : ""
                 }`}
                 onClick={() => patch({ color: c })}
               />
             ))}
             <input
               aria-label="Custom color"
-              className="w-6 h-6 rounded-full cursor-pointer border border-border-primary bg-transparent"
+              className="border-border-primary h-6 w-6 cursor-pointer rounded-full border bg-transparent"
               type="color"
               value={toHex(ann.color)}
               onChange={(e) => patch({ color: e.target.value })}
@@ -231,9 +237,9 @@ export const AnnotationInspector = ({
       </div>
 
       {/* footer */}
-      <div className="px-4 py-3 border-t border-border-primary">
+      <div className="border-border-primary border-t px-4 py-3">
         <button
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg text-error hover:bg-error-subtle transition-colors"
+          className="text-error hover:bg-error-subtle flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
           type="button"
           onClick={handleRemove}
         >
@@ -243,7 +249,7 @@ export const AnnotationInspector = ({
       </div>
     </div>
   );
-}
+};
 
 function formatRadius(m: number) {
   if (m >= 1000) return `${(m / 1000).toFixed(1)} km`;

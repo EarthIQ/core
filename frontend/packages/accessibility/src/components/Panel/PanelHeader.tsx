@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import { Icons } from '../Icons';
+import { Icons } from "../Icons";
 
 interface PanelHeaderProps {
   title: string;
@@ -28,32 +28,20 @@ export const PanelHeader: React.FC<PanelHeaderProps> = ({
         <h2 className="text-xl font-bold text-[var(--text-primary)]">
           {title}
         </h2>
-        <p className="mt-0.5 text-sm text-[var(--text-tertiary)]">
-          {subtitle}
-        </p>
+        <p className="mt-0.5 text-sm text-[var(--text-tertiary)]">{subtitle}</p>
       </div>
       <div className="flex items-center gap-2">
         <button
           aria-label={resetLabel}
           title={resetLabel}
-          className="
-            flex h-10 w-10 items-center justify-center rounded-xl
-            text-[var(--text-secondary)]
-            transition-colors
-            hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]
-          "
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
           onClick={onReset}
         >
           <Icons.reset />
         </button>
         <button
           aria-label={closeLabel}
-          className="
-            flex h-10 w-10 items-center justify-center rounded-xl
-            text-[var(--text-secondary)]
-            transition-colors
-            hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]
-          "
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
           onClick={onClose}
         >
           <Icons.close />

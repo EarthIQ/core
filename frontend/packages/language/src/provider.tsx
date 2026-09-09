@@ -81,8 +81,10 @@ export const LanguageProvider = <T extends Translations>({
   );
 
   return (
-    <LanguageContext.Provider value={contextValue as unknown as LanguageContextValue}>
+    <LanguageContext.Provider
+      value={contextValue as unknown as LanguageContextValue}
+    >
       {children}
     </LanguageContext.Provider>
   );
-}
+};

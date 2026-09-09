@@ -1,14 +1,16 @@
-import { useEffect, useId } from 'react';
+import { useEffect, useId } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type React from 'react';
+import type React from "react";
 
 export interface PathLayerProps {
   /** Unique layer ID */
   id?: string;
   /** GeoJSON line data */
-  data: GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.MultiLineString> | string;
+  data:
+    | GeoJSON.FeatureCollection<GeoJSON.LineString | GeoJSON.MultiLineString>
+    | string;
   /** Line color */
   color?: string | any[];
   /** Line width */
@@ -18,9 +20,9 @@ export interface PathLayerProps {
   /** Dash pattern */
   dashArray?: number[];
   /** Line cap style */
-  cap?: 'butt' | 'round' | 'square';
+  cap?: "butt" | "round" | "square";
   /** Line join style */
-  join?: 'bevel' | 'round' | 'miter';
+  join?: "bevel" | "round" | "miter";
   /** Blur amount */
   blur?: number;
   /** Gap width (for cased lines) */
@@ -50,12 +52,12 @@ export interface PathLayerProps {
 export const PathLayer: React.FC<PathLayerProps> = ({
   id: propId,
   data,
-  color = '#3b82f6',
+  color = "#3b82f6",
   width = 3,
   opacity = 1,
   dashArray,
-  cap = 'round',
-  join = 'round',
+  cap = "round",
+  join = "round",
   blur = 0,
   gapWidth,
   gradient,
@@ -66,8 +68,8 @@ export const PathLayer: React.FC<PathLayerProps> = ({
   onClick,
   onHover,
   hoverable = false,
-  hoverColor = '#1d4ed8',
-  hoverWidthMultiplier = 1.5
+  hoverColor = "#1d4ed8",
+  hoverWidthMultiplier = 1.5,
 }) => {
   const { map, isLoaded } = useMap();
   const autoId = useId();
@@ -80,53 +82,64 @@ export const PathLayer: React.FC<PathLayerProps> = ({
     // Add source
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
-        type: 'geojson',
-        data: typeof data === 'string' ? data : data,
-        lineMetrics: !!gradient
+        type: "geojson",
+        data: typeof data === "string" ? data : data,
+        lineMetrics: !!gradient,
       });
     }
 
     // Determine line color and width with hover state
     const lineColor = hoverable
-      ? ['case', ['boolean', ['feature-state', 'hover'], false], hoverColor, color]
+      ? [
+          "case",
+          ["boolean", ["feature-state", "hover"], false],
+          hoverColor,
+          color,
+        ]
       : color;
 
     const lineWidth = hoverable
-      ? ['case', ['boolean', ['feature-state', 'hover'], false], 
-          typeof width === 'number' ? width * hoverWidthMultiplier : width, 
-          width]
+      ? [
+          "case",
+          ["boolean", ["feature-state", "hover"], false],
+          typeof width === "number" ? width * hoverWidthMultiplier : width,
+          width,
+        ]
       : width;
 
     // Add layer
     if (!map.getLayer(id)) {
-      map.addLayer({
-        id,
-        type: 'line',
-        source: sourceId,
-        layout: {
-          'line-cap': cap,
-          'line-join': join,
-          visibility: visible ? 'visible' : 'none'
+      map.addLayer(
+        {
+          id,
+          type: "line",
+          source: sourceId,
+          layout: {
+            "line-cap": cap,
+            "line-join": join,
+            visibility: visible ? "visible" : "none",
+          },
+          paint: {
+            "line-color": gradient ? undefined : lineColor,
+            "line-gradient": gradient,
+            "line-width": lineWidth,
+            "line-opacity": opacity,
+            "line-blur": blur,
+            "line-gap-width": gapWidth,
+            "line-dasharray": dashArray,
+          },
+          ...(minZoom && { minzoom: minZoom }),
+          ...(maxZoom && { maxzoom: maxZoom }),
         },
-        paint: {
-          'line-color': gradient ? undefined : lineColor,
-          'line-gradient': gradient,
-          'line-width': lineWidth,
-          'line-opacity': opacity,
-          'line-blur': blur,
-          'line-gap-width': gapWidth,
-          'line-dasharray': dashArray
-        },
-        ...(minZoom && { minzoom: minZoom }),
-        ...(maxZoom && { maxzoom: maxZoom })
-      }, beforeId);
+        beforeId
+      );
     }
 
     // Hover state management
     let hoveredFeatureId: string | number | null = null;
 
     if (hoverable || onHover) {
-      map.on('mousemove', id, (e) => {
+      map.on("mousemove", id, (e) => {
         if (e.features?.length) {
           if (hoveredFeatureId !== null) {
             map.setFeatureState(
@@ -139,12 +152,12 @@ export const PathLayer: React.FC<PathLayerProps> = ({
             { source: sourceId, id: hoveredFeatureId },
             { hover: true }
           );
-          map.getCanvas().style.cursor = 'pointer';
+          map.getCanvas().style.cursor = "pointer";
           onHover?.(e.features[0] as any, e);
         }
       });
 
-      map.on('mouseleave', id, () => {
+      map.on("mouseleave", id, () => {
         if (hoveredFeatureId !== null) {
           map.setFeatureState(
             { source: sourceId, id: hoveredFeatureId },
@@ -152,13 +165,13 @@ export const PathLayer: React.FC<PathLayerProps> = ({
           );
         }
         hoveredFeatureId = null;
-        map.getCanvas().style.cursor = '';
+        map.getCanvas().style.cursor = "";
         onHover?.(null, null);
       });
     }
 
     if (onClick) {
-      map.on('click', id, (e) => {
+      map.on("click", id, (e) => {
         if (e.features?.length) {
           onClick(e.features[0] as any, e);
         }
@@ -176,7 +189,7 @@ export const PathLayer: React.FC<PathLayerProps> = ({
     if (!map || !isLoaded) return;
     const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
     if (source) {
-      source.setData(typeof data === 'string' ? data : data);
+      source.setData(typeof data === "string" ? data : data);
     }
   }, [data, map, isLoaded]);
 

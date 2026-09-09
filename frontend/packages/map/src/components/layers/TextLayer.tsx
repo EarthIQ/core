@@ -1,9 +1,9 @@
-import { useEffect, useId } from 'react';
+import { useEffect, useId } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { GeoJSON } from 'geojson';
-import type React from 'react';
+import type { GeoJSON } from "geojson";
+import type React from "react";
 
 export interface TextLayerProps {
   /** Unique layer ID */
@@ -21,7 +21,16 @@ export interface TextLayerProps {
   /** Text font */
   font?: string[];
   /** Text anchor */
-  anchor?: 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  anchor?:
+    | "center"
+    | "left"
+    | "right"
+    | "top"
+    | "bottom"
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right";
   /** Text offset */
   offset?: [number, number];
   /** Text rotation */
@@ -33,9 +42,9 @@ export interface TextLayerProps {
   /** Text letter spacing */
   letterSpacing?: number;
   /** Text transform */
-  transform?: 'none' | 'uppercase' | 'lowercase';
+  transform?: "none" | "uppercase" | "lowercase";
   /** Text justify */
-  justify?: 'auto' | 'left' | 'center' | 'right';
+  justify?: "auto" | "left" | "center" | "right";
   /** Halo color */
   haloColor?: string;
   /** Halo width */
@@ -47,7 +56,7 @@ export interface TextLayerProps {
   /** Ignore placement */
   ignorePlacement?: boolean;
   /** Symbol placement */
-  placement?: 'point' | 'line' | 'line-center';
+  placement?: "point" | "line" | "line-center";
   /** Visibility */
   visible?: boolean;
   /** Min zoom */
@@ -65,28 +74,28 @@ export const TextLayer: React.FC<TextLayerProps> = ({
   data,
   textField,
   size = 14,
-  color = '#000000',
+  color = "#000000",
   opacity = 1,
-  font = ['Open Sans Regular', 'Arial Unicode MS Regular'],
-  anchor = 'center',
+  font = ["Open Sans Regular", "Arial Unicode MS Regular"],
+  anchor = "center",
   offset = [0, 0],
   rotate = 0,
   maxWidth = 10,
   lineHeight = 1.2,
   letterSpacing = 0,
-  transform = 'none',
-  justify = 'center',
-  haloColor = '#ffffff',
+  transform = "none",
+  justify = "center",
+  haloColor = "#ffffff",
   haloWidth = 1,
   haloBlur = 0,
   allowOverlap = false,
   ignorePlacement = false,
-  placement = 'point',
+  placement = "point",
   visible = true,
   minZoom,
   maxZoom,
   beforeId,
-  onClick
+  onClick,
 }) => {
   const { map, isLoaded } = useMap();
   const autoId = useId();
@@ -99,59 +108,63 @@ export const TextLayer: React.FC<TextLayerProps> = ({
     // Add source
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
-        type: 'geojson',
-        data: typeof data === 'string' ? data : data
+        type: "geojson",
+        data: typeof data === "string" ? data : data,
       });
     }
 
     // Add layer
     if (!map.getLayer(id)) {
-      map.addLayer({
-        id,
-        type: 'symbol',
-        source: sourceId,
-        layout: {
-          'text-field': ['get', textField],
-          'text-size': size,
-          'text-font': font,
-          'text-anchor': anchor,
-          'text-offset': offset,
-          'text-rotate': typeof rotate === 'string' ? ['get', rotate] : rotate,
-          'text-max-width': maxWidth,
-          'text-line-height': lineHeight,
-          'text-letter-spacing': letterSpacing,
-          'text-transform': transform,
-          'text-justify': justify,
-          'text-allow-overlap': allowOverlap,
-          'text-ignore-placement': ignorePlacement,
-          'symbol-placement': placement,
-          visibility: visible ? 'visible' : 'none'
+      map.addLayer(
+        {
+          id,
+          type: "symbol",
+          source: sourceId,
+          layout: {
+            "text-field": ["get", textField],
+            "text-size": size,
+            "text-font": font,
+            "text-anchor": anchor,
+            "text-offset": offset,
+            "text-rotate":
+              typeof rotate === "string" ? ["get", rotate] : rotate,
+            "text-max-width": maxWidth,
+            "text-line-height": lineHeight,
+            "text-letter-spacing": letterSpacing,
+            "text-transform": transform,
+            "text-justify": justify,
+            "text-allow-overlap": allowOverlap,
+            "text-ignore-placement": ignorePlacement,
+            "symbol-placement": placement,
+            visibility: visible ? "visible" : "none",
+          },
+          paint: {
+            "text-color": color,
+            "text-opacity": opacity,
+            "text-halo-color": haloColor,
+            "text-halo-width": haloWidth,
+            "text-halo-blur": haloBlur,
+          },
+          ...(minZoom && { minzoom: minZoom }),
+          ...(maxZoom && { maxzoom: maxZoom }),
         },
-        paint: {
-          'text-color': color,
-          'text-opacity': opacity,
-          'text-halo-color': haloColor,
-          'text-halo-width': haloWidth,
-          'text-halo-blur': haloBlur
-        },
-        ...(minZoom && { minzoom: minZoom }),
-        ...(maxZoom && { maxzoom: maxZoom })
-      }, beforeId);
+        beforeId
+      );
     }
 
     if (onClick) {
-      map.on('click', id, (e) => {
+      map.on("click", id, (e) => {
         if (e.features?.length) {
           onClick(e.features[0] as any, e);
         }
       });
 
-      map.on('mouseenter', id, () => {
-        map.getCanvas().style.cursor = 'pointer';
+      map.on("mouseenter", id, () => {
+        map.getCanvas().style.cursor = "pointer";
       });
 
-      map.on('mouseleave', id, () => {
-        map.getCanvas().style.cursor = '';
+      map.on("mouseleave", id, () => {
+        map.getCanvas().style.cursor = "";
       });
     }
 
@@ -166,7 +179,7 @@ export const TextLayer: React.FC<TextLayerProps> = ({
     if (!map || !isLoaded) return;
     const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
     if (source) {
-      source.setData(typeof data === 'string' ? data : data);
+      source.setData(typeof data === "string" ? data : data);
     }
   }, [data, map, isLoaded]);
 

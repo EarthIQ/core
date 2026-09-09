@@ -21,30 +21,34 @@ const Row = ({
   disabled?: boolean;
 }) => {
   return (
-    <div className="flex items-center justify-between gap-4 py-3 border-b border-border-secondary last:border-0">
+    <div className="border-border-secondary flex items-center justify-between gap-4 border-b py-3 last:border-0">
       <div className="min-w-0">
-        <div className="text-sm font-medium text-text-primary">{label}</div>
-        {hint ? <div className="text-xs text-text-tertiary mt-0.5">{hint}</div> : null}
+        <div className="text-text-primary text-sm font-medium">{label}</div>
+        {hint ? (
+          <div className="text-text-tertiary mt-0.5 text-xs">{hint}</div>
+        ) : null}
       </div>
       <button
         aria-checked={checked}
         aria-label={label}
         disabled={disabled}
         role="switch"
-        className={`relative w-12 h-7 rounded-full transition-colors shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-          checked ? "bg-primary" : "bg-surface-hover border border-border-secondary"
+        className={`relative h-7 w-12 shrink-0 cursor-pointer rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+          checked
+            ? "bg-primary"
+            : "bg-surface-hover border-border-secondary border"
         }`}
         onClick={() => onChange(!checked)}
       >
         <span
-          className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${
             checked ? "left-6" : "left-1"
           }`}
         />
       </button>
     </div>
   );
-}
+};
 
 export default function NotificationPrefsSection() {
   const { prefs, updatePrefs, unread } = useNotifications();
@@ -58,10 +62,12 @@ export default function NotificationPrefsSection() {
       <div className="card p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h3 className="text-sm font-semibold text-text-primary">In-app notifications</h3>
-            <p className="text-xs text-text-secondary mt-0.5">
-              Master switch. When off, no notifications are delivered to you
-              {" "}({unread} currently unread).
+            <h3 className="text-text-primary text-sm font-semibold">
+              In-app notifications
+            </h3>
+            <p className="text-text-secondary mt-0.5 text-xs">
+              Master switch. When off, no notifications are delivered to you (
+              {unread} currently unread).
             </p>
           </div>
         </div>
@@ -91,8 +97,10 @@ export default function NotificationPrefsSection() {
 
       <div className="card p-6">
         <div>
-          <h3 className="text-sm font-semibold text-text-primary">By category</h3>
-          <p className="text-xs text-text-secondary mt-0.5">
+          <h3 className="text-text-primary text-sm font-semibold">
+            By category
+          </h3>
+          <p className="text-text-secondary mt-0.5 text-xs">
             Choose which kinds of notifications you want to receive.
           </p>
         </div>
@@ -109,14 +117,19 @@ export default function NotificationPrefsSection() {
         </div>
       </div>
 
-      <div className="card p-6 flex items-center justify-between gap-4">
+      <div className="card flex items-center justify-between gap-4 p-6">
         <div>
-          <h3 className="text-sm font-semibold text-text-primary">View your notifications</h3>
-          <p className="text-xs text-text-secondary mt-0.5">
+          <h3 className="text-text-primary text-sm font-semibold">
+            View your notifications
+          </h3>
+          <p className="text-text-secondary mt-0.5 text-xs">
             Everything you have received, with filters and search.
           </p>
         </div>
-        <a className="btn btn-primary no-underline" href="/notifications">
+        <a
+          className="btn btn-primary no-underline"
+          href="/notifications"
+        >
           Open notification center
         </a>
       </div>

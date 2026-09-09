@@ -1,15 +1,16 @@
-import { useEffect, useId } from 'react';
+import { useEffect, useId } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { GeoJSON } from 'geojson';
-import type React from 'react';
+import type { GeoJSON } from "geojson";
+import type React from "react";
 
 export interface ExtrusionLayerProps {
   /** Unique layer ID */
   id?: string;
   /** GeoJSON polygon data */
-  data: GeoJSON.FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon> | string;
+  data:
+    GeoJSON.FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon> | string;
   /** Height property name or value */
   height: string | number;
   /** Base height property name or value */
@@ -29,10 +30,10 @@ export const ExtrusionLayer: React.FC<ExtrusionLayerProps> = ({
   data,
   height,
   baseHeight = 0,
-  color = '#3b82f6',
+  color = "#3b82f6",
   opacity = 0.8,
   visible = true,
-  onClick
+  onClick,
 }) => {
   const { map, isLoaded } = useMap();
   const autoId = useId();
@@ -44,30 +45,32 @@ export const ExtrusionLayer: React.FC<ExtrusionLayerProps> = ({
 
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
-        type: 'geojson',
-        data: typeof data === 'string' ? data : data
+        type: "geojson",
+        data: typeof data === "string" ? data : data,
       });
     }
 
     if (!map.getLayer(id)) {
       map.addLayer({
         id,
-        type: 'fill-extrusion',
+        type: "fill-extrusion",
         source: sourceId,
         paint: {
-          'fill-extrusion-color': typeof color === 'string' ? color : color,
-          'fill-extrusion-height': typeof height === 'number' ? height : ['get', height],
-          'fill-extrusion-base': typeof baseHeight === 'number' ? baseHeight : ['get', baseHeight],
-          'fill-extrusion-opacity': opacity
+          "fill-extrusion-color": typeof color === "string" ? color : color,
+          "fill-extrusion-height":
+            typeof height === "number" ? height : ["get", height],
+          "fill-extrusion-base":
+            typeof baseHeight === "number" ? baseHeight : ["get", baseHeight],
+          "fill-extrusion-opacity": opacity,
         },
         layout: {
-          visibility: visible ? 'visible' : 'none'
-        }
+          visibility: visible ? "visible" : "none",
+        },
       });
     }
 
     if (onClick) {
-      map.on('click', id, (e) => {
+      map.on("click", id, (e) => {
         if (e.features && e.features.length > 0) {
           onClick(e.features[0] as any, e);
         }

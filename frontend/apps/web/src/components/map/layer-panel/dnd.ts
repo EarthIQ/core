@@ -4,7 +4,7 @@ export type DropPos = "before" | "after" | "inside";
 export function getDropPosition(
   e: React.DragEvent,
   el: HTMLElement,
-  allowInside: boolean,
+  allowInside: boolean
 ): DropPos {
   const rect = el.getBoundingClientRect();
   const relY = (e.clientY - rect.top) / rect.height;

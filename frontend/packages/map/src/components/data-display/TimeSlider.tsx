@@ -1,7 +1,7 @@
-import { Slider, Button, Stack, Text } from '@packages/ui';
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { Slider, Button, Stack, Text } from "@packages/ui";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
 export interface TimeSliderProps {
   /** Minimum date/time */
@@ -27,7 +27,7 @@ export interface TimeSliderProps {
   /** Show range slider */
   range?: boolean;
   /** Position */
-  position?: 'top' | 'bottom';
+  position?: "top" | "bottom";
   /** Aggregate mode (show all before current time) */
   cumulative?: boolean;
 }
@@ -38,22 +38,24 @@ export const TimeSlider: React.FC<TimeSliderProps> = ({
   value: propValue,
   step = 86400000, // 1 day
   onChange,
-  timeProperty = 'timestamp',
+  timeProperty = "timestamp",
   layerIds = [],
   formatDate = (d) => d.toLocaleDateString(),
   playback = true,
   playbackSpeed = 500,
   range = false,
-  position = 'bottom',
-  cumulative = false
+  position = "bottom",
+  cumulative = false,
 }) => {
   const { map, isLoaded } = useMap();
   const [value, setValue] = useState<number>(
-    propValue instanceof Date ? propValue.getTime() : propValue || (min instanceof Date ? min.getTime() : min)
+    propValue instanceof Date
+      ? propValue.getTime()
+      : propValue || (min instanceof Date ? min.getTime() : min)
   );
   const [rangeValue, setRangeValue] = useState<[number, number]>([
     min instanceof Date ? min.getTime() : min,
-    value
+    value,
   ]);
   const [isPlaying, setIsPlaying] = useState(false);
   const animationRef = useRef<number | null>(null);
@@ -62,48 +64,54 @@ export const TimeSlider: React.FC<TimeSliderProps> = ({
   const maxTime = max instanceof Date ? max.getTime() : max;
 
   // Apply time filter to layers
-  const applyTimeFilter = useCallback((time: number | [number, number]) => {
-    if (!map || !isLoaded) return;
+  const applyTimeFilter = useCallback(
+    (time: number | [number, number]) => {
+      if (!map || !isLoaded) return;
 
-    layerIds.forEach(layerId => {
-      if (!map.getLayer(layerId)) return;
+      layerIds.forEach((layerId) => {
+        if (!map.getLayer(layerId)) return;
 
-      let filter: any[];
-      
-      if (Array.isArray(time)) {
-        // Range filter
-        filter = [
-          'all',
-          ['>=', ['get', timeProperty], time[0]],
-          ['<=', ['get', timeProperty], time[1]]
-        ];
-      } else if (cumulative) {
-        // Show all before current time
-        filter = ['<=', ['get', timeProperty], time];
-      } else {
-        // Show only at current time (with tolerance)
-        filter = [
-          'all',
-          ['>=', ['get', timeProperty], time - step / 2],
-          ['<', ['get', timeProperty], time + step / 2]
-        ];
-      }
+        let filter: any[];
 
-      map.setFilter(layerId, filter);
-    });
-  }, [map, isLoaded, layerIds, timeProperty, step, cumulative]);
+        if (Array.isArray(time)) {
+          // Range filter
+          filter = [
+            "all",
+            [">=", ["get", timeProperty], time[0]],
+            ["<=", ["get", timeProperty], time[1]],
+          ];
+        } else if (cumulative) {
+          // Show all before current time
+          filter = ["<=", ["get", timeProperty], time];
+        } else {
+          // Show only at current time (with tolerance)
+          filter = [
+            "all",
+            [">=", ["get", timeProperty], time - step / 2],
+            ["<", ["get", timeProperty], time + step / 2],
+          ];
+        }
+
+        map.setFilter(layerId, filter);
+      });
+    },
+    [map, isLoaded, layerIds, timeProperty, step, cumulative]
+  );
 
   // Handle value change
-  const handleChange = useCallback((newValue: number | [number, number]) => {
-    if (Array.isArray(newValue)) {
-      setRangeValue(newValue);
-      applyTimeFilter(newValue);
-    } else {
-      setValue(newValue);
-      applyTimeFilter(newValue);
-      onChange?.(new Date(newValue));
-    }
-  }, [applyTimeFilter, onChange]);
+  const handleChange = useCallback(
+    (newValue: number | [number, number]) => {
+      if (Array.isArray(newValue)) {
+        setRangeValue(newValue);
+        applyTimeFilter(newValue);
+      } else {
+        setValue(newValue);
+        applyTimeFilter(newValue);
+        onChange?.(new Date(newValue));
+      }
+    },
+    [applyTimeFilter, onChange]
+  );
 
   // Playback animation
   useEffect(() => {
@@ -115,10 +123,10 @@ export const TimeSlider: React.FC<TimeSliderProps> = ({
     }
 
     let lastTime = performance.now();
-    
+
     const animate = (currentTime: number) => {
       if (currentTime - lastTime >= playbackSpeed) {
-        setValue(prev => {
+        setValue((prev) => {
           const next = prev + step;
           if (next > maxTime) {
             setIsPlaying(false);
@@ -140,7 +148,15 @@ export const TimeSlider: React.FC<TimeSliderProps> = ({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isPlaying, playbackSpeed, step, maxTime, minTime, applyTimeFilter, onChange]);
+  }, [
+    isPlaying,
+    playbackSpeed,
+    step,
+    maxTime,
+    minTime,
+    applyTimeFilter,
+    onChange,
+  ]);
 
   // Initial filter application
   useEffect(() => {
@@ -151,32 +167,46 @@ export const TimeSlider: React.FC<TimeSliderProps> = ({
     }
   }, []);
 
-  const positionStyles: React.CSSProperties = position === 'bottom'
-    ? { position: 'absolute', bottom: 20, left: 20, right: 20 }
-    : { position: 'absolute', top: 20, left: 20, right: 20 };
+  const positionStyles: React.CSSProperties =
+    position === "bottom"
+      ? { position: "absolute", bottom: 20, left: 20, right: 20 }
+      : { position: "absolute", top: 20, left: 20, right: 20 };
 
   return (
-    <div style={{ 
-      ...positionStyles,
-      background: 'white',
-      borderRadius: 8,
-      padding: 16,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-      zIndex: 1000
-    }}>
+    <div
+      style={{
+        ...positionStyles,
+        background: "white",
+        borderRadius: 8,
+        padding: 16,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        zIndex: 1000,
+      }}
+    >
       <Stack spacing="sm">
         {/* Current time display */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text color="muted" size="sm">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Text
+            color="muted"
+            size="sm"
+          >
             {formatDate(new Date(minTime))}
           </Text>
           <Text weight="bold">
-            {range 
+            {range
               ? `${formatDate(new Date(rangeValue[0]))} - ${formatDate(new Date(rangeValue[1]))}`
-              : formatDate(new Date(value))
-            }
+              : formatDate(new Date(value))}
           </Text>
-          <Text color="muted" size="sm">
+          <Text
+            color="muted"
+            size="sm"
+          >
             {formatDate(new Date(maxTime))}
           </Text>
         </div>
@@ -201,7 +231,8 @@ export const TimeSlider: React.FC<TimeSliderProps> = ({
         )}
 
         {/* Playback controls */}
-        {playback && !range ? <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+        {playback && !range ? (
+          <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
             <Button
               size="sm"
               variant="ghost"
@@ -220,7 +251,7 @@ export const TimeSlider: React.FC<TimeSliderProps> = ({
               size="sm"
               onClick={() => setIsPlaying(!isPlaying)}
             >
-              {isPlaying ? '⏸' : '▶️'}
+              {isPlaying ? "⏸" : "▶️"}
             </Button>
             <Button
               size="sm"
@@ -236,7 +267,8 @@ export const TimeSlider: React.FC<TimeSliderProps> = ({
             >
               ⏭
             </Button>
-          </div> : null}
+          </div>
+        ) : null}
       </Stack>
     </div>
   );

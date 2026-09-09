@@ -31,12 +31,7 @@ import type { ModuleInfo } from "./modules";
 /* ──────────────────────────────────────────────────────────────────────── */
 
 export type ToolInputType =
-  | "text"
-  | "textarea"
-  | "number"
-  | "integer"
-  | "select"
-  | "boolean";
+  "text" | "textarea" | "number" | "integer" | "select" | "boolean";
 
 export interface ToolInput {
   /** Key under which the value is passed to `run`. */
@@ -84,10 +79,7 @@ export interface ModuleTool {
   icon?: string;
   inputs?: ToolInput[];
   /** The process: run the tool with the collected inputs. */
-  run: (
-    inputs: Record<string, unknown>,
-    ctx: ToolRunContext,
-  ) => unknown;
+  run: (inputs: Record<string, unknown>, ctx: ToolRunContext) => unknown;
 }
 
 /** A tool resolved with the module it came from. */
@@ -114,9 +106,13 @@ export function isToolInput(value: unknown): value is ToolInput {
   if (typeof v.key !== "string" || v.key.trim().length === 0) return false;
   if (!INPUT_TYPES.includes(v.type as ToolInputType)) return false;
   if (v.label !== undefined && typeof v.label !== "string") return false;
-  if (v.description !== undefined && typeof v.description !== "string") return false;
+  if (v.description !== undefined && typeof v.description !== "string")
+    return false;
   if (v.options !== undefined && !Array.isArray(v.options)) return false;
-  if (v.type === "select" && (!Array.isArray(v.options) || v.options.length === 0))
+  if (
+    v.type === "select" &&
+    (!Array.isArray(v.options) || v.options.length === 0)
+  )
     return false;
   return true;
 }
@@ -133,8 +129,10 @@ export function isModuleTool(value: unknown): value is ModuleTool {
   const v = value as Record<string, unknown>;
   if (typeof v.id !== "string" || v.id.trim().length === 0) return false;
   if (typeof v.label !== "string" || v.label.trim().length === 0) return false;
-  if (typeof v.category !== "string" || v.category.trim().length === 0) return false;
-  if (v.description !== undefined && typeof v.description !== "string") return false;
+  if (typeof v.category !== "string" || v.category.trim().length === 0)
+    return false;
+  if (v.description !== undefined && typeof v.description !== "string")
+    return false;
   if (v.icon !== undefined && typeof v.icon !== "string") return false;
   if (
     v.inputs !== undefined &&
@@ -144,7 +142,6 @@ export function isModuleTool(value: unknown): value is ModuleTool {
   if (typeof v.run !== "function") return false;
   return true;
 }
-
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Discovery - find tools across all enabled modules (no names hardcoded)   */
@@ -168,7 +165,7 @@ async function collectModuleTools(): Promise<ResolvedTool[]> {
 
       let bundle: { tools?: unknown } | null;
       try {
-        bundle = (await loader());
+        bundle = await loader();
       } catch (err) {
         console.warn(`[toolbox] failed to import module '${mod.name}':`, err);
         continue;
@@ -190,7 +187,7 @@ async function collectModuleTools(): Promise<ResolvedTool[]> {
       }
       if (!Array.isArray(list)) {
         console.warn(
-          `[toolbox] '${mod.name}' exported a non-array \`tools\`; skipped.`,
+          `[toolbox] '${mod.name}' exported a non-array \`tools\`; skipped.`
         );
         continue;
       }
@@ -199,13 +196,13 @@ async function collectModuleTools(): Promise<ResolvedTool[]> {
         if (!isModuleTool(candidate)) {
           console.warn(
             `[toolbox] '${mod.name}' exported an invalid tool entry; skipped.`,
-            candidate,
+            candidate
           );
           continue;
         }
         if (seenIds.has(candidate.id)) {
           console.warn(
-            `[toolbox] duplicate tool id '${candidate.id}' from '${mod.name}' (already provided by another module); skipped.`,
+            `[toolbox] duplicate tool id '${candidate.id}' from '${mod.name}' (already provided by another module); skipped.`
           );
           continue;
         }

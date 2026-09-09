@@ -37,7 +37,7 @@ interface LayerPanelProps {
   onMoveNode: (
     id: string,
     newParentId: string | null,
-    targetIndex: number,
+    targetIndex: number
   ) => void;
   onAddFolder: (parentId: string | null) => void;
   onOpenImport: () => void;
@@ -57,7 +57,7 @@ const RootDropZone = ({
   if (!draggingId) return null;
   return (
     <div
-      className={`h-8 rounded-md border border-dashed flex items-center justify-center text-[0.65rem] transition-colors animate-fade-in ${
+      className={`animate-fade-in flex h-8 items-center justify-center rounded-md border border-dashed text-[0.65rem] transition-colors ${
         over
           ? "border-primary/60 bg-primary/5 text-primary"
           : "border-border-secondary/50 text-subtle"
@@ -77,7 +77,7 @@ const RootDropZone = ({
       Drop here to move to root
     </div>
   );
-}
+};
 
 export const LayerPanel = ({
   nodes,
@@ -180,7 +180,7 @@ export const LayerPanel = ({
     // Don't start a drag when interacting with a control (Add, collapse, …).
     if (
       (e.target as HTMLElement).closest(
-        "button, a, input, [role='menu'], [role='menuitem']",
+        "button, a, input, [role='menu'], [role='menuitem']"
       )
     ) {
       return;
@@ -227,16 +227,16 @@ export const LayerPanel = ({
     <div
       ref={panelRef}
       style={panelStyle}
-      className={`absolute z-20 flex flex-col bg-elevated border border-border-primary rounded-xl shadow-elevated ${
+      className={`bg-elevated border-border-primary shadow-elevated absolute z-20 flex flex-col rounded-xl border ${
         dragging ? "" : "transition-all duration-300 ease-in-out"
       } ${minimized ? "w-12" : "w-72"}`}
     >
       {/* ── Header ───────────────────────────────────────────────────────── */}
       <div
-        className={`flex items-center gap-2 border-b border-border-secondary shrink-0 ${
+        className={`border-border-secondary flex shrink-0 items-center gap-2 border-b ${
           minimized
             ? "justify-center px-0 py-2"
-            : "cursor-grab active:cursor-grabbing touch-none select-none px-2.5 pt-2.5 pb-2"
+            : "cursor-grab touch-none px-2.5 pt-2.5 pb-2 select-none active:cursor-grabbing"
         }`}
         onPointerCancel={endHeaderDrag}
         onPointerDown={onHeaderPointerDown}
@@ -244,9 +244,12 @@ export const LayerPanel = ({
         onPointerUp={endHeaderDrag}
       >
         {!minimized && (
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary shrink-0">
-              <Layers size={15} strokeWidth={1.75} />
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <div className="bg-primary/10 border-primary/20 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border">
+              <Layers
+                size={15}
+                strokeWidth={1.75}
+              />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-0.5">
@@ -280,7 +283,7 @@ export const LayerPanel = ({
                     <button
                       aria-haspopup="menu"
                       aria-label="Add layer or folder"
-                      className="p-1 rounded-md text-text-tertiary hover:bg-primary/10 hover:text-primary transition-colors flex items-center"
+                      className="text-text-tertiary hover:bg-primary/10 hover:text-primary flex items-center rounded-md p-1 transition-colors"
                       type="button"
                     >
                       Layers <ChevronDown className="ml-1 h-4 w-4" />
@@ -288,7 +291,7 @@ export const LayerPanel = ({
                   }
                 />
               </div>
-              <div className="text-[0.62rem] text-subtle leading-tight truncate">
+              <div className="text-subtle truncate text-[0.62rem] leading-tight">
                 {totalLayers} layer{totalLayers !== 1 ? "s" : ""}
                 {totalFolders > 0
                   ? ` · ${totalFolders} folder${totalFolders !== 1 ? "s" : ""}`
@@ -315,46 +318,54 @@ export const LayerPanel = ({
 
       {/* ── Search ───────────────────────────────────────────────────────── */}
       {!minimized && (
-        <div className="px-2.5 pt-2.5 shrink-0">
-          <div className="flex items-center gap-2 bg-surface-hover border border-border-secondary rounded-lg px-2.5 py-1.5 focus-within:border-primary/50 transition-colors">
-            <Search className="text-text-tertiary shrink-0" size={13} />
+        <div className="shrink-0 px-2.5 pt-2.5">
+          <div className="bg-surface-hover border-border-secondary focus-within:border-primary/50 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 transition-colors">
+            <Search
+              className="text-text-tertiary shrink-0"
+              size={13}
+            />
             <input
-              className="flex-1 min-w-0 bg-transparent border-none outline-none text-xs text-text-primary placeholder:text-text-quaternary"
+              className="text-text-primary placeholder:text-text-quaternary min-w-0 flex-1 border-none bg-transparent text-xs outline-none"
               placeholder="Filter layers…"
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            {search ? <button
+            {search ? (
+              <button
                 aria-label="Clear filter"
-                className="p-0.5 rounded text-text-quaternary hover:text-text-primary transition-colors"
+                className="text-text-quaternary hover:text-text-primary rounded p-0.5 transition-colors"
                 type="button"
                 onClick={() => setSearch("")}
               >
                 <X size={12} />
-              </button> : null}
+              </button>
+            ) : null}
           </div>
         </div>
       )}
 
       {!minimized && (
-        <div className="flex flex-col gap-3 p-3 pt-2.5 overflow-y-auto max-h-[calc(100vh-14rem)] scrollbar-thin">
+        <div className="flex max-h-[calc(100vh-14rem)] scrollbar-thin flex-col gap-3 overflow-y-auto p-3 pt-2.5">
           {rootNodes.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-5 text-center">
-              <Layers className="text-subtle opacity-40" size={24} />
-              <div className="text-[0.72rem] text-subtle leading-snug">
+              <Layers
+                className="text-subtle opacity-40"
+                size={24}
+              />
+              <div className="text-subtle text-[0.72rem] leading-snug">
                 No layers yet.
               </div>
-              <div className="flex gap-1.5 mt-1">
+              <div className="mt-1 flex gap-1.5">
                 <button
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/25 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+                  className="bg-primary/10 border-primary/25 text-primary hover:bg-primary/20 flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors"
                   type="button"
                   onClick={onOpenImport}
                 >
                   <Plus size={13} /> Add Data
                 </button>
                 <button
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/10 border border-warning/25 text-xs font-semibold text-warning hover:bg-warning/20 transition-colors"
+                  className="bg-warning/10 border-warning/25 text-warning hover:bg-warning/20 flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors"
                   type="button"
                   onClick={() => onAddFolder(null)}
                 >
@@ -364,12 +375,15 @@ export const LayerPanel = ({
             </div>
           ) : filterIds && matchedLayers === 0 ? (
             <div className="flex flex-col items-center gap-2 py-5 text-center">
-              <Search className="text-subtle opacity-40" size={22} />
-              <div className="text-[0.72rem] text-subtle leading-snug">
+              <Search
+                className="text-subtle opacity-40"
+                size={22}
+              />
+              <div className="text-subtle text-[0.72rem] leading-snug">
                 No layers match “{search.trim()}”.
               </div>
               <button
-                className="mt-1 text-[0.7rem] text-primary underline"
+                className="text-primary mt-1 text-[0.7rem] underline"
                 type="button"
                 onClick={() => setSearch("")}
               >
@@ -404,4 +418,4 @@ export const LayerPanel = ({
       )}
     </div>
   );
-}
+};

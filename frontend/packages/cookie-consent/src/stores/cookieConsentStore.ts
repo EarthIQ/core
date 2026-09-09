@@ -1,104 +1,108 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
-import { 
-  saveConsentPreferences, 
+import {
+  saveConsentPreferences,
   getConsentPreferences,
   clearNonEssentialStorage,
   dispatchConsentEvent,
-} from '../utils/cookies';
+} from "../utils/cookies";
 
-import type { 
-  CookiePreferences, 
+import type {
+  CookiePreferences,
   CookieConsentConfig,
   CookieCategoryConfig,
   CookieCategory,
   CookieConsentState,
-} from '../types';
+} from "../types";
 
 const DEFAULT_CATEGORIES: CookieCategoryConfig[] = [
   {
-    id: 'necessary',
-    name: 'Strictly Necessary',
-    description: 'These cookies are essential for the website to function properly. They enable basic functions like page navigation, secure areas access, and remembering your privacy preferences. The website cannot function properly without these cookies.',
+    id: "necessary",
+    name: "Strictly Necessary",
+    description:
+      "These cookies are essential for the website to function properly. They enable basic functions like page navigation, secure areas access, and remembering your privacy preferences. The website cannot function properly without these cookies.",
     required: true,
     cookies: [
       {
-        name: 'cookie_consent',
-        provider: 'This Website',
-        purpose: 'Stores your cookie consent preferences',
-        expiry: '1 year',
-        type: 'http',
+        name: "cookie_consent",
+        provider: "This Website",
+        purpose: "Stores your cookie consent preferences",
+        expiry: "1 year",
+        type: "http",
       },
       {
-        name: 'session_id',
-        provider: 'This Website',
-        purpose: 'Maintains your session state',
-        expiry: 'Session',
-        type: 'http',
-      },
-    ],
-  },
-  {
-    id: 'functional',
-    name: 'Functional',
-    description: 'These cookies enable enhanced functionality and personalization, such as remembering your language preferences, region, or username. If you disable these cookies, some or all of these services may not function properly.',
-    cookies: [
-      {
-        name: 'language',
-        provider: 'This Website',
-        purpose: 'Remembers your preferred language',
-        expiry: '1 year',
-        type: 'localStorage',
-      },
-      {
-        name: 'theme',
-        provider: 'This Website',
-        purpose: 'Remembers your theme preference (light/dark)',
-        expiry: '1 year',
-        type: 'localStorage',
+        name: "session_id",
+        provider: "This Website",
+        purpose: "Maintains your session state",
+        expiry: "Session",
+        type: "http",
       },
     ],
   },
   {
-    id: 'analytics',
-    name: 'Analytics',
-    description: 'These cookies help us understand how visitors interact with our website by collecting and reporting information anonymously. This helps us improve our website and services.',
+    id: "functional",
+    name: "Functional",
+    description:
+      "These cookies enable enhanced functionality and personalization, such as remembering your language preferences, region, or username. If you disable these cookies, some or all of these services may not function properly.",
     cookies: [
       {
-        name: '_ga',
-        provider: 'Google Analytics',
-        purpose: 'Distinguishes users and tracks page views',
-        expiry: '2 years',
-        type: 'http',
+        name: "language",
+        provider: "This Website",
+        purpose: "Remembers your preferred language",
+        expiry: "1 year",
+        type: "localStorage",
       },
       {
-        name: '_gid',
-        provider: 'Google Analytics',
-        purpose: 'Distinguishes users',
-        expiry: '24 hours',
-        type: 'http',
+        name: "theme",
+        provider: "This Website",
+        purpose: "Remembers your theme preference (light/dark)",
+        expiry: "1 year",
+        type: "localStorage",
       },
     ],
   },
   {
-    id: 'marketing',
-    name: 'Marketing',
-    description: 'These cookies are used to track visitors across websites to display relevant advertisements. They help measure the effectiveness of advertising campaigns and limit the number of times you see an ad.',
+    id: "analytics",
+    name: "Analytics",
+    description:
+      "These cookies help us understand how visitors interact with our website by collecting and reporting information anonymously. This helps us improve our website and services.",
     cookies: [
       {
-        name: '_fbp',
-        provider: 'Facebook',
-        purpose: 'Used for Facebook advertising and retargeting',
-        expiry: '3 months',
-        type: 'http',
+        name: "_ga",
+        provider: "Google Analytics",
+        purpose: "Distinguishes users and tracks page views",
+        expiry: "2 years",
+        type: "http",
       },
       {
-        name: 'ads_prefs',
-        provider: 'Twitter',
-        purpose: 'Used for Twitter advertising preferences',
-        expiry: '10 years',
-        type: 'http',
+        name: "_gid",
+        provider: "Google Analytics",
+        purpose: "Distinguishes users",
+        expiry: "24 hours",
+        type: "http",
+      },
+    ],
+  },
+  {
+    id: "marketing",
+    name: "Marketing",
+    description:
+      "These cookies are used to track visitors across websites to display relevant advertisements. They help measure the effectiveness of advertising campaigns and limit the number of times you see an ad.",
+    cookies: [
+      {
+        name: "_fbp",
+        provider: "Facebook",
+        purpose: "Used for Facebook advertising and retargeting",
+        expiry: "3 months",
+        type: "http",
+      },
+      {
+        name: "ads_prefs",
+        provider: "Twitter",
+        purpose: "Used for Twitter advertising preferences",
+        expiry: "10 years",
+        type: "http",
       },
     ],
   },
@@ -112,11 +116,11 @@ const DEFAULT_PREFERENCES: CookiePreferences = {
 };
 
 const DEFAULT_CONFIG: CookieConsentConfig = {
-  privacyPolicyUrl: '/privacy-policy',
-  cookiePolicyUrl: '/cookie-policy',
-  consentVersion: '1.0',
+  privacyPolicyUrl: "/privacy-policy",
+  cookiePolicyUrl: "/cookie-policy",
+  consentVersion: "1.0",
   expiryDays: 365,
-  position: 'bottom',
+  position: "bottom",
 };
 
 export const useCookieConsentStore = create<CookieConsentState>()(
@@ -138,8 +142,8 @@ export const useCookieConsentStore = create<CookieConsentState>()(
       closeSettings: () => set({ isSettingsOpen: false }),
 
       setPreference: (category: CookieCategory, value: boolean) => {
-        if (category === 'necessary') return;
-        
+        if (category === "necessary") return;
+
         set((state) => ({
           preferences: {
             ...state.preferences,
@@ -155,14 +159,14 @@ export const useCookieConsentStore = create<CookieConsentState>()(
           analytics: true,
           marketing: true,
         };
-        
+
         const { config } = get();
         saveConsentPreferences(
-          allAccepted, 
-          config.consentVersion, 
+          allAccepted,
+          config.consentVersion,
           config.expiryDays
         );
-        
+
         set({
           preferences: allAccepted,
           hasConsented: true,
@@ -170,7 +174,7 @@ export const useCookieConsentStore = create<CookieConsentState>()(
           isSettingsOpen: false,
         });
 
-        dispatchConsentEvent('cookieConsentUpdate', allAccepted);
+        dispatchConsentEvent("cookieConsentUpdate", allAccepted);
         config.onConsentChange?.(allAccepted);
       },
 
@@ -181,16 +185,16 @@ export const useCookieConsentStore = create<CookieConsentState>()(
           analytics: false,
           marketing: false,
         };
-        
+
         const { config } = get();
         saveConsentPreferences(
-          onlyNecessary, 
-          config.consentVersion, 
+          onlyNecessary,
+          config.consentVersion,
           config.expiryDays
         );
-        
+
         clearNonEssentialStorage();
-        
+
         set({
           preferences: onlyNecessary,
           hasConsented: true,
@@ -198,30 +202,34 @@ export const useCookieConsentStore = create<CookieConsentState>()(
           isSettingsOpen: false,
         });
 
-        dispatchConsentEvent('cookieConsentUpdate', onlyNecessary);
+        dispatchConsentEvent("cookieConsentUpdate", onlyNecessary);
         config.onConsentChange?.(onlyNecessary);
       },
 
       acceptSelected: () => {
         const { preferences, config } = get();
-        
+
         saveConsentPreferences(
-          preferences, 
-          config.consentVersion, 
+          preferences,
+          config.consentVersion,
           config.expiryDays
         );
-        
-        if (!preferences.analytics || !preferences.marketing || !preferences.functional) {
+
+        if (
+          !preferences.analytics ||
+          !preferences.marketing ||
+          !preferences.functional
+        ) {
           clearNonEssentialStorage();
         }
-        
+
         set({
           hasConsented: true,
           isVisible: false,
           isSettingsOpen: false,
         });
 
-        dispatchConsentEvent('cookieConsentUpdate', preferences);
+        dispatchConsentEvent("cookieConsentUpdate", preferences);
         config.onConsentChange?.(preferences);
       },
 
@@ -240,35 +248,46 @@ export const useCookieConsentStore = create<CookieConsentState>()(
       initialize: (customConfig) => {
         const existingConsent = getConsentPreferences();
         const config = { ...get().config, ...customConfig };
-        
+
         const updates: Partial<CookieConsentState> = { config };
-        
+
         if (customConfig?.categories) {
           updates.categories = customConfig.categories;
         }
-        
-        if (existingConsent && existingConsent.version === config.consentVersion) {
+
+        if (
+          existingConsent &&
+          existingConsent.version === config.consentVersion
+        ) {
           updates.preferences = existingConsent.preferences;
           updates.hasConsented = true;
           updates.isVisible = false;
-          
+
           set(updates as CookieConsentState);
-          dispatchConsentEvent('cookieConsentInitialized', existingConsent.preferences, false);
+          dispatchConsentEvent(
+            "cookieConsentInitialized",
+            existingConsent.preferences,
+            false
+          );
           return;
         }
-        
+
         updates.isVisible = true;
         updates.hasConsented = false;
-        
+
         set(updates as CookieConsentState);
-        dispatchConsentEvent('cookieConsentInitialized', DEFAULT_PREFERENCES, true);
+        dispatchConsentEvent(
+          "cookieConsentInitialized",
+          DEFAULT_PREFERENCES,
+          true
+        );
       },
     }),
     {
-      name: 'cookie-consent-store',
+      name: "cookie-consent-store",
       storage: createJSONStorage(() => {
         // SSR-safe storage
-        if (typeof window === 'undefined') {
+        if (typeof window === "undefined") {
           return {
             getItem: () => null,
             setItem: () => {},
@@ -286,11 +305,11 @@ export const useCookieConsentStore = create<CookieConsentState>()(
 );
 
 // Selector hooks for better performance
-export const useCookiePreferences = () => 
+export const useCookiePreferences = () =>
   useCookieConsentStore((state) => state.preferences);
 
-export const useHasConsented = () => 
+export const useHasConsented = () =>
   useCookieConsentStore((state) => state.hasConsented);
 
-export const useCookieConsentVisible = () => 
+export const useCookieConsentVisible = () =>
   useCookieConsentStore((state) => state.isVisible);

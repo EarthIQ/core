@@ -291,7 +291,7 @@ export const Grid = ({
       {children}
     </div>
   );
-}
+};
 
 /**
  * A grid item component that can span multiple columns and/or rows.
@@ -352,7 +352,7 @@ export const GridItem = ({
       {children}
     </div>
   );
-}
+};
 
 /**
  * @example Complete Grid Layout

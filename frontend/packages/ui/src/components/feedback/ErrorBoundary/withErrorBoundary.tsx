@@ -1,13 +1,15 @@
-import React, { type ComponentType, type ErrorInfo } from 'react';
+import React, { type ComponentType, type ErrorInfo } from "react";
 
-import { ErrorBoundary } from './ErrorBoundary';
-import { ErrorFallback } from './ErrorFallback';
+import { ErrorBoundary } from "./ErrorBoundary";
+import { ErrorFallback } from "./ErrorFallback";
 
 interface WithErrorBoundaryOptions {
-  fallback?: React.ReactNode | ((error: Error, resetError: () => void) => React.ReactNode);
+  fallback?:
+    | React.ReactNode
+    | ((error: Error, resetError: () => void) => React.ReactNode);
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
   onReset?: () => void;
-  fallbackVariant?: 'default' | 'minimal' | 'full-page';
+  fallbackVariant?: "default" | "minimal" | "full-page";
 }
 
 /**
@@ -17,7 +19,7 @@ export function withErrorBoundary<P extends object>(
   WrappedComponent: ComponentType<P>,
   options: WithErrorBoundaryOptions = {}
 ): ComponentType<P> {
-  const { fallback, onError, onReset, fallbackVariant = 'default' } = options;
+  const { fallback, onError, onReset, fallbackVariant = "default" } = options;
 
   const ComponentWithErrorBoundary = (props: P) => {
     const defaultFallback = (error: Error, resetError: () => void) => (
@@ -40,7 +42,7 @@ export function withErrorBoundary<P extends object>(
   };
 
   ComponentWithErrorBoundary.displayName = `withErrorBoundary(${
-    WrappedComponent.displayName || WrappedComponent.name || 'Component'
+    WrappedComponent.displayName || WrappedComponent.name || "Component"
   })`;
 
   return ComponentWithErrorBoundary;

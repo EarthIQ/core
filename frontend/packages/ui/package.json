@@ -8,8 +8,8 @@
   "module": "./dist/index.mjs",
   "types": "./src/index.ts",
   "scripts": {
-    "build": "vite build",
     "analyze": "vite-bundle-visualizer",
+    "build": "vite build",
     "build-storybook": "storybook build",
     "lint": "eslint .",
     "storybook": "storybook dev -p 6006"

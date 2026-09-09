@@ -101,7 +101,7 @@ const ToolDropdown = ({
   onSelect: (id: string) => void;
 }) => {
   return (
-    <div className="absolute bottom-full left-0 mb-2 w-72 bg-elevated border border-border-primary rounded-2xl shadow-2xl py-2 z-50 animate-fade-in-up">
+    <div className="bg-elevated border-border-primary animate-fade-in-up absolute bottom-full left-0 z-50 mb-2 w-72 rounded-2xl border py-2 shadow-2xl">
       {variants.map((v) => {
         const Icon = v.icon;
         const active = v.id === activeVariantId;
@@ -109,26 +109,31 @@ const ToolDropdown = ({
           <button
             key={v.id}
             type="button"
-            className={`flex items-center w-full gap-3 px-4 py-2.5 mx-0 transition-colors ${
+            className={`mx-0 flex w-full items-center gap-3 px-4 py-2.5 transition-colors ${
               active
                 ? "bg-primary/10 text-primary"
                 : "text-text-primary hover:bg-surface-hover"
             }`}
             onClick={() => onSelect(v.id)}
           >
-            <Icon className="shrink-0" size={19} />
-            <span className="text-sm font-medium flex-1 text-left">
+            <Icon
+              className="shrink-0"
+              size={19}
+            />
+            <span className="flex-1 text-left text-sm font-medium">
               {v.label}
             </span>
-            {v.shortcut ? <span className="text-xs text-text-quaternary tabular-nums shrink-0">
+            {v.shortcut ? (
+              <span className="text-text-quaternary shrink-0 text-xs tabular-nums">
                 {v.shortcut}
-              </span> : null}
+              </span>
+            ) : null}
           </button>
         );
       })}
     </div>
   );
-}
+};
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Tool group button - main icon + chevron, opens dropdown                  */
@@ -169,17 +174,23 @@ const ToolGroupButton = ({
   }, [isDropdownOpen]);
 
   return (
-    <div ref={containerRef} className="relative">
+    <div
+      ref={containerRef}
+      className="relative"
+    >
       <div
         className={`flex items-center rounded-full transition-colors ${
           isDropdownOpen && !isActiveTool ? "bg-surface-hover" : ""
         }`}
       >
-        <Tooltip content={selected.label} placement="top">
+        <Tooltip
+          content={selected.label}
+          placement="top"
+        >
           <button
             aria-pressed={isActiveTool}
             type="button"
-            className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
+            className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
               isActiveTool
                 ? "bg-primary text-white shadow-sm"
                 : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
@@ -193,7 +204,7 @@ const ToolGroupButton = ({
         <button
           aria-label={`${group.id} tool options`}
           type="button"
-          className={`flex items-center justify-center w-5 h-9 rounded-full transition-colors ${
+          className={`flex h-9 w-5 items-center justify-center rounded-full transition-colors ${
             isActiveTool
               ? "text-primary hover:bg-primary/10"
               : "text-text-quaternary hover:bg-surface-hover hover:text-text-primary"
@@ -207,14 +218,16 @@ const ToolGroupButton = ({
         </button>
       </div>
 
-      {isDropdownOpen ? <ToolDropdown
+      {isDropdownOpen ? (
+        <ToolDropdown
           activeVariantId={selectedVariantId}
           variants={group.variants}
           onSelect={onSelectVariant}
-        /> : null}
+        />
+      ) : null}
     </div>
   );
-}
+};
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Main MapActionBar                                                        */
@@ -274,7 +287,7 @@ export const MapActionBar = ({
 
   return (
     <div
-      className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 px-2 py-1.5 bg-elevated border border-border-primary rounded-full shadow-xl"
+      className="bg-elevated border-border-primary absolute bottom-12 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full border px-2 py-1.5 shadow-xl"
       id="map-action-bar"
     >
       {TOOL_GROUPS.map((group) => {
@@ -298,11 +311,14 @@ export const MapActionBar = ({
       })}
 
       {/* Toolbox - opens the right-side panel of module tools */}
-      <Tooltip content="Toolbox" placement="top">
+      <Tooltip
+        content="Toolbox"
+        placement="top"
+      >
         <button
           aria-pressed={toolboxActive}
           type="button"
-          className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
+          className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
             toolboxActive
               ? "bg-surface-hover text-primary"
               : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
@@ -325,7 +341,7 @@ export const MapActionBar = ({
         <button
           aria-pressed={commentPlacement}
           type="button"
-          className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
+          className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
             commentPlacement
               ? "bg-primary text-white shadow-sm"
               : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
@@ -338,15 +354,19 @@ export const MapActionBar = ({
 
       {/* Draw-session controls: appear only while shapes are being drawn
           (new layer) or edited (saved layer), and disappear once saved. */}
-      {sessionActive ? <>
+      {sessionActive ? (
+        <>
           <div
-            className="w-px h-5 mx-0.5"
+            className="mx-0.5 h-5 w-px"
             style={{ background: "var(--border-secondary)" }}
           />
 
-          <Tooltip content="Save shapes to the layer" placement="top">
+          <Tooltip
+            content="Save shapes to the layer"
+            placement="top"
+          >
             <button
-              className="flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              className="bg-primary hover:bg-primary-dark flex h-9 items-center gap-1.5 rounded-full px-3.5 text-xs font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60"
               disabled={saving}
               type="button"
               onClick={onSave}
@@ -356,28 +376,39 @@ export const MapActionBar = ({
             </button>
           </Tooltip>
 
-          {canUndo ? <Tooltip content="Undo(ctrl+z)" placement="top">
+          {canUndo ? (
+            <Tooltip
+              content="Undo(ctrl+z)"
+              placement="top"
+            >
               <button
-                className="flex items-center justify-center w-9 h-9 rounded-full text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
+                className="text-text-secondary hover:bg-surface-hover hover:text-text-primary flex h-9 w-9 items-center justify-center rounded-full transition-colors"
                 type="button"
                 onClick={onUndo}
               >
                 <Undo2 size={17} />
               </button>
-            </Tooltip> : null}
+            </Tooltip>
+          ) : null}
 
-          {canRedo ? <Tooltip content="Redo(ctrl+shift+z)" placement="top">
+          {canRedo ? (
+            <Tooltip
+              content="Redo(ctrl+shift+z)"
+              placement="top"
+            >
               <button
-                className="flex items-center justify-center w-9 h-9 rounded-full text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors"
+                className="text-text-secondary hover:bg-surface-hover hover:text-text-primary flex h-9 w-9 items-center justify-center rounded-full transition-colors"
                 type="button"
                 onClick={onRedo}
               >
                 <Redo2 size={17} />
               </button>
-            </Tooltip> : null}
-        </> : null}
+            </Tooltip>
+          ) : null}
+        </>
+      ) : null}
     </div>
   );
-}
+};
 
 export default MapActionBar;

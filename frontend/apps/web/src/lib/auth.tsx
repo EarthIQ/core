@@ -59,7 +59,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     api
       .get<AuthUser>("/api/v1/auth/me")
-      .then((u) => { setUser(u); setIsLoading(false); })
+      .then((u) => {
+        setUser(u);
+        setIsLoading(false);
+      })
       .catch(() => {
         localStorage.removeItem(TOKEN_KEY);
         setIsLoading(false);
@@ -69,7 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = useCallback(async (email: string, password: string) => {
     const data = await api.post<{ access_token: string; token_type: string }>(
       "/api/v1/auth/token",
-      { email, password },
+      { email, password }
     );
     localStorage.setItem(TOKEN_KEY, data.access_token);
     const me = await api.get<AuthUser>("/api/v1/auth/me");
@@ -93,12 +96,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isLoading, isAuthenticated: !!user, login, logout, refreshUser }),
-    [user, isLoading, login, logout, refreshUser],
+    () => ({
+      user,
+      isLoading,
+      isAuthenticated: !!user,
+      login,
+      logout,
+      refreshUser,
+    }),
+    [user, isLoading, login, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};
 
 // ── Hook ───────────────────────────────────────────────────────────────────────
 

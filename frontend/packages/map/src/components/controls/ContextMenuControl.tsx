@@ -464,7 +464,8 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
       )}
     >
       {/* Coordinates Section */}
-      {showCoordinates ? <>
+      {showCoordinates ? (
+        <>
           <div className="px-3 py-2">
             <p className="mb-1 text-xs font-medium tracking-wider text-[var(--text-tertiary)] uppercase">
               Coordinates
@@ -523,7 +524,8 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
           </div>
 
           <div className="my-1 h-px bg-[var(--divider)]" />
-        </> : null}
+        </>
+      ) : null}
 
       {/* Menu Items */}
       <div className="py-1">
@@ -560,11 +562,14 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
               )}
               onClick={onClick}
             >
-              {item.icon ? <span className="flex-shrink-0 text-[var(--text-tertiary)]">
+              {item.icon ? (
+                <span className="flex-shrink-0 text-[var(--text-tertiary)]">
                   {item.icon}
-                </span> : null}
+                </span>
+              ) : null}
               <span className="flex-1">{item.label}</span>
-              {item.shortcut ? <kbd
+              {item.shortcut ? (
+                <kbd
                   className={cn(
                     "rounded px-1.5 py-0.5 text-xs",
                     "bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]",
@@ -572,7 +577,8 @@ export const ContextMenuControl: React.FC<ContextMenuControlProps> = ({
                   )}
                 >
                   {item.shortcut}
-                </kbd> : null}
+                </kbd>
+              ) : null}
               {item.children ? <ChevronRightIcon /> : null}
             </button>
           );
@@ -644,4 +650,4 @@ export const CoordinateDisplay = ({
       )}
     </button>
   );
-}
+};

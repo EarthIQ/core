@@ -46,19 +46,20 @@ export default function AppearanceSection() {
   return (
     <div className="grid gap-6">
       {/* ── Theme ── */}
-      <div className="card p-6 flex flex-col gap-4">
+      <div className="card flex flex-col gap-4 p-6">
         <div>
-          <h3 className="text-sm font-semibold text-text-primary">Theme</h3>
-          <p className="text-xs text-text-secondary mt-0.5">
-            Currently rendering in <span className="capitalize">{activeTheme}</span> mode.
-            Changes apply instantly.
+          <h3 className="text-text-primary text-sm font-semibold">Theme</h3>
+          <p className="text-text-secondary mt-0.5 text-xs">
+            Currently rendering in{" "}
+            <span className="capitalize">{activeTheme}</span> mode. Changes
+            apply instantly.
           </p>
         </div>
         <div className="flex gap-2">
           {THEME_OPTIONS.map((t) => (
             <button
               key={t.id}
-              className={`flex-1 sm:flex-none sm:px-5 py-2.5 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
+              className={`flex-1 cursor-pointer rounded-xl border py-2.5 text-sm font-medium transition-all sm:flex-none sm:px-5 ${
                 prefs.theme_mode === t.id
                   ? "border-primary bg-primary/10 text-primary"
                   : "border-border-secondary text-text-secondary hover:bg-surface-hover"
@@ -73,18 +74,23 @@ export default function AppearanceSection() {
       </div>
 
       {/* ── Accent color ── */}
-      <div className="card p-6 flex flex-col gap-4">
+      <div className="card flex flex-col gap-4 p-6">
         <div>
-          <h3 className="text-sm font-semibold text-text-primary">Accent color</h3>
-          <p className="text-xs text-text-secondary mt-0.5">
-            Personalize the brand color used across buttons, links and highlights.
+          <h3 className="text-text-primary text-sm font-semibold">
+            Accent color
+          </h3>
+          <p className="text-text-secondary mt-0.5 text-xs">
+            Personalize the brand color used across buttons, links and
+            highlights.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             title="Default"
-            className={`w-9 h-9 rounded-full border-2 transition-transform cursor-pointer ${
-              !prefs.accent_color ? "border-text-primary scale-110" : "border-border-secondary"
+            className={`h-9 w-9 cursor-pointer rounded-full border-2 transition-transform ${
+              !prefs.accent_color
+                ? "border-text-primary scale-110"
+                : "border-border-secondary"
             }`}
             style={{
               background:
@@ -97,7 +103,7 @@ export default function AppearanceSection() {
               key={p.value}
               style={{ backgroundColor: p.value }}
               title={p.label}
-              className={`w-9 h-9 rounded-full border-2 transition-transform cursor-pointer ${
+              className={`h-9 w-9 cursor-pointer rounded-full border-2 transition-transform ${
                 prefs.accent_color === p.value
                   ? "border-text-primary scale-110"
                   : "border-transparent hover:scale-105"
@@ -106,17 +112,19 @@ export default function AppearanceSection() {
             />
           ))}
           <label
-            className="flex items-center gap-2 pl-2 text-xs text-text-secondary cursor-pointer"
+            className="text-text-secondary flex cursor-pointer items-center gap-2 pl-2 text-xs"
             title="Pick a custom color"
           >
             <span
-              className="w-8 h-8 rounded-full border border-border-secondary"
+              className="border-border-secondary h-8 w-8 rounded-full border"
               style={{ background: customHex || "transparent" }}
             >
               <input
                 className="sr-only"
                 type="color"
-                value={/^#[0-9a-fA-F]{6}$/.test(customHex) ? customHex : "#50aad1"}
+                value={
+                  /^#[0-9a-fA-F]{6}$/.test(customHex) ? customHex : "#50aad1"
+                }
                 onChange={(e) => pickAccent(e.target.value)}
               />
             </span>
@@ -136,21 +144,23 @@ export default function AppearanceSection() {
       </div>
 
       {/* ── Density & text ── */}
-      <div className="card p-6 flex flex-col gap-4">
+      <div className="card flex flex-col gap-4 p-6">
         <div>
-          <h3 className="text-sm font-semibold text-text-primary">Text & density</h3>
-          <p className="text-xs text-text-secondary mt-0.5">
+          <h3 className="text-text-primary text-sm font-semibold">
+            Text & density
+          </h3>
+          <p className="text-text-secondary mt-0.5 text-xs">
             Adjust the base text size and overall interface density.
           </p>
         </div>
-        <div className="grid sm:grid-cols-2 gap-6">
+        <div className="grid gap-6 sm:grid-cols-2">
           <div className="form-field">
             <label className="form-label">Font scale</label>
             <div className="flex gap-2">
               {FONT_OPTIONS.map((f) => (
                 <button
                   key={f.id}
-                  className={`flex-1 py-2 rounded-lg border text-sm font-semibold cursor-pointer transition-all ${
+                  className={`flex-1 cursor-pointer rounded-lg border py-2 text-sm font-semibold transition-all ${
                     prefs.font_scale === f.id
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border-secondary text-text-secondary hover:bg-surface-hover"
@@ -167,18 +177,20 @@ export default function AppearanceSection() {
             <button
               aria-checked={prefs.compact_mode}
               role="switch"
-              className={`relative w-12 h-7 rounded-full transition-colors cursor-pointer ${
-                prefs.compact_mode ? "bg-primary" : "bg-surface-hover border border-border-secondary"
+              className={`relative h-7 w-12 cursor-pointer rounded-full transition-colors ${
+                prefs.compact_mode
+                  ? "bg-primary"
+                  : "bg-surface-hover border-border-secondary border"
               }`}
               onClick={() => update({ compact_mode: !prefs.compact_mode })}
             >
               <span
-                className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${
+                className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${
                   prefs.compact_mode ? "left-6" : "left-1"
                 }`}
               />
             </button>
-            <span className="text-xs text-text-tertiary">
+            <span className="text-text-tertiary text-xs">
               {prefs.compact_mode
                 ? "Denser layout for smaller screens."
                 : "Comfortable spacing (default)."}
@@ -188,20 +200,24 @@ export default function AppearanceSection() {
       </div>
 
       {/* ── Map defaults ── */}
-      <div className="card p-6 flex flex-col gap-4">
+      <div className="card flex flex-col gap-4 p-6">
         <div>
-          <h3 className="text-sm font-semibold text-text-primary">Map defaults</h3>
-          <p className="text-xs text-text-secondary mt-0.5">
+          <h3 className="text-text-primary text-sm font-semibold">
+            Map defaults
+          </h3>
+          <p className="text-text-secondary mt-0.5 text-xs">
             Pre-selected values for new maps and measurements.
           </p>
         </div>
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="form-field">
             <label className="form-label">Measurement units</label>
             <select
               className="input"
               value={prefs.map_units}
-              onChange={(e) => update({ map_units: e.target.value as MapUnits })}
+              onChange={(e) =>
+                update({ map_units: e.target.value as MapUnits })
+              }
             >
               <option value="metric">Metric (meters, kilometers)</option>
               <option value="imperial">Imperial (feet, miles)</option>
@@ -215,7 +231,10 @@ export default function AppearanceSection() {
               onChange={(e) => update({ default_basemap: e.target.value })}
             >
               {BASEMAPS.map((b) => (
-                <option key={b.id} value={b.id}>
+                <option
+                  key={b.id}
+                  value={b.id}
+                >
                   {b.label}
                 </option>
               ))}
@@ -226,7 +245,10 @@ export default function AppearanceSection() {
 
       {/* ── Reset ── */}
       <div className="flex justify-end">
-        <button className="btn btn-ghost" onClick={reset}>
+        <button
+          className="btn btn-ghost"
+          onClick={reset}
+        >
           ↺ Reset appearance to defaults
         </button>
       </div>

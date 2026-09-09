@@ -150,7 +150,7 @@ export default function UploadModal({
 
   const handleDropzoneClick = useCallback(
     () => fileInputRef.current?.click(),
-    [],
+    []
   );
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -175,8 +175,8 @@ export default function UploadModal({
     for (let i = 0; i < fileEntries.length; i++) {
       setFileEntries((prev) =>
         prev.map((entry, idx) =>
-          idx === i ? { ...entry, status: "uploading", progress: 0 } : entry,
-        ),
+          idx === i ? { ...entry, status: "uploading", progress: 0 } : entry
+        )
       );
 
       try {
@@ -196,18 +196,16 @@ export default function UploadModal({
           },
           (pct) => {
             setFileEntries((prev) =>
-              prev.map((e2, idx) =>
-                idx === i ? { ...e2, progress: pct } : e2,
-              ),
+              prev.map((e2, idx) => (idx === i ? { ...e2, progress: pct } : e2))
             );
-          },
+          }
         );
 
         onUploaded(newDs);
         setFileEntries((prev) =>
           prev.map((e2, idx) =>
-            idx === i ? { ...e2, status: "success", progress: 100 } : e2,
-          ),
+            idx === i ? { ...e2, status: "success", progress: 100 } : e2
+          )
         );
         successCount++;
       } catch (err: any) {
@@ -219,8 +217,8 @@ export default function UploadModal({
                   status: "error",
                   error: err?.message ?? "Upload failed",
                 }
-              : e2,
-          ),
+              : e2
+          )
         );
         failCount++;
       }
@@ -233,7 +231,7 @@ export default function UploadModal({
         "success",
         successCount === 1
           ? "Dataset uploaded and registered."
-          : `${successCount} datasets uploaded successfully.`,
+          : `${successCount} datasets uploaded successfully.`
       );
       setTimeout(() => {
         onClose();
@@ -242,7 +240,7 @@ export default function UploadModal({
     } else {
       addToast(
         "error",
-        `${successCount} succeeded, ${failCount} failed. Review errors below.`,
+        `${successCount} succeeded, ${failCount} failed. Review errors below.`
       );
     }
   }
@@ -264,18 +262,18 @@ export default function UploadModal({
       }}
     >
       <form
-        className="flex flex-col gap-4 max-h-[calc(90vh-14rem)] overflow-y-auto scrollbar-thin pr-1"
+        className="flex max-h-[calc(90vh-14rem)] scrollbar-thin flex-col gap-4 overflow-y-auto pr-1"
         onSubmit={handleUploadSubmit}
       >
         {/* Dropzone */}
         <div
           className={cn(
-            "border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200",
+            "cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-all duration-200",
             isDragOver
               ? "border-primary bg-primary/5 scale-[1.01]"
               : fileEntries.length > 0
                 ? "border-success/60 bg-success/5"
-                : "border-border-hover bg-surface-hover hover:border-primary/50 hover:bg-primary/5",
+                : "border-border-hover bg-surface-hover hover:border-primary/50 hover:bg-primary/5"
           )}
           onClick={handleDropzoneClick}
           onDragLeave={handleDragLeave}
@@ -295,24 +293,29 @@ export default function UploadModal({
           />
           {fileEntries.length > 0 ? (
             <div className="flex flex-col items-center gap-1">
-              <Check className="text-success" size={22} />
-              <div className="font-semibold text-sm text-success">
+              <Check
+                className="text-success"
+                size={22}
+              />
+              <div className="text-success text-sm font-semibold">
                 {fileEntries.length} file
                 {fileEntries.length === 1 ? "" : "s"} selected
               </div>
-              <div className="text-xs text-text-tertiary">
+              <div className="text-text-tertiary text-xs">
                 Click or drop more files to add to the batch
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-1">
-              <CloudUpload className="text-text-tertiary" size={26} />
-              <div className="font-semibold text-sm text-text-primary">
+              <CloudUpload
+                className="text-text-tertiary"
+                size={26}
+              />
+              <div className="text-text-primary text-sm font-semibold">
                 Drag & drop geospatial files
               </div>
-              <div className="text-xs text-text-tertiary">
-                or <span className="text-primary">browse</span> from your
-                device
+              <div className="text-text-tertiary text-xs">
+                or <span className="text-primary">browse</span> from your device
               </div>
             </div>
           )}
@@ -324,34 +327,40 @@ export default function UploadModal({
             {fileEntries.map((entry, i) => (
               <div
                 key={`${entry.file.name}-${i}`}
-                className="rounded-lg border border-border-secondary bg-surface-hover/40 p-2.5"
+                className="border-border-secondary bg-surface-hover/40 rounded-lg border p-2.5"
               >
                 <div className="flex items-center gap-2.5">
-                  <FileText className="shrink-0 text-text-tertiary" size={15} />
+                  <FileText
+                    className="text-text-tertiary shrink-0"
+                    size={15}
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-xs font-medium text-text-primary">
+                      <span className="text-text-primary truncate text-xs font-medium">
                         {entry.file.name}
                       </span>
-                      <span className="shrink-0 text-[0.65rem] text-text-tertiary">
+                      <span className="text-text-tertiary shrink-0 text-[0.65rem]">
                         {formatBytes(entry.file.size)}
                       </span>
                     </div>
                     {entry.status === "uploading" && (
                       <div className="mt-1.5 flex items-center gap-2">
-                        <Progress size="sm" value={entry.progress} />
-                        <span className="shrink-0 text-[0.65rem] tabular-nums text-text-tertiary">
+                        <Progress
+                          size="sm"
+                          value={entry.progress}
+                        />
+                        <span className="text-text-tertiary shrink-0 text-[0.65rem] tabular-nums">
                           {entry.progress}%
                         </span>
                       </div>
                     )}
                     {entry.status === "success" && (
-                      <div className="mt-1 inline-flex items-center gap-1 text-[0.7rem] text-success">
+                      <div className="text-success mt-1 inline-flex items-center gap-1 text-[0.7rem]">
                         <Check size={11} /> Uploaded
                       </div>
                     )}
                     {entry.status === "error" && (
-                      <div className="mt-1 inline-flex items-center gap-1 text-[0.7rem] text-error">
+                      <div className="text-error mt-1 inline-flex items-center gap-1 text-[0.7rem]">
                         <AlertTriangle size={11} /> {entry.error}
                       </div>
                     )}
@@ -359,7 +368,7 @@ export default function UploadModal({
                   {!batchUploading && (
                     <button
                       aria-label={`Remove ${entry.file.name}`}
-                      className="shrink-0 rounded-md p-1 text-text-tertiary hover:bg-error/10 hover:text-error cursor-pointer transition-colors"
+                      className="text-text-tertiary hover:bg-error/10 hover:text-error shrink-0 cursor-pointer rounded-md p-1 transition-colors"
                       type="button"
                       onClick={() => removeFileEntry(i)}
                     >
@@ -373,7 +382,7 @@ export default function UploadModal({
         )}
 
         {/* Format + category */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Select
             label="Format"
             options={FORMATS.map((f) => ({ value: f.value, label: f.label }))}
@@ -441,60 +450,80 @@ export default function UploadModal({
         />
 
         {/* Supported formats reference */}
-        <div className="rounded-lg border border-border-secondary">
+        <div className="border-border-secondary rounded-lg border">
           <button
             aria-expanded={showFormats}
-            className="flex w-full items-center justify-between px-3 py-2.5 cursor-pointer hover:bg-surface-hover transition-colors"
+            className="hover:bg-surface-hover flex w-full cursor-pointer items-center justify-between px-3 py-2.5 transition-colors"
             type="button"
             onClick={() => setShowFormats((v) => !v)}
           >
-            <span className="text-xs font-semibold text-text-secondary">
+            <span className="text-text-secondary text-xs font-semibold">
               Supported formats & how they're handled
             </span>
             {showFormats ? (
-              <ChevronDown className="text-text-tertiary" size={14} />
+              <ChevronDown
+                className="text-text-tertiary"
+                size={14}
+              />
             ) : (
-              <ChevronRight className="text-text-tertiary" size={14} />
+              <ChevronRight
+                className="text-text-tertiary"
+                size={14}
+              />
             )}
           </button>
-          {showFormats ? <div className="border-t border-border-secondary p-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {showFormats ? (
+            <div className="border-border-secondary border-t p-3">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {FORMATS.map((f) => (
                   <div
                     key={f.value}
                     className="flex items-center gap-2 rounded-md px-2 py-1.5"
                   >
-                    <FileText className="shrink-0 text-text-tertiary" size={13} />
+                    <FileText
+                      className="text-text-tertiary shrink-0"
+                      size={13}
+                    />
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-medium text-text-primary">
+                      <div className="text-text-primary text-xs font-medium">
                         {f.value}
                       </div>
-                      <code className="text-[0.62rem] text-text-tertiary">
+                      <code className="text-text-tertiary text-[0.62rem]">
                         {f.extensions}
                       </code>
                     </div>
                     {INGESTED_FORMATS.has(f.value) ? (
-                      <Badge size="xs" variant="success">
+                      <Badge
+                        size="xs"
+                        variant="success"
+                      >
                         Ingested
                       </Badge>
                     ) : STORED_FORMATS.has(f.value) ? (
-                      <Badge size="xs" variant="info">
+                      <Badge
+                        size="xs"
+                        variant="info"
+                      >
                         Stored
                       </Badge>
                     ) : (
-                      <Badge size="xs" variant="warning">
+                      <Badge
+                        size="xs"
+                        variant="warning"
+                      >
                         Conditional
                       </Badge>
                     )}
                   </div>
                 ))}
               </div>
-              <p className="mt-2 text-[0.68rem] text-text-tertiary">
+              <p className="text-text-tertiary mt-2 text-[0.68rem]">
                 Ingested layers are served as Mapbox Vector Tiles (MVT) and can
                 be queried directly. Stored assets are kept on disk and
                 available for download.
               </p>
-            </div> : null}
+            </div>
+          ) : null}
         </div>
 
         <ModalFooter>

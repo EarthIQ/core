@@ -31,7 +31,8 @@ export const FormFieldWrapper = ({
         className
       )}
     >
-      {label ? <label
+      {label ? (
+        <label
           style={{ color: "var(--text-secondary)" }}
           className={cn(
             "block text-sm font-medium",
@@ -40,19 +41,23 @@ export const FormFieldWrapper = ({
           )}
         >
           {label}
-          {required ? <span
+          {required ? (
+            <span
               className="ml-1"
               style={{ color: "var(--error)" }}
             >
               *
-            </span> : null}
-        </label> : null}
+            </span>
+          ) : null}
+        </label>
+      ) : null}
 
       <div className={cn(horizontal && "flex-1")}>
         {children}
 
         <AnimatePresence mode="wait">
-          {(error || description) ? <motion.p
+          {error || description ? (
+            <motion.p
               key={error ? "error" : "description"}
               animate={{ opacity: 1, y: 0, height: "auto" }}
               className="mt-1.5 text-sm"
@@ -63,9 +68,10 @@ export const FormFieldWrapper = ({
               }}
             >
               {error || description}
-            </motion.p> : null}
+            </motion.p>
+          ) : null}
         </AnimatePresence>
       </div>
     </div>
   );
-}
+};

@@ -103,33 +103,41 @@ export const EmptyState = ({
       </h3>
 
       {/* Description */}
-      {description ? <p
+      {description ? (
+        <p
           className={cn(
             "mb-6 max-w-sm text-[var(--text-secondary)]",
             config.description
           )}
         >
           {description}
-        </p> : null}
+        </p>
+      ) : null}
 
       {/* Actions */}
-      {(action || secondaryAction) ? <div className="flex items-center gap-3">
-          {action ? <Button
+      {action || secondaryAction ? (
+        <div className="flex items-center gap-3">
+          {action ? (
+            <Button
               variant="primary"
               onClick={action.onClick}
             >
               {action.label}
-            </Button> : null}
-          {secondaryAction ? <Button
+            </Button>
+          ) : null}
+          {secondaryAction ? (
+            <Button
               variant="ghost"
               onClick={secondaryAction.onClick}
             >
               {secondaryAction.label}
-            </Button> : null}
-        </div> : null}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
-}
+};
 
 // Pre-built empty states
 export const NoDataEmptyState = (props: Partial<EmptyStateProps>) => {
@@ -140,7 +148,7 @@ export const NoDataEmptyState = (props: Partial<EmptyStateProps>) => {
       {...props}
     />
   );
-}
+};
 
 export const NoSearchResultsEmptyState = ({
   query,
@@ -172,7 +180,7 @@ export const NoSearchResultsEmptyState = ({
       {...props}
     />
   );
-}
+};
 
 export const ErrorEmptyState = ({
   onRetry,
@@ -201,4 +209,4 @@ export const ErrorEmptyState = ({
       {...props}
     />
   );
-}
+};

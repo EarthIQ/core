@@ -49,7 +49,7 @@ export const Spinner = ({
       <span className="sr-only">{label}</span>
     </div>
   );
-}
+};
 
 // Dots Spinner Variant
 export const DotsSpinner = ({
@@ -86,4 +86,4 @@ export const DotsSpinner = ({
       <span className="sr-only">Loading</span>
     </div>
   );
-}
+};

@@ -26,7 +26,7 @@ export default function DatasetActions({
     <div
       className={`flex items-center ${
         compact
-          ? "flex-wrap gap-1.5 pt-1 border-t border-border-secondary mt-1"
+          ? "border-border-secondary mt-1 flex-wrap gap-1.5 border-t pt-1"
           : "justify-end gap-1.5"
       }`}
     >
@@ -39,7 +39,7 @@ export default function DatasetActions({
       </button>
 
       <button
-        className={`${compact ? base : ""} btn btn-xs bg-info/10 text-info border border-info/30 hover:bg-info/20`}
+        className={`${compact ? base : ""} btn btn-xs bg-info/10 text-info border-info/30 hover:bg-info/20 border`}
         title="Edit metadata"
         onClick={() => onEdit(d)}
       >
@@ -47,7 +47,7 @@ export default function DatasetActions({
       </button>
 
       <button
-        className={`${compact ? base : ""} btn btn-xs bg-success/10 text-success border border-success/30 hover:bg-success/20`}
+        className={`${compact ? base : ""} btn btn-xs bg-success/10 text-success border-success/30 hover:bg-success/20 border`}
         title="Download original file"
         onClick={() => onDownload(d)}
       >
@@ -56,7 +56,7 @@ export default function DatasetActions({
 
       {isVectorized(d) && (
         <button
-          className={`${compact ? base : ""} btn btn-xs bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20`}
+          className={`${compact ? base : ""} btn btn-xs bg-accent/10 text-accent border-accent/30 hover:bg-accent/20 border`}
           title="Get MVT Tile URL"
           onClick={() => onOpenTileUrl(d)}
         >

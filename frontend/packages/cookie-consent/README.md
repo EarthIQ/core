@@ -94,7 +94,7 @@ function Analytics() {
   useConsentAwareScript('analytics', () => {
     // This only runs when analytics consent is given
     initializeGoogleAnalytics('G-XXXXXXXXXX');
-    
+
     return () => {
       // Cleanup when consent is revoked
     };
@@ -112,7 +112,7 @@ import { useConsentListener } from '@your-org/cookie-consent';
 function ConsentWatcher() {
   useConsentListener((preferences) => {
     console.log('Consent updated:', preferences);
-    
+
     if (preferences.analytics) {
       // Enable analytics
     } else {
@@ -213,3 +213,4 @@ export function CookieConsentProvider({ children }) {
     </>
   );
 }
+```

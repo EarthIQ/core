@@ -135,7 +135,8 @@ export const Stat = ({
           </p>
 
           {/* Change */}
-          {(change !== undefined || changeLabel) ? <div
+          {change !== undefined || changeLabel ? (
+            <div
               style={{ backgroundColor: getTrendBg() }}
               className={cn(
                 "mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5",
@@ -150,21 +151,27 @@ export const Stat = ({
                   {change}%
                 </span>
               )}
-              {changeLabel ? <span className="text-[var(--text-tertiary)]">
+              {changeLabel ? (
+                <span className="text-[var(--text-tertiary)]">
                   {changeLabel}
-                </span> : null}
-            </div> : null}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
 
           {/* Previous Value */}
-          {previousValue ? <p
+          {previousValue ? (
+            <p
               className={cn("mt-1 text-[var(--text-tertiary)]", config.change)}
             >
               Previous: {previousValue}
-            </p> : null}
+            </p>
+          ) : null}
         </div>
 
         {/* Icon */}
-        {icon ? <div
+        {icon ? (
+          <div
             className={cn(
               "flex shrink-0 items-center justify-center rounded-xl",
               "bg-[var(--info-bg)] text-[var(--primary)]",
@@ -172,11 +179,12 @@ export const Stat = ({
             )}
           >
             {icon}
-          </div> : null}
+          </div>
+        ) : null}
       </div>
     </motion.div>
   );
-}
+};
 
 // Stat Group
 interface StatGroupProps {
@@ -201,4 +209,4 @@ export const StatGroup = ({
       {children}
     </div>
   );
-}
+};

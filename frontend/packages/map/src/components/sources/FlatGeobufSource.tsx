@@ -1,10 +1,9 @@
-import { geojson as fgbGeojson } from 'flatgeobuf';
-import { useEffect, useId, useState } from 'react';
+import { geojson as fgbGeojson } from "flatgeobuf";
+import { useEffect, useId, useState } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type React from 'react';
-
+import type React from "react";
 
 export interface FlatGeobufSourceProps {
   /** Unique source ID */
@@ -15,7 +14,7 @@ export interface FlatGeobufSourceProps {
   bounds?: [number, number, number, number];
   /** Layer configuration */
   layer: {
-    type: 'fill' | 'line' | 'circle' | 'symbol';
+    type: "fill" | "line" | "circle" | "symbol";
     paint?: Record<string, any>;
     layout?: Record<string, any>;
     /** Fired when a feature is clicked */
@@ -47,7 +46,7 @@ export const FlatGeobufSource: React.FC<FlatGeobufSourceProps> = ({
   outlineLayer,
   progressive = true,
   onProgress,
-  onLoad
+  onLoad,
 }) => {
   const { map, isLoaded } = useMap();
   const autoId = useId();
@@ -64,12 +63,14 @@ export const FlatGeobufSource: React.FC<FlatGeobufSourceProps> = ({
       const loadedFeatures: any[] = [];
 
       // Create bounding box filter if provided
-      const rect = bounds ? {
-        minX: bounds[0],
-        minY: bounds[1],
-        maxX: bounds[2],
-        maxY: bounds[3]
-      } : undefined;
+      const rect = bounds
+        ? {
+            minX: bounds[0],
+            minY: bounds[1],
+            maxX: bounds[2],
+            maxY: bounds[3],
+          }
+        : undefined;
 
       // Stream features from FlatGeobuf
       const iter = fgbGeojson.deserialize(url, rect);
@@ -86,8 +87,8 @@ export const FlatGeobufSource: React.FC<FlatGeobufSourceProps> = ({
           const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
           if (source) {
             source.setData({
-              type: 'FeatureCollection',
-              features: [...loadedFeatures]
+              type: "FeatureCollection",
+              features: [...loadedFeatures],
             });
           }
         }
@@ -101,8 +102,8 @@ export const FlatGeobufSource: React.FC<FlatGeobufSourceProps> = ({
         const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
         if (source) {
           source.setData({
-            type: 'FeatureCollection',
-            features: loadedFeatures
+            type: "FeatureCollection",
+            features: loadedFeatures,
           });
         }
       }
@@ -110,9 +111,9 @@ export const FlatGeobufSource: React.FC<FlatGeobufSourceProps> = ({
 
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] },
-        generateId: true
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+        generateId: true,
       });
     }
 
@@ -122,7 +123,7 @@ export const FlatGeobufSource: React.FC<FlatGeobufSourceProps> = ({
         type: layer.type,
         source: sourceId,
         paint: layer.paint || {},
-        layout: layer.layout || {}
+        layout: layer.layout || {},
       } as any);
 
       if (outlineLayer && !map.getLayer(`${id}-outline`)) {
@@ -131,7 +132,7 @@ export const FlatGeobufSource: React.FC<FlatGeobufSourceProps> = ({
           type: "line",
           source: sourceId,
           paint: outlineLayer.paint || {},
-          layout: outlineLayer.layout || {}
+          layout: outlineLayer.layout || {},
         } as any);
       }
     }
@@ -171,7 +172,7 @@ export const FlatGeobufSource: React.FC<FlatGeobufSourceProps> = ({
     if (layer.onClick) {
       map.on("click", id, handleClick);
     }
-    
+
     map.on("mousemove", id, handleMouseMove);
     map.on("mouseleave", id, handleMouseLeave);
     if (outlineLayer) {

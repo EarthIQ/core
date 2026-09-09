@@ -62,7 +62,7 @@ const PageFallback = () => {
       Loading module…
     </div>
   );
-}
+};
 
 // ── Dynamic module routes ──────────────────────────────────────────────────────
 
@@ -84,7 +84,7 @@ let _resolvedModulesCache: ActiveModule[] | null = null;
 function useActiveModules() {
   const { modules, isLoading: modulesLoading } = useModules();
   const [activeModules, setActiveModules] = useState<ActiveModule[]>(
-    _resolvedModulesCache ?? [],
+    _resolvedModulesCache ?? []
   );
   const [resolving, setResolving] = useState(false);
 
@@ -99,7 +99,7 @@ function useActiveModules() {
     }
 
     const enabled = modules.filter(
-      (m) => m.enabled && m.name in moduleRegistry,
+      (m) => m.enabled && m.name in moduleRegistry
     );
     if (!enabled.length) {
       // No modules registered - cache the empty result and stop.
@@ -118,8 +118,8 @@ function useActiveModules() {
             ? bundle.routePath.slice(1)
             : bundle.routePath,
           Page: bundle.Page,
-        })),
-      ),
+        }))
+      )
     ).then((resolved) => {
       _resolvedModulesCache = resolved;
       setActiveModules(resolved);
@@ -139,26 +139,66 @@ const ProtectedRoutes = () => {
 
   return (
     <Routes>
-      <Route index element={<Navigate replace to="/dashboard" />} />
-      <Route element={<DashboardPage />} path="dashboard" />
-      <Route element={<AdminUsersPage />} path="admin" />
-      <Route element={<ProjectsPage />} path="projects" />
+      <Route
+        index
+        element={
+          <Navigate
+            replace
+            to="/dashboard"
+          />
+        }
+      />
+      <Route
+        element={<DashboardPage />}
+        path="dashboard"
+      />
+      <Route
+        element={<AdminUsersPage />}
+        path="admin"
+      />
+      <Route
+        element={<ProjectsPage />}
+        path="projects"
+      />
       {/* Project builders - routes are declared data-driven from the
           builder registry (`lib/builders.tsx`), so new builders are wired
           automatically. Each builder page reads `?projectId=` itself. */}
       {BUILDERS.map((b) => (
-        <Route key={b.id} element={<b.page />} path={`${b.path}/*`} />
+        <Route
+          key={b.id}
+          element={<b.page />}
+          path={`${b.path}/*`}
+        />
       ))}
-      <Route element={<DataPage />} path="data" />
-      <Route element={<SettingsPage />} path="settings" />
-      <Route element={<NotificationsPage />} path="notifications" />
-      <Route element={<InviteAcceptPage />} path="invite/accept" />
-      <Route element={<AccessGrantPage />} path="access/grant" />
+      <Route
+        element={<DataPage />}
+        path="data"
+      />
+      <Route
+        element={<SettingsPage />}
+        path="settings"
+      />
+      <Route
+        element={<NotificationsPage />}
+        path="notifications"
+      />
+      <Route
+        element={<InviteAcceptPage />}
+        path="invite/accept"
+      />
+      <Route
+        element={<AccessGrantPage />}
+        path="access/grant"
+      />
 
       {/* Module routes - available once bundles finish resolving */}
       {!resolving &&
         activeModules.map((m) => (
-          <Route key={m.name} element={<m.Page />} path={`${m.routePath}/*`} />
+          <Route
+            key={m.name}
+            element={<m.Page />}
+            path={`${m.routePath}/*`}
+          />
         ))}
 
       {/* 404 - only shown after module resolution is complete */}
@@ -184,7 +224,7 @@ const ProtectedRoutes = () => {
       )}
     </Routes>
   );
-}
+};
 
 // ── Root ───────────────────────────────────────────────────────────────────────
 
@@ -196,8 +236,14 @@ export default function App() {
           <BrowserRouter>
             <Routes>
               {/* Public */}
-              <Route element={<LoginPage />} path="/login" />
-              <Route element={<PublicMapPage />} path="/share/map/:mapId" />
+              <Route
+                element={<LoginPage />}
+                path="/login"
+              />
+              <Route
+                element={<PublicMapPage />}
+                path="/share/map/:mapId"
+              />
 
               {/* Protected shell */}
               <Route

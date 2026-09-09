@@ -17,7 +17,7 @@ export default function SupportedFormats({ onAddData }: Props) {
   const [open, setOpen] = useState(true);
 
   const ingestedCount = FORMATS.filter((f) =>
-    INGESTED_FORMATS.has(f.value),
+    INGESTED_FORMATS.has(f.value)
   ).length;
   const storedCount = FORMATS.filter((f) => STORED_FORMATS.has(f.value)).length;
 
@@ -28,20 +28,20 @@ export default function SupportedFormats({ onAddData }: Props) {
     >
       <button
         aria-expanded={open}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-surface-hover transition-colors"
+        className="hover:bg-surface-hover flex w-full items-center justify-between px-5 py-4 transition-colors"
         type="button"
         onClick={() => setOpen((v) => !v)}
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="text-xl shrink-0">🧩</span>
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="shrink-0 text-xl">🧩</span>
           <div className="min-w-0 text-left">
             <h2
-              className="text-base font-bold text-text-primary"
+              className="text-text-primary text-base font-bold"
               id="supported-formats-heading"
             >
               Supported Formats
             </h2>
-            <div className="text-xs text-text-tertiary">
+            <div className="text-text-tertiary text-xs">
               {FORMATS.length} formats · {ingestedCount} ingested as queryable
               layers · {storedCount} stored as downloadable assets
             </div>
@@ -57,23 +57,24 @@ export default function SupportedFormats({ onAddData }: Props) {
         </span>
       </button>
 
-      {open ? <div className="border-t border-border-secondary">
+      {open ? (
+        <div className="border-border-secondary border-t">
           <div className="overflow-x-auto">
-            <table className="table text-sm w-full">
+            <table className="table w-full text-sm">
               <thead className="bg-bg-tertiary">
                 <tr>
-                  <th className="text-left px-4 py-2">
-                    <span className="text-[0.65rem] font-semibold text-text-tertiary uppercase tracking-wide">
+                  <th className="px-4 py-2 text-left">
+                    <span className="text-text-tertiary text-[0.65rem] font-semibold tracking-wide uppercase">
                       Format
                     </span>
                   </th>
-                  <th className="text-left px-4 py-2">
-                    <span className="text-[0.65rem] font-semibold text-text-tertiary uppercase tracking-wide">
+                  <th className="px-4 py-2 text-left">
+                    <span className="text-text-tertiary text-[0.65rem] font-semibold tracking-wide uppercase">
                       Extensions
                     </span>
                   </th>
-                  <th className="text-left px-4 py-2">
-                    <span className="text-[0.65rem] font-semibold text-text-tertiary uppercase tracking-wide">
+                  <th className="px-4 py-2 text-left">
+                    <span className="text-text-tertiary text-[0.65rem] font-semibold tracking-wide uppercase">
                       Handled As
                     </span>
                   </th>
@@ -91,36 +92,38 @@ export default function SupportedFormats({ onAddData }: Props) {
                     >
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-base shrink-0">
+                          <span className="shrink-0 text-base">
                             {formatIcon(f.value)}
                           </span>
                           <div className="min-w-0">
-                            <div className="font-semibold text-text-primary text-sm">
+                            <div className="text-text-primary text-sm font-semibold">
                               {f.label}
                             </div>
-                            {isCsv ? <div className="text-[0.65rem] text-text-tertiary">
+                            {isCsv ? (
+                              <div className="text-text-tertiary text-[0.65rem]">
                                 Ingested as a queryable layer when a coordinate
                                 pair is detected
-                              </div> : null}
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-2.5">
-                        <code className="text-xs font-mono px-1.5 py-0.5 rounded bg-bg-tertiary border border-border-secondary text-text-secondary">
+                        <code className="bg-bg-tertiary border-border-secondary text-text-secondary rounded border px-1.5 py-0.5 font-mono text-xs">
                           {f.extensions}
                         </code>
                       </td>
                       <td className="px-4 py-2.5">
                         {ingested ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full bg-success/10 text-success border border-success/30">
+                          <span className="bg-success/10 text-success border-success/30 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs">
                             <span aria-hidden>✓</span> Ingested
                           </span>
                         ) : stored ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full bg-info/10 text-info border border-info/30">
+                          <span className="bg-info/10 text-info border-info/30 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs">
                             <span aria-hidden>⬇</span> Stored asset
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning border border-warning/30">
+                          <span className="bg-warning/10 text-warning border-warning/30 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs">
                             <span aria-hidden>⚙</span> Conditionally ingested
                           </span>
                         )}
@@ -132,20 +135,23 @@ export default function SupportedFormats({ onAddData }: Props) {
             </table>
           </div>
 
-          <div className="px-5 py-3 border-t border-border-secondary flex flex-wrap items-center justify-between gap-3">
-            <div className="text-[0.7rem] text-text-tertiary max-w-2xl">
+          <div className="border-border-secondary flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3">
+            <div className="text-text-tertiary max-w-2xl text-[0.7rem]">
               Ingested layers are served as Mapbox Vector Tiles (MVT) and can be
               queried directly. Stored assets are kept on disk and available for
               download or further processing.
             </div>
-            {onAddData ? <button
+            {onAddData ? (
+              <button
                 className="btn btn-secondary btn-sm shrink-0"
                 onClick={onAddData}
               >
                 + Upload a new dataset
-              </button> : null}
+              </button>
+            ) : null}
           </div>
-        </div> : null}
+        </div>
+      ) : null}
     </section>
   );
 }

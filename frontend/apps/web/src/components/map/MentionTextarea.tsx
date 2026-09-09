@@ -19,10 +19,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import {
-  searchPeople,
-  type PeopleSearchResult,
-} from "@/lib/notifications";
+import { searchPeople, type PeopleSearchResult } from "@/lib/notifications";
 
 const MAX_SUGGESTIONS = 6;
 const DD_W = 248;
@@ -76,7 +73,7 @@ function textBeforeCaret(editor: HTMLElement): string {
 /** Find the {node,offset} DOM point at a given *text* index within the editor. */
 function pointAt(
   editor: HTMLElement,
-  index: number,
+  index: number
 ): { node: Node; offset: number } {
   const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
   let node = walker.nextNode();
@@ -161,7 +158,9 @@ export const MentionTextarea = ({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PeopleSearchResult[]>([]);
   const [hi, setHi] = useState(0);
-  const [ddPos, setDdPos] = useState<{ left: number; top: number } | null>(null);
+  const [ddPos, setDdPos] = useState<{ left: number; top: number } | null>(
+    null
+  );
   const [isEmpty, setIsEmpty] = useState(true);
 
   const seq = useRef(0);
@@ -350,7 +349,7 @@ export const MentionTextarea = ({
         suppressContentEditableWarning
         aria-label={placeholder}
         aria-multiline="true"
-        className={`${className ?? ""} cursor-text text-text-primary whitespace-pre-wrap break-words leading-[1.55] focus:outline-none`}
+        className={`${className ?? ""} text-text-primary cursor-text leading-[1.55] break-words whitespace-pre-wrap focus:outline-none`}
         role="textbox"
         style={{ minHeight: `${Math.max(rows, 2) * 20 + 16}px` }}
         onClick={updateTrigger}
@@ -367,9 +366,10 @@ export const MentionTextarea = ({
         }}
       />
 
-      {isEmpty && placeholder ? <span
+      {isEmpty && placeholder ? (
+        <span
           aria-hidden
-          className="absolute pointer-events-none select-none text-[13px]"
+          className="pointer-events-none absolute text-[13px] select-none"
           style={{
             left: 12,
             top: 9,
@@ -378,65 +378,71 @@ export const MentionTextarea = ({
           }}
         >
           {placeholder}
-        </span> : null}
+        </span>
+      ) : null}
 
-      {open &&
-        ddPos ? createPortal(
-          <div
-            ref={ddRef}
-            aria-label="Mention a user"
-            className="fixed z-[999] rounded-xl bg-elevated border border-border-primary shadow-xl overflow-hidden animate-fade-in"
-            role="listbox"
-            style={{ left: ddPos.left, top: ddPos.top, width: DD_W }}
-          >
-            <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
-              Mention a user
-            </div>
-            {!query ? (
-              <div className="px-3 py-2 text-xs text-text-tertiary">
-                Type to search users…
+      {open && ddPos
+        ? createPortal(
+            <div
+              ref={ddRef}
+              aria-label="Mention a user"
+              className="bg-elevated border-border-primary animate-fade-in fixed z-[999] overflow-hidden rounded-xl border shadow-xl"
+              role="listbox"
+              style={{ left: ddPos.left, top: ddPos.top, width: DD_W }}
+            >
+              <div className="text-text-tertiary px-3 pt-2 pb-1 text-[10px] font-semibold tracking-wide uppercase">
+                Mention a user
               </div>
-            ) : results.length === 0 ? (
-              <div className="px-3 py-2 text-xs text-text-tertiary">
-                No users match “{query}”
-              </div>
-            ) : (
-              <ul className="max-h-52 overflow-y-auto">
-                {results.map((u, i) => (
-                  <li key={u.id} aria-selected={i === hi} role="option">
-                    <button
-                      type="button"
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-left cursor-pointer transition-colors ${
-                        i === hi ? "bg-primary/10" : ""
-                      }`}
-                      onClick={() => pick(u)}
-                      onMouseEnter={() => setHi(i)}
-                      onMouseDown={(e) => {
-                        e.preventDefault(); // keep editor focus
-                        setHi(i);
-                      }}
+              {!query ? (
+                <div className="text-text-tertiary px-3 py-2 text-xs">
+                  Type to search users…
+                </div>
+              ) : results.length === 0 ? (
+                <div className="text-text-tertiary px-3 py-2 text-xs">
+                  No users match “{query}”
+                </div>
+              ) : (
+                <ul className="max-h-52 overflow-y-auto">
+                  {results.map((u, i) => (
+                    <li
+                      key={u.id}
+                      aria-selected={i === hi}
+                      role="option"
                     >
-                      <span className="w-7 h-7 rounded-full bg-primary/15 text-primary border border-primary/20 flex items-center justify-center text-[10px] font-bold shrink-0 select-none">
-                        {initialsOf(displayName(u))}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[13px] font-medium text-text-primary truncate">
-                          {displayName(u)}
+                      <button
+                        type="button"
+                        className={`flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                          i === hi ? "bg-primary/10" : ""
+                        }`}
+                        onClick={() => pick(u)}
+                        onMouseEnter={() => setHi(i)}
+                        onMouseDown={(e) => {
+                          e.preventDefault(); // keep editor focus
+                          setHi(i);
+                        }}
+                      >
+                        <span className="bg-primary/15 text-primary border-primary/20 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold select-none">
+                          {initialsOf(displayName(u))}
                         </span>
-                        <span className="block text-[11px] text-text-tertiary truncate">
-                          {u.email}
+                        <span className="min-w-0 flex-1">
+                          <span className="text-text-primary block truncate text-[13px] font-medium">
+                            {displayName(u)}
+                          </span>
+                          <span className="text-text-tertiary block truncate text-[11px]">
+                            {u.email}
+                          </span>
                         </span>
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>,
-          document.body,
-        ) : null}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
-}
+};
 
 export default MentionTextarea;

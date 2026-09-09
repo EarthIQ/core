@@ -2,17 +2,6 @@
   "name": "@packages/cookie-consent",
   "version": "1.0.0",
   "description": "A modern, accessible, and customizable cookie consent solution for React applications",
-  "author": "Your Name <your.email@example.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-org/your-monorepo.git",
-    "directory": "packages/cookie-consent"
-  },
-  "homepage": "https://github.com/your-org/your-monorepo/tree/main/packages/cookie-consent#readme",
-  "bugs": {
-    "url": "https://github.com/your-org/your-monorepo/issues"
-  },
   "keywords": [
     "react",
     "cookie-consent",
@@ -23,10 +12,21 @@
     "consent-manager",
     "tailwindcss"
   ],
+  "homepage": "https://github.com/your-org/your-monorepo/tree/main/packages/cookie-consent#readme",
+  "bugs": {
+    "url": "https://github.com/your-org/your-monorepo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/your-monorepo.git",
+    "directory": "packages/cookie-consent"
+  },
+  "license": "MIT",
+  "author": "Your Name <your.email@example.com>",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
@@ -41,32 +41,22 @@
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
   ],
-  "sideEffects": [
-    "**/*.css"
-  ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
     "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit",
+    "dev": "tsup --watch",
     "lint": "eslint .",
-    "prepublishOnly": "pnpm run build"
-  },
-  "peerDependencies": {
-    "react": ">=19.0.0",
-    "react-dom": ">=19.0.0",
-    "zustand": ">=4.0.0"
-  },
-  "peerDependenciesMeta": {
-    "zustand": {
-      "optional": false
-    }
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "lucide-react": "^1.33.0"
@@ -80,5 +70,15 @@
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "zustand": "^5.0.15"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0",
+    "zustand": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zustand": {
+      "optional": false
+    }
   }
 }

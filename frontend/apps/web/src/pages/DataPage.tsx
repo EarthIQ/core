@@ -35,12 +35,12 @@ import {
   TileUrlModal,
   UploadModal,
   useDatasetActions,
-
   FORMATS,
   type DatasetItem,
   type SortDir,
   type SortField,
-  type ViewMode} from "@/components/data";
+  type ViewMode,
+} from "@/components/data";
 import {
   createFolder,
   deleteFolder,
@@ -53,8 +53,11 @@ import {
 
 const DataPageInner = () => {
   const navigate = useNavigate();
-  const { success: toastSuccess, error: toastError, info: toastInfo } =
-    useToast();
+  const {
+    success: toastSuccess,
+    error: toastError,
+    info: toastInfo,
+  } = useToast();
 
   // ── Data state ──────────────────────────────────────────────────────────────
   const [datasets, setDatasets] = useState<DatasetItem[]>([]);
@@ -88,10 +91,9 @@ const DataPageInner = () => {
         ? toastSuccess
         : type === "error"
           ? toastError
-          : toastInfo
-      )(message, { duration: 4200 });
+          : toastInfo)(message, { duration: 4200 });
     },
-    [toastSuccess, toastError, toastInfo],
+    [toastSuccess, toastError, toastInfo]
   );
 
   // ── Folders (catalog tree) ─────────────────────────────────────────────────
@@ -163,7 +165,7 @@ const DataPageInner = () => {
         addToast("error", err?.message ?? "Could not create folder.");
       }
     },
-    [addToast, fetchFolders],
+    [addToast, fetchFolders]
   );
 
   const handleRenameFolder = useCallback(
@@ -176,12 +178,15 @@ const DataPageInner = () => {
         addToast("error", err?.message ?? "Could not rename folder.");
       }
     },
-    [addToast, fetchFolders],
+    [addToast, fetchFolders]
   );
 
-  const requestDeleteFolder = useCallback((folder: { id: string; name: string }) => {
-    setFolderConfirm(folder);
-  }, []);
+  const requestDeleteFolder = useCallback(
+    (folder: { id: string; name: string }) => {
+      setFolderConfirm(folder);
+    },
+    []
+  );
 
   const confirmDeleteFolder = useCallback(async () => {
     if (!folderConfirm) return;
@@ -194,7 +199,7 @@ const DataPageInner = () => {
           ? `Folder deleted — ${res.moved_datasets} dataset${
               res.moved_datasets === 1 ? "" : "s"
             } moved up a level.`
-          : "Folder deleted.",
+          : "Folder deleted."
       );
       // If we were browsing the deleted folder, step up to its parent.
       setSelection((prev) => {
@@ -257,24 +262,24 @@ const DataPageInner = () => {
   // Totals for the sidebar storage footer (from the current dataset list).
   const totalBytes = useMemo(
     () => datasets.reduce((s, d) => s + (d.file_size_bytes ?? 0), 0),
-    [datasets],
+    [datasets]
   );
   const tiledCount = useMemo(
     () =>
       datasets.filter(
-        (d) => d.meta?.ingested || d.type === "vector" || d.type === "points",
+        (d) => d.meta?.ingested || d.type === "vector" || d.type === "points"
       ).length,
-    [datasets],
+    [datasets]
   );
 
   const totalPages = Math.max(
     1,
-    Math.ceil(processedDatasets.length / pageSize),
+    Math.ceil(processedDatasets.length / pageSize)
   );
   const clampedPage = Math.min(page, totalPages);
   const pageItems = processedDatasets.slice(
     (clampedPage - 1) * pageSize,
-    clampedPage * pageSize,
+    clampedPage * pageSize
   );
 
   // ── Selection handlers (table view) ─────────────────────────────────────────
@@ -301,7 +306,7 @@ const DataPageInner = () => {
         return next;
       });
     },
-    [pageItems],
+    [pageItems]
   );
 
   const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
@@ -324,13 +329,14 @@ const DataPageInner = () => {
 
   const onToggleSort = useCallback(
     (field: SortField) => {
-      if (sortField === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      if (sortField === field)
+        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
       else {
         setSortField(field);
         setSortDir("asc");
       }
     },
-    [sortField],
+    [sortField]
   );
 
   // ── Navigation / modal / bulk handlers ─────────────────────────────────────
@@ -346,7 +352,10 @@ const DataPageInner = () => {
 
   const handleAddToProject = useCallback(() => {
     const n = selectedIds.size;
-    addToast("info", `Added ${n} dataset${n === 1 ? "" : "s"} - opening Projects.`);
+    addToast(
+      "info",
+      `Added ${n} dataset${n === 1 ? "" : "s"} - opening Projects.`
+    );
     navigate("/projects");
   }, [addToast, selectedIds.size, navigate]);
 
@@ -364,39 +373,42 @@ const DataPageInner = () => {
       { value: "all", label: "All Formats" },
       ...FORMATS.map((f) => ({ value: f.value, label: f.label })),
     ],
-    [],
+    []
   );
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto space-y-6">
+    <div className="mx-auto w-full max-w-[1600px] space-y-6">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="min-w-0">
-          <div className="text-xs font-semibold uppercase tracking-widest text-primary mb-1.5 flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          <div className="text-primary mb-1.5 flex items-center gap-1.5 text-xs font-semibold tracking-widest uppercase">
+            <span className="bg-primary h-1.5 w-1.5 rounded-full" />
             Spatial Catalog
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
+          <h1 className="text-text-primary text-2xl font-extrabold tracking-tight sm:text-3xl">
             Data Hub
           </h1>
-          <p className="mt-1 text-sm text-text-secondary max-w-2xl leading-relaxed">
-            Upload, inspect, and manage your vector and raster datasets - GeoJSON,
-            Shapefile, COG, GeoPackage, GeoParquet, KML, and CSV.
+          <p className="text-text-secondary mt-1 max-w-2xl text-sm leading-relaxed">
+            Upload, inspect, and manage your vector and raster datasets -
+            GeoJSON, Shapefile, COG, GeoPackage, GeoParquet, KML, and CSV.
           </p>
         </div>
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex shrink-0 items-center gap-2.5">
           <IconButton
             className="border-border-primary"
             label="Refresh catalog"
             size="md"
             variant="secondary"
             icon={
-              <RefreshCw className={loading ? "animate-spin" : ""} size={16} />
+              <RefreshCw
+                className={loading ? "animate-spin" : ""}
+                size={16}
+              />
             }
             onClick={fetchDatasets}
           />
           <Button
-            className="shadow-sm font-semibold"
+            className="font-semibold shadow-sm"
             leftIcon={<CloudUpload size={16} />}
             size="md"
             variant="primary"
@@ -408,7 +420,8 @@ const DataPageInner = () => {
       </div>
 
       {/* ── Fetch error ────────────────────────────────────────────────────── */}
-      {fetchError ? <div>
+      {fetchError ? (
+        <div>
           <Alert
             title="Couldn't load datasets"
             variant="error"
@@ -416,15 +429,19 @@ const DataPageInner = () => {
           >
             {fetchError}
           </Alert>
-        </div> : null}
+        </div>
+      ) : null}
 
       {/* ── Summary Stats ─────────────────────────────────────────────────── */}
-      <SummaryStats datasets={datasets} loading={loading} />
+      <SummaryStats
+        datasets={datasets}
+        loading={loading}
+      />
 
       {/* ── Main Catalog Workspace ────────────────────────────────────────── */}
-      <div className="flex gap-6 items-start">
+      <div className="flex items-start gap-6">
         {/* ── Folder navigation (desktop) ──────────────────────────────────── */}
-        <aside className="hidden lg:block w-72 shrink-0">
+        <aside className="hidden w-72 shrink-0 lg:block">
           <div className="sticky top-4">
             <FolderTree
               folders={folders}
@@ -442,25 +459,33 @@ const DataPageInner = () => {
         </aside>
 
         {/* ── Main content ─────────────────────────────────────────────────── */}
-        <div className="flex-1 min-w-0 flex flex-col gap-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
           {/* Breadcrumb path */}
           {breadcrumb.length > 1 && (
             <nav
               aria-label="Folder path"
-              className="flex items-center gap-1 text-xs text-text-tertiary flex-wrap"
+              className="text-text-tertiary flex flex-wrap items-center gap-1 text-xs"
             >
               {breadcrumb.map((crumb, i) => {
                 const last = i === breadcrumb.length - 1;
                 return (
-                  <span key={crumb.id ?? `root-${i}`} className="flex items-center gap-1">
-                    {i > 0 && <ChevronRight className="shrink-0" size={12} />}
+                  <span
+                    key={crumb.id ?? `root-${i}`}
+                    className="flex items-center gap-1"
+                  >
+                    {i > 0 && (
+                      <ChevronRight
+                        className="shrink-0"
+                        size={12}
+                      />
+                    )}
                     {last ? (
-                      <span className="font-semibold text-text-primary">
+                      <span className="text-text-primary font-semibold">
                         {crumb.name}
                       </span>
                     ) : (
                       <button
-                        className="rounded px-1 py-0.5 hover:bg-surface-hover hover:text-text-primary cursor-pointer transition-colors"
+                        className="hover:bg-surface-hover hover:text-text-primary cursor-pointer rounded px-1 py-0.5 transition-colors"
                         type="button"
                         onClick={() =>
                           onNavigate({
@@ -478,21 +503,26 @@ const DataPageInner = () => {
             </nav>
           )}
           {/* Toolbar */}
-          <div className="card p-3 bg-surface border border-border-primary rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-2.5 flex-1 min-w-[240px]">
+          <div className="card bg-surface border-border-primary flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3 shadow-xs">
+            <div className="flex min-w-[240px] flex-1 items-center gap-2.5">
               <IconButton
-                className="lg:hidden shrink-0 text-text-secondary"
+                className="text-text-secondary shrink-0 lg:hidden"
                 icon={<SlidersHorizontal size={18} />}
                 label="Browse folders"
                 size="md"
                 variant="ghost"
                 onClick={() => setMobileNavOpen(true)}
               />
-              <div className="flex-1 max-w-md">
+              <div className="max-w-md flex-1">
                 <Input
                   aria-label="Search datasets"
                   className="h-9 text-xs"
-                  leftIcon={<Search className="text-text-tertiary" size={16} />}
+                  leftIcon={
+                    <Search
+                      className="text-text-tertiary"
+                      size={16}
+                    />
+                  }
                   placeholder="Search by dataset name, format, or tag…"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -500,7 +530,7 @@ const DataPageInner = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="flex flex-wrap items-center gap-2.5">
               <div className="w-44">
                 <Select
                   options={formatOptions}
@@ -513,14 +543,14 @@ const DataPageInner = () => {
               {/* View Switcher */}
               <div
                 aria-label="View mode"
-                className="flex rounded-lg overflow-hidden border border-border-primary bg-surface-hover/50 p-0.5"
+                className="border-border-primary bg-surface-hover/50 flex overflow-hidden rounded-lg border p-0.5"
                 role="group"
               >
                 <button
                   aria-label="Table view"
                   title="Table view"
                   type="button"
-                  className={`px-2.5 h-7 flex items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                  className={`flex h-7 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition-all ${
                     viewMode === "table"
                       ? "bg-surface text-primary shadow-xs"
                       : "text-text-tertiary hover:text-text-primary"
@@ -534,7 +564,7 @@ const DataPageInner = () => {
                   aria-label="Grid view"
                   title="Grid view"
                   type="button"
-                  className={`px-2.5 h-7 flex items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                  className={`flex h-7 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition-all ${
                     viewMode === "grid"
                       ? "bg-surface text-primary shadow-xs"
                       : "text-text-tertiary hover:text-text-primary"
@@ -550,12 +580,12 @@ const DataPageInner = () => {
 
           {/* Bulk action bar */}
           {selectedIds.size > 0 && (
-            <div className="card px-4 py-3 flex flex-wrap items-center justify-between gap-3 bg-primary/[0.08] border border-primary/25 rounded-xl animate-fade-in shadow-xs">
+            <div className="card bg-primary/[0.08] border-primary/25 animate-fade-in flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 shadow-xs">
               <div className="flex items-center gap-2">
-                <span className="flex h-6 w-6 rounded-full bg-primary text-white text-xs font-bold items-center justify-center">
+                <span className="bg-primary flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white">
                   {selectedIds.size}
                 </span>
-                <span className="text-xs font-semibold text-text-primary">
+                <span className="text-text-primary text-xs font-semibold">
                   dataset{selectedIds.size === 1 ? "" : "s"} selected
                 </span>
               </div>
@@ -686,7 +716,8 @@ const DataPageInner = () => {
       />
 
       {/* ── Preview / Inspect ──────────────────────────────────────────────── */}
-      {actions.inspectTarget ? <PreviewModal
+      {actions.inspectTarget ? (
+        <PreviewModal
           addToast={addToast}
           dataset={actions.inspectTarget}
           idCopied={actions.idCopied}
@@ -695,26 +726,32 @@ const DataPageInner = () => {
           onDownload={actions.handleDownload}
           onEdit={actions.openEdit}
           onOpenTileUrl={actions.openTileUrl}
-        /> : null}
+        />
+      ) : null}
 
       {/* ── Edit metadata ──────────────────────────────────────────────────── */}
-      {actions.editDataset ? <EditModal
+      {actions.editDataset ? (
+        <EditModal
           dataset={actions.editDataset}
           saving={actions.editSaving}
           onClose={() => actions.setEditDataset(null)}
           onSave={(payload) => actions.saveEdit(payload)}
-        /> : null}
+        />
+      ) : null}
 
       {/* ── Tile URL ───────────────────────────────────────────────────────── */}
-      {actions.tileUrlDataset ? <TileUrlModal
+      {actions.tileUrlDataset ? (
+        <TileUrlModal
           copied={actions.tileCopied}
           dataset={actions.tileUrlDataset}
           onClose={() => actions.setTileUrlDataset(null)}
           onCopy={actions.handleCopyTileUrl}
-        /> : null}
+        />
+      ) : null}
 
       {/* ── Confirm delete ─────────────────────────────────────────────────── */}
-      {actions.confirmDelete ? <ConfirmDeleteModal
+      {actions.confirmDelete ? (
+        <ConfirmDeleteModal
           label={actions.confirmDelete.label}
           onCancel={() => actions.setConfirmDelete(null)}
           onConfirm={() =>
@@ -726,10 +763,12 @@ const DataPageInner = () => {
               });
             })
           }
-        /> : null}
+        />
+      ) : null}
 
       {/* ── Move to folder ─────────────────────────────────────────────────── */}
-      {actions.moveTargets ? <MoveModal
+      {actions.moveTargets ? (
+        <MoveModal
           datasets={actions.moveTargets}
           folders={folders}
           moving={actions.moveSaving}
@@ -738,23 +777,30 @@ const DataPageInner = () => {
             actions.moveDatasets(folderId);
             setSelectedIds(new Set());
           }}
-        /> : null}
+        />
+      ) : null}
 
       {/* ── Confirm delete folder ──────────────────────────────────────────── */}
-      {folderConfirm ? <ConfirmDeleteModal
+      {folderConfirm ? (
+        <ConfirmDeleteModal
           label={`folder “${folderConfirm.name}”`}
           onCancel={() => setFolderConfirm(null)}
           onConfirm={() => {
             if (!folderBusy) confirmDeleteFolder();
           }}
-        /> : null}
+        />
+      ) : null}
     </div>
   );
-}
+};
 
 export default function DataPage() {
   return (
-    <ToastProvider defaultDuration={4200} maxToasts={5} position="bottom-right">
+    <ToastProvider
+      defaultDuration={4200}
+      maxToasts={5}
+      position="bottom-right"
+    >
       <DataPageInner />
     </ToastProvider>
   );

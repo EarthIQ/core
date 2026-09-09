@@ -1,4 +1,3 @@
- 
 import destination from "@turf/destination";
 import distance from "@turf/distance";
 

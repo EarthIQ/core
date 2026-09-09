@@ -111,12 +111,14 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
                 })}
             </defs>
 
-            {showGrid ? <CartesianGrid
+            {showGrid ? (
+              <CartesianGrid
                 className="stroke-gray-200 dark:stroke-gray-700"
                 horizontal={gridType !== "vertical"}
                 strokeDasharray="3 3"
                 vertical={gridType !== "horizontal"}
-              /> : null}
+              />
+            ) : null}
 
             {!xAxis?.hide && (
               <XAxis
@@ -143,7 +145,8 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
               />
             )}
 
-            {secondaryYAxis && !secondaryYAxis.hide ? <YAxis
+            {secondaryYAxis && !secondaryYAxis.hide ? (
+              <YAxis
                 axisLine={false}
                 className="text-gray-600 dark:text-gray-400"
                 domain={secondaryYAxis.domain}
@@ -153,9 +156,11 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
                 tickLine={false}
                 tickMargin={8}
                 yAxisId="right"
-              /> : null}
+              />
+            ) : null}
 
-            {showTooltip ? <Tooltip
+            {showTooltip ? (
+              <Tooltip
                 labelStyle={{ fontWeight: 600, marginBottom: 4 }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover, 0 0% 100%))",
@@ -163,15 +168,18 @@ export const ComposedChart: React.FC<ComposedChartProps> = ({
                   borderRadius: "8px",
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-              /> : null}
+              />
+            ) : null}
 
-            {showLegend ? <Legend
+            {showLegend ? (
+              <Legend
                 height={36}
                 iconSize={8}
                 iconType="circle"
                 verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              /> : null}
+              />
+            ) : null}
 
             {elements.map((element, index) => {
               const color = element.config.color || getColor(index, colors);

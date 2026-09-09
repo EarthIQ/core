@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
-import { useMap } from './useMap';
+import { useMap } from "./useMap";
 
 export interface UseMapImageOptions {
   /** Image ID */
@@ -18,7 +18,9 @@ export interface UseMapImageOptions {
   content?: [number, number, number, number];
 }
 
-export const useMapImage = (options: UseMapImageOptions | UseMapImageOptions[]) => {
+export const useMapImage = (
+  options: UseMapImageOptions | UseMapImageOptions[]
+) => {
   const { map, isLoaded } = useMap();
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -38,11 +40,11 @@ export const useMapImage = (options: UseMapImageOptions | UseMapImageOptions[]) 
 
         let imageData: HTMLImageElement | ImageBitmap;
 
-        if (typeof img.image === 'string') {
+        if (typeof img.image === "string") {
           // Load from URL
           imageData = await new Promise<HTMLImageElement>((resolve, reject) => {
             const image = new Image();
-            image.crossOrigin = 'anonymous';
+            image.crossOrigin = "anonymous";
             image.onload = () => resolve(image);
             image.onerror = reject;
             image.src = img.image as string;
@@ -56,7 +58,7 @@ export const useMapImage = (options: UseMapImageOptions | UseMapImageOptions[]) 
           sdf: img.sdf,
           stretchX: img.stretchX,
           stretchY: img.stretchY,
-          content: img.content
+          content: img.content,
         });
       }
 
@@ -71,7 +73,7 @@ export const useMapImage = (options: UseMapImageOptions | UseMapImageOptions[]) 
 
     return () => {
       if (map) {
-        images.forEach(img => {
+        images.forEach((img) => {
           if (map.hasImage(img.id)) {
             map.removeImage(img.id);
           }
@@ -80,20 +82,23 @@ export const useMapImage = (options: UseMapImageOptions | UseMapImageOptions[]) 
     };
   }, [loadImages]);
 
-  const removeImage = useCallback((id: string) => {
-    if (map?.hasImage(id)) {
-      map.removeImage(id);
-    }
-  }, [map]);
+  const removeImage = useCallback(
+    (id: string) => {
+      if (map?.hasImage(id)) {
+        map.removeImage(id);
+      }
+    },
+    [map]
+  );
 
-  const updateImage = useCallback((
-    id: string,
-    image: HTMLImageElement | ImageBitmap | ImageData
-  ) => {
-    if (map?.hasImage(id)) {
-      map.updateImage(id, image);
-    }
-  }, [map]);
+  const updateImage = useCallback(
+    (id: string, image: HTMLImageElement | ImageBitmap | ImageData) => {
+      if (map?.hasImage(id)) {
+        map.updateImage(id, image);
+      }
+    },
+    [map]
+  );
 
   return { loaded, error, removeImage, updateImage };
 };

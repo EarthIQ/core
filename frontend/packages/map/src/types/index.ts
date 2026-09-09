@@ -31,12 +31,7 @@ export type LayerType =
 
 // Source types
 export type SourceType =
-  | "vector"
-  | "raster"
-  | "raster-dem"
-  | "geojson"
-  | "image"
-  | "video";
+  "vector" | "raster" | "raster-dem" | "geojson" | "image" | "video";
 
 // Common props
 export interface BaseLayerProps {
@@ -189,10 +184,7 @@ export interface ViewState {
 
 // Control position type
 export type ControlPosition =
-  | "top-left"
-  | "top-right"
-  | "bottom-left"
-  | "bottom-right";
+  "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
 // Bounds type
 export type BoundsArray = [number, number, number, number]; // [west, south, east, north]

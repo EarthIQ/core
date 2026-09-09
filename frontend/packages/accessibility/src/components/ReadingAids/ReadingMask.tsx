@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 interface ReadingMaskProps {
   enabled: boolean;
@@ -18,8 +18,8 @@ export const ReadingMask: React.FC<ReadingMaskProps> = ({ enabled }) => {
       setPosition({ y: e.clientY });
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [enabled]);
 
   if (!enabled) return null;
@@ -32,20 +32,14 @@ export const ReadingMask: React.FC<ReadingMaskProps> = ({ enabled }) => {
       <div
         aria-hidden="true"
         style={{ height: Math.max(0, position.y - maskHeight) }}
-        className="
-          pointer-events-none fixed top-0 left-0 right-0 z-[9998]
-          bg-black/80 transition-all duration-75
-        "
+        className="pointer-events-none fixed top-0 right-0 left-0 z-[9998] bg-black/80 transition-all duration-75"
       />
-      
+
       {/* Bottom mask */}
       <div
         aria-hidden="true"
         style={{ top: position.y + maskHeight }}
-        className="
-          pointer-events-none fixed left-0 right-0 bottom-0 z-[9998]
-          bg-black/80 transition-all duration-75
-        "
+        className="pointer-events-none fixed right-0 bottom-0 left-0 z-[9998] bg-black/80 transition-all duration-75"
       />
     </>
   );

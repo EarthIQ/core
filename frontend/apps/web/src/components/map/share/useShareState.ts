@@ -13,7 +13,7 @@ import type {
 export function useShareState(
   entityType: ShareEntityType,
   entityId: string | null,
-  open: boolean,
+  open: boolean
 ) {
   const [state, setState] = useState<ShareState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,7 @@ export function useShareState(
       .getShareState(entityType, entityId)
       .then((s) => !cancelled && setState(s))
       .catch(
-        (e) => !cancelled && setError(e?.message ?? "Failed to load sharing"),
+        (e) => !cancelled && setError(e?.message ?? "Failed to load sharing")
       )
       .finally(() => !cancelled && setLoading(false));
     return () => {
@@ -59,7 +59,7 @@ export function useShareState(
       emails: string[],
       role: Role,
       message: string,
-      notifyPeople: boolean,
+      notifyPeople: boolean
     ) => {
       if (!entityId || emails.length === 0) return;
       try {
@@ -69,24 +69,24 @@ export function useShareState(
           emails,
           role,
           message,
-          notifyPeople,
+          notifyPeople
         );
         setState((s) =>
-          s ? { ...s, entries: [...s.entries, ...created] } : s,
+          s ? { ...s, entries: [...s.entries, ...created] } : s
         );
         notify(
           notifyPeople
             ? `Invitation${emails.length > 1 ? "s" : ""} sent to ${emails.length} ${
                 emails.length > 1 ? "people" : "person"
               }`
-            : `${emails.length} ${emails.length > 1 ? "people" : "person"} added`,
+            : `${emails.length} ${emails.length > 1 ? "people" : "person"} added`
         );
       } catch (e: any) {
         notify(e?.message ?? "Failed to send invitations");
         throw e;
       }
     },
-    [entityType, entityId, notify],
+    [entityType, entityId, notify]
   );
 
   const updateRole = useCallback(
@@ -96,7 +96,7 @@ export function useShareState(
       setState({
         ...state,
         entries: state.entries.map((e) =>
-          e.id === entryId ? { ...e, role } : e,
+          e.id === entryId ? { ...e, role } : e
         ),
       });
       markBusy(entryId, true);
@@ -109,7 +109,7 @@ export function useShareState(
         markBusy(entryId, false);
       }
     },
-    [entityType, entityId, state, notify],
+    [entityType, entityId, state, notify]
   );
 
   const removeAccess = useCallback(
@@ -129,7 +129,7 @@ export function useShareState(
         notify("Could not remove access");
       }
     },
-    [entityType, entityId, state, notify],
+    [entityType, entityId, state, notify]
   );
 
   const transferOwnership = useCallback(
@@ -155,7 +155,7 @@ export function useShareState(
         markBusy(entryId, false);
       }
     },
-    [entityType, entityId, state, notify],
+    [entityType, entityId, state, notify]
   );
 
   const updateGeneral = useCallback(
@@ -170,7 +170,7 @@ export function useShareState(
         notify("Could not update general access");
       }
     },
-    [entityType, entityId, state, notify],
+    [entityType, entityId, state, notify]
   );
 
   const updateSettings = useCallback(
@@ -186,7 +186,7 @@ export function useShareState(
         notify("Could not update settings");
       }
     },
-    [entityType, entityId, state, notify],
+    [entityType, entityId, state, notify]
   );
 
   return {

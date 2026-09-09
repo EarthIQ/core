@@ -31,45 +31,51 @@ export default function SettingsPage() {
   // ?tab= deep link support (e.g. /settings?tab=appearance).
   const requested = new URLSearchParams(location.search).get("tab");
   const [tab, setTab] = useState<TabId>(
-    TABS.some((t) => t.id === requested) ? (requested as TabId) : "profile",
+    TABS.some((t) => t.id === requested) ? (requested as TabId) : "profile"
   );
 
   function selectTab(id: TabId) {
     setTab(id);
     const search = new URLSearchParams(location.search);
     search.set("tab", id);
-    navigate({ pathname: location.pathname, search: search.toString() }, { replace: true });
+    navigate(
+      { pathname: location.pathname, search: search.toString() },
+      { replace: true }
+    );
   }
 
   return (
     <div className="min-h-full">
       {/* ── Header ── */}
-      <div className="sticky top-0 z-20 bg-elevated border-b border-border-primary backdrop-blur">
-        <div className="px-6 pt-5 pb-3 max-w-6xl mx-auto flex items-start justify-between gap-4 flex-wrap">
+      <div className="bg-elevated border-border-primary sticky top-0 z-20 border-b backdrop-blur">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4 px-6 pt-5 pb-3">
           <div>
-            <h1 className="text-lg font-bold text-text-primary">Settings</h1>
-            <p className="text-xs text-text-secondary mt-0.5">
+            <h1 className="text-text-primary text-lg font-bold">Settings</h1>
+            <p className="text-text-secondary mt-0.5 text-xs">
               Personalize your account, appearance and workspace.
             </p>
           </div>
           <a
-            className="text-xs text-text-tertiary hover:text-text-primary no-underline"
+            className="text-text-tertiary hover:text-text-primary text-xs no-underline"
             href="/dashboard"
           >
             ← Back to dashboard
           </a>
         </div>
         {/* ── Tabs ── */}
-        <div className="px-6 max-w-6xl mx-auto flex gap-1 overflow-x-auto" role="tablist">
+        <div
+          className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-6"
+          role="tablist"
+        >
           {TABS.map((t) => (
             <button
               key={t.id}
               aria-selected={tab === t.id}
               role="tab"
-              className={`px-4 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              className={`cursor-pointer rounded-t-lg border-b-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all ${
                 tab === t.id
                   ? "border-primary text-primary"
-                  : "border-transparent text-text-secondary hover:bg-surface-hover"
+                  : "text-text-secondary hover:bg-surface-hover border-transparent"
               }`}
               onClick={() => selectTab(t.id)}
             >
@@ -81,7 +87,7 @@ export default function SettingsPage() {
       </div>
 
       {/* ── Panel ── */}
-      <div className="p-6 max-w-6xl mx-auto">
+      <div className="mx-auto max-w-6xl p-6">
         {tab === "profile" && <ProfileSection />}
         {tab === "appearance" && <AppearanceSection />}
         {tab === "notifications" && <NotificationPrefsSection />}

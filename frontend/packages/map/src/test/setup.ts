@@ -1,8 +1,8 @@
-import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import "@testing-library/jest-dom";
+import { vi } from "vitest";
 
 // Mock maplibre-gl
-vi.mock('maplibre-gl', () => ({
+vi.mock("maplibre-gl", () => ({
   default: {
     Map: vi.fn(() => ({
       on: vi.fn(),
@@ -36,10 +36,10 @@ vi.mock('maplibre-gl', () => ({
         getNorthEast: () => ({ lng: 180, lat: 90 }),
         getSouthWest: () => ({ lng: -180, lat: -90 }),
         getSouthEast: () => ({ lng: 180, lat: -90 }),
-        getCenter: () => ({ lng: 0, lat: 0 })
+        getCenter: () => ({ lng: 0, lat: 0 }),
       })),
       getCanvas: vi.fn(() => ({ style: {} })),
-      getContainer: vi.fn(() => document.createElement('div')),
+      getContainer: vi.fn(() => document.createElement("div")),
       getStyle: vi.fn(() => ({ layers: [], sources: {} })),
       setStyle: vi.fn(),
       flyTo: vi.fn(),
@@ -64,16 +64,16 @@ vi.mock('maplibre-gl', () => ({
       getPixelRatio: vi.fn(() => 1),
       setPixelRatio: vi.fn(),
       project: vi.fn(() => ({ x: 0, y: 0 })),
-      unproject: vi.fn(() => ({ lng: 0, lat: 0 }))
+      unproject: vi.fn(() => ({ lng: 0, lat: 0 })),
     })),
     Marker: vi.fn(() => ({
       setLngLat: vi.fn().mockReturnThis(),
       addTo: vi.fn().mockReturnThis(),
       remove: vi.fn(),
       setPopup: vi.fn().mockReturnThis(),
-      getElement: vi.fn(() => document.createElement('div')),
+      getElement: vi.fn(() => document.createElement("div")),
       getLngLat: vi.fn(() => ({ lng: 0, lat: 0 })),
-      on: vi.fn()
+      on: vi.fn(),
     })),
     Popup: vi.fn(() => ({
       setLngLat: vi.fn().mockReturnThis(),
@@ -81,13 +81,13 @@ vi.mock('maplibre-gl', () => ({
       setDOMContent: vi.fn().mockReturnThis(),
       addTo: vi.fn().mockReturnThis(),
       remove: vi.fn(),
-      on: vi.fn()
+      on: vi.fn(),
     })),
     NavigationControl: vi.fn(),
     ScaleControl: vi.fn(),
     GeolocateControl: vi.fn(() => ({
       on: vi.fn(),
-      trigger: vi.fn()
+      trigger: vi.fn(),
     })),
     FullscreenControl: vi.fn(),
     AttributionControl: vi.fn(),
@@ -96,8 +96,8 @@ vi.mock('maplibre-gl', () => ({
       getWest: vi.fn(() => -180),
       getEast: vi.fn(() => 180),
       getNorth: vi.fn(() => 90),
-      getSouth: vi.fn(() => -90)
-    }))
+      getSouth: vi.fn(() => -90),
+    })),
   },
   Map: vi.fn(),
   Marker: vi.fn(),
@@ -107,25 +107,25 @@ vi.mock('maplibre-gl', () => ({
   GeolocateControl: vi.fn(),
   FullscreenControl: vi.fn(),
   AttributionControl: vi.fn(),
-  LngLatBounds: vi.fn()
+  LngLatBounds: vi.fn(),
 }));
 
 // Mock ResizeObserver
 global.ResizeObserver = vi.fn(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
-  disconnect: vi.fn()
+  disconnect: vi.fn(),
 }));
 
 // Mock IntersectionObserver
 global.IntersectionObserver = vi.fn(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
-  disconnect: vi.fn()
+  disconnect: vi.fn(),
 }));
 
 // Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: vi.fn().mockImplementation((query) => ({
     matches: false,
@@ -135,15 +135,15 @@ Object.defineProperty(window, 'matchMedia', {
     removeListener: vi.fn(),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn()
-  }))
+    dispatchEvent: vi.fn(),
+  })),
 });
 
 // Mock navigator.geolocation
-Object.defineProperty(navigator, 'geolocation', {
+Object.defineProperty(navigator, "geolocation", {
   writable: true,
   value: {
-    getCurrentPosition: vi.fn((success) => 
+    getCurrentPosition: vi.fn((success) =>
       success({
         coords: {
           latitude: 37.7749,
@@ -152,35 +152,35 @@ Object.defineProperty(navigator, 'geolocation', {
           altitude: null,
           altitudeAccuracy: null,
           heading: null,
-          speed: null
+          speed: null,
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     ),
     watchPosition: vi.fn(() => 1),
-    clearWatch: vi.fn()
-  }
+    clearWatch: vi.fn(),
+  },
 });
 
 // Mock clipboard
-Object.defineProperty(navigator, 'clipboard', {
+Object.defineProperty(navigator, "clipboard", {
   writable: true,
   value: {
     writeText: vi.fn(() => Promise.resolve()),
-    readText: vi.fn(() => Promise.resolve(''))
-  }
+    readText: vi.fn(() => Promise.resolve("")),
+  },
 });
 
 // Mock fetch
 global.fetch = vi.fn(() =>
   Promise.resolve({
     ok: true,
-    json: () => Promise.resolve({ type: 'FeatureCollection', features: [] }),
-    text: () => Promise.resolve(''),
-    blob: () => Promise.resolve(new Blob())
+    json: () => Promise.resolve({ type: "FeatureCollection", features: [] }),
+    text: () => Promise.resolve(""),
+    blob: () => Promise.resolve(new Blob()),
   })
 ) as any;
 
 // Mock URL.createObjectURL
-global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
 global.URL.revokeObjectURL = vi.fn();

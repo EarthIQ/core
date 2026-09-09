@@ -22,8 +22,8 @@ export const PersonRow = ({
 }: PersonRowProps) => {
   return (
     <div
-      className={`flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-surface-hover/60 transition-colors ${
-        busy ? "opacity-60 pointer-events-none" : ""
+      className={`hover:bg-surface-hover/60 flex items-center gap-3 rounded-lg px-2 py-2 transition-colors ${
+        busy ? "pointer-events-none opacity-60" : ""
       }`}
     >
       <Avatar
@@ -33,17 +33,21 @@ export const PersonRow = ({
         src={entry.avatarUrl}
       />
 
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="text-[0.82rem] font-medium text-text-primary truncate">
+          <span className="text-text-primary truncate text-[0.82rem] font-medium">
             {entry.name ?? entry.email}
-            {entry.isYou ? <span className="text-text-tertiary font-normal"> (you)</span> : null}
+            {entry.isYou ? (
+              <span className="text-text-tertiary font-normal"> (you)</span>
+            ) : null}
           </span>
-          {entry.pending ? <span className="text-[0.6rem] px-1.5 py-0.5 rounded-full bg-warning/15 text-warning border border-warning/25 shrink-0">
+          {entry.pending ? (
+            <span className="bg-warning/15 text-warning border-warning/25 shrink-0 rounded-full border px-1.5 py-0.5 text-[0.6rem]">
               Pending
-            </span> : null}
+            </span>
+          ) : null}
         </div>
-        <div className="text-[0.7rem] text-text-tertiary truncate">
+        <div className="text-text-tertiary truncate text-[0.7rem]">
           {entry.email}
         </div>
       </div>
@@ -61,4 +65,4 @@ export const PersonRow = ({
       />
     </div>
   );
-}
+};

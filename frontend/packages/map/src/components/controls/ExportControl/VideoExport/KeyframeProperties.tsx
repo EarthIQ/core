@@ -220,7 +220,7 @@ export const KeyframeProperties = ({
       )}
     </div>
   );
-}
+};
 
 const CompactInput = ({
   icon,
@@ -262,13 +262,15 @@ const CompactInput = ({
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
         />
-        {suffix ? <span
+        {suffix ? (
+          <span
             className="pointer-events-none absolute top-1/2 right-1 -translate-y-1/2 text-[8px]"
             style={{ color: "var(--text-quaternary)" }}
           >
             {suffix}
-          </span> : null}
+          </span>
+        ) : null}
       </div>
     </div>
   );
-}
+};

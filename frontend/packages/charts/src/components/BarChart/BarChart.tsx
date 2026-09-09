@@ -95,12 +95,14 @@ export const BarChart: React.FC<BarChartProps> = ({
               if (payload) onDataPointClick(payload, index);
             }}
           >
-            {showGrid ? <CartesianGrid
+            {showGrid ? (
+              <CartesianGrid
                 className="stroke-gray-200 dark:stroke-gray-700"
                 horizontal={layout === "horizontal" && gridType !== "vertical"}
                 strokeDasharray="3 3"
                 vertical={layout === "vertical" || gridType === "vertical"}
-              /> : null}
+              />
+            ) : null}
 
             {layout === "horizontal" ? (
               <>
@@ -203,7 +205,8 @@ export const BarChart: React.FC<BarChartProps> = ({
               </>
             )}
 
-            {showTooltip ? <Tooltip
+            {showTooltip ? (
+              <Tooltip
                 cursor={{ fill: "hsl(var(--muted, 220 14% 96%))" }}
                 formatter={tooltipFormatter}
                 labelStyle={{ fontWeight: 600, marginBottom: 4 }}
@@ -213,15 +216,18 @@ export const BarChart: React.FC<BarChartProps> = ({
                   borderRadius: "8px",
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-              /> : null}
+              />
+            ) : null}
 
-            {showLegend ? <Legend
+            {showLegend ? (
+              <Legend
                 height={36}
                 iconSize={8}
                 iconType="circle"
                 verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              /> : null}
+              />
+            ) : null}
 
             {bars.map((bar, index) => (
               <Bar
@@ -241,7 +247,7 @@ export const BarChart: React.FC<BarChartProps> = ({
                     fill={
                       (entry.color as string) ||
                       bar.color ||
-                      (getColor(index, colors))
+                      getColor(index, colors)
                     }
                   />
                 ))}

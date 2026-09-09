@@ -9,7 +9,6 @@ import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { fetchMapById, type MapItem } from "@/lib/maps";
 
-
 export default function PublicMapPage() {
   const { mapId } = useParams<{ mapId: string }>();
   const navigate = useNavigate();
@@ -36,7 +35,7 @@ export default function PublicMapPage() {
         if (err instanceof ApiError && err.status === 403) setDenied(true);
         console.error(err);
         setErrorMsg(
-          "This map could not be loaded. It may be private or deleted.",
+          "This map could not be loaded. It may be private or deleted."
         );
         setLoading(false);
       });
@@ -55,7 +54,8 @@ export default function PublicMapPage() {
 
         const map = new Map({
           container: mapContainerRef.current,
-          style: BASEMAP_STYLES[mapData.basemap] || BASEMAP_STYLES["opentopomap"],
+          style:
+            BASEMAP_STYLES[mapData.basemap] || BASEMAP_STYLES["opentopomap"],
           center: [mapData.center_lng, mapData.center_lat],
           zoom: mapData.zoom,
           bearing: (mapData as any).bearing || 0,
@@ -115,7 +115,7 @@ export default function PublicMapPage() {
                 showCompass: !!widgets.compass,
                 showZoom: !!widgets.zoomControls,
               }),
-              "bottom-right",
+              "bottom-right"
             );
           }
           if (widgets.scaleBar) {
@@ -126,13 +126,13 @@ export default function PublicMapPage() {
               new GeolocateControl({
                 positionOptions: { enableHighAccuracy: true },
               }),
-              "bottom-right",
+              "bottom-right"
             );
           }
         });
 
         mapRef.current = map;
-      },
+      }
     );
 
     return () => {
@@ -156,13 +156,13 @@ export default function PublicMapPage() {
             map.setLayoutProperty(
               layerId,
               "visibility",
-              nextVal ? "visible" : "none",
+              nextVal ? "visible" : "none"
             );
           }
           return { ...l, visible: nextVal };
         }
         return l;
-      }),
+      })
     );
   };
 
@@ -172,9 +172,12 @@ export default function PublicMapPage() {
 
   if (loading || (denied && authLoading)) {
     return (
-      <div className="w-screen h-screen flex flex-col items-center justify-center bg-bg-primary text-text-primary">
-        <Globe className="text-primary animate-spin mb-4" size={40} />
-        <span className="text-sm font-semibold tracking-wider animate-pulse">
+      <div className="bg-bg-primary text-text-primary flex h-screen w-screen flex-col items-center justify-center">
+        <Globe
+          className="text-primary mb-4 animate-spin"
+          size={40}
+        />
+        <span className="animate-pulse text-sm font-semibold tracking-wider">
           Loading map dashboard...
         </span>
       </div>
@@ -187,19 +190,22 @@ export default function PublicMapPage() {
   if (denied) {
     if (isAuthenticated) {
       return (
-        <div className="w-screen h-screen flex items-center justify-center bg-bg-primary p-6">
-          <AccessRequestCard entityId={mapId ?? ""} entityType="map" />
+        <div className="bg-bg-primary flex h-screen w-screen items-center justify-center p-6">
+          <AccessRequestCard
+            entityId={mapId ?? ""}
+            entityType="map"
+          />
         </div>
       );
     }
     const from = mapId ? `/share/map/${mapId}` : "/share";
     return (
-      <div className="w-screen h-screen flex flex-col items-center justify-center bg-bg-primary text-text-primary px-6 text-center">
-        <div className="text-5xl mb-4">🔒</div>
-        <h3 className="text-lg font-bold text-text-primary">
+      <div className="bg-bg-primary text-text-primary flex h-screen w-screen flex-col items-center justify-center px-6 text-center">
+        <div className="mb-4 text-5xl">🔒</div>
+        <h3 className="text-text-primary text-lg font-bold">
           Sign in to continue
         </h3>
-        <p className="mt-2 text-text-secondary text-sm max-w-sm leading-relaxed">
+        <p className="text-text-secondary mt-2 max-w-sm text-sm leading-relaxed">
           This map is private. Sign in to view it, or to request access from the
           owner.
         </p>
@@ -218,14 +224,17 @@ export default function PublicMapPage() {
 
   if (errorMsg || !mapData) {
     return (
-      <div className="w-screen h-screen flex flex-col items-center justify-center bg-bg-primary text-text-primary px-6 text-center">
-        <div className="text-5xl mb-4">🔒</div>
-        <h3 className="text-lg font-bold text-text-primary">Access Denied</h3>
-        <p className="mt-2 text-text-secondary text-sm max-w-sm">
+      <div className="bg-bg-primary text-text-primary flex h-screen w-screen flex-col items-center justify-center px-6 text-center">
+        <div className="mb-4 text-5xl">🔒</div>
+        <h3 className="text-text-primary text-lg font-bold">Access Denied</h3>
+        <p className="text-text-secondary mt-2 max-w-sm text-sm">
           {errorMsg ||
             "This published map has been restricted or removed by the administrator."}
         </p>
-        <a className="btn btn-primary btn-md mt-6" href="/projects">
+        <a
+          className="btn btn-primary btn-md mt-6"
+          href="/projects"
+        >
           Back to Dashboard
         </a>
       </div>
@@ -235,104 +244,118 @@ export default function PublicMapPage() {
   const widgets = mapData.widgets_config || {};
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-bg-primary select-none">
+    <div className="bg-bg-primary relative h-screen w-screen overflow-hidden select-none">
       {/* Map Container */}
       <div
         ref={mapContainerRef}
-        className="w-full h-full absolute inset-0 z-0"
+        className="absolute inset-0 z-0 h-full w-full"
       />
 
       {/* Title Card Widget */}
-      {widgets.titleCard ? <div className="absolute top-4 left-4 z-10 max-w-sm bg-elevated border border-border-primary rounded-xl p-4 shadow-xl animate-fade-in flex flex-col gap-1.5">
-          <h1 className="text-sm font-bold text-text-primary tracking-wide">
+      {widgets.titleCard ? (
+        <div className="bg-elevated border-border-primary animate-fade-in absolute top-4 left-4 z-10 flex max-w-sm flex-col gap-1.5 rounded-xl border p-4 shadow-xl">
+          <h1 className="text-text-primary text-sm font-bold tracking-wide">
             {mapData.title}
           </h1>
-          {mapData.description ? <p className="text-[11px] text-text-secondary leading-relaxed">
+          {mapData.description ? (
+            <p className="text-text-secondary text-[11px] leading-relaxed">
               {mapData.description}
-            </p> : null}
-          <div className="flex items-center gap-1.5 mt-1">
-            <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            <span className="text-[9px] font-mono tracking-widest text-success uppercase font-bold">
+            </p>
+          ) : null}
+          <div className="mt-1 flex items-center gap-1.5">
+            <span className="bg-success h-2 w-2 animate-pulse rounded-full" />
+            <span className="text-success font-mono text-[9px] font-bold tracking-widest uppercase">
               Published View
             </span>
           </div>
-        </div> : null}
+        </div>
+      ) : null}
 
       {/* Layer Toggle Widget */}
-      {widgets.layerList && layersList.filter((l) => l.url).length > 0 ? <div className="absolute top-4 right-4 z-10 w-60 bg-elevated border border-border-primary rounded-xl p-3.5 shadow-xl animate-fade-in flex flex-col gap-2">
-          <div className="flex items-center gap-1.5 border-b border-border-secondary/60 pb-1.5 mb-1">
-            <Layers className="text-primary" size={13} />
-            <span className="text-xs font-bold text-text-primary">
+      {widgets.layerList && layersList.filter((l) => l.url).length > 0 ? (
+        <div className="bg-elevated border-border-primary animate-fade-in absolute top-4 right-4 z-10 flex w-60 flex-col gap-2 rounded-xl border p-3.5 shadow-xl">
+          <div className="border-border-secondary/60 mb-1 flex items-center gap-1.5 border-b pb-1.5">
+            <Layers
+              className="text-primary"
+              size={13}
+            />
+            <span className="text-text-primary text-xs font-bold">
               Map Layers
             </span>
           </div>
 
-          <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto scrollbar-thin">
+          <div className="flex max-h-48 scrollbar-thin flex-col gap-1.5 overflow-y-auto">
             {layersList.map((layer) => (
               <label
                 key={layer.id}
-                className="flex items-center justify-between gap-2.5 p-1.5 rounded hover:bg-surface-hover/50 cursor-pointer text-xs text-text-secondary hover:text-text-primary transition-colors"
+                className="hover:bg-surface-hover/50 text-text-secondary hover:text-text-primary flex cursor-pointer items-center justify-between gap-2.5 rounded p-1.5 text-xs transition-colors"
               >
                 <div className="flex items-center gap-2">
                   <input
                     checked={!!layer.visible}
-                    className="w-3.5 h-3.5 accent-primary rounded cursor-pointer"
+                    className="accent-primary h-3.5 w-3.5 cursor-pointer rounded"
                     type="checkbox"
                     onChange={() => toggleLayerVisibility(layer.id)}
                   />
-                  <span className="truncate max-w-[140px]">{layer.name}</span>
+                  <span className="max-w-[140px] truncate">{layer.name}</span>
                 </div>
-                {layer.style?.color ? <span
-                    className="w-2.5 h-2.5 rounded-full border border-border-primary shrink-0"
+                {layer.style?.color ? (
+                  <span
+                    className="border-border-primary h-2.5 w-2.5 shrink-0 rounded-full border"
                     style={{ backgroundColor: layer.style.color }}
-                  /> : null}
+                  />
+                ) : null}
               </label>
             ))}
           </div>
-        </div> : null}
+        </div>
+      ) : null}
 
       {/* Zoom Controls Widget */}
-      {widgets.zoomControls ? <div className="absolute bottom-6 right-6 z-10 flex flex-col gap-1.5">
+      {widgets.zoomControls ? (
+        <div className="absolute right-6 bottom-6 z-10 flex flex-col gap-1.5">
           <button
-            className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
+            className="bg-elevated border-border-primary text-text-secondary hover:text-text-primary flex h-8 w-8 items-center justify-center rounded-lg border shadow-lg transition-all hover:scale-105 active:scale-95"
             title="Zoom In"
             onClick={handleZoomIn}
           >
             <ZoomIn size={15} />
           </button>
           <button
-            className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
+            className="bg-elevated border-border-primary text-text-secondary hover:text-text-primary flex h-8 w-8 items-center justify-center rounded-lg border shadow-lg transition-all hover:scale-105 active:scale-95"
             title="Zoom Out"
             onClick={handleZoomOut}
           >
             <ZoomOut size={15} />
           </button>
           <button
-            className="w-8 h-8 rounded-lg bg-elevated border border-border-primary flex items-center justify-center text-text-secondary hover:text-text-primary shadow-lg hover:scale-105 active:scale-95 transition-all"
+            className="bg-elevated border-border-primary text-text-secondary hover:text-text-primary flex h-8 w-8 items-center justify-center rounded-lg border shadow-lg transition-all hover:scale-105 active:scale-95"
             title="Reset North"
             onClick={handleResetNorth}
           >
             <Compass size={15} />
           </button>
-        </div> : null}
+        </div>
+      ) : null}
 
       {/* Scale Bar Widget */}
-      {widgets.scaleBar ? <div className="absolute bottom-6 left-6 z-10 flex items-center gap-1.5">
-          <div className="w-24 h-0.5 bg-text-secondary/50 rounded relative">
-            <div className="absolute left-0 top-[-2px] w-0.5 h-2 bg-text-secondary/50" />
-            <div className="absolute right-0 top-[-2px] w-0.5 h-2 bg-text-secondary/50" />
+      {widgets.scaleBar ? (
+        <div className="absolute bottom-6 left-6 z-10 flex items-center gap-1.5">
+          <div className="bg-text-secondary/50 relative h-0.5 w-24 rounded">
+            <div className="bg-text-secondary/50 absolute top-[-2px] left-0 h-2 w-0.5" />
+            <div className="bg-text-secondary/50 absolute top-[-2px] right-0 h-2 w-0.5" />
           </div>
-          <span className="text-[10px] text-text-tertiary font-medium">
+          <span className="text-text-tertiary text-[10px] font-medium">
             ~10 km
           </span>
-        </div> : null}
+        </div>
+      ) : null}
 
       {/* Footer Branding / Attribution */}
-      <div className="absolute bottom-3 left-4 z-10 text-[9px] text-text-quaternary select-none">
-          {widgets.attribution ? <span>© OpenStreetMap © CARTO | </span> : null}
-          Powered by{" "}
-          <span className="font-bold text-primary">EarthIQ Core</span>
-        </div>
+      <div className="text-text-quaternary absolute bottom-3 left-4 z-10 text-[9px] select-none">
+        {widgets.attribution ? <span>© OpenStreetMap © CARTO | </span> : null}
+        Powered by <span className="text-primary font-bold">EarthIQ Core</span>
+      </div>
     </div>
   );
 }

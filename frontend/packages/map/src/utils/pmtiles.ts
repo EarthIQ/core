@@ -16,7 +16,9 @@ export const PMTilesUtils = {
   /**
    * Fetch PMTiles header and metadata
    */
-  async getMetadata(url: string): Promise<{ header: pmtiles.Header; metadata: PMTilesMetadata }> {
+  async getMetadata(
+    url: string
+  ): Promise<{ header: pmtiles.Header; metadata: PMTilesMetadata }> {
     const pt = new pmtiles.PMTiles(url);
     const header = await pt.getHeader();
     const metadata = (await pt.getMetadata()) as PMTilesMetadata;
@@ -29,7 +31,7 @@ export const PMTilesUtils = {
   async getSublayers(url: string): Promise<string[]> {
     const { metadata } = await this.getMetadata(url);
     return metadata.vector_layers?.map((l) => l.id) || [];
-  }
+  },
 };
 
 export default PMTilesUtils;

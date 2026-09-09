@@ -148,7 +148,7 @@ export interface MapHandle {
   }) => void;
   fitBounds?: (
     bounds: [[number, number], [number, number]] | number[][],
-    opts?: { padding?: number },
+    opts?: { padding?: number }
   ) => void;
   zoomIn?: (opts?: { duration?: number }) => void;
   zoomOut?: (opts?: { duration?: number }) => void;
@@ -214,7 +214,7 @@ function isCoordPair(center: unknown): center is [number, number] {
  * Returns ``null`` when no usable coordinates were produced.
  */
 export async function resolvePlaceCoordinates(
-  place: string,
+  place: string
 ): Promise<PlaceResolution | null> {
   const resp = await aiChat({
     system_prompt: PLACE_GEO_PROMPT,
@@ -254,7 +254,7 @@ export async function resolvePlaceCoordinates(
  */
 export async function dispatchToolCall(
   call: AIToolCall,
-  ctx: ToolDispatchContext,
+  ctx: ToolDispatchContext
 ): Promise<string> {
   const a = call.arguments ?? {};
   const { map } = ctx;
@@ -322,7 +322,8 @@ export async function dispatchToolCall(
 
     case "set_basemap": {
       const basemap = String(a.basemap ?? "opentopomap");
-      const style = ctx.basemapStyles[basemap] ?? ctx.basemapStyles["opentopomap"];
+      const style =
+        ctx.basemapStyles[basemap] ?? ctx.basemapStyles["opentopomap"];
       if (style) map.setStyle?.(style);
       ctx.setBasemap(basemap);
       return `Switched basemap to ${basemap}.`;

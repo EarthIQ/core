@@ -1,9 +1,9 @@
 // analysis/IsochroneTool.tsx
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { GeoJSON } from 'geojson';
+import type { GeoJSON } from "geojson";
 
 export interface IsochroneToolProps {
   /** Center point [lng, lat] */
@@ -11,7 +11,7 @@ export interface IsochroneToolProps {
   /** Time ranges in minutes */
   contours: number[];
   /** Travel profile */
-  profile?: 'driving' | 'walking' | 'cycling';
+  profile?: "driving" | "walking" | "cycling";
   /** Isochrone service URL */
   serviceUrl?: string;
   /** Callback with isochrone result */
@@ -27,19 +27,19 @@ export interface IsochroneToolProps {
 export const IsochroneTool: React.FC<IsochroneToolProps> = ({
   center,
   contours,
-  profile = 'driving',
-  serviceUrl = 'https://api.openrouteservice.org/v2/isochrones',
+  profile = "driving",
+  serviceUrl = "https://api.openrouteservice.org/v2/isochrones",
   onResult,
   displayResult = true,
-  colors = ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd'],
-  opacity = 0.4
+  colors = ["#2563eb", "#3b82f6", "#60a5fa", "#93c5fd"],
+  opacity = 0.4,
 }) => {
   const { map, isLoaded } = useMap();
   const [_result, setResult] = useState<GeoJSON.FeatureCollection | null>(null);
   const [_loading, setLoading] = useState(false);
   const [_error, setError] = useState<Error | null>(null);
 
-  const sourceId = 'isochrone-source';
+  const sourceId = "isochrone-source";
 
   const calculateIsochrone = useCallback(async () => {
     if (!center || contours.length === 0) return;
@@ -50,17 +50,17 @@ export const IsochroneTool: React.FC<IsochroneToolProps> = ({
     try {
       // Using OpenRouteService API format
       const response = await fetch(serviceUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': process.env.ORS_API_KEY || ''
+          "Content-Type": "application/json",
+          Authorization: process.env.ORS_API_KEY || "",
         },
         body: JSON.stringify({
           locations: [[center[0], center[1]]],
-          range: contours.map(c => c * 60), // Convert minutes to seconds
-          range_type: 'time',
-          profile: profile === 'driving' ? 'driving-car' : profile
-        })
+          range: contours.map((c) => c * 60), // Convert minutes to seconds
+          range_type: "time",
+          profile: profile === "driving" ? "driving-car" : profile,
+        }),
       });
 
       if (!response.ok) {
@@ -68,20 +68,22 @@ export const IsochroneTool: React.FC<IsochroneToolProps> = ({
       }
 
       const data = await response.json();
-      
+
       // Convert to standard GeoJSON
-      const features: GeoJSON.Feature[] = data.features.map((f: any, i: number) => ({
-        ...f,
-        properties: {
-          ...f.properties,
-          contour: contours[i],
-          color: colors[i % colors.length]
-        }
-      }));
+      const features: GeoJSON.Feature[] = data.features.map(
+        (f: any, i: number) => ({
+          ...f,
+          properties: {
+            ...f.properties,
+            contour: contours[i],
+            color: colors[i % colors.length],
+          },
+        })
+      );
 
       const resultCollection: GeoJSON.FeatureCollection = {
-        type: 'FeatureCollection',
-        features
+        type: "FeatureCollection",
+        features,
       };
 
       setResult(resultCollection);
@@ -91,11 +93,13 @@ export const IsochroneTool: React.FC<IsochroneToolProps> = ({
       if (displayResult && map && isLoaded) {
         if (!map.getSource(sourceId)) {
           map.addSource(sourceId, {
-            type: 'geojson',
-            data: resultCollection
+            type: "geojson",
+            data: resultCollection,
           });
         } else {
-          (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(resultCollection);
+          (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(
+            resultCollection
+          );
         }
 
         // Add layers for each contour (in reverse order for proper stacking)
@@ -104,13 +108,13 @@ export const IsochroneTool: React.FC<IsochroneToolProps> = ({
           if (!map.getLayer(layerId)) {
             map.addLayer({
               id: layerId,
-              type: 'fill',
+              type: "fill",
               source: sourceId,
-              filter: ['==', ['get', 'contour'], feature.properties?.contour],
+              filter: ["==", ["get", "contour"], feature.properties?.contour],
               paint: {
-                'fill-color': feature.properties?.color || colors[i],
-                'fill-opacity': opacity
-              }
+                "fill-color": feature.properties?.color || colors[i],
+                "fill-opacity": opacity,
+              },
             });
           }
         });

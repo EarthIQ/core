@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
-import type { CookiePreferences } from '../types';
+import type { CookiePreferences } from "../types";
 
 export type ConsentChangeCallback = (preferences: CookiePreferences) => void;
 
@@ -9,7 +9,9 @@ export interface ConsentInitializedDetail {
   isNewUser: boolean;
 }
 
-export type ConsentInitializedCallback = (detail: ConsentInitializedDetail) => void;
+export type ConsentInitializedCallback = (
+  detail: ConsentInitializedDetail
+) => void;
 
 /**
  * Listen for consent changes
@@ -19,18 +21,20 @@ export const useConsentListener = (callback: ConsentChangeCallback): void => {
   callbackRef.current = callback;
 
   useEffect(() => {
-    const handleConsentUpdate = (event: CustomEvent<{ preferences: CookiePreferences }>) => {
+    const handleConsentUpdate = (
+      event: CustomEvent<{ preferences: CookiePreferences }>
+    ) => {
       callbackRef.current(event.detail.preferences);
     };
 
     window.addEventListener(
-      'cookieConsentUpdate', 
+      "cookieConsentUpdate",
       handleConsentUpdate as EventListener
     );
 
     return () => {
       window.removeEventListener(
-        'cookieConsentUpdate', 
+        "cookieConsentUpdate",
         handleConsentUpdate as EventListener
       );
     };
@@ -40,23 +44,27 @@ export const useConsentListener = (callback: ConsentChangeCallback): void => {
 /**
  * Listen for consent initialization
  */
-export const useConsentInitializedListener = (callback: ConsentInitializedCallback): void => {
+export const useConsentInitializedListener = (
+  callback: ConsentInitializedCallback
+): void => {
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
 
   useEffect(() => {
-    const handleInitialized = (event: CustomEvent<ConsentInitializedDetail>) => {
+    const handleInitialized = (
+      event: CustomEvent<ConsentInitializedDetail>
+    ) => {
       callbackRef.current(event.detail);
     };
 
     window.addEventListener(
-      'cookieConsentInitialized',
+      "cookieConsentInitialized",
       handleInitialized as EventListener
     );
 
     return () => {
       window.removeEventListener(
-        'cookieConsentInitialized',
+        "cookieConsentInitialized",
         handleInitialized as EventListener
       );
     };
@@ -73,9 +81,9 @@ export const addConsentListener = (
     callback(event.detail.preferences);
   };
 
-  window.addEventListener('cookieConsentUpdate', handler as EventListener);
+  window.addEventListener("cookieConsentUpdate", handler as EventListener);
 
   return () => {
-    window.removeEventListener('cookieConsentUpdate', handler as EventListener);
+    window.removeEventListener("cookieConsentUpdate", handler as EventListener);
   };
 };

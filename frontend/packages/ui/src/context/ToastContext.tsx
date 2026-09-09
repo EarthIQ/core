@@ -362,12 +362,14 @@ const ToastItem = ({
 
       {/* Content */}
       <div className="flex flex-1 flex-col gap-1">
-        {toast.title ? <p
+        {toast.title ? (
+          <p
             className="text-sm font-semibold"
             data-title=""
           >
             {toast.title}
-          </p> : null}
+          </p>
+        ) : null}
         <p
           className="text-sm"
           data-message=""
@@ -376,7 +378,8 @@ const ToastItem = ({
         </p>
 
         {/* Action button */}
-        {toast.action ? <button
+        {toast.action ? (
+          <button
             className={cn(
               "mt-2 self-start text-sm font-medium underline underline-offset-2",
               "opacity-80 transition-opacity hover:opacity-100",
@@ -388,7 +391,8 @@ const ToastItem = ({
             }}
           >
             {toast.action.label}
-          </button> : null}
+          </button>
+        ) : null}
       </div>
 
       {/* Close button */}
@@ -431,7 +435,7 @@ const ToastItem = ({
       )}
     </motion.div>
   );
-}
+};
 
 /**
  * Toast Provider Component
@@ -570,7 +574,7 @@ export const ToastProvider = ({
       </div>
     </ToastContext.Provider>
   );
-}
+};
 
 /**
  * Hook to access toast functionality

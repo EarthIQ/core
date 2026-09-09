@@ -71,17 +71,17 @@ export const Tooltip = ({
     role,
   ]);
 
-  const { isMounted, styles: _transitionStyles } = useTransitionStyles(context, {
-    duration: 100,
-    initial: { opacity: 0, transform: "scale(0.95)" },
-  });
+  const { isMounted, styles: _transitionStyles } = useTransitionStyles(
+    context,
+    {
+      duration: 100,
+      initial: { opacity: 0, transform: "scale(0.95)" },
+    }
+  );
 
   // Arrow position
   const side = finalPlacement.split("-")[0] as
-    | "top"
-    | "right"
-    | "bottom"
-    | "left";
+    "top" | "right" | "bottom" | "left";
   const staticSide = {
     top: "bottom",
     right: "left",
@@ -101,7 +101,8 @@ export const Tooltip = ({
 
       <FloatingPortal>
         <AnimatePresence>
-          {isMounted && !disabled ? <div
+          {isMounted && !disabled ? (
+            <div
               ref={refs.setFloating}
               style={{
                 ...floatingStyles,
@@ -137,9 +138,10 @@ export const Tooltip = ({
                   }}
                 />
               </motion.div>
-            </div> : null}
+            </div>
+          ) : null}
         </AnimatePresence>
       </FloatingPortal>
     </>
   );
-}
+};

@@ -64,13 +64,16 @@ export default function FormsBuilderPage() {
   }
 
   return (
-    <BuilderScaffold builder={builder} projectId={projectId}>
+    <BuilderScaffold
+      builder={builder}
+      projectId={projectId}
+    >
       <BuilderWorkspace
         main={
           <div className="flex flex-col gap-4">
             {/* Field type palette */}
             <div className="rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-elevated)] p-3">
-              <div className="px-1 pb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+              <div className="px-1 pb-2 text-xs font-semibold tracking-wider text-[var(--text-tertiary)] uppercase">
                 Field types
               </div>
               <div className="flex flex-wrap gap-2">
@@ -98,10 +101,17 @@ export default function FormsBuilderPage() {
               title={activeForm?.title ?? "New form"}
               actions={
                 <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                  <Button disabled size="sm">
+                  <Button
+                    disabled
+                    size="sm"
+                  >
                     Responses (0)
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={addForm}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={addForm}
+                  >
                     New form
                   </Button>
                 </div>

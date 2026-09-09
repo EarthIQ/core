@@ -52,12 +52,12 @@ export default function FilterSidebar(props: Props) {
   } = props;
 
   return (
-    <aside className="w-full lg:w-56 shrink-0 flex flex-col gap-4 lg:sticky lg:top-4">
+    <aside className="flex w-full shrink-0 flex-col gap-4 lg:sticky lg:top-4 lg:w-56">
       {/* Search */}
-      <div className="card p-3 flex flex-col gap-3">
+      <div className="card flex flex-col gap-3 p-3">
         <div className="relative">
           <svg
-            className="text-text-tertiary absolute left-3 top-1/2 -translate-y-1/2"
+            className="text-text-tertiary absolute top-1/2 left-3 -translate-y-1/2"
             fill="none"
             height="16"
             stroke="currentColor"
@@ -65,8 +65,17 @@ export default function FilterSidebar(props: Props) {
             viewBox="0 0 24 24"
             width="16"
           >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" x2="16.65" y1="21" y2="16.65" />
+            <circle
+              cx="11"
+              cy="11"
+              r="8"
+            />
+            <line
+              x1="21"
+              x2="16.65"
+              y1="21"
+              y2="16.65"
+            />
           </svg>
           <input
             className="input input-sm pl-9"
@@ -86,7 +95,10 @@ export default function FilterSidebar(props: Props) {
           >
             <option value="all">All Types</option>
             {TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
+              <option
+                key={t.value}
+                value={t.value}
+              >
                 {t.label}
               </option>
             ))}
@@ -102,7 +114,10 @@ export default function FilterSidebar(props: Props) {
           >
             <option value="all">All Formats</option>
             {FORMATS.map((f) => (
-              <option key={f.value} value={f.value}>
+              <option
+                key={f.value}
+                value={f.value}
+              >
                 {f.label}
               </option>
             ))}
@@ -122,7 +137,7 @@ export default function FilterSidebar(props: Props) {
       {/* Tags */}
       {allTags.length > 0 && (
         <div className="card p-3">
-          <div className="text-xs font-semibold text-text-tertiary uppercase tracking-wide mb-2">
+          <div className="text-text-tertiary mb-2 text-xs font-semibold tracking-wide uppercase">
             Tags
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -131,7 +146,7 @@ export default function FilterSidebar(props: Props) {
               return (
                 <button
                   key={tag}
-                  className={`text-[0.7rem] px-2 py-1 rounded-full border transition-colors ${
+                  className={`rounded-full border px-2 py-1 text-[0.7rem] transition-colors ${
                     active
                       ? "bg-primary text-text-on-primary border-primary"
                       : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
@@ -147,7 +162,7 @@ export default function FilterSidebar(props: Props) {
       )}
 
       {/* Sort + view controls */}
-      <div className="card p-3 flex flex-col gap-3">
+      <div className="card flex flex-col gap-3 p-3">
         <div className="form-field">
           <label className="form-label">Sort by</label>
           <div className="flex gap-1.5">
@@ -173,7 +188,7 @@ export default function FilterSidebar(props: Props) {
 
         <div className="form-field">
           <label className="form-label">View</label>
-          <div className="flex items-center rounded-lg border border-border-primary overflow-hidden">
+          <div className="border-border-primary flex items-center overflow-hidden rounded-lg border">
             <button
               title="Table view"
               className={`flex-1 px-2 py-1.5 text-sm ${

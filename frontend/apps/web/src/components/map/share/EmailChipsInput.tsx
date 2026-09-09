@@ -40,9 +40,8 @@ export const EmailChipsInput = ({
         if (cancelled) return;
         setSuggestions(
           res.filter(
-            (r) =>
-              !chips.includes(r.email) && !existingEmails.includes(r.email),
-          ),
+            (r) => !chips.includes(r.email) && !existingEmails.includes(r.email)
+          )
         );
         setHighlight(0);
       });
@@ -80,7 +79,7 @@ export const EmailChipsInput = ({
       setHighlight((h) =>
         e.key === "ArrowDown"
           ? (h + 1) % suggestions.length
-          : (h - 1 + suggestions.length) % suggestions.length,
+          : (h - 1 + suggestions.length) % suggestions.length
       );
       return;
     }
@@ -105,7 +104,7 @@ export const EmailChipsInput = ({
   return (
     <div className="relative">
       <div
-        className={`flex flex-wrap items-center gap-1.5 min-h-[44px] px-3 py-2 rounded-xl border bg-surface-hover/40 cursor-text transition-colors ${
+        className={`bg-surface-hover/40 flex min-h-[44px] cursor-text flex-wrap items-center gap-1.5 rounded-xl border px-3 py-2 transition-colors ${
           invalid
             ? "border-red-400/60"
             : "border-border-secondary focus-within:border-primary/60"
@@ -115,14 +114,17 @@ export const EmailChipsInput = ({
         {chips.map((email) => (
           <span
             key={email}
-            className="flex items-center gap-1.5 pl-1 pr-1.5 py-1 rounded-full bg-primary/10 border border-primary/25"
+            className="bg-primary/10 border-primary/25 flex items-center gap-1.5 rounded-full border py-1 pr-1.5 pl-1"
           >
-            <Avatar email={email} size={18} />
-            <span className="text-[0.72rem] text-text-primary max-w-[160px] truncate">
+            <Avatar
+              email={email}
+              size={18}
+            />
+            <span className="text-text-primary max-w-[160px] truncate text-[0.72rem]">
               {email}
             </span>
             <button
-              className="text-text-tertiary hover:text-red-400 transition-colors"
+              className="text-text-tertiary transition-colors hover:text-red-400"
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
@@ -137,7 +139,7 @@ export const EmailChipsInput = ({
         <input
           ref={inputRef}
           autoFocus={autoFocus}
-          className="flex-1 min-w-[160px] bg-transparent border-none outline-none text-[0.8rem] text-text-primary placeholder:text-text-quaternary py-0.5"
+          className="text-text-primary placeholder:text-text-quaternary min-w-[160px] flex-1 border-none bg-transparent py-0.5 text-[0.8rem] outline-none"
           value={draft}
           placeholder={
             chips.length === 0 ? "Add people, groups, or email addresses" : ""
@@ -162,33 +164,41 @@ export const EmailChipsInput = ({
         />
       </div>
 
-      {invalid ? <div className="mt-1 text-[0.7rem] text-red-400">
+      {invalid ? (
+        <div className="mt-1 text-[0.7rem] text-red-400">
           {invalid.includes("@") && !invalid.includes("already")
             ? `"${invalid}" is not a valid email address`
             : invalid}
-        </div> : null}
+        </div>
+      ) : null}
 
       {suggestions.length > 0 && (
-        <div className="absolute left-0 right-0 top-full mt-1 bg-elevated border border-border-primary rounded-xl shadow-2xl py-1 z-[70] max-h-56 overflow-y-auto scrollbar-thin animate-fade-in">
+        <div className="bg-elevated border-border-primary animate-fade-in absolute top-full right-0 left-0 z-[70] mt-1 max-h-56 scrollbar-thin overflow-y-auto rounded-xl border py-1 shadow-2xl">
           {suggestions.map((s, i) => (
             <button
               key={s.id}
               type="button"
-              className={`flex items-center gap-2.5 w-full px-3 py-2 text-left transition-colors ${
+              className={`flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors ${
                 i === highlight ? "bg-surface-hover" : ""
               }`}
               onClick={() => commit(s.email)}
               onMouseDown={(e) => e.preventDefault()}
               onMouseEnter={() => setHighlight(i)}
             >
-              <Avatar email={s.email} name={s.name} size={28} />
+              <Avatar
+                email={s.email}
+                name={s.name}
+                size={28}
+              />
               <span className="min-w-0">
-                <span className="block text-[0.78rem] text-text-primary truncate">
+                <span className="text-text-primary block truncate text-[0.78rem]">
                   {s.name ?? s.email}
                 </span>
-                {s.name ? <span className="block text-[0.68rem] text-text-tertiary truncate">
+                {s.name ? (
+                  <span className="text-text-tertiary block truncate text-[0.68rem]">
                     {s.email}
-                  </span> : null}
+                  </span>
+                ) : null}
               </span>
             </button>
           ))}
@@ -196,4 +206,4 @@ export const EmailChipsInput = ({
       )}
     </div>
   );
-}
+};

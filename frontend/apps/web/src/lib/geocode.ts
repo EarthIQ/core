@@ -34,7 +34,7 @@ export interface PlaceResult {
  */
 export async function searchPlaces(
   query: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<PlaceResult[]> {
   const lang =
     typeof navigator !== "undefined" && navigator.language

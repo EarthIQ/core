@@ -65,10 +65,14 @@ interface Props {
 
 /** Map an attribute type string to a Badge variant for colour coding. */
 function typeVariant(
-  type?: string,
+  type?: string
 ): "info" | "primary" | "warning" | "success" | "secondary" | "default" {
   const t = (type || "").toLowerCase();
-  if (/\bint|float|double|real|decimal|numeric|serial|number|bigint|smallint\b/.test(t))
+  if (
+    /\bint|float|double|real|decimal|numeric|serial|number|bigint|smallint\b/.test(
+      t
+    )
+  )
     return "info";
   if (/\bbool|flag\b/.test(t)) return "warning";
   if (/\bdate|time|timestamp\b/.test(t)) return "success";
@@ -101,7 +105,7 @@ const FactTile = ({
     : formatColor("default");
   return (
     <div
-      className={`flex items-center gap-2.5 rounded-xl border bg-surface-hover px-3 py-2.5 ${c.border}`}
+      className={`bg-surface-hover flex items-center gap-2.5 rounded-xl border px-3 py-2.5 ${c.border}`}
     >
       <div
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
@@ -111,7 +115,7 @@ const FactTile = ({
         <Icon size={16} />
       </div>
       <div className="min-w-0">
-        <div className="text-[0.62rem] font-semibold uppercase tracking-wide text-subtle">
+        <div className="text-subtle text-[0.62rem] font-semibold tracking-wide uppercase">
           {label}
         </div>
         <div className="truncate text-sm font-medium text-[var(--text-primary)]">
@@ -120,7 +124,7 @@ const FactTile = ({
       </div>
     </div>
   );
-}
+};
 
 export default function PreviewModal({
   dataset,
@@ -156,7 +160,9 @@ export default function PreviewModal({
         else setTab("ask-ai");
       } catch (err: unknown) {
         if (!cancelled) {
-          setLoadError((err as { message?: string })?.message ?? "Could not load preview.");
+          setLoadError(
+            (err as { message?: string })?.message ?? "Could not load preview."
+          );
           setTab("ask-ai");
         }
       } finally {
@@ -210,45 +216,49 @@ export default function PreviewModal({
       : "-";
 
   function copyRaw() {
-    const text = JSON.stringify(data?.asset_meta ?? dataset.meta ?? {}, null, 2);
+    const text = JSON.stringify(
+      data?.asset_meta ?? dataset.meta ?? {},
+      null,
+      2
+    );
     navigator.clipboard?.writeText(text).then(
       () => {
         setCopiedRaw(true);
         addToast("success", "Raw metadata copied to clipboard.");
         setTimeout(() => setCopiedRaw(false), 1600);
       },
-      () => addToast("error", "Couldn't copy to clipboard."),
+      () => addToast("error", "Couldn't copy to clipboard.")
     );
   }
 
   // ── Tab content ─────────────────────────────────────────────────────────────
   const rowsContent = !hasRows ? (
-    <div className="flex flex-col items-center gap-3 rounded-xl border border-subtle bg-surface-hover px-6 py-12 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+    <div className="border-subtle bg-surface-hover flex flex-col items-center gap-3 rounded-xl border px-6 py-12 text-center">
+      <div className="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-2xl">
         <FileText size={22} />
       </div>
       <div className="text-sm font-medium text-[var(--text-primary)]">
         No row preview is available for this dataset.
       </div>
-      <div className="max-w-md text-xs text-subtle">
+      <div className="text-subtle max-w-md text-xs">
         {isStoredAsset(dataset)
           ? "It is registered as a downloadable asset - use Download to retrieve the original file."
           : "You can still ask the AI about it, or inspect the raw metadata."}
       </div>
     </div>
   ) : (
-    <div className="overflow-hidden rounded-xl border border-subtle">
+    <div className="border-subtle overflow-hidden rounded-xl border">
       <div className="max-h-[42vh] overflow-auto">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 z-10 bg-surface">
+          <thead className="bg-surface sticky top-0 z-10">
             <tr>
-              <th className="px-3 py-2.5 text-left text-[0.68rem] font-semibold uppercase tracking-wide text-subtle">
+              <th className="text-subtle px-3 py-2.5 text-left text-[0.68rem] font-semibold tracking-wide uppercase">
                 #
               </th>
               {data.columns.map((c) => (
                 <th
                   key={c.field}
-                  className="whitespace-nowrap px-3 py-2.5 text-left text-[0.68rem] font-semibold uppercase tracking-wide text-subtle"
+                  className="text-subtle px-3 py-2.5 text-left text-[0.68rem] font-semibold tracking-wide whitespace-nowrap uppercase"
                 >
                   {c.field}
                 </th>
@@ -257,15 +267,21 @@ export default function PreviewModal({
           </thead>
           <tbody className="divide-y divide-[var(--border-secondary)]">
             {data.rows.map((r, i) => (
-              <tr key={i} className="transition-colors hover:bg-surface-hover">
-                <td className="px-3 py-2 text-xs text-subtle tabular-nums">{i + 1}</td>
+              <tr
+                key={i}
+                className="hover:bg-surface-hover transition-colors"
+              >
+                <td className="text-subtle px-3 py-2 text-xs tabular-nums">
+                  {i + 1}
+                </td>
                 {data.columns.map((c) => (
                   <td
                     key={c.field}
                     className="max-w-[16rem] truncate px-3 py-2 text-[var(--text-secondary)]"
                     title={String(r.values[c.field] ?? "")}
                   >
-                    {r.values[c.field] === undefined || r.values[c.field] === null
+                    {r.values[c.field] === undefined ||
+                    r.values[c.field] === null
                       ? "-"
                       : String(r.values[c.field])}
                   </td>
@@ -276,66 +292,73 @@ export default function PreviewModal({
         </table>
       </div>
       {data.row_count != null && data.row_count > data.rows.length && (
-        <div className="border-t border-subtle px-3 py-2 text-xs text-subtle">
-          Showing first {data.rows.length} of{" "}
-          {data.row_count.toLocaleString()} rows.
+        <div className="border-subtle text-subtle border-t px-3 py-2 text-xs">
+          Showing first {data.rows.length} of {data.row_count.toLocaleString()}{" "}
+          rows.
         </div>
       )}
     </div>
   );
 
   const schemaContent = !hasAttributes ? (
-    <div className="flex flex-col items-center gap-3 rounded-xl border border-subtle bg-surface-hover px-6 py-12 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+    <div className="border-subtle bg-surface-hover flex flex-col items-center gap-3 rounded-xl border px-6 py-12 text-center">
+      <div className="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-2xl">
         <Boxes size={22} />
       </div>
       <div className="text-sm font-medium text-[var(--text-primary)]">
         No attribute schema is available for this dataset.
       </div>
-      <div className="max-w-md text-xs text-subtle">
+      <div className="text-subtle max-w-md text-xs">
         Ask the AI to help interpret what this {dataset.format} layer contains.
       </div>
     </div>
   ) : (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm text-muted">
+        <span className="text-muted text-sm">
           {attributeColumns.length} field
-          {attributeColumns.length === 1 ? "" : "s"} on the {dataset.format} layer
+          {attributeColumns.length === 1 ? "" : "s"} on the {dataset.format}{" "}
+          layer
         </span>
-        <span className="text-xs text-subtle">
+        <span className="text-subtle text-xs">
           Use these for querying, styling &amp; pop-ups in map clients.
         </span>
       </div>
-      <div className="overflow-hidden rounded-xl border border-subtle">
+      <div className="border-subtle overflow-hidden rounded-xl border">
         <div className="max-h-[42vh] overflow-auto">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 z-10 bg-surface">
+            <thead className="bg-surface sticky top-0 z-10">
               <tr>
-                <th className="px-3 py-2.5 text-left text-[0.68rem] font-semibold uppercase tracking-wide text-subtle">
+                <th className="text-subtle px-3 py-2.5 text-left text-[0.68rem] font-semibold tracking-wide uppercase">
                   Field
                 </th>
-                <th className="px-3 py-2.5 text-left text-[0.68rem] font-semibold uppercase tracking-wide text-subtle">
+                <th className="text-subtle px-3 py-2.5 text-left text-[0.68rem] font-semibold tracking-wide uppercase">
                   Type
                 </th>
-                <th className="px-3 py-2.5 text-left text-[0.68rem] font-semibold uppercase tracking-wide text-subtle">
+                <th className="text-subtle px-3 py-2.5 text-left text-[0.68rem] font-semibold tracking-wide uppercase">
                   Sample
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-secondary)]">
               {attributeColumns.map((a) => (
-                <tr key={a.field} className="transition-colors hover:bg-surface-hover">
+                <tr
+                  key={a.field}
+                  className="hover:bg-surface-hover transition-colors"
+                >
                   <td className="px-3 py-2 font-mono text-xs text-[var(--text-primary)]">
                     {a.field}
                   </td>
                   <td className="px-3 py-2">
-                    <Badge size="sm" variant={typeVariant(a.type)}>
+                    <Badge
+                      size="sm"
+                      variant={typeVariant(a.type)}
+                    >
                       {a.type || "unknown"}
                     </Badge>
                   </td>
                   <td
-                    className="max-w-[16rem] truncate px-3 py-2 font-mono text-xs text-subtle"
+                    className="text-subtle max-w-[16rem] truncate px-3 py-2 font-mono text-xs"
                     title={a.sample}
                   >
                     {a.sample ?? "-"}
@@ -350,17 +373,20 @@ export default function PreviewModal({
   );
 
   const rawContent = (
-    <div className="overflow-hidden rounded-xl border border-subtle">
-      <div className="flex items-center justify-between gap-3 border-b border-subtle px-3 py-2">
-        <span className="flex items-center gap-1.5 text-xs text-subtle">
+    <div className="border-subtle overflow-hidden rounded-xl border">
+      <div className="border-subtle flex items-center justify-between gap-3 border-b px-3 py-2">
+        <span className="text-subtle flex items-center gap-1.5 text-xs">
           <FileText size={13} /> Raw asset metadata
         </span>
         <button
-          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-subtle transition-colors hover:bg-surface-hover hover:text-primary"
+          className="text-subtle hover:bg-surface-hover hover:text-primary inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors"
           onClick={copyRaw}
         >
           {copiedRaw ? (
-            <Check className="text-success" size={12} />
+            <Check
+              className="text-success"
+              size={12}
+            />
           ) : (
             <Copy size={12} />
           )}
@@ -387,33 +413,59 @@ export default function PreviewModal({
       <div className="flex flex-col gap-4">
         {/* Facts grid */}
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
-          <FactTile accent icon={FormatIcon} label="Format" value={dataset.format} />
-          <FactTile icon={TypeIcon} label="Type" value={typeLabel(dataset.type)} />
-          <FactTile icon={Globe} label="CRS" value={dataset.crs || "unknown"} />
+          <FactTile
+            accent
+            icon={FormatIcon}
+            label="Format"
+            value={dataset.format}
+          />
+          <FactTile
+            icon={TypeIcon}
+            label="Type"
+            value={typeLabel(dataset.type)}
+          />
+          <FactTile
+            icon={Globe}
+            label="CRS"
+            value={dataset.crs || "unknown"}
+          />
           <FactTile
             icon={HardDrive}
             label="Size"
             value={formatBytes(dataset.file_size_bytes)}
           />
-          <FactTile icon={Table2} label="Features" value={featureCountLabel(dataset)} />
-          <FactTile icon={GeomIcon} label="Geometry" value={geometryLabel} />
+          <FactTile
+            icon={Table2}
+            label="Features"
+            value={featureCountLabel(dataset)}
+          />
+          <FactTile
+            icon={GeomIcon}
+            label="Geometry"
+            value={geometryLabel}
+          />
         </div>
 
         {/* ID + copy (kept compact on its own line) */}
-        <div className="-mt-1 flex items-center justify-between gap-3 text-xs text-subtle">
+        <div className="text-subtle -mt-1 flex items-center justify-between gap-3 text-xs">
           <span className="flex items-center gap-1.5 truncate">
             <span className="font-mono">{dataset.id.slice(0, 8)}…</span>
             <span>·</span>
-            <span className="truncate">{dataset.tags?.length ? dataset.tags.join(", ") : "no tags"}</span>
+            <span className="truncate">
+              {dataset.tags?.length ? dataset.tags.join(", ") : "no tags"}
+            </span>
           </span>
           <button
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-subtle bg-surface-hover px-2 py-1 text-xs text-subtle transition-colors hover:text-primary"
+            className="border-subtle bg-surface-hover text-subtle hover:text-primary inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors"
             title="Copy dataset ID"
             type="button"
             onClick={() => onCopyId(dataset.id)}
           >
             {idCopied ? (
-              <Check className="text-success" size={12} />
+              <Check
+                className="text-success"
+                size={12}
+              />
             ) : (
               <Copy size={12} />
             )}
@@ -421,9 +473,14 @@ export default function PreviewModal({
           </button>
         </div>
 
-        {loadError ? <Alert title="Preview unavailable" variant="error">
+        {loadError ? (
+          <Alert
+            title="Preview unavailable"
+            variant="error"
+          >
             {loadError}
-          </Alert> : null}
+          </Alert>
+        ) : null}
 
         {loading ? (
           <div className="flex flex-col gap-2 py-4">
@@ -440,23 +497,42 @@ export default function PreviewModal({
             onValueChange={(k) => setTab(k as Tab)}
           >
             <TabsList>
-              <TabsTrigger icon={<Table2 size={14} />} value="rows">
+              <TabsTrigger
+                icon={<Table2 size={14} />}
+                value="rows"
+              >
                 Rows
               </TabsTrigger>
-              <TabsTrigger icon={<Boxes size={14} />} value="schema">
+              <TabsTrigger
+                icon={<Boxes size={14} />}
+                value="schema"
+              >
                 Schema
               </TabsTrigger>
-              <TabsTrigger icon={<Sparkles size={14} />} value="ask-ai">
+              <TabsTrigger
+                icon={<Sparkles size={14} />}
+                value="ask-ai"
+              >
                 Ask AI
               </TabsTrigger>
-              <TabsTrigger icon={<FileText size={14} />} value="raw">
+              <TabsTrigger
+                icon={<FileText size={14} />}
+                value="raw"
+              >
                 Raw
               </TabsTrigger>
             </TabsList>
             <TabsContent value="rows">{rowsContent}</TabsContent>
             <TabsContent value="schema">{schemaContent}</TabsContent>
-            <TabsContent forceMount value="ask-ai">
-              <AskAIPanel addToast={addToast} dataset={dataset} preview={data} />
+            <TabsContent
+              forceMount
+              value="ask-ai"
+            >
+              <AskAIPanel
+                addToast={addToast}
+                dataset={dataset}
+                preview={data}
+              />
             </TabsContent>
             <TabsContent value="raw">{rawContent}</TabsContent>
           </Tabs>

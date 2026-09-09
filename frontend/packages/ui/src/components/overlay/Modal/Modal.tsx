@@ -64,16 +64,12 @@ const CloseButton = ({ onClose }: { onClose: () => void }) => (
     }
     onClick={onClose}
     onMouseEnter={(e) => {
-      (e.currentTarget).style.backgroundColor =
-        "var(--surface-hover)";
-      (e.currentTarget).style.color =
-        "var(--text-primary)";
+      e.currentTarget.style.backgroundColor = "var(--surface-hover)";
+      e.currentTarget.style.color = "var(--text-primary)";
     }}
     onMouseLeave={(e) => {
-      (e.currentTarget).style.backgroundColor =
-        "transparent";
-      (e.currentTarget).style.color =
-        "var(--text-tertiary)";
+      e.currentTarget.style.backgroundColor = "transparent";
+      e.currentTarget.style.color = "var(--text-tertiary)";
     }}
   >
     <X
@@ -94,20 +90,24 @@ const ModalHeader = ({
 
   return (
     <div className="mb-5 pr-8">
-      {title ? <h2
+      {title ? (
+        <h2
           className="text-lg leading-tight font-semibold"
           id="modal-title"
           style={{ color: "var(--text-primary)" }}
         >
           {title}
-        </h2> : null}
-      {description ? <p
+        </h2>
+      ) : null}
+      {description ? (
+        <p
           className="mt-1.5 text-sm leading-relaxed"
           id="modal-description"
           style={{ color: "var(--text-secondary)" }}
         >
           {description}
-        </p> : null}
+        </p>
+      ) : null}
     </div>
   );
 };
@@ -226,7 +226,7 @@ export const Modal = ({
     </div>,
     document.body
   );
-}
+};
 
 // =========================================
 // Modal Footer
@@ -258,4 +258,4 @@ export const ModalFooter = ({
       {children}
     </div>
   );
-}
+};

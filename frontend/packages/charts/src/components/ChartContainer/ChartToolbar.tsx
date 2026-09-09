@@ -88,13 +88,16 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
       className={cn("flex items-center gap-1", className)}
       role="toolbar"
     >
-      {fullscreen ? <ToolbarButton
+      {fullscreen ? (
+        <ToolbarButton
           icon={<FullscreenIcon size={16} />}
           label="Fullscreen"
           onClick={onFullscreen}
-        /> : null}
+        />
+      ) : null}
 
-      {downloadData ? <ToolbarButton
+      {downloadData ? (
+        <ToolbarButton
           label={copied ? "Copied!" : "Copy data"}
           icon={
             copied ? (
@@ -107,9 +110,11 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
             )
           }
           onClick={handleCopy}
-        /> : null}
+        />
+      ) : null}
 
-      {(downloadImage || downloadData) ? <div
+      {downloadImage || downloadData ? (
+        <div
           ref={dropdownRef}
           className="relative"
         >
@@ -123,13 +128,15 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
             onClick={() => setShowDropdown(!showDropdown)}
           />
 
-          {showDropdown ? <div
+          {showDropdown ? (
+            <div
               aria-orientation="vertical"
               className="card-elevated animate-scale-in absolute top-full right-0 mt-1 min-w-[160px] py-1"
               role="menu"
               style={{ zIndex: "var(--z-dropdown)" }}
             >
-              {downloadImage ? <>
+              {downloadImage ? (
+                <>
                   <DropdownHeader>Download Image</DropdownHeader>
                   <DropdownItem
                     icon={<ImageIcon size={14} />}
@@ -156,9 +163,11 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                     }}
                   />
                   <DropdownDivider />
-                </> : null}
+                </>
+              ) : null}
 
-              {downloadData ? <>
+              {downloadData ? (
+                <>
                   <DropdownHeader>Download Data</DropdownHeader>
                   <DropdownItem
                     icon={<TableIcon size={14} />}
@@ -176,7 +185,8 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                       setShowDropdown(false);
                     }}
                   />
-                </> : null}
+                </>
+              ) : null}
 
               {customActions.length > 0 && (
                 <>
@@ -194,8 +204,10 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                   ))}
                 </>
               )}
-            </div> : null}
-        </div> : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 };

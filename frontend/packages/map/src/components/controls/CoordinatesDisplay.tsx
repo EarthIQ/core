@@ -224,7 +224,8 @@ const FormatSelector: React.FC<FormatSelectorProps> = ({
         </svg>
       </button>
 
-      {isOpen ? <>
+      {isOpen ? (
+        <>
           <div
             style={{ position: "fixed", inset: 0, zIndex: 999 }}
             onClick={() => setIsOpen(false)}
@@ -298,7 +299,8 @@ const FormatSelector: React.FC<FormatSelectorProps> = ({
               </button>
             ))}
           </div>
-        </> : null}
+        </>
+      ) : null}
     </div>
   );
 };
@@ -551,28 +553,36 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
         </span>
 
         {/* Separator */}
-        {(showZoom || showScale || showElevation) ? <div
+        {showZoom || showScale || showElevation ? (
+          <div
             style={{
               width: "1px",
               height: "14px",
               backgroundColor: "var(--border-primary)",
             }}
-          /> : null}
+          />
+        ) : null}
 
         {/* Zoom */}
-        {showZoom ? <span style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
+        {showZoom ? (
+          <span style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
             z{zoom.toFixed(1)}
-          </span> : null}
+          </span>
+        ) : null}
 
         {/* Scale */}
-        {showScale ? <span style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
+        {showScale ? (
+          <span style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
             {getScale()}
-          </span> : null}
+          </span>
+        ) : null}
 
         {/* Elevation */}
-        {showElevation && elevation !== null ? <span style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
+        {showElevation && elevation !== null ? (
+          <span style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
             {elevation.toFixed(0)}m
-          </span> : null}
+          </span>
+        ) : null}
 
         {/* Copy feedback */}
         <CopyFeedback show={copied} />
@@ -604,11 +614,13 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Format Selector */}
-        {switchable ? <FormatSelector
+        {switchable ? (
+          <FormatSelector
             compact
             value={format}
             onChange={setFormat}
-          /> : null}
+          />
+        ) : null}
 
         {/* Coordinates */}
         <div
@@ -631,18 +643,24 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
         </div>
 
         {/* Info Pills */}
-        {showZoom ? <InfoPill
+        {showZoom ? (
+          <InfoPill
             label="Z"
             value={zoom.toFixed(1)}
-          /> : null}
-        {showScale ? <InfoPill
+          />
+        ) : null}
+        {showScale ? (
+          <InfoPill
             label=""
             value={getScale()}
-          /> : null}
-        {showElevation && elevation !== null ? <InfoPill
+          />
+        ) : null}
+        {showElevation && elevation !== null ? (
+          <InfoPill
             label="↑"
             value={`${elevation.toFixed(0)}m`}
-          /> : null}
+          />
+        ) : null}
       </div>
     );
   }
@@ -689,10 +707,12 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
         >
           Coordinates
         </span>
-        {switchable ? <FormatSelector
+        {switchable ? (
+          <FormatSelector
             value={format}
             onChange={setFormat}
-          /> : null}
+          />
+        ) : null}
       </div>
 
       {/* Coordinates Display */}
@@ -763,14 +783,16 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
       </div>
 
       {/* Info Grid */}
-      {(showZoom || showScale || showElevation) ? <div
+      {showZoom || showScale || showElevation ? (
+        <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
             gap: "8px",
           }}
         >
-          {showZoom ? <div
+          {showZoom ? (
+            <div
               style={{
                 display: "flex",
                 flexDirection: "column",
@@ -801,9 +823,11 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
               >
                 {zoom.toFixed(1)}
               </span>
-            </div> : null}
+            </div>
+          ) : null}
 
-          {showScale ? <div
+          {showScale ? (
+            <div
               style={{
                 display: "flex",
                 flexDirection: "column",
@@ -834,9 +858,11 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
               >
                 {getScale()}
               </span>
-            </div> : null}
+            </div>
+          ) : null}
 
-          {showElevation ? <div
+          {showElevation ? (
+            <div
               style={{
                 display: "flex",
                 flexDirection: "column",
@@ -867,8 +893,10 @@ export const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
               >
                 {elevation !== null ? `${elevation.toFixed(0)}m` : "-"}
               </span>
-            </div> : null}
-        </div> : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 };

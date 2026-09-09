@@ -38,7 +38,7 @@ export const Avatar = ({
     return (
       <img
         alt={label}
-        className="rounded-full object-cover shrink-0"
+        className="shrink-0 rounded-full object-cover"
         src={src}
         style={{ width: size, height: size }}
       />
@@ -47,7 +47,7 @@ export const Avatar = ({
 
   return (
     <div
-      className="rounded-full flex items-center justify-center shrink-0 text-white font-semibold select-none"
+      className="flex shrink-0 items-center justify-center rounded-full font-semibold text-white select-none"
       title={label}
       style={{
         width: size,
@@ -59,4 +59,4 @@ export const Avatar = ({
       {initials || "?"}
     </div>
   );
-}
+};

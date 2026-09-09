@@ -239,8 +239,10 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           </div>
 
           {/* Label and description */}
-          {(label || description) ? <div className="flex flex-col gap-0.5">
-              {label ? <span
+          {label || description ? (
+            <div className="flex flex-col gap-0.5">
+              {label ? (
+                <span
                   className={cn(
                     "font-medium text-[var(--text-primary)]",
                     labelSizeClasses[size],
@@ -248,8 +250,10 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                   )}
                 >
                   {label}
-                </span> : null}
-              {description ? <span
+                </span>
+              ) : null}
+              {description ? (
+                <span
                   className={cn(
                     "text-[var(--text-secondary)]",
                     descriptionSizeClasses[size],
@@ -257,18 +261,22 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                   )}
                 >
                   {description}
-                </span> : null}
-            </div> : null}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
         </label>
 
         {/* Error message */}
-        {error && errorMessage ? <p
+        {error && errorMessage ? (
+          <p
             className="ml-8 text-xs text-[var(--error-text)]"
             id={`${checkboxId}-error`}
             role="alert"
           >
             {errorMessage}
-          </p> : null}
+          </p>
+        ) : null}
       </div>
     );
   }

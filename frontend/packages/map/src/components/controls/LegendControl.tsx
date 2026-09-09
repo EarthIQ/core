@@ -260,7 +260,9 @@ export const LegendControl: React.FC<LegendControlProps> = ({
         onMouseDown={isDraggable ? handleMouseDown : undefined}
         onTouchStart={isDraggable ? handleTouchStart : undefined}
       >
-        {isDraggable ? <GripVertical className="h-4 w-4 flex-shrink-0 text-[var(--text-tertiary)]" /> : null}
+        {isDraggable ? (
+          <GripVertical className="h-4 w-4 flex-shrink-0 text-[var(--text-tertiary)]" />
+        ) : null}
 
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <Layers className="h-4 w-4 flex-shrink-0 text-[var(--primary)]" />
@@ -269,7 +271,8 @@ export const LegendControl: React.FC<LegendControlProps> = ({
           </span>
         </div>
 
-        {collapsible ? <button
+        {collapsible ? (
+          <button
             className={cn(
               "flex h-6 w-6 items-center justify-center rounded-md",
               "text-[var(--text-tertiary)]",
@@ -284,7 +287,8 @@ export const LegendControl: React.FC<LegendControlProps> = ({
                 isCollapsed && "-rotate-90"
               )}
             />
-          </button> : null}
+          </button>
+        ) : null}
       </div>
 
       {/* Body */}
@@ -402,7 +406,8 @@ const LegendItemCard: React.FC<LegendItemCardProps> = ({
         </span>
 
         {/* Visibility Toggle */}
-        {showVisibilityToggle ? <button
+        {showVisibilityToggle ? (
+          <button
             title={isVisible ? "Hide layer" : "Show layer"}
             className={cn(
               "flex h-5 w-5 items-center justify-center rounded",
@@ -417,7 +422,8 @@ const LegendItemCard: React.FC<LegendItemCardProps> = ({
             ) : (
               <EyeOff className="h-3.5 w-3.5" />
             )}
-          </button> : null}
+          </button>
+        ) : null}
       </div>
 
       {/* Expanded Content */}
@@ -429,25 +435,32 @@ const LegendItemCard: React.FC<LegendItemCardProps> = ({
       >
         <div className="px-2 pb-2">
           {/* Gradient */}
-          {item.type === "gradient" && item.colorStops ? <GradientLegend
+          {item.type === "gradient" && item.colorStops ? (
+            <GradientLegend
               colorStops={item.colorStops}
               range={item.range}
               unit={item.unit}
-            /> : null}
+            />
+          ) : null}
 
           {/* Category */}
-          {item.type === "category" && item.categories ? <CategoryLegend categories={item.categories} /> : null}
+          {item.type === "category" && item.categories ? (
+            <CategoryLegend categories={item.categories} />
+          ) : null}
 
           {/* Proportional */}
-          {item.type === "proportional" && item.sizeRange ? <ProportionalLegend
+          {item.type === "proportional" && item.sizeRange ? (
+            <ProportionalLegend
               color={item.color as string}
               range={item.range}
               sizeRange={item.sizeRange}
               unit={item.unit}
-            /> : null}
+            />
+          ) : null}
 
           {/* Nested Children */}
-          {item.children && item.children.length > 0 ? <div className="mt-1 space-y-1">
+          {item.children && item.children.length > 0 ? (
+            <div className="mt-1 space-y-1">
               {item.children.map((child) => (
                 <LegendItemCard
                   key={child.id}
@@ -466,7 +479,8 @@ const LegendItemCard: React.FC<LegendItemCardProps> = ({
                   }
                 />
               ))}
-            </div> : null}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
@@ -614,9 +628,11 @@ const GradientLegend: React.FC<{
         <span className="text-[10px] font-medium text-[var(--text-tertiary)] tabular-nums">
           {colorStops[0].label ?? range?.[0] ?? colorStops[0].value}
         </span>
-        {unit ? <span className="text-[10px] text-[var(--text-tertiary)]">
+        {unit ? (
+          <span className="text-[10px] text-[var(--text-tertiary)]">
             {unit}
-          </span> : null}
+          </span>
+        ) : null}
         <span className="text-[10px] font-medium text-[var(--text-tertiary)] tabular-nums">
           {colorStops[colorStops.length - 1].label ??
             range?.[1] ??
@@ -636,9 +652,11 @@ const GradientLegend: React.FC<{
                 className="h-2 w-2 rounded-full border border-black/10 dark:border-white/10"
                 style={{ backgroundColor: stop.color }}
               />
-              {stop.label ? <span className="mt-0.5 text-[9px] text-[var(--text-tertiary)]">
+              {stop.label ? (
+                <span className="mt-0.5 text-[9px] text-[var(--text-tertiary)]">
                   {stop.label}
-                </span> : null}
+                </span>
+              ) : null}
             </div>
           ))}
         </div>
@@ -724,11 +742,13 @@ const ProportionalLegend: React.FC<{
           </div>
         ))}
       </div>
-      {unit ? <div className="text-center">
+      {unit ? (
+        <div className="text-center">
           <span className="text-[10px] text-[var(--text-tertiary)]">
             {unit}
           </span>
-        </div> : null}
+        </div>
+      ) : null}
     </div>
   );
 };

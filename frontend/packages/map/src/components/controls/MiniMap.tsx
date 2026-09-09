@@ -1,11 +1,11 @@
-import * as maplibregl from 'maplibre-gl';
-import React, { useEffect, useRef, useState } from 'react';
+import * as maplibregl from "maplibre-gl";
+import React, { useEffect, useRef, useState } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
 export interface MiniMapProps {
   /** Position on map */
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   /** Width in pixels */
   width?: number;
   /** Height in pixels */
@@ -23,7 +23,7 @@ export interface MiniMapProps {
   /** Initially collapsed */
   defaultCollapsed?: boolean;
   /** Border style */
-  borderStyle?: 'solid' | 'shadow' | 'none';
+  borderStyle?: "solid" | "shadow" | "none";
   /** Border radius */
   borderRadius?: number;
   /** Enable interaction on minimap */
@@ -33,24 +33,24 @@ export interface MiniMapProps {
 }
 
 export const MiniMap: React.FC<MiniMapProps> = ({
-  position = 'bottom-right',
+  position = "bottom-right",
   width = 150,
   height = 150,
   zoomOffset = -5,
   style,
   showViewport = true,
-  viewportColor = 'rgba(59, 130, 246, 0.5)',
+  viewportColor = "rgba(59, 130, 246, 0.5)",
   collapsible = true,
   defaultCollapsed = false,
-  borderStyle = 'shadow',
+  borderStyle = "shadow",
   borderRadius = 8,
   interactive = false,
-  syncOnClick = true
+  syncOnClick = true,
 }) => {
   const { map: mainMap, isLoaded } = useMap();
   const containerRef = useRef<HTMLDivElement>(null);
   const miniMapRef = useRef<maplibregl.Map | null>(null);
-  const viewportLayerRef = useRef<string>('minimap-viewport');
+  const viewportLayerRef = useRef<string>("minimap-viewport");
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
 
   // Initialize minimap
@@ -66,37 +66,37 @@ export const MiniMap: React.FC<MiniMapProps> = ({
       center: mainMap.getCenter(),
       zoom: mainMap.getZoom() + zoomOffset,
       interactive,
-      attributionControl: false
+      attributionControl: false,
     });
 
     miniMapRef.current = miniMap;
 
-    miniMap.on('load', () => {
+    miniMap.on("load", () => {
       if (showViewport) {
         // Add viewport indicator source and layer
         miniMap.addSource(viewportLayerRef.current, {
-          type: 'geojson',
-          data: getViewportGeoJSON(mainMap)
+          type: "geojson",
+          data: getViewportGeoJSON(mainMap),
         });
 
         miniMap.addLayer({
           id: `${viewportLayerRef.current}-fill`,
-          type: 'fill',
+          type: "fill",
           source: viewportLayerRef.current,
           paint: {
-            'fill-color': viewportColor,
-            'fill-opacity': 0.3
-          }
+            "fill-color": viewportColor,
+            "fill-opacity": 0.3,
+          },
         });
 
         miniMap.addLayer({
           id: `${viewportLayerRef.current}-line`,
-          type: 'line',
+          type: "line",
           source: viewportLayerRef.current,
           paint: {
-            'line-color': viewportColor.replace('0.5', '1'),
-            'line-width': 2
-          }
+            "line-color": viewportColor.replace("0.5", "1"),
+            "line-width": 2,
+          },
         });
       }
     });
@@ -104,38 +104,50 @@ export const MiniMap: React.FC<MiniMapProps> = ({
     // Sync minimap with main map
     const syncMiniMap = () => {
       if (!miniMapRef.current) return;
-      
+
       miniMapRef.current.jumpTo({
         center: mainMap.getCenter(),
-        zoom: mainMap.getZoom() + zoomOffset
+        zoom: mainMap.getZoom() + zoomOffset,
       });
 
       // Update viewport indicator
       if (showViewport) {
-        const source = miniMapRef.current.getSource(viewportLayerRef.current) as maplibregl.GeoJSONSource;
+        const source = miniMapRef.current.getSource(
+          viewportLayerRef.current
+        ) as maplibregl.GeoJSONSource;
         if (source) {
           source.setData(getViewportGeoJSON(mainMap));
         }
       }
     };
 
-    mainMap.on('move', syncMiniMap);
+    mainMap.on("move", syncMiniMap);
 
     // Sync main map on minimap click
     if (syncOnClick) {
-      miniMap.on('click', (e) => {
+      miniMap.on("click", (e) => {
         mainMap.flyTo({
-          center: e.lngLat
+          center: e.lngLat,
         });
       });
     }
 
     return () => {
-      mainMap.off('move', syncMiniMap);
+      mainMap.off("move", syncMiniMap);
       miniMap.remove();
       miniMapRef.current = null;
     };
-  }, [mainMap, isLoaded, isCollapsed, style, zoomOffset, showViewport, viewportColor, interactive, syncOnClick]);
+  }, [
+    mainMap,
+    isLoaded,
+    isCollapsed,
+    style,
+    zoomOffset,
+    showViewport,
+    viewportColor,
+    interactive,
+    syncOnClick,
+  ]);
 
   // Get viewport bounds as GeoJSON polygon
   const getViewportGeoJSON = (map: maplibregl.Map): GeoJSON.Feature => {
@@ -146,32 +158,34 @@ export const MiniMap: React.FC<MiniMapProps> = ({
     const sw = bounds.getSouthWest();
 
     return {
-      type: 'Feature',
+      type: "Feature",
       properties: {},
       geometry: {
-        type: 'Polygon',
-        coordinates: [[
-          [nw.lng, nw.lat],
-          [ne.lng, ne.lat],
-          [se.lng, se.lat],
-          [sw.lng, sw.lat],
-          [nw.lng, nw.lat]
-        ]]
-      }
+        type: "Polygon",
+        coordinates: [
+          [
+            [nw.lng, nw.lat],
+            [ne.lng, ne.lat],
+            [se.lng, se.lat],
+            [sw.lng, sw.lat],
+            [nw.lng, nw.lat],
+          ],
+        ],
+      },
     };
   };
 
   const positionStyles: Record<string, React.CSSProperties> = {
-    'top-left': { top: 10, left: 10 },
-    'top-right': { top: 10, right: 10 },
-    'bottom-left': { bottom: 10, left: 10 },
-    'bottom-right': { bottom: 10, right: 10 }
+    "top-left": { top: 10, left: 10 },
+    "top-right": { top: 10, right: 10 },
+    "bottom-left": { bottom: 10, left: 10 },
+    "bottom-right": { bottom: 10, right: 10 },
   };
 
   const borderStyles: Record<string, React.CSSProperties> = {
-    solid: { border: '2px solid #d1d5db' },
-    shadow: { boxShadow: '0 2px 8px rgba(0,0,0,0.2)' },
-    none: {}
+    solid: { border: "2px solid #d1d5db" },
+    shadow: { boxShadow: "0 2px 8px rgba(0,0,0,0.2)" },
+    none: {},
   };
 
   if (isCollapsed) {
@@ -179,19 +193,19 @@ export const MiniMap: React.FC<MiniMapProps> = ({
       <button
         title="Show minimap"
         style={{
-          position: 'absolute',
+          position: "absolute",
           ...positionStyles[position],
           zIndex: 1000,
           width: 36,
           height: 36,
           borderRadius: 6,
-          border: 'none',
-          backgroundColor: 'white',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
+          border: "none",
+          backgroundColor: "white",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
         onClick={() => setIsCollapsed(false)}
       >
@@ -203,39 +217,44 @@ export const MiniMap: React.FC<MiniMapProps> = ({
   return (
     <div
       style={{
-        position: 'absolute',
+        position: "absolute",
         ...positionStyles[position],
         zIndex: 1000,
         width,
         height,
         borderRadius,
-        overflow: 'hidden',
-        backgroundColor: 'white',
-        ...borderStyles[borderStyle]
+        overflow: "hidden",
+        backgroundColor: "white",
+        ...borderStyles[borderStyle],
       }}
     >
-      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
-      
-      {collapsible ? <button
+      <div
+        ref={containerRef}
+        style={{ width: "100%", height: "100%" }}
+      />
+
+      {collapsible ? (
+        <button
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 4,
             right: 4,
             width: 20,
             height: 20,
             borderRadius: 4,
-            border: 'none',
-            backgroundColor: 'rgba(255,255,255,0.8)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 10
+            border: "none",
+            backgroundColor: "rgba(255,255,255,0.8)",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 10,
           }}
           onClick={() => setIsCollapsed(true)}
         >
           ✕
-        </button> : null}
+        </button>
+      ) : null}
     </div>
   );
 };

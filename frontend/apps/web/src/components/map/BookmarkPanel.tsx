@@ -60,12 +60,16 @@ export const BookmarkPanel = ({
   }
 
   return (
-    <div className="absolute right-3 bottom-12 z-30 w-[300px] max-h-[calc(100%-6rem)] flex flex-col bg-elevated border border-border-primary rounded-2xl shadow-xl overflow-hidden animate-fade-in-up">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border-primary">
-        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
-          <Bookmark className="text-primary" fill="currentColor" size={16} />
+    <div className="bg-elevated border-border-primary animate-fade-in-up absolute right-3 bottom-12 z-30 flex max-h-[calc(100%-6rem)] w-[300px] flex-col overflow-hidden rounded-2xl border shadow-xl">
+      <div className="border-border-primary flex items-center gap-2.5 border-b px-4 py-3">
+        <span className="bg-primary/10 flex h-7 w-7 items-center justify-center rounded-lg">
+          <Bookmark
+            className="text-primary"
+            fill="currentColor"
+            size={16}
+          />
         </span>
-        <span className="text-sm font-semibold text-text-primary flex-1">
+        <span className="text-text-primary flex-1 text-sm font-semibold">
           Bookmarks
         </span>
         {bookmarks.length > 0 && (
@@ -73,7 +77,7 @@ export const BookmarkPanel = ({
         )}
         <button
           aria-label="Close"
-          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
+          className="text-text-tertiary hover:bg-surface-hover hover:text-text-primary flex h-7 w-7 items-center justify-center rounded-md transition-colors"
           type="button"
           onClick={() => setOpen(false)}
         >
@@ -81,9 +85,9 @@ export const BookmarkPanel = ({
         </button>
       </div>
 
-      <div className="px-4 py-3 border-b border-border-primary flex gap-2">
+      <div className="border-border-primary flex gap-2 border-b px-4 py-3">
         <input
-          className="flex-1 min-w-0 px-3 py-1.5 text-sm rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
+          className="bg-input-bg border-input-border text-text-primary focus:border-input-focus-border min-w-0 flex-1 rounded-lg border px-3 py-1.5 text-sm focus:outline-none"
           placeholder="Name this view…"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
@@ -92,7 +96,7 @@ export const BookmarkPanel = ({
           }}
         />
         <button
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors"
+          className="bg-primary hover:bg-primary-dark flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors"
           type="button"
           onClick={handleAdd}
         >
@@ -104,30 +108,30 @@ export const BookmarkPanel = ({
       <div className="flex-1 overflow-y-auto">
         {bookmarks.length === 0 ? (
           <div className="flex flex-col items-center gap-2.5 px-4 py-8 text-center">
-            <span className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-hover text-text-tertiary">
+            <span className="bg-surface-hover text-text-tertiary flex h-10 w-10 items-center justify-center rounded-full">
               <Bookmark size={18} />
             </span>
             <div>
-              <div className="text-sm font-medium text-text-secondary">
+              <div className="text-text-secondary text-sm font-medium">
                 No bookmarks yet
               </div>
-              <div className="mt-0.5 text-xs text-text-tertiary">
+              <div className="text-text-tertiary mt-0.5 text-xs">
                 Pan to a spot and click “Add” to save the view.
               </div>
             </div>
           </div>
         ) : (
-          <ul className="divide-y divide-border-primary">
+          <ul className="divide-border-primary divide-y">
             {bookmarks.map((b) => (
               <li
                 key={b.id}
-                className="group flex items-center gap-1.5 px-3 py-2 hover:bg-surface-hover transition-colors"
+                className="group hover:bg-surface-hover flex items-center gap-1.5 px-3 py-2 transition-colors"
               >
                 {renamingId === b.id ? (
                   <input
                     autoFocus
                     aria-label="Rename bookmark"
-                    className="flex-1 min-w-0 px-2 py-1 text-sm rounded-md bg-input-bg border border-input-focus-border text-text-primary focus:outline-none"
+                    className="bg-input-bg border-input-focus-border text-text-primary min-w-0 flex-1 rounded-md border px-2 py-1 text-sm focus:outline-none"
                     value={draftName}
                     onBlur={() => commitRename(b.id)}
                     onChange={(e) => setDraftName(e.target.value)}
@@ -138,15 +142,15 @@ export const BookmarkPanel = ({
                   />
                 ) : (
                   <button
-                    className="flex-1 min-w-0 text-left"
+                    className="min-w-0 flex-1 text-left"
                     title="Go to this bookmark"
                     type="button"
                     onClick={() => handleJump(b.id)}
                   >
-                    <div className="text-sm font-medium text-text-primary truncate">
+                    <div className="text-text-primary truncate text-sm font-medium">
                       {b.name}
                     </div>
-                    <div className="text-[11px] text-text-tertiary tabular-nums">
+                    <div className="text-text-tertiary text-[11px] tabular-nums">
                       {b.center[0].toFixed(3)}, {b.center[1].toFixed(3)} · zoom{" "}
                       {Number(b.zoom).toFixed(1)}
                     </div>
@@ -156,7 +160,7 @@ export const BookmarkPanel = ({
                 {renamingId !== b.id && (
                   <button
                     aria-label="Rename bookmark"
-                    className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary opacity-0 group-hover:opacity-100 focus:opacity-100 transition-colors"
+                    className="text-text-tertiary hover:bg-surface-hover hover:text-text-primary flex h-7 w-7 items-center justify-center rounded-md opacity-0 transition-colors group-hover:opacity-100 focus:opacity-100"
                     type="button"
                     onClick={() => startRename(b.id, b.name)}
                   >
@@ -166,7 +170,7 @@ export const BookmarkPanel = ({
 
                 <button
                   aria-label="Delete bookmark"
-                  className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:text-error hover:bg-error-subtle transition-colors"
+                  className="text-text-tertiary hover:text-error hover:bg-error-subtle flex h-7 w-7 items-center justify-center rounded-md transition-colors"
                   type="button"
                   onClick={() => removeBookmark(b.id)}
                 >
@@ -179,4 +183,4 @@ export const BookmarkPanel = ({
       </div>
     </div>
   );
-}
+};

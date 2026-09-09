@@ -1,10 +1,9 @@
-import { fromUrl, Pool } from 'geotiff';
-import { useEffect, useId, useState } from 'react';
+import { fromUrl, Pool } from "geotiff";
+import { useEffect, useId, useState } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type React from 'react';
-
+import type React from "react";
 
 export interface COGSourceProps {
   /** Unique source ID */
@@ -14,7 +13,7 @@ export interface COGSourceProps {
   /** Band indices to render [R, G, B] */
   bands?: [number, number, number] | [number];
   /** Color ramp for single band */
-  colorRamp?: 'viridis' | 'magma' | 'inferno' | 'plasma' | 'turbo' | 'greys';
+  colorRamp?: "viridis" | "magma" | "inferno" | "plasma" | "turbo" | "greys";
   /** Min/max values for normalization */
   range?: [number, number];
   /** No data value */
@@ -42,13 +41,13 @@ export const COGSource: React.FC<COGSourceProps> = ({
   id: propId,
   url,
   _bands = [1],
-  _colorRamp = 'viridis',
+  _colorRamp = "viridis",
   _range,
   _noData,
   opacity = 1,
   visible = true,
   onLoad,
-  onError
+  onError,
 }) => {
   const { map, isLoaded } = useMap();
   const autoId = useId();
@@ -65,53 +64,52 @@ export const COGSource: React.FC<COGSourceProps> = ({
       try {
         const tiff = await fromUrl(url);
         const image = await tiff.getImage();
-        
+
         const bbox = image.getBoundingBox();
         const width = image.getWidth();
         const height = image.getHeight();
         const resolution = image.getResolution();
-        
+
         const meta: COGMetadata = {
           width,
           height,
           bounds: bbox as [number, number, number, number],
           bandCount: image.getSamplesPerPixel(),
           resolution: resolution as [number, number],
-          crs: 'EPSG:4326' // Simplified, would need proper CRS detection
+          crs: "EPSG:4326", // Simplified, would need proper CRS detection
         };
 
         if (cancelled) return;
-        
+
         setMetadata(meta);
         onLoad?.(meta);
 
         // Create tile source for COG
         // Using titiler or similar backend for tile serving
-        const tileUrl = `${url.replace('.tif', '')}/tiles/{z}/{x}/{y}.png`;
-        
+        const tileUrl = `${url.replace(".tif", "")}/tiles/{z}/{x}/{y}.png`;
+
         if (!map.getSource(id)) {
           map.addSource(id, {
-            type: 'raster',
+            type: "raster",
             tiles: [tileUrl],
             bounds: bbox,
-            tileSize: 256
+            tileSize: 256,
           });
         }
 
         if (!map.getLayer(`${id}-layer`)) {
           map.addLayer({
             id: `${id}-layer`,
-            type: 'raster',
+            type: "raster",
             source: id,
             paint: {
-              'raster-opacity': opacity
+              "raster-opacity": opacity,
             },
             layout: {
-              visibility: visible ? 'visible' : 'none'
-            }
+              visibility: visible ? "visible" : "none",
+            },
           });
         }
-
       } catch (error) {
         if (!cancelled) {
           onError?.(error as Error);

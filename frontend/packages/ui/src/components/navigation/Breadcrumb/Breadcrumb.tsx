@@ -92,4 +92,4 @@ export const Breadcrumb = ({
       </ol>
     </nav>
   );
-}
+};

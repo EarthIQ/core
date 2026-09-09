@@ -102,7 +102,7 @@ const ScrollableTabList = ({ children, className }: ScrollableTabListProps) => {
       {children}
     </div>
   );
-}
+};
 
 // ============ Main Tabs Component ============
 
@@ -119,7 +119,7 @@ export const Tabs = (props: TabsProps) => {
   if (isItemsPattern) {
     return (
       <TabsWithItems
-        {...(props)}
+        {...props}
         className={className}
         fullWidth={fullWidth}
         size={size}
@@ -130,14 +130,14 @@ export const Tabs = (props: TabsProps) => {
 
   return (
     <TabsCompound
-      {...(props)}
+      {...props}
       className={className}
       fullWidth={fullWidth}
       size={size}
       variant={variant}
     />
   );
-}
+};
 
 // ============ Items Pattern Component ============
 
@@ -224,7 +224,7 @@ const TabsWithItems = ({
       </div>
     </div>
   );
-}
+};
 
 // ============ Shared Tab Button ============
 
@@ -299,21 +299,25 @@ const TabButton = ({
       {icon}
       {children}
 
-      {isActive && variant === "default" ? <motion.div
+      {isActive && variant === "default" ? (
+        <motion.div
           className="absolute inset-0 rounded-[var(--radius-md)] bg-[var(--surface-active)]"
           layoutId={`activeTab-${layoutIdSuffix}`}
           style={{ zIndex: -1 }}
           transition={{ type: "spring", duration: 0.3 }}
-        /> : null}
+        />
+      ) : null}
 
-      {isActive && variant === "underline" ? <motion.div
+      {isActive && variant === "underline" ? (
+        <motion.div
           className="absolute right-0 bottom-0 left-0 h-0.5 bg-[var(--primary)]"
           layoutId={`activeTabUnderline-${layoutIdSuffix}`}
           transition={{ type: "spring", duration: 0.3 }}
-        /> : null}
+        />
+      ) : null}
     </button>
   );
-}
+};
 
 // ============ Compound Pattern Component ============
 
@@ -344,7 +348,7 @@ const TabsCompound = ({
       <div className={cn("w-full", className)}>{children}</div>
     </TabsContext.Provider>
   );
-}
+};
 
 // ============ TabsList Component ============
 
@@ -383,7 +387,7 @@ export const TabsList = ({
       </div>
     </ScrollableTabList>
   );
-}
+};
 
 // ============ TabsTrigger Component ============
 
@@ -419,7 +423,7 @@ export const TabsTrigger = ({
       {children}
     </TabButton>
   );
-}
+};
 
 // ============ TabsContent Component ============
 
@@ -453,4 +457,4 @@ export const TabsContent = ({
       {children}
     </motion.div>
   );
-}
+};

@@ -33,8 +33,8 @@ export const useLayers = (externalMap?: maplibregl.Map | null) => {
       return {
         id: layer.id,
         type: layer.type,
-        source: (layer).source || "",
-        sourceLayer: (layer)["source-layer"],
+        source: layer.source || "",
+        sourceLayer: layer["source-layer"],
         visible: visibility !== "none",
         opacity,
         minzoom: layer.minzoom,

@@ -15,7 +15,6 @@ import { useMap } from "../../hooks/useMap";
 
 import type { GeoJSONSource } from "maplibre-gl";
 
-
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════
@@ -77,11 +76,19 @@ const DistanceIcon = () => {
       xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M4 20L20 4" />
-      <circle cx={4} cy={20} r={2} />
-      <circle cx={20} cy={4} r={2} />
+      <circle
+        cx={4}
+        cy={20}
+        r={2}
+      />
+      <circle
+        cx={20}
+        cy={4}
+        r={2}
+      />
     </svg>
   );
-}
+};
 
 const AreaIcon = () => {
   return (
@@ -98,10 +105,13 @@ const AreaIcon = () => {
       xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M4 4h16v16H4z" />
-      <path d="M4 4l16 16" opacity={0.4} />
+      <path
+        d="M4 4l16 16"
+        opacity={0.4}
+      />
     </svg>
   );
-}
+};
 
 // ═══════════════════════════════════════════════════════════════════════
 // FORMAT HELPERS
@@ -314,7 +324,15 @@ export const MeasureControl: React.FC<MeasureControlProps> = ({
         console.warn("Failed to clean up measure control layers:", e);
       }
     };
-  }, [map, isLoaded, lineStyle.color, lineStyle.width, polygonStyle.fillColor, polygonStyle.fillOpacity, polygonStyle.outlineColor]);
+  }, [
+    map,
+    isLoaded,
+    lineStyle.color,
+    lineStyle.width,
+    polygonStyle.fillColor,
+    polygonStyle.fillOpacity,
+    polygonStyle.outlineColor,
+  ]);
 
   // ── Compute current features ──────────────────────────────────────
   const features = useMemo<GeoJSON.Feature[]>(() => {
@@ -586,28 +604,31 @@ export const MeasureControl: React.FC<MeasureControlProps> = ({
   }, [map, isLoaded, measureMode]);
 
   // ── Actions ───────────────────────────────────────────────────────
-  const startMeasurement = useCallback((mode: MeasureMode) => {
-    if (measureMode === mode && isDrawing) {
-      // Toggle off completely
-      setMeasureMode(null);
-      setIsDrawing(false);
-      setPoints([]);
-      setCurrentResult(null);
-      
-      if (map) {
-        const source = map.getSource(SOURCE_ID) as GeoJSONSource;
-        if (source) {
-          source.setData({ type: "FeatureCollection", features: [] });
+  const startMeasurement = useCallback(
+    (mode: MeasureMode) => {
+      if (measureMode === mode && isDrawing) {
+        // Toggle off completely
+        setMeasureMode(null);
+        setIsDrawing(false);
+        setPoints([]);
+        setCurrentResult(null);
+
+        if (map) {
+          const source = map.getSource(SOURCE_ID) as GeoJSONSource;
+          if (source) {
+            source.setData({ type: "FeatureCollection", features: [] });
+          }
         }
+      } else {
+        // Start or restart new measurement
+        setMeasureMode(mode);
+        setPoints([]);
+        setCurrentResult(null);
+        setIsDrawing(true);
       }
-    } else {
-      // Start or restart new measurement
-      setMeasureMode(mode);
-      setPoints([]);
-      setCurrentResult(null);
-      setIsDrawing(true);
-    }
-  }, [measureMode, isDrawing, map]);
+    },
+    [measureMode, isDrawing, map]
+  );
 
   const finishMeasurement = useCallback(() => {
     if (currentResult) {
@@ -659,7 +680,10 @@ export const MeasureControl: React.FC<MeasureControlProps> = ({
     measureMode === "distance" ? points.length >= 2 : points.length >= 3;
 
   return (
-    <div ref={wrapperRef} className="relative">
+    <div
+      ref={wrapperRef}
+      className="relative"
+    >
       <ControlButtonFlyout
         active={isActive}
         className={className}
@@ -685,7 +709,8 @@ export const MeasureControl: React.FC<MeasureControlProps> = ({
         />
 
         {/* Result display */}
-        {currentResult ? <div
+        {currentResult ? (
+          <div
             className="mx-1 my-1 rounded-lg px-2.5 py-2"
             style={{
               background: "var(--surface-hover)",
@@ -693,7 +718,7 @@ export const MeasureControl: React.FC<MeasureControlProps> = ({
             }}
           >
             <div
-              className="mb-0.5 text-[10px] font-medium uppercase tracking-wider"
+              className="mb-0.5 text-[10px] font-medium tracking-wider uppercase"
               style={{ color: "var(--text-tertiary)" }}
             >
               {currentResult.type === "distance" ? "Distance" : "Area"}
@@ -701,7 +726,8 @@ export const MeasureControl: React.FC<MeasureControlProps> = ({
             <div className="text-sm font-bold">
               {currentResult.formattedValue}
             </div>
-            {currentResult.segments && currentResult.segments.length > 1 ? <div
+            {currentResult.segments && currentResult.segments.length > 1 ? (
+              <div
                 className="mt-1.5 space-y-0.5 border-t pt-1.5"
                 style={{ borderColor: "var(--border-primary)" }}
               >
@@ -718,21 +744,26 @@ export const MeasureControl: React.FC<MeasureControlProps> = ({
                     </span>
                   </div>
                 ))}
-              </div> : null}
-          </div> : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         {/* Status hint */}
-        {measureMode && !currentResult ? <div
+        {measureMode && !currentResult ? (
+          <div
             className="px-2.5 py-1.5 text-center text-[10px]"
             style={{ color: "var(--text-tertiary)" }}
           >
             {measureMode === "distance"
               ? "Click to add points"
               : "Click to add vertices"}
-          </div> : null}
+          </div>
+        ) : null}
 
         {/* Action buttons when measuring */}
-        {measureMode && isDrawing ? <>
+        {measureMode && isDrawing ? (
+          <>
             <div
               className="mx-2 h-px"
               style={{ background: "var(--border-primary)" }}
@@ -755,10 +786,12 @@ export const MeasureControl: React.FC<MeasureControlProps> = ({
               label="Cancel"
               onClick={cancelMeasurement}
             />
-          </> : null}
+          </>
+        ) : null}
 
         {/* Action buttons when finished */}
-        {measureMode && !isDrawing ? <>
+        {measureMode && !isDrawing ? (
+          <>
             <div
               className="mx-2 h-px"
               style={{ background: "var(--border-primary)" }}
@@ -769,7 +802,8 @@ export const MeasureControl: React.FC<MeasureControlProps> = ({
               label="Clear measurement"
               onClick={cancelMeasurement}
             />
-          </> : null}
+          </>
+        ) : null}
       </ControlButtonFlyout>
     </div>
   );

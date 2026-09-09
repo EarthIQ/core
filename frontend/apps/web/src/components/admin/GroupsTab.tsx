@@ -14,7 +14,12 @@ import {
 
 const SearchIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
         strokeLinecap="round"
@@ -23,17 +28,33 @@ const SearchIcon = () => {
       />
     </svg>
   );
-}
+};
 
 const PlusIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M12 4v16m8-8H4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
     </svg>
   );
-}
+};
 
-const SortIcon = ({ active, order }: { active: boolean; order: "asc" | "desc" }) => {
+const SortIcon = ({
+  active,
+  order,
+}: {
+  active: boolean;
+  order: "asc" | "desc";
+}) => {
   return (
     <svg
       fill="none"
@@ -43,14 +64,24 @@ const SortIcon = ({ active, order }: { active: boolean; order: "asc" | "desc" })
         active ? "text-primary opacity-100" : "opacity-30"
       } ${active && order === "asc" ? "rotate-180" : ""}`}
     >
-      <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+      <path
+        d="M19 9l-7 7-7-7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
     </svg>
   );
-}
+};
 
 const EditIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
         strokeLinecap="round"
@@ -59,11 +90,16 @@ const EditIcon = () => {
       />
     </svg>
   );
-}
+};
 
 const TrashIcon = () => {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
         strokeLinecap="round"
@@ -72,7 +108,7 @@ const TrashIcon = () => {
       />
     </svg>
   );
-}
+};
 
 // ── GroupsTab Component ──────────────────────────────────────────────────────
 
@@ -127,7 +163,9 @@ export const GroupsTab = ({
   onEditCancel,
   onDelete,
 }: GroupsTabProps) => {
-  const [deleteCandidate, setDeleteCandidate] = useState<GroupSummary | null>(null);
+  const [deleteCandidate, setDeleteCandidate] = useState<GroupSummary | null>(
+    null
+  );
 
   const handleSort = (field: "name" | "created_at") => {
     if (filters.sort_by === field) {
@@ -147,22 +185,24 @@ export const GroupsTab = ({
   return (
     <div className="space-y-4">
       {/* ── Top Bar: Search & Actions ── */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border-primary bg-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-border-primary bg-surface flex flex-col gap-3 rounded-2xl border p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="relative min-w-[240px] flex-1 sm:max-w-md">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-tertiary">
+          <div className="text-text-tertiary pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <SearchIcon />
           </div>
           <input
-            className="w-full rounded-xl border border-border-primary bg-surface-hover/60 py-2 pr-3.5 pl-9 text-sm text-text-primary placeholder:text-text-tertiary focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="border-border-primary bg-surface-hover/60 text-text-primary placeholder:text-text-tertiary focus:border-primary focus:bg-surface focus:ring-primary/20 w-full rounded-xl border py-2 pr-3.5 pl-9 text-sm focus:ring-2 focus:outline-none"
             placeholder="Search groups by name or description…"
             type="text"
             value={filters.search}
-            onChange={(e) => onFilterChange({ search: e.target.value, page: 1 })}
+            onChange={(e) =>
+              onFilterChange({ search: e.target.value, page: 1 })
+            }
           />
         </div>
 
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90 active:scale-[0.98]"
+          className="bg-primary inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90 active:scale-[0.98]"
           type="button"
           onClick={onOpenCreateModal}
         >
@@ -172,13 +212,13 @@ export const GroupsTab = ({
       </div>
 
       {/* ── Table Container ── */}
-      <div className="overflow-hidden rounded-2xl border border-border-primary bg-surface shadow-sm">
+      <div className="border-border-primary bg-surface overflow-hidden rounded-2xl border shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-border-primary bg-surface-hover/40 text-xs font-semibold uppercase tracking-wider text-text-secondary">
+            <thead className="border-border-primary bg-surface-hover/40 text-text-secondary border-b text-xs font-semibold tracking-wider uppercase">
               <tr>
                 <th
-                  className="cursor-pointer px-6 py-3.5 transition select-none hover:text-text-primary"
+                  className="hover:text-text-primary cursor-pointer px-6 py-3.5 transition select-none"
                   scope="col"
                   onClick={() => handleSort("name")}
                 >
@@ -190,17 +230,26 @@ export const GroupsTab = ({
                     />
                   </div>
                 </th>
-                <th className="px-6 py-3.5" scope="col">
+                <th
+                  className="px-6 py-3.5"
+                  scope="col"
+                >
                   Description
                 </th>
-                <th className="px-6 py-3.5" scope="col">
+                <th
+                  className="px-6 py-3.5"
+                  scope="col"
+                >
                   Permissions
                 </th>
-                <th className="px-6 py-3.5" scope="col">
+                <th
+                  className="px-6 py-3.5"
+                  scope="col"
+                >
                   Members
                 </th>
                 <th
-                  className="cursor-pointer px-6 py-3.5 transition select-none hover:text-text-primary"
+                  className="hover:text-text-primary cursor-pointer px-6 py-3.5 transition select-none"
                   scope="col"
                   onClick={() => handleSort("created_at")}
                 >
@@ -212,18 +261,24 @@ export const GroupsTab = ({
                     />
                   </div>
                 </th>
-                <th className="px-6 py-3.5 text-right" scope="col">
+                <th
+                  className="px-6 py-3.5 text-right"
+                  scope="col"
+                >
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-primary">
+            <tbody className="divide-border-primary divide-y">
               {loading ? (
                 <tr>
-                  <td className="px-6 py-12 text-center text-text-secondary" colSpan={6}>
+                  <td
+                    className="text-text-secondary px-6 py-12 text-center"
+                    colSpan={6}
+                  >
                     <div className="inline-flex items-center gap-2">
                       <svg
-                        className="h-5 w-5 animate-spin text-primary"
+                        className="text-primary h-5 w-5 animate-spin"
                         fill="none"
                         viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg"
@@ -248,10 +303,15 @@ export const GroupsTab = ({
                 </tr>
               ) : groups.length === 0 ? (
                 <tr>
-                  <td className="px-6 py-12 text-center text-text-secondary" colSpan={6}>
+                  <td
+                    className="text-text-secondary px-6 py-12 text-center"
+                    colSpan={6}
+                  >
                     <div className="mx-auto max-w-sm space-y-2">
-                      <p className="font-medium text-text-primary">No groups found</p>
-                      <p className="text-xs text-text-tertiary">
+                      <p className="text-text-primary font-medium">
+                        No groups found
+                      </p>
+                      <p className="text-text-tertiary text-xs">
                         {filters.search
                           ? "Try searching for a different group name."
                           : "Get started by creating your first group."}
@@ -263,46 +323,53 @@ export const GroupsTab = ({
                 groups.map((group) => (
                   <tr
                     key={group.id}
-                    className="group transition-colors hover:bg-surface-hover/50"
+                    className="group hover:bg-surface-hover/50 transition-colors"
                   >
                     {/* Group Name */}
                     <td className="px-6 py-4">
-                      <div className="font-semibold text-text-primary">{group.name}</div>
+                      <div className="text-text-primary font-semibold">
+                        {group.name}
+                      </div>
                     </td>
 
                     {/* Description */}
-                    <td className="max-w-xs truncate px-6 py-4 text-xs text-text-secondary">
-                      {group.description || <span className="text-text-tertiary">-</span>}
+                    <td className="text-text-secondary max-w-xs truncate px-6 py-4 text-xs">
+                      {group.description || (
+                        <span className="text-text-tertiary">-</span>
+                      )}
                     </td>
 
                     {/* Permissions Count */}
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                      <span className="bg-primary/10 text-primary inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold">
                         {group.permissions?.length || 0} permissions
                       </span>
                     </td>
 
                     {/* Members Count */}
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center rounded-full bg-surface-hover px-2.5 py-0.5 text-xs font-medium text-text-secondary">
+                      <span className="bg-surface-hover text-text-secondary inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
                         {group.users?.length || 0} members
                       </span>
                     </td>
 
                     {/* Created Date */}
-                    <td className="px-6 py-4 text-xs text-text-secondary">
-                      {new Date(group.created_at).toLocaleDateString(undefined, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                    <td className="text-text-secondary px-6 py-4 text-xs">
+                      {new Date(group.created_at).toLocaleDateString(
+                        undefined,
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )}
                     </td>
 
                     {/* Actions */}
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          className="rounded-lg p-1.5 text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
+                          className="text-text-secondary hover:bg-surface-hover hover:text-text-primary rounded-lg p-1.5 transition"
                           title="Edit Group"
                           type="button"
                           onClick={() => onEditStart(group)}
@@ -310,7 +377,7 @@ export const GroupsTab = ({
                           <EditIcon />
                         </button>
                         <button
-                          className="rounded-lg p-1.5 text-danger transition hover:bg-danger/10"
+                          className="text-danger hover:bg-danger/10 rounded-lg p-1.5 transition"
                           title="Delete Group"
                           type="button"
                           onClick={() => setDeleteCandidate(group)}
@@ -327,16 +394,18 @@ export const GroupsTab = ({
         </div>
 
         {/* ── Pagination Footer ── */}
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-border-primary px-6 py-3.5 sm:flex-row">
-          <div className="flex items-center gap-3 text-xs text-text-secondary">
+        <div className="border-border-primary flex flex-col items-center justify-between gap-3 border-t px-6 py-3.5 sm:flex-row">
+          <div className="text-text-secondary flex items-center gap-3 text-xs">
             <span>
-              Showing {total === 0 ? 0 : (filters.page - 1) * filters.page_size + 1} to{" "}
-              {Math.min(filters.page * filters.page_size, total)} of {total} groups
+              Showing{" "}
+              {total === 0 ? 0 : (filters.page - 1) * filters.page_size + 1} to{" "}
+              {Math.min(filters.page * filters.page_size, total)} of {total}{" "}
+              groups
             </span>
             <div className="flex items-center gap-1.5">
               <span>Per page:</span>
               <select
-                className="rounded-lg border border-border-primary bg-surface-hover/60 px-2 py-1 text-xs text-text-primary focus:border-primary focus:outline-none"
+                className="border-border-primary bg-surface-hover/60 text-text-primary focus:border-primary rounded-lg border px-2 py-1 text-xs focus:outline-none"
                 value={filters.page_size}
                 onChange={(e) =>
                   onFilterChange({ page_size: Number(e.target.value), page: 1 })
@@ -406,24 +475,28 @@ export const GroupsTab = ({
         onClose={() => setDeleteCandidate(null)}
       >
         <div className="space-y-4 pt-2">
-          {deleteCandidate ? <div className="rounded-xl border border-border-primary bg-surface-hover/60 p-3.5">
-              <div className="font-semibold text-text-primary">{deleteCandidate.name}</div>
-              <div className="text-xs text-text-secondary">
+          {deleteCandidate ? (
+            <div className="border-border-primary bg-surface-hover/60 rounded-xl border p-3.5">
+              <div className="text-text-primary font-semibold">
+                {deleteCandidate.name}
+              </div>
+              <div className="text-text-secondary text-xs">
                 {deleteCandidate.permissions?.length || 0} permissions •{" "}
                 {deleteCandidate.users?.length || 0} members
               </div>
-            </div> : null}
+            </div>
+          ) : null}
 
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
-              className="rounded-lg border border-border-primary px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
+              className="border-border-primary text-text-secondary hover:bg-surface-hover hover:text-text-primary rounded-lg border px-4 py-2 text-sm font-medium transition"
               type="button"
               onClick={() => setDeleteCandidate(null)}
             >
               Cancel
             </button>
             <button
-              className="rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:opacity-50"
+              className="bg-danger rounded-lg px-4 py-2 text-sm font-medium text-white shadow transition hover:opacity-90 disabled:opacity-50"
               disabled={submitting}
               type="button"
               onClick={() => {
@@ -440,5 +513,4 @@ export const GroupsTab = ({
       </Modal>
     </div>
   );
-}
-
+};

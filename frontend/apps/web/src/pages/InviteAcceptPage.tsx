@@ -1,8 +1,17 @@
-import { CheckCircle2, XCircle, Loader2, FolderKanban, Map } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  FolderKanban,
+  Map,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { shareApi, type InviteAcceptResult } from "@/components/map/share/shareApi";
+import {
+  shareApi,
+  type InviteAcceptResult,
+} from "@/components/map/share/shareApi";
 
 /**
  * Landing page for invite email links: /invite/accept?token=...
@@ -22,7 +31,9 @@ export default function InviteAcceptPage() {
 
   useEffect(() => {
     if (!token) {
-      setError("Missing invitation token. Please use the link from your email.");
+      setError(
+        "Missing invitation token. Please use the link from your email."
+      );
       setLoading(false);
       return;
     }
@@ -30,7 +41,11 @@ export default function InviteAcceptPage() {
     shareApi
       .acceptInvite(token)
       .then((r) => !cancelled && setResult(r))
-      .catch((e) => !cancelled && setError(e?.message ?? "Failed to accept the invitation"))
+      .catch(
+        (e) =>
+          !cancelled &&
+          setError(e?.message ?? "Failed to accept the invitation")
+      )
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
@@ -46,31 +61,41 @@ export default function InviteAcceptPage() {
     }
   }
 
-  const entityLabel = result ? (result.entityType === "map" ? "map" : "project") : "map";
+  const entityLabel = result
+    ? result.entityType === "map"
+      ? "map"
+      : "project"
+    : "map";
   const EntityIcon = result?.entityType === "map" ? Map : FolderKanban;
 
   return (
-    <div className="min-h-full flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-elevated border border-border-primary rounded-2xl shadow-2xl p-8 flex flex-col items-center text-center animate-scale-in">
+    <div className="flex min-h-full items-center justify-center p-6">
+      <div className="bg-elevated border-border-primary animate-scale-in flex w-full max-w-md flex-col items-center rounded-2xl border p-8 text-center shadow-2xl">
         {loading ? (
           <>
-            <Loader2 className="animate-spin text-primary mb-4" size={40} />
-            <h2 className="text-lg font-semibold text-text-primary">
+            <Loader2
+              className="text-primary mb-4 animate-spin"
+              size={40}
+            />
+            <h2 className="text-text-primary text-lg font-semibold">
               Accepting invitation…
             </h2>
-            <p className="text-sm text-text-secondary mt-2">
+            <p className="text-text-secondary mt-2 text-sm">
               One moment, we&rsquo;re confirming your access.
             </p>
           </>
         ) : error ? (
           <>
-            <XCircle className="text-red-400 mb-4" size={40} />
-            <h2 className="text-lg font-semibold text-text-primary">
+            <XCircle
+              className="mb-4 text-red-400"
+              size={40}
+            />
+            <h2 className="text-text-primary text-lg font-semibold">
               Couldn&rsquo;t accept the invitation
             </h2>
-            <p className="text-sm text-text-secondary mt-2">{error}</p>
+            <p className="text-text-secondary mt-2 text-sm">{error}</p>
             <button
-              className="mt-6 px-6 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+              className="bg-primary mt-6 rounded-full px-6 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               type="button"
               onClick={() => navigate("/dashboard", { replace: true })}
             >
@@ -79,24 +104,27 @@ export default function InviteAcceptPage() {
           </>
         ) : result ? (
           <>
-            <CheckCircle2 className="text-success mb-4" size={40} />
-            <h2 className="text-lg font-semibold text-text-primary">
+            <CheckCircle2
+              className="text-success mb-4"
+              size={40}
+            />
+            <h2 className="text-text-primary text-lg font-semibold">
               Invitation accepted 🎉
             </h2>
-            <p className="text-sm text-text-secondary mt-2">
+            <p className="text-text-secondary mt-2 text-sm">
               You now have{" "}
-              <span className="font-semibold text-text-primary capitalize">
+              <span className="text-text-primary font-semibold capitalize">
                 {result.role}
               </span>{" "}
               access to the {entityLabel}{" "}
-              <span className="font-semibold text-text-primary">
+              <span className="text-text-primary font-semibold">
                 &ldquo;{result.title}&rdquo;
               </span>
               .
             </p>
             <div className="mt-6 flex items-center gap-3">
               <button
-                className="flex items-center gap-2 px-6 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                className="bg-primary flex items-center gap-2 rounded-full px-6 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 type="button"
                 onClick={openEntity}
               >
@@ -104,7 +132,7 @@ export default function InviteAcceptPage() {
                 Open {entityLabel}
               </button>
               <button
-                className="px-4 py-2 rounded-full text-sm font-medium text-text-secondary hover:bg-surface-hover transition-colors"
+                className="text-text-secondary hover:bg-surface-hover rounded-full px-4 py-2 text-sm font-medium transition-colors"
                 type="button"
                 onClick={() => navigate("/dashboard", { replace: true })}
               >

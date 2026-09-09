@@ -361,23 +361,28 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={cn("w-full", containerClassName)}>
         {/* Label */}
-        {label ? <label
+        {label ? (
+          <label
             className={labelVariants({ size })}
             htmlFor={inputId}
           >
             {label}
-            {required ? <span
+            {required ? (
+              <span
                 aria-hidden="true"
                 className="ml-1 text-[var(--error)]"
               >
                 *
-              </span> : null}
-          </label> : null}
+              </span>
+            ) : null}
+          </label>
+        ) : null}
 
         {/* Input Container */}
         <div className="relative flex">
           {/* Left Addon */}
-          {leftAddon ? <div
+          {leftAddon ? (
+            <div
               className={cn(
                 "flex items-center border border-r-0 px-3",
                 "border-[var(--input-border)] bg-[var(--bg-tertiary)]",
@@ -388,19 +393,22 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               )}
             >
               {leftAddon}
-            </div> : null}
+            </div>
+          ) : null}
 
           {/* Input Wrapper */}
           <div className="relative flex-1">
             {/* Left Icon */}
-            {leftIcon ? <div
+            {leftIcon ? (
+              <div
                 className={cn(
                   "pointer-events-none absolute top-1/2 left-0 flex -translate-y-1/2 items-center justify-center",
                   iconPositionClasses[size]
                 )}
               >
                 {renderIcon(leftIcon)}
-              </div> : null}
+              </div>
+            ) : null}
 
             {/* Input Element */}
             <input
@@ -435,14 +443,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             />
 
             {/* Right Side Icons Container */}
-            {hasRightContent ? <div
+            {hasRightContent ? (
+              <div
                 className={cn(
                   "absolute top-1/2 right-0 flex -translate-y-1/2 items-center gap-1",
                   rightIconPositionClasses[size]
                 )}
               >
                 {/* Clear Button */}
-                {showClearButton ? <button
+                {showClearButton ? (
+                  <button
                     aria-label="Clear input"
                     type="button"
                     className={cn(
@@ -466,20 +476,26 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                         strokeWidth={2}
                       />
                     </svg>
-                  </button> : null}
+                  </button>
+                ) : null}
 
                 {/* Custom Right Icon */}
-                {rightIcon && !hasStatusIcon && !isPassword ? <div className="pointer-events-none flex items-center justify-center">
+                {rightIcon && !hasStatusIcon && !isPassword ? (
+                  <div className="pointer-events-none flex items-center justify-center">
                     {renderIcon(rightIcon)}
-                  </div> : null}
+                  </div>
+                ) : null}
 
                 {/* Status Icon */}
-                {hasStatusIcon && !isPassword ? <div className="pointer-events-none flex items-center justify-center">
+                {hasStatusIcon && !isPassword ? (
+                  <div className="pointer-events-none flex items-center justify-center">
                     {getStatusIcon()}
-                  </div> : null}
+                  </div>
+                ) : null}
 
                 {/* Password Toggle */}
-                {isPassword ? <button
+                {isPassword ? (
+                  <button
                     type="button"
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
@@ -497,12 +513,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     ) : (
                       <EyeIcon className={iconSizeClasses[size]} />
                     )}
-                  </button> : null}
-              </div> : null}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
           {/* Right Addon */}
-          {rightAddon ? <div
+          {rightAddon ? (
+            <div
               className={cn(
                 "flex items-center border border-l-0 px-3",
                 "border-[var(--input-border)] bg-[var(--bg-tertiary)]",
@@ -513,48 +532,58 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               )}
             >
               {rightAddon}
-            </div> : null}
+            </div>
+          ) : null}
         </div>
 
         {/* Bottom Row: Description/Error/Success/Warning & Character Count */}
         <div className="mt-1.5 flex items-start justify-between gap-2">
           <div className="flex-1">
             {/* Error Message */}
-            {error ? <p
+            {error ? (
+              <p
                 className="text-sm text-[var(--error-text)]"
                 id={`${inputId}-error`}
                 role="alert"
               >
                 {error}
-              </p> : null}
+              </p>
+            ) : null}
 
             {/* Success Message */}
-            {success && !error ? <p
+            {success && !error ? (
+              <p
                 className="text-sm text-[var(--success-text)]"
                 id={`${inputId}-success`}
               >
                 {success}
-              </p> : null}
+              </p>
+            ) : null}
 
             {/* Warning Message */}
-            {warning && !error && !success ? <p
+            {warning && !error && !success ? (
+              <p
                 className="text-sm text-[var(--warning-text)]"
                 id={`${inputId}-warning`}
               >
                 {warning}
-              </p> : null}
+              </p>
+            ) : null}
 
             {/* Description */}
-            {description && !error && !success && !warning ? <p
+            {description && !error && !success && !warning ? (
+              <p
                 className="text-sm text-[var(--text-tertiary)]"
                 id={`${inputId}-description`}
               >
                 {description}
-              </p> : null}
+              </p>
+            ) : null}
           </div>
 
           {/* Character Count */}
-          {showCharCount && maxLength ? <span
+          {showCharCount && maxLength ? (
+            <span
               className={cn(
                 "text-xs tabular-nums",
                 currentValue.length >= maxLength
@@ -565,7 +594,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               )}
             >
               {currentValue.length}/{maxLength}
-            </span> : null}
+            </span>
+          ) : null}
         </div>
       </div>
     );

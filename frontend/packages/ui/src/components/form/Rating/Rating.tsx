@@ -160,12 +160,14 @@ export const Rating = ({
 
   return (
     <div className={cn("flex items-center", gapClasses[size], className)}>
-      {label ? <span
+      {label ? (
+        <span
           className="mr-2 text-sm font-medium"
           style={{ color: "var(--text-secondary)" }}
         >
           {label}
-        </span> : null}
+        </span>
+      ) : null}
 
       <div
         className={cn("flex items-center", gapClasses[size])}
@@ -216,12 +218,14 @@ export const Rating = ({
         ))}
       </div>
 
-      {showValue ? <span
+      {showValue ? (
+        <span
           className="ml-2 text-sm"
           style={{ color: "var(--text-tertiary)" }}
         >
           {value.toFixed(allowHalf ? 1 : 0)} / {max}
-        </span> : null}
+        </span>
+      ) : null}
     </div>
   );
-}
+};

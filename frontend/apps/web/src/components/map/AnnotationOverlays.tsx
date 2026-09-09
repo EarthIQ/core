@@ -2,7 +2,7 @@ import { StickyNote, Image as ImageIcon, Link2, Play } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 
 import { useMapEditor } from "@/lib/mapEditor/store";
-import { POINT_KINDS ,type  PointAnnotation } from "@/lib/mapEditor/types";
+import { POINT_KINDS, type PointAnnotation } from "@/lib/mapEditor/types";
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Per-kind content                                                         */
@@ -14,14 +14,14 @@ const PointContent = ({ ann }: { ann: PointAnnotation }) => {
     case "marker":
       return (
         <div
-          className="w-6 h-6 rounded-full border-[3px] border-white shadow-md"
+          className="h-6 w-6 rounded-full border-[3px] border-white shadow-md"
           style={{ background: color }}
         />
       );
     case "text":
       return (
         <div
-          className="max-w-[200px] px-2.5 py-1 rounded-lg text-[13px] font-medium shadow-md border"
+          className="max-w-[200px] rounded-lg border px-2.5 py-1 text-[13px] font-medium shadow-md"
           style={{
             background: "var(--bg-elevated)",
             borderColor: "var(--border-primary)",
@@ -34,24 +34,34 @@ const PointContent = ({ ann }: { ann: PointAnnotation }) => {
     case "note":
       return (
         <div
-          className="w-12 h-12 rounded-md shadow-md border border-black/5 flex items-center justify-center"
+          className="flex h-12 w-12 items-center justify-center rounded-md border border-black/5 shadow-md"
           style={{ background: color }}
           title={ann.text || "Note"}
         >
-          <StickyNote className="text-white/90" size={20} />
+          <StickyNote
+            className="text-white/90"
+            size={20}
+          />
         </div>
       );
     case "image":
       return (
         <div
-          className="w-12 h-12 rounded-lg overflow-hidden shadow-md border border-white"
+          className="h-12 w-12 overflow-hidden rounded-lg border border-white shadow-md"
           style={{ background: "#000" }}
         >
           {ann.url ? (
-            <img alt="" className="w-full h-full object-cover" src={ann.url} />
+            <img
+              alt=""
+              className="h-full w-full object-cover"
+              src={ann.url}
+            />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-surface-hover">
-              <ImageIcon className="text-text-tertiary" size={20} />
+            <div className="bg-surface-hover flex h-full w-full items-center justify-center">
+              <ImageIcon
+                className="text-text-tertiary"
+                size={20}
+              />
             </div>
           )}
         </div>
@@ -59,7 +69,7 @@ const PointContent = ({ ann }: { ann: PointAnnotation }) => {
     case "link":
       return (
         <div
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium shadow-md border"
+          className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[13px] font-medium shadow-md"
           style={{
             background: "var(--bg-elevated)",
             borderColor: "var(--border-primary)",
@@ -75,10 +85,13 @@ const PointContent = ({ ann }: { ann: PointAnnotation }) => {
     case "video":
       return (
         <div
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium shadow-md text-white"
+          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-white shadow-md"
           style={{ background: color }}
         >
-          <Play fill="currentColor" size={14} />
+          <Play
+            fill="currentColor"
+            size={14}
+          />
           <span className="max-w-[140px] truncate">
             {ann.url ? safeHost(ann.url) : "Video"}
           </span>
@@ -87,7 +100,7 @@ const PointContent = ({ ann }: { ann: PointAnnotation }) => {
     default:
       return null;
   }
-}
+};
 
 function safeHost(url: string) {
   try {
@@ -117,9 +130,9 @@ export const AnnotationOverlays = ({
   const pointAnnotations = useMemo(
     () =>
       annotations.filter((a) =>
-        (POINT_KINDS as string[]).includes(a.kind),
+        (POINT_KINDS as string[]).includes(a.kind)
       ) as PointAnnotation[],
-    [annotations],
+    [annotations]
   );
 
   /* Position every point overlay imperatively on map movement. */
@@ -161,7 +174,7 @@ export const AnnotationOverlays = ({
   if (!mapReady) return null;
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
+    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
       {pointAnnotations.map((ann) => {
         const selected = ann.id === selectionId;
         return (
@@ -196,17 +209,19 @@ export const AnnotationOverlays = ({
             </div>
             {/* selection halo dot above marker */}
             {ann.kind === "marker" && (
-              <div className="flex justify-center -mt-1 -translate-y-3">
-                {selected ? <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> : null}
+              <div className="-mt-1 flex -translate-y-3 justify-center">
+                {selected ? (
+                  <div className="bg-primary h-1.5 w-1.5 animate-pulse rounded-full" />
+                ) : null}
               </div>
             )}
             {/* decorative pin stem for the marker */}
             {ann.kind === "marker" && (
-              <div className="w-0 h-0 border-l-[5px] border-r-[5px] border-l-transparent border-r-transparent border-t-[8px] border-t-white -mt-0.5 mx-auto opacity-90" />
+              <div className="mx-auto -mt-0.5 h-0 w-0 border-t-[8px] border-r-[5px] border-l-[5px] border-t-white border-r-transparent border-l-transparent opacity-90" />
             )}
           </div>
         );
       })}
     </div>
   );
-}
+};

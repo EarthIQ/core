@@ -31,7 +31,7 @@ function flattenFolders(folders: DataFolder[]): FlatNode[] {
     node.depth = d;
   });
   return withDepth.sort(
-    (a, b) => a.depth - b.depth || a.name.localeCompare(b.name),
+    (a, b) => a.depth - b.depth || a.name.localeCompare(b.name)
   );
 }
 
@@ -61,15 +61,15 @@ export default function MoveModal({
       }
       onClose={onClose}
     >
-      <div className="flex flex-col gap-1 max-h-[50vh] overflow-y-auto scrollbar-thin pr-1">
+      <div className="flex max-h-[50vh] scrollbar-thin flex-col gap-1 overflow-y-auto pr-1">
         {/* Ungrouped destination */}
         <button
           type="button"
           className={cn(
-            "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium cursor-pointer transition-colors",
+            "flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium transition-colors",
             target === null
               ? "bg-primary/[0.1] text-primary"
-              : "text-text-secondary hover:bg-surface-hover",
+              : "text-text-secondary hover:bg-surface-hover"
           )}
           onClick={() => setTarget(null)}
         >
@@ -78,11 +78,16 @@ export default function MoveModal({
             size={14}
           />
           <span className="flex-1 truncate">Ungrouped (All Data)</span>
-          {target === null && <Check className="text-primary shrink-0" size={13} />}
+          {target === null && (
+            <Check
+              className="text-primary shrink-0"
+              size={13}
+            />
+          )}
         </button>
 
         {flat.length === 0 && (
-          <p className="px-2.5 py-2 text-xs text-text-tertiary leading-relaxed">
+          <p className="text-text-tertiary px-2.5 py-2 text-xs leading-relaxed">
             No folders yet - create one from the Folders panel in the sidebar.
           </p>
         )}
@@ -93,10 +98,10 @@ export default function MoveModal({
             style={{ paddingLeft: `${10 + f.depth * 16}px` }}
             type="button"
             className={cn(
-              "flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium cursor-pointer transition-colors",
+              "flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium transition-colors",
               target === f.id
                 ? "bg-primary/[0.1] text-primary"
-                : "text-text-secondary hover:bg-surface-hover",
+                : "text-text-secondary hover:bg-surface-hover"
             )}
             onClick={() => setTarget(f.id)}
           >
@@ -104,20 +109,31 @@ export default function MoveModal({
               <span className="text-text-tertiary shrink-0 select-none">└</span>
             )}
             <Folder
-              className={target === f.id ? "text-primary" : "text-secondary shrink-0"}
+              className={
+                target === f.id ? "text-primary" : "text-secondary shrink-0"
+              }
               size={14}
             />
             <span className="flex-1 truncate">{f.name}</span>
-            <span className="shrink-0 text-[0.62rem] tabular-nums text-text-tertiary">
+            <span className="text-text-tertiary shrink-0 text-[0.62rem] tabular-nums">
               {f.dataset_count}
             </span>
-            {target === f.id && <Check className="text-primary shrink-0" size={13} />}
+            {target === f.id && (
+              <Check
+                className="text-primary shrink-0"
+                size={13}
+              />
+            )}
           </button>
         ))}
       </div>
 
       <ModalFooter>
-        <Button disabled={moving} variant="ghost" onClick={onClose}>
+        <Button
+          disabled={moving}
+          variant="ghost"
+          onClick={onClose}
+        >
           Cancel
         </Button>
         <Button

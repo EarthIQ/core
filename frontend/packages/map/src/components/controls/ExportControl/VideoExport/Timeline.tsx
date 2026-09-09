@@ -347,7 +347,8 @@ export const Timeline = ({
       </div>
 
       {/* Context menu */}
-      {contextMenu ? <>
+      {contextMenu ? (
+        <>
           <div
             className="fixed inset-0 z-50"
             onClick={closeContextMenu}
@@ -392,10 +393,11 @@ export const Timeline = ({
               }}
             />
           </div>
-        </> : null}
+        </>
+      ) : null}
     </div>
   );
-}
+};
 
 const ContextMenuItem = ({
   icon,
@@ -425,4 +427,4 @@ const ContextMenuItem = ({
       {label}
     </button>
   );
-}
+};

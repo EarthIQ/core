@@ -1,18 +1,18 @@
-import * as turf from '@turf/turf';
-import React, { useState, useCallback } from 'react';
+import * as turf from "@turf/turf";
+import React, { useState, useCallback } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { GeoJSON } from 'geojson';
+import type { GeoJSON } from "geojson";
 
-export type SpatialOperation = 
-  | 'intersects'
-  | 'within'
-  | 'contains'
-  | 'overlaps'
-  | 'crosses'
-  | 'touches'
-  | 'disjoint';
+export type SpatialOperation =
+  | "intersects"
+  | "within"
+  | "contains"
+  | "overlaps"
+  | "crosses"
+  | "touches"
+  | "disjoint";
 
 export interface SpatialQueryProps {
   /** Target features to query */
@@ -35,33 +35,35 @@ export interface SpatialQueryProps {
 export const SpatialQuery: React.FC<SpatialQueryProps> = ({
   target,
   queryGeometry,
-  operation = 'intersects',
+  operation = "intersects",
   onResult,
   highlightResults = true,
-  highlightStyle = { color: '#ef4444', width: 3 }
+  highlightStyle = { color: "#ef4444", width: 3 },
 }) => {
   const { map, isLoaded } = useMap();
-  const [_results, setResults] = useState<GeoJSON.FeatureCollection | null>(null);
+  const [_results, setResults] = useState<GeoJSON.FeatureCollection | null>(
+    null
+  );
 
   const executeQuery = useCallback(() => {
     if (!target || !queryGeometry) return;
 
-    const matchingFeatures = target.features.filter(feature => {
+    const matchingFeatures = target.features.filter((feature) => {
       try {
         switch (operation) {
-          case 'intersects':
+          case "intersects":
             return turf.booleanIntersects(feature, queryGeometry);
-          case 'within':
+          case "within":
             return turf.booleanWithin(feature, queryGeometry);
-          case 'contains':
+          case "contains":
             return turf.booleanContains(queryGeometry, feature);
-          case 'overlaps':
+          case "overlaps":
             return turf.booleanOverlap(feature, queryGeometry);
-          case 'crosses':
+          case "crosses":
             return turf.booleanCrosses(feature, queryGeometry);
-          case 'touches':
+          case "touches":
             return turf.booleanTouches(feature, queryGeometry);
-          case 'disjoint':
+          case "disjoint":
             return turf.booleanDisjoint(feature, queryGeometry);
           default:
             return false;
@@ -72,8 +74,8 @@ export const SpatialQuery: React.FC<SpatialQueryProps> = ({
     });
 
     const resultCollection: GeoJSON.FeatureCollection = {
-      type: 'FeatureCollection',
-      features: matchingFeatures
+      type: "FeatureCollection",
+      features: matchingFeatures,
     };
 
     setResults(resultCollection);
@@ -81,27 +83,29 @@ export const SpatialQuery: React.FC<SpatialQueryProps> = ({
 
     // Highlight results on map
     if (highlightResults && map && isLoaded) {
-      const sourceId = 'spatial-query-results';
-      const layerId = 'spatial-query-highlight';
+      const sourceId = "spatial-query-results";
+      const layerId = "spatial-query-highlight";
 
       if (!map.getSource(sourceId)) {
         map.addSource(sourceId, {
-          type: 'geojson',
-          data: resultCollection
+          type: "geojson",
+          data: resultCollection,
         });
       } else {
-        (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(resultCollection);
+        (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(
+          resultCollection
+        );
       }
 
       if (!map.getLayer(layerId)) {
         map.addLayer({
           id: layerId,
-          type: 'line',
+          type: "line",
           source: sourceId,
           paint: {
-            'line-color': highlightStyle.color,
-            'line-width': highlightStyle.width
-          }
+            "line-color": highlightStyle.color,
+            "line-width": highlightStyle.width,
+          },
         });
       }
     }

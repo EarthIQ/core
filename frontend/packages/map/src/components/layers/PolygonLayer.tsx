@@ -1,15 +1,16 @@
-import { useEffect, useId } from 'react';
+import { useEffect, useId } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { GeoJSON } from 'geojson';
-import type React from 'react';
+import type { GeoJSON } from "geojson";
+import type React from "react";
 
 export interface PolygonLayerProps {
   /** Unique layer ID */
   id?: string;
   /** GeoJSON polygon data */
-  data: GeoJSON.FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon> | string;
+  data:
+    GeoJSON.FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon> | string;
   /** Fill color */
   fillColor?: string | any[];
   /** Fill opacity */
@@ -47,10 +48,10 @@ export interface PolygonLayerProps {
 export const PolygonLayer: React.FC<PolygonLayerProps> = ({
   id: propId,
   data,
-  fillColor = '#3b82f6',
+  fillColor = "#3b82f6",
   fillOpacity = 0.5,
   fillPattern,
-  outlineColor = '#1d4ed8',
+  outlineColor = "#1d4ed8",
   outlineWidth = 2,
   outlineOpacity = 1,
   outlineDashArray,
@@ -61,8 +62,8 @@ export const PolygonLayer: React.FC<PolygonLayerProps> = ({
   onClick,
   onHover,
   hoverable = false,
-  hoverFillColor = '#1d4ed8',
-  hoverFillOpacity = 0.7
+  hoverFillColor = "#1d4ed8",
+  hoverFillOpacity = 0.7,
 }) => {
   const { map, isLoaded } = useMap();
   const autoId = useId();
@@ -77,57 +78,70 @@ export const PolygonLayer: React.FC<PolygonLayerProps> = ({
     // Add source
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
-        type: 'geojson',
-        data: typeof data === 'string' ? data : data,
-        generateId: true
+        type: "geojson",
+        data: typeof data === "string" ? data : data,
+        generateId: true,
       });
     }
 
     // Fill color with hover state
     const fill = hoverable
-      ? ['case', ['boolean', ['feature-state', 'hover'], false], hoverFillColor, fillColor]
+      ? [
+          "case",
+          ["boolean", ["feature-state", "hover"], false],
+          hoverFillColor,
+          fillColor,
+        ]
       : fillColor;
 
     const opacity = hoverable
-      ? ['case', ['boolean', ['feature-state', 'hover'], false], hoverFillOpacity, fillOpacity]
+      ? [
+          "case",
+          ["boolean", ["feature-state", "hover"], false],
+          hoverFillOpacity,
+          fillOpacity,
+        ]
       : fillOpacity;
 
     // Add fill layer
     if (!map.getLayer(fillLayerId)) {
-      map.addLayer({
-        id: fillLayerId,
-        type: 'fill',
-        source: sourceId,
-        layout: {
-          visibility: visible ? 'visible' : 'none'
+      map.addLayer(
+        {
+          id: fillLayerId,
+          type: "fill",
+          source: sourceId,
+          layout: {
+            visibility: visible ? "visible" : "none",
+          },
+          paint: {
+            "fill-color": fill,
+            "fill-opacity": opacity,
+            "fill-pattern": fillPattern,
+          },
+          ...(minZoom && { minzoom: minZoom }),
+          ...(maxZoom && { maxzoom: maxZoom }),
         },
-        paint: {
-          'fill-color': fill,
-          'fill-opacity': opacity,
-          'fill-pattern': fillPattern
-        },
-        ...(minZoom && { minzoom: minZoom }),
-        ...(maxZoom && { maxzoom: maxZoom })
-      }, beforeId);
+        beforeId
+      );
     }
 
     // Add outline layer
     if (outlineWidth > 0 && !map.getLayer(outlineLayerId)) {
       map.addLayer({
         id: outlineLayerId,
-        type: 'line',
+        type: "line",
         source: sourceId,
         layout: {
-          visibility: visible ? 'visible' : 'none'
+          visibility: visible ? "visible" : "none",
         },
         paint: {
-          'line-color': outlineColor,
-          'line-width': outlineWidth,
-          'line-opacity': outlineOpacity,
-          'line-dasharray': outlineDashArray
+          "line-color": outlineColor,
+          "line-width": outlineWidth,
+          "line-opacity": outlineOpacity,
+          "line-dasharray": outlineDashArray,
         },
         ...(minZoom && { minzoom: minZoom }),
-        ...(maxZoom && { maxzoom: maxZoom })
+        ...(maxZoom && { maxzoom: maxZoom }),
       });
     }
 
@@ -135,7 +149,7 @@ export const PolygonLayer: React.FC<PolygonLayerProps> = ({
     let hoveredFeatureId: string | number | null = null;
 
     if (hoverable || onHover) {
-      map.on('mousemove', fillLayerId, (e) => {
+      map.on("mousemove", fillLayerId, (e) => {
         if (e.features?.length) {
           if (hoveredFeatureId !== null) {
             map.setFeatureState(
@@ -148,12 +162,12 @@ export const PolygonLayer: React.FC<PolygonLayerProps> = ({
             { source: sourceId, id: hoveredFeatureId },
             { hover: true }
           );
-          map.getCanvas().style.cursor = 'pointer';
+          map.getCanvas().style.cursor = "pointer";
           onHover?.(e.features[0] as any, e);
         }
       });
 
-      map.on('mouseleave', fillLayerId, () => {
+      map.on("mouseleave", fillLayerId, () => {
         if (hoveredFeatureId !== null) {
           map.setFeatureState(
             { source: sourceId, id: hoveredFeatureId },
@@ -161,13 +175,13 @@ export const PolygonLayer: React.FC<PolygonLayerProps> = ({
           );
         }
         hoveredFeatureId = null;
-        map.getCanvas().style.cursor = '';
+        map.getCanvas().style.cursor = "";
         onHover?.(null, null);
       });
     }
 
     if (onClick) {
-      map.on('click', fillLayerId, (e) => {
+      map.on("click", fillLayerId, (e) => {
         if (e.features?.length) {
           onClick(e.features[0] as any, e);
         }
@@ -186,7 +200,7 @@ export const PolygonLayer: React.FC<PolygonLayerProps> = ({
     if (!map || !isLoaded) return;
     const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
     if (source) {
-      source.setData(typeof data === 'string' ? data : data);
+      source.setData(typeof data === "string" ? data : data);
     }
   }, [data, map, isLoaded]);
 

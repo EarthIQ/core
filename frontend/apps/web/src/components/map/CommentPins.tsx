@@ -4,10 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { MentionTextarea } from "@/components/map/MentionTextarea";
 import { useAuth } from "@/lib/auth";
 import { useMapEditor } from "@/lib/mapEditor/store";
-import {
-  sendMention,
-  type PeopleSearchResult,
-} from "@/lib/notifications";
+import { sendMention, type PeopleSearchResult } from "@/lib/notifications";
 
 import type { CommentThread } from "@/lib/mapEditor/types";
 
@@ -31,7 +28,8 @@ function formatWhen(ts: number) {
   if (d.toDateString() === now.toDateString()) return time;
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
-  if (d.toDateString() === yesterday.toDateString()) return `Yesterday, ${time}`;
+  if (d.toDateString() === yesterday.toDateString())
+    return `Yesterday, ${time}`;
   return `${d.toLocaleDateString([], { day: "2-digit", month: "short" })}, ${time}`;
 }
 
@@ -47,16 +45,16 @@ const Avatar = ({
   return (
     <span
       style={{ width: size, height: size, fontSize: Math.max(9, size * 0.38) }}
-      className={`flex items-center justify-center rounded-full font-bold shrink-0 select-none ${
+      className={`flex shrink-0 items-center justify-center rounded-full font-bold select-none ${
         muted
-          ? "bg-surface-hover text-text-tertiary border border-border-primary"
-          : "bg-primary/15 text-primary border border-primary/20"
+          ? "bg-surface-hover text-text-tertiary border-border-primary border"
+          : "bg-primary/15 text-primary border-primary/20 border"
       }`}
     >
       {initials(name)}
     </span>
   );
-}
+};
 
 /** Display name for a mentioned user (full name preferred, else email). */
 function mentionName(u: PeopleSearchResult): string {
@@ -78,7 +76,7 @@ function notifyMentioned(
   authorId: string,
   projectId: string | undefined,
   projectName: string | undefined,
-  lngLat: [number, number] | null,
+  lngLat: [number, number] | null
 ) {
   const clip = text.length > 120 ? `${text.slice(0, 117)}…` : text;
   for (const u of users) {
@@ -92,7 +90,9 @@ function notifyMentioned(
         ? `You were mentioned on “${projectName}”`
         : "You were mentioned in a comment",
       body: `${author} mentioned you: “${clip}”`,
-      link: projectId ? `/map?projectId=${encodeURIComponent(projectId)}` : null,
+      link: projectId
+        ? `/map?projectId=${encodeURIComponent(projectId)}`
+        : null,
       payload: { project_id: projectId ?? null, lngLat },
     }).catch(() => {}); // best-effort - the comment itself is already saved
   }
@@ -102,11 +102,12 @@ function notifyMentioned(
 const MentionPill = ({ name }: { name: string }) => {
   return (
     <span
-      className="inline-flex items-center align-middle rounded-full"
+      className="inline-flex items-center rounded-full align-middle"
       style={{
         background: "color-mix(in oklab, var(--primary) 14%, transparent)",
         color: "var(--primary)",
-        border: "1px solid color-mix(in oklab, var(--primary) 24%, transparent)",
+        border:
+          "1px solid color-mix(in oklab, var(--primary) 24%, transparent)",
         padding: "0 6px",
         margin: "0 1px",
         fontSize: "12px",
@@ -117,7 +118,7 @@ const MentionPill = ({ name }: { name: string }) => {
       {name}
     </span>
   );
-}
+};
 
 /**
  * Render a plain-text comment body with `@Name` mentions shown as pills.
@@ -130,7 +131,7 @@ const MentionPill = ({ name }: { name: string }) => {
 export function renderBody(
   text: string,
   mentions?: { id: string; name: string }[],
-  keyPrefix = "body",
+  keyPrefix = "body"
 ) {
   const names = (mentions ?? [])
     .map((m) => (m.name || "").trim())
@@ -144,10 +145,13 @@ export function renderBody(
     const parts = text.split(re);
     return parts.map((p, i) =>
       names.some((n) => `@${n}` === p) ? (
-        <MentionPill key={`${keyPrefix}-${i}`} name={p.slice(1)} />
+        <MentionPill
+          key={`${keyPrefix}-${i}`}
+          name={p.slice(1)}
+        />
       ) : (
         p
-      ),
+      )
     );
   }
 
@@ -155,10 +159,13 @@ export function renderBody(
   const parts = text.split(/(@[\w][\w'./-]*)(?=\s|$)/g);
   return parts.map((p, i) =>
     p.startsWith("@") ? (
-      <MentionPill key={`${keyPrefix}-${i}`} name={p.slice(1)} />
+      <MentionPill
+        key={`${keyPrefix}-${i}`}
+        name={p.slice(1)}
+      />
     ) : (
       p
-    ),
+    )
   );
 }
 
@@ -188,7 +195,7 @@ const CommentPin = ({
           ? "New comment"
           : `Comment by ${author}${resolved ? " (resolved)" : ""}`
       }
-      className={`pointer-events-auto relative w-[42px] h-[34px] transition-transform duration-150 ${
+      className={`pointer-events-auto relative h-[34px] w-[42px] transition-transform duration-150 ${
         onClick ? "cursor-pointer hover:scale-110" : ""
       } ${ghost ? "opacity-80" : ""}`}
       onClick={onClick}
@@ -219,16 +226,17 @@ const CommentPin = ({
           a circle of r=10 centered at (12,12) in the 24×24 viewBox, which is
           (13,13) at size 26 → (32,24) in the hitbox with the icon at (19,11) */}
       <span
-        className="absolute flex items-center justify-center text-[10px] font-bold text-white leading-none select-none"
+        className="absolute flex items-center justify-center text-[10px] leading-none font-bold text-white select-none"
         style={{ left: 25, top: 17, width: 14, height: 14 }}
       >
         {initials(author)}
       </span>
       {/* active thread: a tight ring hugging the bubble only (the resolved
           state is conveyed by the green fill, so no separate ✓ badge) */}
-      {active ? <span
+      {active ? (
+        <span
           aria-hidden
-          className="absolute pointer-events-none"
+          className="pointer-events-none absolute"
           style={{
             left: 17,
             top: 9,
@@ -237,10 +245,11 @@ const CommentPin = ({
             borderRadius: 13,
             boxShadow: "0 0 0 2px var(--primary)",
           }}
-        /> : null}
+        />
+      ) : null}
     </div>
   );
-}
+};
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Open-thread card (messages + replies + resolve/reopen/delete)            */
@@ -275,22 +284,33 @@ const ThreadCard = ({
     const body = reply.trim();
     if (!body) return;
     replyToThread(thread.id, body, me, myId, toMentions(mentioned));
-    notifyMentioned(mentioned, body, me, myId, projectId, projectName, thread.lngLat);
+    notifyMentioned(
+      mentioned,
+      body,
+      me,
+      myId,
+      projectId,
+      projectName,
+      thread.lngLat
+    );
     setReply("");
     setMentioned([]);
     setReplyKey((k) => k + 1);
   }
 
   return (
-    <div className="rounded-2xl bg-elevated border border-border-primary shadow-2xl flex flex-col overflow-hidden animate-fade-in-up">
+    <div className="bg-elevated border-border-primary animate-fade-in-up flex flex-col overflow-hidden rounded-2xl border shadow-2xl">
       {/* header */}
-      <div className="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-border-primary">
-        <Avatar name={opener.author} size={28} />
+      <div className="border-border-primary flex items-center gap-2.5 border-b px-3.5 py-2.5">
+        <Avatar
+          name={opener.author}
+          size={28}
+        />
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold text-text-primary truncate">
+          <p className="text-text-primary truncate text-[13px] font-semibold">
             {opener.author}
           </p>
-          <p className="text-[11px] text-text-tertiary">
+          <p className="text-text-tertiary text-[11px]">
             {formatWhen(opener.createdAt)}
             {replyCount > 0 &&
               ` · ${replyCount} ${replyCount === 1 ? "reply" : "replies"}`}
@@ -298,7 +318,7 @@ const ThreadCard = ({
         </div>
         <button
           aria-label="Close comment"
-          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
+          className="text-text-tertiary hover:bg-surface-hover hover:text-text-primary flex h-7 w-7 items-center justify-center rounded-md transition-colors"
           type="button"
           onClick={() => setActiveThreadId(null)}
         >
@@ -307,50 +327,62 @@ const ThreadCard = ({
       </div>
 
       {/* resolved banner */}
-      {thread.resolved ? <div className="flex items-center gap-2 px-3.5 py-2 bg-success/10 border-b border-success/30">
-          <Check className="text-success shrink-0" size={13} />
-          <span className="text-xs text-success flex-1">
+      {thread.resolved ? (
+        <div className="bg-success/10 border-success/30 flex items-center gap-2 border-b px-3.5 py-2">
+          <Check
+            className="text-success shrink-0"
+            size={13}
+          />
+          <span className="text-success flex-1 text-xs">
             {thread.resolvedByName
               ? `Resolved by ${thread.resolvedByName}`
               : "Resolved"}
           </span>
           <button
-            className="text-xs font-medium text-text-secondary hover:text-text-primary underline underline-offset-2"
+            className="text-text-secondary hover:text-text-primary text-xs font-medium underline underline-offset-2"
             type="button"
             onClick={() => setThreadResolved(thread.id, false)}
           >
             Reopen
           </button>
-        </div> : null}
+        </div>
+      ) : null}
 
       {/* messages */}
-      <div className="flex-1 overflow-y-auto max-h-[210px] min-h-[56px] px-3.5 py-3 space-y-3">
+      <div className="max-h-[210px] min-h-[56px] flex-1 space-y-3 overflow-y-auto px-3.5 py-3">
         {thread.messages.map((m, i) => (
-          <div key={m.id} className="flex gap-2">
+          <div
+            key={m.id}
+            className="flex gap-2"
+          >
             <div className="pt-0.5">
-              <Avatar muted={i !== 0} name={m.author} size={i === 0 ? 22 : 18} />
+              <Avatar
+                muted={i !== 0}
+                name={m.author}
+                size={i === 0 ? 22 : 18}
+              />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline gap-2">
                 <span
                   className={`font-semibold ${
                     i === 0
-                      ? "text-[13px] text-text-primary"
-                      : "text-[11px] text-text-secondary"
+                      ? "text-text-primary text-[13px]"
+                      : "text-text-secondary text-[11px]"
                   }`}
                 >
                   {m.author}
                   {m.authorId === myId && myId !== "" && (
-                    <span className="ml-1 text-[10px] font-normal text-text-tertiary">
+                    <span className="text-text-tertiary ml-1 text-[10px] font-normal">
                       you
                     </span>
                   )}
                 </span>
-                <span className="text-[10px] text-text-tertiary">
+                <span className="text-text-tertiary text-[10px]">
                   {formatWhen(m.createdAt)}
                 </span>
               </div>
-              <p className="text-[13px] text-text-primary whitespace-pre-wrap break-words leading-snug">
+              <p className="text-text-primary text-[13px] leading-snug break-words whitespace-pre-wrap">
                 {renderBody(m.body, m.mentions, `msg-${m.id}`)}
               </p>
             </div>
@@ -359,26 +391,26 @@ const ThreadCard = ({
       </div>
 
       {/* reply composer */}
-      <div className="px-3 py-2.5 border-t border-border-primary">
+      <div className="border-border-primary border-t px-3 py-2.5">
         <div className="flex items-end gap-2">
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <MentionTextarea
               key={replyKey}
-              className="w-full px-3 py-2 text-[13px] rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
+              className="bg-input-bg border-input-border text-text-primary focus:border-input-focus-border w-full rounded-lg border px-3 py-2 text-[13px] focus:outline-none"
               placeholder={`Reply to ${opener.author.split(" ")[0]}…`}
               rows={2}
               onSubmit={send}
               onTextChange={setReply}
               onMention={(u) =>
                 setMentioned((prev) =>
-                  prev.some((p) => p.id === u.id) ? prev : [...prev, u],
+                  prev.some((p) => p.id === u.id) ? prev : [...prev, u]
                 )
               }
             />
           </div>
           <button
             aria-label="Send reply"
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-white hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="bg-primary hover:bg-primary-dark flex h-8 w-8 items-center justify-center rounded-lg text-white transition-colors disabled:cursor-not-allowed disabled:opacity-40"
             disabled={!reply.trim()}
             type="button"
             onClick={send}
@@ -389,10 +421,10 @@ const ThreadCard = ({
       </div>
 
       {/* actions */}
-      <div className="flex items-center gap-1 px-2.5 py-1.5 border-t border-border-primary">
+      <div className="border-border-primary flex items-center gap-1 border-t px-2.5 py-1.5">
         {!thread.resolved && (
           <button
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-text-secondary hover:bg-success/10 hover:text-success transition-colors"
+            className="text-text-secondary hover:bg-success/10 hover:text-success flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
             type="button"
             onClick={() => setThreadResolved(thread.id, true, myId, me)}
           >
@@ -400,8 +432,9 @@ const ThreadCard = ({
             Resolve
           </button>
         )}
-        {canDelete ? <button
-            className="ml-auto flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-text-tertiary hover:bg-error/10 hover:text-error transition-colors"
+        {canDelete ? (
+          <button
+            className="text-text-tertiary hover:bg-error/10 hover:text-error ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
             type="button"
             onClick={() => {
               removeThread(thread.id);
@@ -410,11 +443,12 @@ const ThreadCard = ({
           >
             <Trash2 size={13} />
             Delete
-          </button> : null}
+          </button>
+        ) : null}
       </div>
     </div>
   );
-}
+};
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Composer card for a freshly dropped pin (first message)                  */
@@ -431,7 +465,7 @@ const ComposerCard = ({
   const { user } = useAuth();
   const addThread = useMapEditor((s) => s.addThread);
   const setPendingCommentLocation = useMapEditor(
-    (s) => s.setPendingCommentLocation,
+    (s) => s.setPendingCommentLocation
   );
   const [body, setBody] = useState("");
   const [mentioned, setMentioned] = useState<PeopleSearchResult[]>([]);
@@ -451,18 +485,21 @@ const ComposerCard = ({
   }
 
   return (
-    <div className="rounded-2xl bg-elevated border border-border-primary shadow-2xl overflow-hidden animate-fade-in-up">
-      <div className="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-border-primary">
-        <Avatar name={me} size={28} />
+    <div className="bg-elevated border-border-primary animate-fade-in-up overflow-hidden rounded-2xl border shadow-2xl">
+      <div className="border-border-primary flex items-center gap-2.5 border-b px-3.5 py-2.5">
+        <Avatar
+          name={me}
+          size={28}
+        />
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold text-text-primary truncate">
+          <p className="text-text-primary truncate text-[13px] font-semibold">
             {me}
           </p>
-          <p className="text-[11px] text-text-tertiary">New comment</p>
+          <p className="text-text-tertiary text-[11px]">New comment</p>
         </div>
         <button
           aria-label="Cancel comment"
-          className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
+          className="text-text-tertiary hover:bg-surface-hover hover:text-text-primary flex h-7 w-7 items-center justify-center rounded-md transition-colors"
           type="button"
           onClick={() => setPendingCommentLocation(null)}
         >
@@ -473,28 +510,28 @@ const ComposerCard = ({
         <MentionTextarea
           key={composerKey}
           autoFocus
-          className="w-full px-3 py-2 text-[13px] rounded-lg bg-input-bg border border-input-border text-text-primary focus:outline-none focus:border-input-focus-border"
+          className="bg-input-bg border-input-border text-text-primary focus:border-input-focus-border w-full rounded-lg border px-3 py-2 text-[13px] focus:outline-none"
           placeholder="What would you like to say about this spot?"
           rows={3}
           onSubmit={post}
           onTextChange={setBody}
           onMention={(u) =>
             setMentioned((prev) =>
-              prev.some((p) => p.id === u.id) ? prev : [...prev, u],
+              prev.some((p) => p.id === u.id) ? prev : [...prev, u]
             )
           }
         />
       </div>
-      <div className="flex items-center justify-end gap-2 px-3 py-2 border-t border-border-primary">
+      <div className="border-border-primary flex items-center justify-end gap-2 border-t px-3 py-2">
         <button
-          className="px-3 py-1.5 rounded-lg text-xs font-medium text-text-secondary hover:bg-surface-hover transition-colors"
+          className="text-text-secondary hover:bg-surface-hover rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
           type="button"
           onClick={() => setPendingCommentLocation(null)}
         >
           Cancel
         </button>
         <button
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-white hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="bg-primary hover:bg-primary-dark flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-40"
           disabled={!body.trim()}
           type="button"
           onClick={post}
@@ -505,7 +542,7 @@ const ComposerCard = ({
       </div>
     </div>
   );
-}
+};
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /*  Overlay: a pin per thread + the open card / composer                     */
@@ -546,10 +583,7 @@ export const CommentPins = ({
     if (!map || !container || !mapReady) return;
 
     const position = () => {
-      const place = (
-        el: HTMLDivElement | null,
-        lngLat: [number, number],
-      ) => {
+      const place = (el: HTMLDivElement | null, lngLat: [number, number]) => {
         if (!el) return;
         try {
           const pt = map.project(lngLat);
@@ -578,7 +612,7 @@ export const CommentPins = ({
           }px`;
           card.style.top = `${Math.max(
             64,
-            Math.min(pt.y - 180, Math.max(64, h - 420)),
+            Math.min(pt.y - 180, Math.max(64, h - 420))
           )}px`;
           card.style.visibility = "";
         } else {
@@ -614,8 +648,7 @@ export const CommentPins = ({
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const inside =
-        x >= 0 && y >= 0 && x <= rect.width && y <= rect.height;
+      const inside = x >= 0 && y >= 0 && x <= rect.width && y <= rect.height;
       el.style.opacity = inside ? "" : "0";
       if (!inside) return;
       try {
@@ -633,7 +666,7 @@ export const CommentPins = ({
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 pointer-events-none overflow-hidden z-20"
+      className="pointer-events-none absolute inset-0 z-20 overflow-hidden"
     >
       {/* thread pins */}
       {pinnedThreads.map((t) => (
@@ -655,32 +688,45 @@ export const CommentPins = ({
       ))}
 
       {/* pending pin (awaiting its first message) */}
-      {pending ? <div
+      {pending ? (
+        <div
           ref={(el) => {
             pinRefs.current["__pending"] = el;
           }}
           className="absolute top-0 left-0 will-change-transform"
           style={{ transform: "translate(-50%, -100%)" }}
         >
-          <CommentPin active author={me} resolved={false} />
-        </div> : null}
+          <CommentPin
+            active
+            author={me}
+            resolved={false}
+          />
+        </div>
+      ) : null}
 
       {/* ghost preview while placing (hidden until the cursor moves) */}
-      {placing && !pending ? <div
+      {placing && !pending ? (
+        <div
           ref={ghostRef}
-          className="absolute top-0 left-0 pointer-events-none will-change-transform"
+          className="pointer-events-none absolute top-0 left-0 will-change-transform"
           style={{ transform: "translate(-50%, -100%)", opacity: 0 }}
         >
-          <CommentPin ghost author={me} resolved={false} />
-        </div> : null}
+          <CommentPin
+            ghost
+            author={me}
+            resolved={false}
+          />
+        </div>
+      ) : null}
 
       {/* open card: thread or composer (one at a time) */}
-      {(activeThread || pending) ? <div
+      {activeThread || pending ? (
+        <div
           ref={cardRef}
           /* NOTE: the outer container is `pointer-events-none` (an inherited
              property) - without this explicit `auto`, the whole card,
              including the textarea and its buttons, would be unclickable. */
-          className="absolute top-0 left-0 pointer-events-auto"
+          className="pointer-events-auto absolute top-0 left-0"
           style={{ width: CARD_W, visibility: "hidden" }}
         >
           {activeThread ? (
@@ -698,9 +744,10 @@ export const CommentPins = ({
               />
             )
           )}
-        </div> : null}
+        </div>
+      ) : null}
     </div>
   );
-}
+};
 
 export default CommentPins;

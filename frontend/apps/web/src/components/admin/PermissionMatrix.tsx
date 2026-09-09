@@ -8,7 +8,11 @@ interface PermissionMatrixProps {
   onChange: (nextPermissionIds: string[]) => void;
 }
 
-const ACTIONS: Array<{ key: "view" | "add" | "edit" | "delete"; label: string; icon: string }> = [
+const ACTIONS: Array<{
+  key: "view" | "add" | "edit" | "delete";
+  label: string;
+  icon: string;
+}> = [
   { key: "view", label: "View", icon: "🔍" },
   { key: "add", label: "Add", icon: "➕" },
   { key: "edit", label: "Edit", icon: "✏️" },
@@ -35,8 +39,14 @@ export const PermissionMatrix = ({
     return compMap;
   }, [permissions]);
 
-  const components = useMemo(() => Object.keys(matrixData).sort(), [matrixData]);
-  const selectedSet = useMemo(() => new Set(selectedPermissionIds), [selectedPermissionIds]);
+  const components = useMemo(
+    () => Object.keys(matrixData).sort(),
+    [matrixData]
+  );
+  const selectedSet = useMemo(
+    () => new Set(selectedPermissionIds),
+    [selectedPermissionIds]
+  );
 
   const togglePermission = (id: string) => {
     const next = new Set(selectedSet);
@@ -65,63 +75,81 @@ export const PermissionMatrix = ({
 
   if (components.length === 0) {
     return (
-      <div className="p-4 rounded-lg bg-surface border border-border-primary text-xs text-text-tertiary">
-        No component permissions registered yet. Start services to auto-seed permissions.
+      <div className="bg-surface border-border-primary text-text-tertiary rounded-lg border p-4 text-xs">
+        No component permissions registered yet. Start services to auto-seed
+        permissions.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto border border-border-primary rounded-xl bg-surface">
-      <table className="w-full text-left text-xs border-collapse">
+    <div className="border-border-primary bg-surface overflow-x-auto rounded-xl border">
+      <table className="w-full border-collapse text-left text-xs">
         <thead>
-          <tr className="border-b border-border-primary bg-surface-hover/60">
-            <th className="py-2.5 px-3 font-bold text-text-primary capitalize">Component / Module</th>
+          <tr className="border-border-primary bg-surface-hover/60 border-b">
+            <th className="text-text-primary px-3 py-2.5 font-bold capitalize">
+              Component / Module
+            </th>
             {ACTIONS.map((a) => (
-              <th key={a.key} className="py-2.5 px-2 font-bold text-text-primary text-center">
+              <th
+                key={a.key}
+                className="text-text-primary px-2 py-2.5 text-center font-bold"
+              >
                 <span className="inline-flex items-center gap-1">
                   <span>{a.icon}</span> {a.label}
                 </span>
               </th>
             ))}
-            <th className="py-2.5 px-2 font-bold text-text-tertiary text-center">Toggle Row</th>
+            <th className="text-text-tertiary px-2 py-2.5 text-center font-bold">
+              Toggle Row
+            </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border-subtle">
+        <tbody className="divide-border-subtle divide-y">
           {components.map((comp) => {
             const rowMap = matrixData[comp];
             const rowIds = Object.values(rowMap);
-            const isRowFull = rowIds.length > 0 && rowIds.every((id) => selectedSet.has(id));
+            const isRowFull =
+              rowIds.length > 0 && rowIds.every((id) => selectedSet.has(id));
 
             return (
-              <tr key={comp} className="hover:bg-surface-hover/30 transition-colors">
-                <td className="py-2 px-3 font-semibold text-text-primary capitalize">
+              <tr
+                key={comp}
+                className="hover:bg-surface-hover/30 transition-colors"
+              >
+                <td className="text-text-primary px-3 py-2 font-semibold capitalize">
                   {comp.replace("-", " ")}
                 </td>
                 {ACTIONS.map((act) => {
                   const permId = rowMap[act.key];
                   if (!permId) {
                     return (
-                      <td key={act.key} className="py-2 px-2 text-center text-text-quaternary">
+                      <td
+                        key={act.key}
+                        className="text-text-quaternary px-2 py-2 text-center"
+                      >
                         -
                       </td>
                     );
                   }
                   const checked = selectedSet.has(permId);
                   return (
-                    <td key={act.key} className="py-2 px-2 text-center">
+                    <td
+                      key={act.key}
+                      className="px-2 py-2 text-center"
+                    >
                       <input
                         checked={checked}
-                        className="cursor-pointer accent-primary w-4 h-4 rounded border-border-primary"
+                        className="accent-primary border-border-primary h-4 w-4 cursor-pointer rounded"
                         type="checkbox"
                         onChange={() => togglePermission(permId)}
                       />
                     </td>
                   );
                 })}
-                <td className="py-2 px-2 text-center">
+                <td className="px-2 py-2 text-center">
                   <button
-                    className="text-[0.7rem] font-medium text-primary hover:underline"
+                    className="text-primary text-[0.7rem] font-medium hover:underline"
                     type="button"
                     onClick={() => toggleRow(comp)}
                   >
@@ -135,4 +163,4 @@ export const PermissionMatrix = ({
       </table>
     </div>
   );
-}
+};

@@ -24,11 +24,7 @@ export function useTranslation(namespace?: string): UseTranslationReturn {
   const { t: translate, locale, isLoading = false } = context;
 
   const t = useCallback(
-    (
-      key: string,
-      values?: InterpolationValues,
-      options?: TranslateOptions
-    ) => {
+    (key: string, values?: InterpolationValues, options?: TranslateOptions) => {
       const fullKey = namespace ? `${namespace}.${key}` : key;
       return translate(fullKey, values, options);
     },

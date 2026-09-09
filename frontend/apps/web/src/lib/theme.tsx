@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 
 export type ThemeMode = "dark" | "light" | "system";
 export type ActiveTheme = "dark" | "light";
@@ -61,11 +67,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, activeTheme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider
+      value={{ theme, activeTheme, setTheme, toggleTheme }}
+    >
       {children}
     </ThemeContext.Provider>
   );
-}
+};
 
 export function useTheme() {
   const context = useContext(ThemeContext);

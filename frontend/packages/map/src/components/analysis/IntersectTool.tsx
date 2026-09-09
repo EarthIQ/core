@@ -1,9 +1,14 @@
-import * as turf from '@turf/turf';
-import React, { useState, useCallback, useMemo } from 'react';
+import * as turf from "@turf/turf";
+import React, { useState, useCallback, useMemo } from "react";
 
-import { useMap } from '../../hooks/useMap';
+import { useMap } from "../../hooks/useMap";
 
-import type { Feature, FeatureCollection, Polygon, MultiPolygon } from 'geojson';
+import type {
+  Feature,
+  FeatureCollection,
+  Polygon,
+  MultiPolygon,
+} from "geojson";
 
 export interface IntersectToolProps {
   /** Source layer ID or GeoJSON */
@@ -23,19 +28,19 @@ export interface IntersectToolProps {
   /** Custom className */
   className?: string;
   /** Position */
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
 }
 
 export const IntersectTool: React.FC<IntersectToolProps> = ({
   sourceA,
   sourceB,
-  outputLayerId = 'intersect-result',
+  outputLayerId = "intersect-result",
   onResult,
   onError,
   showControls = true,
   autoExecute = false,
   className,
-  position = 'top-right'
+  position = "top-right",
 }) => {
   const { map, isLoaded } = useMap();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -44,22 +49,25 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
   const [showResult, setShowResult] = useState(true);
 
   // Get GeoJSON from source (layer ID or direct GeoJSON)
-  const getGeoJSON = useCallback((source: string | FeatureCollection): FeatureCollection | null => {
-    if (typeof source === 'object') {
-      return source;
-    }
-    
-    if (!map) return null;
-    
-    const mapSource = map.getSource(source);
-    if (mapSource && mapSource.type === 'geojson') {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- intentional ts-ignore for internal _data access
-      // @ts-ignore
-      return (mapSource as any)._data as FeatureCollection;
-    }
-    
-    return null;
-  }, [map]);
+  const getGeoJSON = useCallback(
+    (source: string | FeatureCollection): FeatureCollection | null => {
+      if (typeof source === "object") {
+        return source;
+      }
+
+      if (!map) return null;
+
+      const mapSource = map.getSource(source);
+      if (mapSource && mapSource.type === "geojson") {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- intentional ts-ignore for internal _data access
+        // @ts-ignore
+        return (mapSource as any)._data as FeatureCollection;
+      }
+
+      return null;
+    },
+    [map]
+  );
 
   // Perform intersection
   const executeIntersect = useCallback(() => {
@@ -71,7 +79,7 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
       const geoJsonB = getGeoJSON(sourceB);
 
       if (!geoJsonA || !geoJsonB) {
-        throw new Error('Could not retrieve GeoJSON from sources');
+        throw new Error("Could not retrieve GeoJSON from sources");
       }
 
       const intersectedFeatures: Feature[] = [];
@@ -80,33 +88,38 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
       for (const featureA of geoJsonA.features) {
         for (const featureB of geoJsonB.features) {
           if (
-            (featureA.geometry.type === 'Polygon' || featureA.geometry.type === 'MultiPolygon') &&
-            (featureB.geometry.type === 'Polygon' || featureB.geometry.type === 'MultiPolygon')
+            (featureA.geometry.type === "Polygon" ||
+              featureA.geometry.type === "MultiPolygon") &&
+            (featureB.geometry.type === "Polygon" ||
+              featureB.geometry.type === "MultiPolygon")
           ) {
             try {
               const intersection = turf.intersect(
-                turf.featureCollection([featureA as Feature<Polygon | MultiPolygon>, featureB as Feature<Polygon | MultiPolygon>])
+                turf.featureCollection([
+                  featureA as Feature<Polygon | MultiPolygon>,
+                  featureB as Feature<Polygon | MultiPolygon>,
+                ])
               );
-              
+
               if (intersection) {
                 intersection.properties = {
                   ...featureA.properties,
                   ...featureB.properties,
-                  _intersectSource: 'A+B'
+                  _intersectSource: "A+B",
                 };
                 intersectedFeatures.push(intersection);
               }
             } catch (e) {
               // Skip invalid geometries
-              console.warn('Intersection failed for feature pair:', e);
+              console.warn("Intersection failed for feature pair:", e);
             }
           }
         }
       }
 
       const resultCollection: FeatureCollection = {
-        type: 'FeatureCollection',
-        features: intersectedFeatures
+        type: "FeatureCollection",
+        features: intersectedFeatures,
       };
 
       setResult(resultCollection);
@@ -115,33 +128,43 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
       // Add to map if available
       if (map && showResult) {
         if (map.getSource(outputLayerId)) {
-          (map.getSource(outputLayerId)).setData(resultCollection);
+          map.getSource(outputLayerId).setData(resultCollection);
         } else {
           map.addSource(outputLayerId, {
-            type: 'geojson',
-            data: resultCollection
+            type: "geojson",
+            data: resultCollection,
           });
 
           map.addLayer({
             id: outputLayerId,
-            type: 'fill',
+            type: "fill",
             source: outputLayerId,
             paint: {
-              'fill-color': '#ff6b6b',
-              'fill-opacity': 0.6,
-              'fill-outline-color': '#c0392b'
-            }
+              "fill-color": "#ff6b6b",
+              "fill-opacity": 0.6,
+              "fill-outline-color": "#c0392b",
+            },
           });
         }
       }
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Intersection failed');
+      const error =
+        err instanceof Error ? err : new Error("Intersection failed");
       setError(error);
       onError?.(error);
     } finally {
       setIsProcessing(false);
     }
-  }, [sourceA, sourceB, getGeoJSON, map, outputLayerId, showResult, onResult, onError]);
+  }, [
+    sourceA,
+    sourceB,
+    getGeoJSON,
+    map,
+    outputLayerId,
+    showResult,
+    onResult,
+    onError,
+  ]);
 
   // Auto-execute on mount
   React.useEffect(() => {
@@ -165,15 +188,20 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
 
   // Position styles
   const positionStyles = useMemo(() => {
-    const base = { position: 'absolute' as const, zIndex: 1000 };
+    const base = { position: "absolute" as const, zIndex: 1000 };
     const offset = 10;
-    
+
     switch (position) {
-      case 'top-left': return { ...base, top: offset, left: offset };
-      case 'top-right': return { ...base, top: offset, right: offset };
-      case 'bottom-left': return { ...base, bottom: offset, left: offset };
-      case 'bottom-right': return { ...base, bottom: offset, right: offset };
-      default: return { ...base, top: offset, right: offset };
+      case "top-left":
+        return { ...base, top: offset, left: offset };
+      case "top-right":
+        return { ...base, top: offset, right: offset };
+      case "bottom-left":
+        return { ...base, bottom: offset, left: offset };
+      case "bottom-right":
+        return { ...base, bottom: offset, right: offset };
+      default:
+        return { ...base, top: offset, right: offset };
     }
   }, [position]);
 
@@ -186,61 +214,88 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
       className={className}
       style={{
         ...positionStyles,
-        backgroundColor: 'white',
+        backgroundColor: "white",
         borderRadius: 8,
         padding: 16,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        minWidth: 250
+        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+        minWidth: 250,
       }}
     >
-      <div style={{ fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
-          <circle cx="9" cy="9" r="7" />
-          <circle cx="15" cy="15" r="7" />
+      <div
+        style={{
+          fontWeight: 600,
+          marginBottom: 12,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <svg
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width="16"
+        >
+          <circle
+            cx="9"
+            cy="9"
+            r="7"
+          />
+          <circle
+            cx="15"
+            cy="15"
+            r="7"
+          />
         </svg>
         Intersect Tool
       </div>
 
-      <div style={{ fontSize: 12, color: '#666', marginBottom: 12 }}>
-        <div>Source A: {typeof sourceA === 'string' ? sourceA : 'GeoJSON'}</div>
-        <div>Source B: {typeof sourceB === 'string' ? sourceB : 'GeoJSON'}</div>
+      <div style={{ fontSize: 12, color: "#666", marginBottom: 12 }}>
+        <div>Source A: {typeof sourceA === "string" ? sourceA : "GeoJSON"}</div>
+        <div>Source B: {typeof sourceB === "string" ? sourceB : "GeoJSON"}</div>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <button
           disabled={isProcessing || !isLoaded}
           style={{
             flex: 1,
-            padding: '8px 12px',
-            backgroundColor: isProcessing ? '#95a5a6' : '#3498db',
-            color: 'white',
-            border: 'none',
+            padding: "8px 12px",
+            backgroundColor: isProcessing ? "#95a5a6" : "#3498db",
+            color: "white",
+            border: "none",
             borderRadius: 4,
-            cursor: isProcessing ? 'not-allowed' : 'pointer',
-            fontSize: 13
+            cursor: isProcessing ? "not-allowed" : "pointer",
+            fontSize: 13,
           }}
           onClick={executeIntersect}
         >
-          {isProcessing ? 'Processing...' : 'Execute Intersect'}
+          {isProcessing ? "Processing..." : "Execute Intersect"}
         </button>
 
-        {result ? <button
+        {result ? (
+          <button
             style={{
-              padding: '8px 12px',
-              backgroundColor: '#e74c3c',
-              color: 'white',
-              border: 'none',
+              padding: "8px 12px",
+              backgroundColor: "#e74c3c",
+              color: "white",
+              border: "none",
               borderRadius: 4,
-              cursor: 'pointer',
-              fontSize: 13
+              cursor: "pointer",
+              fontSize: 13,
             }}
             onClick={clearResult}
           >
             Clear
-          </button> : null}
+          </button>
+        ) : null}
       </div>
 
-      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+      <label
+        style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}
+      >
         <input
           checked={showResult}
           type="checkbox"
@@ -249,26 +304,34 @@ export const IntersectTool: React.FC<IntersectToolProps> = ({
         Show result on map
       </label>
 
-      {error ? <div style={{
-          marginTop: 12,
-          padding: 8,
-          backgroundColor: '#fee',
-          borderRadius: 4,
-          color: '#c0392b',
-          fontSize: 12
-        }}>
+      {error ? (
+        <div
+          style={{
+            marginTop: 12,
+            padding: 8,
+            backgroundColor: "#fee",
+            borderRadius: 4,
+            color: "#c0392b",
+            fontSize: 12,
+          }}
+        >
           {error.message}
-        </div> : null}
+        </div>
+      ) : null}
 
-      {result ? <div style={{
-          marginTop: 12,
-          padding: 8,
-          backgroundColor: '#e8f5e9',
-          borderRadius: 4,
-          fontSize: 12
-        }}>
+      {result ? (
+        <div
+          style={{
+            marginTop: 12,
+            padding: 8,
+            backgroundColor: "#e8f5e9",
+            borderRadius: 4,
+            fontSize: 12,
+          }}
+        >
           <strong>Result:</strong> {result.features.length} features
-        </div> : null}
+        </div>
+      ) : null}
     </div>
   );
 };

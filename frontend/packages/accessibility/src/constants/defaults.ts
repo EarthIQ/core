@@ -1,4 +1,4 @@
-import type { AccessibilitySettings } from '../types';
+import type { AccessibilitySettings } from "../types";
 
 /**
  * Default accessibility settings

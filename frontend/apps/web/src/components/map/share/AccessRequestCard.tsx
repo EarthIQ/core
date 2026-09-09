@@ -48,17 +48,21 @@ export const AccessRequestCard = ({
   }
 
   return (
-    <div className="w-full max-w-md bg-elevated border border-border-primary rounded-2xl shadow-2xl p-8 flex flex-col items-center text-center animate-scale-in">
-      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-        <Lock className="text-primary" size={26} />
+    <div className="bg-elevated border-border-primary animate-scale-in flex w-full max-w-md flex-col items-center rounded-2xl border p-8 text-center shadow-2xl">
+      <div className="bg-primary/10 mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
+        <Lock
+          className="text-primary"
+          size={26}
+        />
       </div>
-      <h2 className="text-lg font-semibold text-text-primary">
+      <h2 className="text-text-primary text-lg font-semibold">
         You don&rsquo;t have access to this {label}
       </h2>
-      <p className="text-sm text-text-secondary mt-2 leading-relaxed">
+      <p className="text-text-secondary mt-2 text-sm leading-relaxed">
         {name ? (
           <>
-            The {label} <span className="font-semibold text-text-primary">{name}</span>{" "}
+            The {label}{" "}
+            <span className="text-text-primary font-semibold">{name}</span>{" "}
           </>
         ) : null}
         is private. You can request access - the owner will be notified by email
@@ -66,18 +70,21 @@ export const AccessRequestCard = ({
       </p>
 
       {sent ? (
-        <div className="mt-6 w-full flex flex-col items-center gap-2 animate-fade-in">
-          <CheckCircle2 className="text-success" size={32} />
-          <p className="text-sm font-medium text-text-primary">Request sent</p>
-          <p className="text-xs text-text-secondary leading-relaxed">
-            The owner has been notified. You&rsquo;ll be able to open this {label} as
-            soon as they approve your request.
+        <div className="animate-fade-in mt-6 flex w-full flex-col items-center gap-2">
+          <CheckCircle2
+            className="text-success"
+            size={32}
+          />
+          <p className="text-text-primary text-sm font-medium">Request sent</p>
+          <p className="text-text-secondary text-xs leading-relaxed">
+            The owner has been notified. You&rsquo;ll be able to open this{" "}
+            {label} as soon as they approve your request.
           </p>
         </div>
       ) : (
         <>
           <textarea
-            className="mt-5 w-full resize-none rounded-xl bg-bg-tertiary border border-border-primary px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary/60 transition-colors"
+            className="bg-bg-tertiary border-border-primary text-text-primary placeholder:text-text-tertiary focus:border-primary/60 mt-5 w-full resize-none rounded-xl border px-3.5 py-2.5 text-sm transition-colors focus:outline-none"
             placeholder={`Tell the owner why you need access to this ${label}… (optional)`}
             rows={3}
             value={message}
@@ -85,18 +92,23 @@ export const AccessRequestCard = ({
           />
           {error ? <p className="mt-2 text-xs text-red-400">{error}</p> : null}
           <button
-            className="mt-4 w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60 transition-opacity"
+            className="bg-primary mt-4 flex w-full items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
             disabled={sending}
             type="button"
             onClick={handleSubmit}
           >
-            {sending ? <Loader2 className="animate-spin" size={15} /> : null}
+            {sending ? (
+              <Loader2
+                className="animate-spin"
+                size={15}
+              />
+            ) : null}
             {sending ? "Sending…" : "Request access"}
           </button>
         </>
       )}
     </div>
   );
-}
+};
 
 export default AccessRequestCard;

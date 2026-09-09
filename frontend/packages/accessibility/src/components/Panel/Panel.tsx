@@ -126,17 +126,7 @@ export const Panel: React.FC<PanelProps> = ({
         aria-label={title}
         aria-modal="true"
         role="dialog"
-        className={`
-          animate-scale-in
-          fixed bottom-4
-          ${position === "right" ? "right-4" : "left-4"}
-          flex flex-col
-          max-h-[calc(100vh-2rem)] w-[calc(100vw-2rem)] sm:w-[420px]
-          overflow-hidden rounded-3xl
-          border border-[var(--border-primary)]
-          bg-[var(--bg-secondary)]
-          shadow-2xl
-        `}
+        className={`animate-scale-in fixed bottom-4 ${position === "right" ? "right-4" : "left-4"} flex max-h-[calc(100vh-2rem)] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-3xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] shadow-2xl sm:w-[420px]`}
         style={{
           transformOrigin:
             position === "right" ? "bottom right" : "bottom left",
@@ -160,6 +150,6 @@ export const Panel: React.FC<PanelProps> = ({
         <PanelFooter text={footerText} />
       </div>
     </>,
-    document.body,
+    document.body
   );
 };

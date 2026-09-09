@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from "react";
 
-import type { ChartDataPoint } from '../types';
+import type { ChartDataPoint } from "../types";
 
 interface UseChartDataOptions {
   initialHiddenSeries?: string[];
@@ -30,7 +30,7 @@ export const useChartData = (
     return data.map((item) => {
       const filteredItem: ChartDataPoint = { name: item.name };
       Object.keys(item).forEach((key) => {
-        if (key === 'name' || !hiddenSeries.has(key)) {
+        if (key === "name" || !hiddenSeries.has(key)) {
           filteredItem[key] = item[key];
         }
       });

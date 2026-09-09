@@ -53,16 +53,19 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
           />
-          {searchQuery ? <button
+          {searchQuery ? (
+            <button
               aria-label="Clear search"
               className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-0.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
               onClick={() => onSearchChange("")}
             >
               <X className="h-3.5 w-3.5" />
-            </button> : null}
+            </button>
+          ) : null}
         </div>
 
-        {showFilters ? <div className="flex items-center rounded-lg bg-[var(--bg-tertiary)] p-0.5">
+        {showFilters ? (
+          <div className="flex items-center rounded-lg bg-[var(--bg-tertiary)] p-0.5">
             <button
               aria-label="Show visible only"
               aria-pressed={filterMode === "visible"}
@@ -91,10 +94,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             >
               <EyeOff className="h-3.5 w-3.5" />
             </button>
-          </div> : null}
+          </div>
+        ) : null}
       </div>
 
-      {hasActiveFilters ? <div className="flex items-center justify-between">
+      {hasActiveFilters ? (
+        <div className="flex items-center justify-between">
           <span className="text-[11px] text-[var(--text-tertiary)]">
             Showing {resultCount} of {totalCount}
           </span>
@@ -107,7 +112,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           >
             Clear
           </button>
-        </div> : null}
+        </div>
+      ) : null}
     </div>
   );
 };

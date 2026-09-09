@@ -1,9 +1,9 @@
-export { 
+export {
   useCookieConsent,
   useConsentAwareScript,
   useHasConsent,
   type UseCookieConsentReturn,
-} from './useCookieConsent';
+} from "./useCookieConsent";
 
 export {
   useConsentListener,
@@ -12,4 +12,4 @@ export {
   type ConsentChangeCallback,
   type ConsentInitializedCallback,
   type ConsentInitializedDetail,
-} from './useConsentListener';
+} from "./useConsentListener";

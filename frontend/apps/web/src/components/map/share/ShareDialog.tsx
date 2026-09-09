@@ -78,7 +78,7 @@ export const ShareDialog = ({
 
   const existingEmails = useMemo(
     () => share.state?.entries.map((e) => e.email) ?? [],
-    [share.state],
+    [share.state]
   );
 
   async function handleSend() {
@@ -113,39 +113,43 @@ export const ShareDialog = ({
       <div
         aria-label={`Share ${entityType}`}
         aria-modal="true"
-        className="w-full max-w-lg bg-elevated border border-border-primary rounded-2xl shadow-2xl flex flex-col animate-scale-in"
+        className="bg-elevated border-border-primary animate-scale-in flex w-full max-w-lg flex-col rounded-2xl border shadow-2xl"
         role="dialog"
         style={{ maxHeight: "88vh" }}
       >
         {/* ── Header ─────────────────────────────────────────── */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className="flex shrink-0 items-center justify-between px-5 pt-5 pb-3">
+          <div className="flex min-w-0 items-center gap-2">
             {view === "settings" && (
               <button
-                className="p-1 -ml-1 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors"
+                className="text-text-tertiary hover:text-text-primary hover:bg-surface-hover -ml-1 rounded-lg p-1 transition-colors"
                 type="button"
                 onClick={() => setView("main")}
               >
                 <ChevronLeft size={18} />
               </button>
             )}
-            <h2 className="text-base font-semibold text-text-primary truncate">
-              {view === "settings" ? "Sharing settings" : `Share "${entityTitle}" (${entityType})`}
+            <h2 className="text-text-primary truncate text-base font-semibold">
+              {view === "settings"
+                ? "Sharing settings"
+                : `Share "${entityTitle}" (${entityType})`}
             </h2>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0">
-            {view === "main" && canManage ? <button
-                className="p-1.5 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors"
+          <div className="flex shrink-0 items-center gap-1">
+            {view === "main" && canManage ? (
+              <button
+                className="text-text-tertiary hover:text-text-primary hover:bg-surface-hover rounded-lg p-1.5 transition-colors"
                 title="Sharing settings"
                 type="button"
                 onClick={() => setView("settings")}
               >
                 <Settings size={16} />
-              </button> : null}
+              </button>
+            ) : null}
             <button
               aria-label="Close"
-              className="p-1.5 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors"
+              className="text-text-tertiary hover:text-text-primary hover:bg-surface-hover rounded-lg p-1.5 transition-colors"
               type="button"
               onClick={onClose}
             >
@@ -156,14 +160,17 @@ export const ShareDialog = ({
 
         {/* ── Body ───────────────────────────────────────────── */}
         {share.loading ? (
-          <div className="px-5 pb-6 flex flex-col gap-3">
-            <div className="h-11 rounded-xl bg-surface-hover animate-pulse" />
+          <div className="flex flex-col gap-3 px-5 pb-6">
+            <div className="bg-surface-hover h-11 animate-pulse rounded-xl" />
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-surface-hover animate-pulse" />
-                <div className="flex-1 flex flex-col gap-1.5">
-                  <div className="h-3 w-1/3 rounded bg-surface-hover animate-pulse" />
-                  <div className="h-2.5 w-1/2 rounded bg-surface-hover animate-pulse" />
+              <div
+                key={i}
+                className="flex items-center gap-3"
+              >
+                <div className="bg-surface-hover h-8 w-8 animate-pulse rounded-full" />
+                <div className="flex flex-1 flex-col gap-1.5">
+                  <div className="bg-surface-hover h-3 w-1/3 animate-pulse rounded" />
+                  <div className="bg-surface-hover h-2.5 w-1/2 animate-pulse rounded" />
                 </div>
               </div>
             ))}
@@ -174,7 +181,7 @@ export const ShareDialog = ({
           </div>
         ) : view === "settings" ? (
           /* ── Settings view ────────────────────────────────── */
-          <div className="px-5 pb-2 flex flex-col gap-1 overflow-y-auto scrollbar-thin">
+          <div className="flex scrollbar-thin flex-col gap-1 overflow-y-auto px-5 pb-2">
             {[
               {
                 key: "editorsCanShare" as const,
@@ -189,21 +196,21 @@ export const ShareDialog = ({
             ].map((opt) => (
               <label
                 key={opt.key}
-                className="flex items-start gap-3 py-3 px-2 rounded-lg hover:bg-surface-hover/50 cursor-pointer transition-colors"
+                className="hover:bg-surface-hover/50 flex cursor-pointer items-start gap-3 rounded-lg px-2 py-3 transition-colors"
               >
                 <input
                   checked={share.state.settings[opt.key]}
-                  className="mt-0.5 accent-primary w-4 h-4 shrink-0"
+                  className="accent-primary mt-0.5 h-4 w-4 shrink-0"
                   type="checkbox"
                   onChange={(e) =>
                     share.updateSettings({ [opt.key]: e.target.checked })
                   }
                 />
                 <span>
-                  <span className="block text-[0.82rem] text-text-primary">
+                  <span className="text-text-primary block text-[0.82rem]">
                     {opt.title}
                   </span>
-                  <span className="block text-[0.7rem] text-text-tertiary leading-snug mt-0.5">
+                  <span className="text-text-tertiary mt-0.5 block text-[0.7rem] leading-snug">
                     {opt.desc}
                   </span>
                 </span>
@@ -212,11 +219,12 @@ export const ShareDialog = ({
           </div>
         ) : (
           /* ── Main view ────────────────────────────────────── */
-          <div className="flex flex-col overflow-y-auto scrollbar-thin">
+          <div className="flex scrollbar-thin flex-col overflow-y-auto">
             {/* Invite input */}
-            {canManage ? <div className="px-5 pb-3 shrink-0">
+            {canManage ? (
+              <div className="shrink-0 px-5 pb-3">
                 <div className="flex items-start gap-2">
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <EmailChipsInput
                       chips={chips}
                       entityId={entityId ?? undefined}
@@ -224,41 +232,54 @@ export const ShareDialog = ({
                       onChange={setChips}
                     />
                   </div>
-                  {inviteMode ? <div className="pt-1.5">
-                      <RoleSelect value={inviteRole} onChange={setInviteRole} />
-                    </div> : null}
+                  {inviteMode ? (
+                    <div className="pt-1.5">
+                      <RoleSelect
+                        value={inviteRole}
+                        onChange={setInviteRole}
+                      />
+                    </div>
+                  ) : null}
                 </div>
 
                 {/* Invite mode extras */}
-                {inviteMode ? <div className="mt-3 flex flex-col gap-3 animate-fade-in">
-                    <label className="flex items-center gap-2 cursor-pointer">
+                {inviteMode ? (
+                  <div className="animate-fade-in mt-3 flex flex-col gap-3">
+                    <label className="flex cursor-pointer items-center gap-2">
                       <input
                         checked={notifyPeople}
-                        className="accent-primary w-4 h-4"
+                        className="accent-primary h-4 w-4"
                         type="checkbox"
                         onChange={(e) => setNotifyPeople(e.target.checked)}
                       />
-                      <span className="text-[0.78rem] text-text-secondary">
+                      <span className="text-text-secondary text-[0.78rem]">
                         Notify people
                       </span>
                     </label>
 
-                    {notifyPeople ? <textarea
-                        className="w-full resize-none rounded-xl bg-surface-hover/40 border border-border-secondary focus:border-primary/60 outline-none px-3 py-2 text-[0.8rem] text-text-primary placeholder:text-text-quaternary transition-colors"
+                    {notifyPeople ? (
+                      <textarea
+                        className="bg-surface-hover/40 border-border-secondary focus:border-primary/60 text-text-primary placeholder:text-text-quaternary w-full resize-none rounded-xl border px-3 py-2 text-[0.8rem] transition-colors outline-none"
                         placeholder="Message (optional)"
                         rows={3}
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                      /> : null}
-                  </div> : null}
-              </div> : null}
+                      />
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
 
             {/* People with access */}
             {!inviteMode && (
               <>
                 <div className="px-5 pb-1">
-                  <div className="flex items-center gap-1.5 text-[0.8rem] font-semibold text-text-primary mb-1">
-                    <Users className="text-text-tertiary" size={13} />
+                  <div className="text-text-primary mb-1 flex items-center gap-1.5 text-[0.8rem] font-semibold">
+                    <Users
+                      className="text-text-tertiary"
+                      size={13}
+                    />
                     People with access
                     <span className="text-text-quaternary font-normal">
                       ({share.state.entries.length})
@@ -266,7 +287,7 @@ export const ShareDialog = ({
                   </div>
                 </div>
 
-                <div className="px-3 pb-3 flex flex-col max-h-[240px] overflow-y-auto scrollbar-thin">
+                <div className="flex max-h-[240px] scrollbar-thin flex-col overflow-y-auto px-3 pb-3">
                   {share.state.entries.map((entry) => (
                     <PersonRow
                       key={entry.id}
@@ -282,7 +303,7 @@ export const ShareDialog = ({
                   ))}
                 </div>
 
-                <div className="h-px bg-border-secondary mx-5 mb-3" />
+                <div className="bg-border-secondary mx-5 mb-3 h-px" />
 
                 <GeneralAccessSection
                   canManage={canManage}
@@ -297,10 +318,10 @@ export const ShareDialog = ({
 
         {/* ── Footer ─────────────────────────────────────────── */}
         {view === "main" && !share.loading && !share.error && (
-          <div className="flex items-center justify-between gap-3 px-5 py-4 shrink-0">
+          <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-4">
             <button
               type="button"
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-full border text-[0.8rem] font-medium transition-all ${
+              className={`flex items-center gap-2 rounded-full border px-3.5 py-2 text-[0.8rem] font-medium transition-all ${
                 copied
                   ? "border-success/40 text-success bg-success/10"
                   : "border-border-primary text-primary hover:bg-primary/10"
@@ -314,7 +335,7 @@ export const ShareDialog = ({
             {inviteMode ? (
               <div className="flex items-center gap-2">
                 <button
-                  className="px-4 py-2 rounded-full text-[0.8rem] font-medium text-text-secondary hover:bg-surface-hover transition-colors"
+                  className="text-text-secondary hover:bg-surface-hover rounded-full px-4 py-2 text-[0.8rem] font-medium transition-colors"
                   type="button"
                   onClick={() => {
                     setChips([]);
@@ -324,18 +345,23 @@ export const ShareDialog = ({
                   Cancel
                 </button>
                 <button
-                  className="flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-white text-[0.8rem] font-semibold hover:opacity-90 disabled:opacity-60 transition-opacity"
+                  className="bg-primary flex items-center gap-2 rounded-full px-5 py-2 text-[0.8rem] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
                   disabled={sending}
                   type="button"
                   onClick={handleSend}
                 >
-                  {sending ? <Loader2 className="animate-spin" size={14} /> : null}
+                  {sending ? (
+                    <Loader2
+                      className="animate-spin"
+                      size={14}
+                    />
+                  ) : null}
                   {sending ? "Sending…" : "Send"}
                 </button>
               </div>
             ) : (
               <button
-                className="px-6 py-2 rounded-full bg-primary text-white text-[0.8rem] font-semibold hover:opacity-90 transition-opacity"
+                className="bg-primary rounded-full px-6 py-2 text-[0.8rem] font-semibold text-white transition-opacity hover:opacity-90"
                 type="button"
                 onClick={onClose}
               >
@@ -346,13 +372,15 @@ export const ShareDialog = ({
         )}
 
         {/* ── Inline toast ───────────────────────────────────── */}
-        {share.toast ? <div className="absolute left-1/2 -translate-x-1/2 bottom-[-52px] px-4 py-2.5 rounded-xl bg-bg-tertiary border border-border-primary shadow-2xl text-[0.78rem] text-text-primary whitespace-nowrap animate-fade-in">
+        {share.toast ? (
+          <div className="bg-bg-tertiary border-border-primary text-text-primary animate-fade-in absolute bottom-[-52px] left-1/2 -translate-x-1/2 rounded-xl border px-4 py-2.5 text-[0.78rem] whitespace-nowrap shadow-2xl">
             {share.toast}
-          </div> : null}
+          </div>
+        ) : null}
       </div>
     </div>,
-    document.body,
+    document.body
   );
-}
+};
 
 export default ShareDialog;

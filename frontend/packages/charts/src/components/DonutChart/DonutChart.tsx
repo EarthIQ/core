@@ -128,7 +128,8 @@ export const DonutChart: React.FC<DonutChartProps> = ({
               ))}
             </Pie>
 
-            {showTooltip ? <Tooltip
+            {showTooltip ? (
+              <Tooltip
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover, 0 0% 100%))",
                   border: "1px solid hsl(var(--border, 220 13% 91%))",
@@ -139,20 +140,24 @@ export const DonutChart: React.FC<DonutChartProps> = ({
                   value.toLocaleString(),
                   name,
                 ]}
-              /> : null}
+              />
+            ) : null}
 
-            {showLegend ? <Legend
+            {showLegend ? (
+              <Legend
                 height={36}
                 iconSize={8}
                 iconType="circle"
                 verticalAlign="bottom"
                 wrapperStyle={{ paddingTop: 16 }}
-              /> : null}
+              />
+            ) : null}
           </RechartsPieChart>
         </ResponsiveContainer>
 
         {/* Center Content */}
-        {(centerLabel || centerValue !== undefined || centerDescription) ? <div
+        {centerLabel || centerValue !== undefined || centerDescription ? (
+          <div
             style={{ marginTop: showLegend ? -18 : 0 }}
             className={cn(
               "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform",
@@ -171,12 +176,15 @@ export const DonutChart: React.FC<DonutChartProps> = ({
                       : centerValue}
                   </span>
                 )}
-                {centerDescription ? <span className="text-sm text-gray-500 dark:text-gray-400">
+                {centerDescription ? (
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
                     {centerDescription}
-                  </span> : null}
+                  </span>
+                ) : null}
               </>
             )}
-          </div> : null}
+          </div>
+        ) : null}
       </div>
     </ChartContainer>
   );
