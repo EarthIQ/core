@@ -28,6 +28,7 @@ import LoginPage from "@/pages/LoginPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import ProjectsPage from "@/pages/ProjectsPage";
 import PublicMapPage from "@/pages/PublicMapPage";
+import PublicStoryMapPage from "@/pages/PublicStoryMapPage";
 import SettingsPage from "@/pages/SettingsPage";
 
 // AUTO-GENERATED - never import module names directly here
@@ -243,6 +244,10 @@ export default function App() {
               <Route
                 element={<PublicMapPage />}
                 path="/share/map/:mapId"
+              />
+              <Route
+                element={<PublicStoryMapPage />}
+                path="/share/story/:token"
               />
 
               {/* Protected shell */}
