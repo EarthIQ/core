@@ -1,131 +1,218 @@
-import { AlignLeft, Map, Presentation, Type } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { Plus, Play, RotateCcw } from "lucide-react";
+
+import { Button, Input } from "@packages/ui";
 
 import { BuilderScaffold } from "@/components/builder/BuilderScaffold";
-import {
-  BuilderWorkspace,
-  SidebarHeader,
-  SidebarItem,
-} from "@/components/builder/BuilderWorkspace";
 import { getProjectBuilder } from "@/lib/builders";
-
-interface Slide {
-  id: string;
-  title: string;
-}
-
-/** Block types a presentation slide can hold (shown as coming-soon chips). */
-const SLIDE_BLOCKS = [
-  { label: "Map view", icon: Map },
-  { label: "Text", icon: Type },
-  { label: "Chart", icon: AlignLeft },
-];
+import {
+  Inspector,
+  PresentMode,
+  SlideCanvas,
+  SlideThumb,
+  useDeck,
+  useProjectData,
+  type BlockAction,
+} from "@/components/builder/presentation";
 
 /**
- * Map Presentation builder - PowerPoint-style slide decks, but for maps.
- *
- * Initial structure: a slide list on the left (add / select) and a slide
- * canvas with a block toolbar on the right. Block types are rendered as
- * disabled chips until the slide editor is implemented.
+ * The 3-pane presentation workspace: a slide rail, the live slide canvas and a
+ * context-aware inspector. All deck state lives in `useDeck` (persisted per
+ * project) and all source material in `useProjectData`. Present mode overlays
+ * the app.
+ */
+function Editor({ projectId }: { projectId: string }) {
+  const data = useProjectData(projectId);
+  const deck = useDeck(projectId, data.project?.title);
+  const [presenting, setPresenting] = useState(false);
+
+  const slide = deck.activeSlide;
+
+  function handleBlockAction(blockId: string, action: BlockAction) {
+    switch (action) {
+      case "up":
+        deck.moveBlock(blockId, -1);
+        break;
+      case "down":
+        deck.moveBlock(blockId, 1);
+        break;
+      case "duplicate":
+        deck.duplicateBlock(blockId);
+        break;
+      case "delete":
+        deck.removeBlock(blockId);
+        break;
+      case "span": {
+        const target = slide?.blocks.find((b) => b.id === blockId);
+        deck.updateBlock(blockId, {
+          span: target && target.span === 2 ? 1 : 2,
+        });
+        break;
+      }
+    }
+  }
+
+  function handleReset() {
+    if (
+      window.confirm("Reset this deck? All slides and blocks will be cleared.")
+    ) {
+      deck.resetDeck(data.project?.title);
+    }
+  }
+
+  if (data.loading) {
+    return (
+      <div className="flex h-[calc(100vh-150px)] min-h-[520px] items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-[var(--text-tertiary)]">
+          <span className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--border-primary)] border-t-[var(--primary)]" />
+          <p className="text-sm">Loading project data…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (data.error) {
+    return (
+      <div className="flex h-[calc(100vh-150px)] min-h-[520px] items-center justify-center">
+        <div className="max-w-md rounded-xl border border-[var(--error-border)] bg-[var(--error-bg)] p-5 text-center">
+          <p className="text-sm font-semibold text-[var(--error-text)]">
+            Couldn't load project data
+          </p>
+          <p className="mt-1 text-xs text-[var(--text-secondary)]">{data.error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const slideCount = deck.deck.slides.length;
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="w-60 max-w-full">
+          <Input
+            aria-label="Deck title"
+            inputSize="sm"
+            value={deck.deck.title}
+            onChange={(e) => deck.setDeckTitle(e.target.value)}
+          />
+        </div>
+        <span className="text-xs text-[var(--text-tertiary)]">
+          {slideCount} slide{slideCount === 1 ? "" : "s"}
+        </span>
+
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            leftIcon={<RotateCcw size={14} />}
+            size="sm"
+            variant="ghost"
+            onClick={handleReset}
+          >
+            Reset
+          </Button>
+          <Button
+            leftIcon={<Plus size={14} />}
+            size="sm"
+            variant="ghost"
+            onClick={deck.addSlide}
+          >
+            Add slide
+          </Button>
+          <Button
+            leftIcon={<Play size={14} />}
+            size="sm"
+            onClick={() => setPresenting(true)}
+          >
+            Present
+          </Button>
+        </div>
+      </div>
+
+      {/* 3-pane body */}
+      <div className="flex h-[calc(100vh-220px)] min-h-[460px] gap-3">
+        {/* Slide rail */}
+        <aside className="flex w-[232px] shrink-0 flex-col rounded-xl border border-[var(--border-primary)] bg-[var(--bg-elevated)] p-2">
+          <span className="mb-2 px-1 text-xs font-semibold tracking-wider text-[var(--text-tertiary)] uppercase">
+            Slides
+          </span>
+          <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto pr-1">
+            {deck.deck.slides.map((s, i) => (
+              <SlideThumb
+                key={s.id}
+                index={i}
+                slide={s}
+                active={s.id === deck.activeId}
+                canRemove={slideCount > 1}
+                onSelect={() => deck.setActiveId(s.id)}
+                onDuplicate={() => deck.duplicateSlide(s.id)}
+                onRemove={() => deck.removeSlide(s.id)}
+              />
+            ))}
+          </div>
+        </aside>
+
+        {/* Canvas */}
+        <main className="flex min-w-0 flex-1 items-start justify-center overflow-auto rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4">
+          {slide ? (
+            <div className="w-full max-w-[940px]">
+              <SlideCanvas
+                data={data}
+                edit={{
+                  selectedBlockId: deck.selectedBlock?.id ?? null,
+                  onSelect: (id) => deck.setSelectedBlockId(id),
+                  onAction: handleBlockAction,
+                }}
+                mode="edit"
+                slide={slide}
+              />
+            </div>
+          ) : null}
+        </main>
+
+        {/* Inspector */}
+        <aside className="w-[316px] shrink-0 overflow-auto rounded-xl border border-[var(--border-primary)] bg-[var(--bg-elevated)] p-4">
+          {slide ? (
+            <Inspector
+              block={deck.selectedBlock}
+              data={data}
+              onAddBlock={(t) => deck.addBlock(t)}
+              onBlockAction={handleBlockAction}
+              onUpdateBlock={(id, patch) => deck.updateBlock(id, patch)}
+              onUpdateSlide={(patch) => deck.updateSlide(slide.id, patch)}
+              slide={slide}
+            />
+          ) : null}
+        </aside>
+      </div>
+
+      {presenting ? (
+        <PresentMode
+          data={data}
+          deck={deck.deck}
+          onClose={() => setPresenting(false)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Map Presentation builder - PowerPoint-style slide decks built from a
+ * project's maps and data. Reads `?projectId=` from the URL and renders the
+ * editor inside the shared builder scaffold (full-width for the wide canvas).
  */
 export default function PresentationBuilderPage() {
   const [params] = useSearchParams();
   const projectId = params.get("projectId") ?? "";
   const builder = getProjectBuilder("presentation");
 
-  const [slides, setSlides] = useState<Slide[]>([
-    { id: "slide-1", title: "Slide 1" },
-  ]);
-  const [activeId, setActiveId] = useState("slide-1");
-
   if (!builder) return null;
 
-  const activeIndex = Math.max(
-    0,
-    slides.findIndex((s) => s.id === activeId)
-  );
-
-  function addSlide() {
-    const id = `slide-${Date.now()}`;
-    setSlides((prev) => [...prev, { id, title: `Slide ${prev.length + 1}` }]);
-    setActiveId(id);
-  }
-
   return (
-    <BuilderScaffold
-      builder={builder}
-      projectId={projectId}
-    >
-      <BuilderWorkspace
-        main={
-          <div className="flex flex-col gap-4">
-            {/* Slide canvas */}
-            <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] shadow-[var(--shadow-lg)]">
-              <div className="px-6 text-center">
-                <div className="bg-primary/10 text-primary mx-auto flex h-12 w-12 items-center justify-center rounded-xl">
-                  <Presentation size={22} />
-                </div>
-                <p className="mt-3 text-sm font-semibold text-[var(--text-secondary)]">
-                  {slides[activeIndex]?.title ?? "Slide"}
-                </p>
-                <p className="mt-1 text-xs text-[var(--text-tertiary)]">
-                  Map views, text and charts will render on this canvas
-                </p>
-              </div>
-              <span className="absolute top-3 right-3 rounded-md bg-[var(--surface-hover)] px-2 py-0.5 text-[0.65rem] font-medium text-[var(--text-tertiary)]">
-                {activeIndex + 1} / {slides.length}
-              </span>
-            </div>
-
-            {/* Block toolbar */}
-            <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-elevated)] p-3">
-              <span className="px-1 text-xs font-semibold tracking-wider text-[var(--text-tertiary)] uppercase">
-                Blocks
-              </span>
-              {SLIDE_BLOCKS.map((block) => {
-                const BlockIcon = block.icon;
-                return (
-                  <button
-                    key={block.label}
-                    disabled
-                    className="flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-dashed border-[var(--border-primary)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-tertiary)] opacity-70"
-                    type="button"
-                  >
-                    <BlockIcon size={13} />
-                    {block.label}
-                    <span className="rounded bg-[var(--surface-hover)] px-1 text-[0.6rem] tracking-wide uppercase">
-                      soon
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        }
-        sidebar={
-          <>
-            <SidebarHeader
-              addLabel="Add"
-              icon={Presentation}
-              title="Slides"
-              onAdd={addSlide}
-            />
-            <div className="flex flex-col gap-0.5">
-              {slides.map((slide) => (
-                <SidebarItem
-                  key={slide.id}
-                  active={slide.id === activeId}
-                  icon={Presentation}
-                  subtitle="Empty slide"
-                  title={slide.title}
-                  onClick={() => setActiveId(slide.id)}
-                />
-              ))}
-            </div>
-          </>
-        }
-      />
+    <BuilderScaffold builder={builder} projectId={projectId} wide>
+      <Editor projectId={projectId} />
     </BuilderScaffold>
   );
 }

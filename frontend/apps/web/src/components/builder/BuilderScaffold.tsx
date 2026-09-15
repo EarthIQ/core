@@ -18,6 +18,11 @@ interface BuilderScaffoldProps {
    * structure is fully navigable before the editor is implemented.
    */
   children?: ReactNode;
+  /**
+   * Render the body full-width (no `max-w-5xl` cap). Wide-canvas builders
+   * (e.g. the Presentation builder) opt in; defaults to the centered column.
+   */
+  wide?: boolean;
 }
 
 /**
@@ -34,6 +39,7 @@ export const BuilderScaffold = ({
   builder,
   projectId,
   children,
+  wide = false,
 }: BuilderScaffoldProps) => {
   const navigate = useNavigate();
   const Icon = builder.icon;
@@ -101,7 +107,7 @@ export const BuilderScaffold = ({
     </button>
   );
   return (
-    <div className="mx-auto max-w-5xl px-6 py-6">
+    <div className={wide ? "w-full px-4 py-4" : "mx-auto max-w-5xl px-6 py-6"}>
       {/* ── Project + builder header ─────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
