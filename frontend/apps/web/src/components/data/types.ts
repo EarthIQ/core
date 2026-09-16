@@ -14,7 +14,7 @@ export type DatasetItem = GeoDatasetOut & { _optimistic?: boolean };
 export type UploadStatus = "idle" | "uploading" | "success" | "error";
 export type SortField = "name" | "format" | "size" | "updated";
 export type SortDir = "asc" | "desc";
-export type ViewMode = "table" | "grid";
+export type ViewMode = "details" | "grid";
 
 export interface FileEntry {
   file: File;

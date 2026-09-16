@@ -19,6 +19,16 @@ export type { FolderSelection } from "./FolderTree";
 export { ROOT_UNGROUPED } from "./FolderTree";
 export { default as MoveModal } from "./MoveModal";
 
+// ── File-explorer view (modern Data page) ─────────────────────────────────────
+export { default as ExplorerToolbar } from "./ExplorerToolbar";
+export { default as FileList } from "./FileList";
+export { default as DetailsPane } from "./DetailsPane";
+export { default as StatusBar } from "./StatusBar";
+export { default as ContextMenu } from "./ContextMenu";
+export type { ContextMenuItem } from "./ContextMenu";
+export { default as NewFolderModal } from "./NewFolderModal";
+export { DATASET_DND_MIME } from "./FileList";
+
 export { useDatasetActions } from "./useDatasetActions";
 export type { DatasetActionsState } from "./useDatasetActions";
 

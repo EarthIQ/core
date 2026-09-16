@@ -190,15 +190,15 @@ export default function FilterSidebar(props: Props) {
           <label className="form-label">View</label>
           <div className="border-border-primary flex items-center overflow-hidden rounded-lg border">
             <button
-              title="Table view"
+              title="Details view"
               className={`flex-1 px-2 py-1.5 text-sm ${
-                viewMode === "table"
+                viewMode === "details"
                   ? "bg-primary/10 text-primary"
                   : "text-text-tertiary hover:bg-surface-hover"
               }`}
-              onClick={() => onViewModeChange("table")}
+              onClick={() => onViewModeChange("details")}
             >
-              ☰ Table
+              ☰ Details
             </button>
             <button
               title="Grid view"

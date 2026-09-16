@@ -1,40 +1,39 @@
+import { Alert, Drawer, useToast } from "@packages/ui";
 import {
-  Alert,
-  Button,
-  Drawer,
-  IconButton,
-  Input,
-  Select,
-  useToast,
-} from "@packages/ui";
-import {
-  CloudUpload,
-  ChevronRight,
-  LayoutGrid,
-  List,
-  RefreshCw,
-  Search,
-  SlidersHorizontal,
+  Download,
+  Eye,
+  FolderInput,
+  FolderOpen,
+  FolderPlus,
+  Map as MapIcon,
+  Pencil,
+  Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
+  BulkActionBar,
   ConfirmDeleteModal,
-  DatasetGrid,
-  DatasetTable,
+  ContextMenu,
+  type ContextMenuItem,
+  DetailsPane,
   EditModal,
-  FolderTree,
   type FolderSelection,
+  FileList,
+  FolderTree,
   MoveModal,
+  NewFolderModal,
   Pagination,
   PreviewModal,
   ROOT_UNGROUPED,
-  SummaryStats,
+  StatusBar,
   TileUrlModal,
   UploadModal,
   useDatasetActions,
+  ExplorerToolbar,
   FORMATS,
+  isVectorized,
   type DatasetItem,
   type SortDir,
   type SortField,
@@ -45,10 +44,17 @@ import {
   deleteFolder,
   listDatasets,
   listFolders,
+  moveDataset,
   renameFolder,
   type DataFolder,
   type GeoDatasetOut,
 } from "@/lib/datasets";
+
+type FolderModal =
+  | { mode: "create"; parentId: string | null; parentLabel: string }
+  | { mode: "rename"; folderId: string; folderName: string };
+
+type Ctx = { x: number; y: number; kind: "dataset" | "folder"; id: string };
 
 const DataPageInner = () => {
   const navigate = useNavigate();
@@ -58,32 +64,6 @@ const DataPageInner = () => {
     info: toastInfo,
   } = useToast();
 
-  // ── Data state ──────────────────────────────────────────────────────────────
-  const [datasets, setDatasets] = useState<DatasetItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-
-  // ── Navigation (folder tree) + filters ─────────────────────────────────────
-  const [selection, setSelection] = useState<FolderSelection>({
-    folderId: null,
-    type: "all",
-  });
-  const [searchQuery, setSearchQuery] = useState("");
-  const [formatFilter, setFormatFilter] = useState<string>("all");
-
-  // ── Sorting / view / pagination ─────────────────────────────────────────────
-  const [sortField, setSortField] = useState<SortField>("updated");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
-  const [viewMode, setViewMode] = useState<ViewMode>("table");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  // ── Selection / modals ──────────────────────────────────────────────────────
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  // ── Toast adapter (keeps (type, message) signature for shared hooks) ──────
   const addToast = useCallback(
     (type: "success" | "error" | "info", message: string) => {
       (type === "success"
@@ -95,19 +75,50 @@ const DataPageInner = () => {
     [toastSuccess, toastError, toastInfo]
   );
 
-  // ── Folders (catalog tree) ─────────────────────────────────────────────────
+  // ── Core data ───────────────────────────────────────────────────────────────
+  const [datasets, setDatasets] = useState<DatasetItem[]>([]);
   const [folders, setFolders] = useState<DataFolder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  // ── Location (folder) + persistent filters ─────────────────────────────────
+  const [nav, setNav] = useState<{ stack: (string | null)[]; idx: number }>({
+    stack: [null],
+    idx: 0,
+  });
+  const locFolder = nav.stack[nav.idx];
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [formatFilter, setFormatFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // ── Sort / view / pagination ────────────────────────────────────────────────
+  const [sortField, setSortField] = useState<SortField>("updated");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [viewMode, setViewMode] = useState<ViewMode>("details");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+
+  // ── Selection (single → preview pane; multi → bulk) ────────────────────────
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  // ── Modals / menus ──────────────────────────────────────────────────────────
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [ctx, setCtx] = useState<Ctx | null>(null);
+  const [folderModal, setFolderModal] = useState<FolderModal | null>(null);
+  const [folderBusy, setFolderBusy] = useState(false);
   const [folderConfirm, setFolderConfirm] = useState<{
     id: string;
     name: string;
   } | null>(null);
-  const [folderBusy, setFolderBusy] = useState(false);
-
+  // ── Fetch folders ───────────────────────────────────────────────────────────
   const fetchFolders = useCallback(async () => {
     try {
       setFolders(await listFolders());
     } catch {
-      /* non-fatal: the sidebar simply shows an empty folder list */
+      /* non-fatal: sidebar simply shows an empty folder list */
     }
   }, []);
 
@@ -115,37 +126,33 @@ const DataPageInner = () => {
     fetchFolders();
   }, [fetchFolders]);
 
-  // ── Fetch datasets ───────────────────────────────────────────────────────────
+  // ── Fetch datasets (debounced) ──────────────────────────────────────────────
   const fetchDatasets = useCallback(async () => {
     setLoading(true);
     setFetchError(null);
     try {
       const items: GeoDatasetOut[] = await listDatasets({
-        type: selection.type,
+        type: typeFilter,
         format: formatFilter,
         search: searchQuery,
-        folder: selection.folderId ?? undefined,
+        folder: locFolder ?? undefined,
       });
       setDatasets(items);
-    } catch (err: any) {
-      setFetchError(err?.message ?? "Failed to load datasets");
+    } catch (err: unknown) {
+      setFetchError(
+        err instanceof Error ? err.message : "Failed to load datasets"
+      );
     } finally {
       setLoading(false);
     }
-  }, [selection.type, selection.folderId, formatFilter, searchQuery]);
+  }, [typeFilter, formatFilter, searchQuery, locFolder]);
 
   useEffect(() => {
-    const timer = setTimeout(fetchDatasets, 300);
-    return () => clearTimeout(timer);
+    const t = setTimeout(fetchDatasets, 250);
+    return () => clearTimeout(t);
   }, [fetchDatasets]);
 
-  // Reset page + selection when filters change
-  useEffect(() => {
-    setPage(1);
-    setSelectedIds(new Set());
-  }, [searchQuery, selection, formatFilter, pageSize]);
-
-  // ── Shared dataset actions ──────────────────────────────────────────────────
+  // ── Shared dataset actions (preview / edit / move / delete / download…) ────
   const actions = useDatasetActions({
     addToast,
     updateDatasets: (fn) => setDatasets((prev) => fn(prev)),
@@ -153,37 +160,85 @@ const DataPageInner = () => {
     refreshFolders: fetchFolders,
   });
 
-  // ── Folder management handlers ─────────────────────────────────────────────
-  const handleCreateFolder = useCallback(
-    async (name: string, parentId: string | null) => {
-      try {
-        await createFolder(name, parentId);
-        addToast("success", `Folder “${name}” created.`);
-        await fetchFolders();
-      } catch (err: any) {
-        addToast("error", err?.message ?? "Could not create folder.");
-      }
+  // ── Folder navigation history (back / forward / up) ─────────────────────────
+  const canBack = nav.idx > 0;
+  const canForward = nav.idx < nav.stack.length - 1;
+  const canUp = locFolder !== null;
+
+  const pushNav = useCallback((folderId: string | null) => {
+    setNav((prev) => {
+      const stack = prev.stack.slice(0, prev.idx + 1);
+      if (stack[stack.length - 1] === folderId) return prev;
+      stack.push(folderId);
+      return { stack, idx: stack.length - 1 };
+    });
+  }, []);
+
+  const goBack = useCallback(() => {
+    setNav((p) => (p.idx > 0 ? { ...p, idx: p.idx - 1 } : p));
+  }, []);
+
+  const goForward = useCallback(() => {
+    setNav((p) => (p.idx < p.stack.length - 1 ? { ...p, idx: p.idx + 1 } : p));
+  }, []);
+
+  const goUp = useCallback(() => {
+    let target: string | null;
+    if (locFolder === ROOT_UNGROUPED) target = null;
+    else target = folders.find((f) => f.id === locFolder)?.parent_id ?? null;
+    if (target !== locFolder) pushNav(target);
+  }, [locFolder, folders, pushNav]);
+
+  const handleSidebarNavigate = useCallback(
+    (sel: FolderSelection) => {
+      setTypeFilter(sel.type);
+      if (sel.folderId !== locFolder) pushNav(sel.folderId);
     },
-    [addToast, fetchFolders]
+    [locFolder, pushNav]
   );
 
-  const handleRenameFolder = useCallback(
-    async (folderId: string, name: string) => {
-      try {
-        await renameFolder(folderId, name);
-        addToast("success", "Folder renamed.");
-        await fetchFolders();
-      } catch (err: any) {
-        addToast("error", err?.message ?? "Could not rename folder.");
-      }
-    },
-    [addToast, fetchFolders]
-  );
+  // Reset paging + selection whenever location or a filter changes.
+  useEffect(() => {
+    setPage(1);
+    setSelectedIds(new Set());
+    setActiveId(null);
+  }, [locFolder, typeFilter, searchQuery, formatFilter]);
 
+  // ── Selection handlers ──────────────────────────────────────────────────────
+  const handleSingleSelect = useCallback((id: string) => {
+    setSelectedIds(new Set([id]));
+    setActiveId(id);
+  }, []);
+
+  const handleToggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    setActiveId(id);
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+    setActiveId(null);
+  }, []);
+
+  // ── Add to project (navigates to the Projects workspace) ───────────────────
+  const handleAddToProject = useCallback(
+    (ids: string[]) => {
+      addToast(
+        "info",
+        `Added ${ids.length} dataset${ids.length === 1 ? "" : "s"} — opening Projects.`
+      );
+      navigate("/projects");
+    },
+    [addToast, navigate]
+  );
+  // ── Folder create / rename / delete ─────────────────────────────────────────
   const requestDeleteFolder = useCallback(
-    (folder: { id: string; name: string }) => {
-      setFolderConfirm(folder);
-    },
+    (folder: { id: string; name: string }) => setFolderConfirm(folder),
     []
   );
 
@@ -200,28 +255,122 @@ const DataPageInner = () => {
             } moved up a level.`
           : "Folder deleted."
       );
-      // If we were browsing the deleted folder, step up to its parent.
-      setSelection((prev) => {
-        if (prev.folderId !== folderConfirm.id) return prev;
+      if (locFolder === folderConfirm.id) {
         const parent =
           folders.find((f) => f.id === folderConfirm.id)?.parent_id ?? null;
-        return { folderId: parent, type: prev.type };
-      });
+        pushNav(parent);
+      }
       setFolderConfirm(null);
       await fetchFolders();
       await fetchDatasets();
-    } catch (err: any) {
-      addToast("error", err?.message ?? "Could not delete folder.");
+    } catch (err: unknown) {
+      addToast(
+        "error",
+        err instanceof Error ? err.message : "Could not delete folder."
+      );
     } finally {
       setFolderBusy(false);
     }
-  }, [folderConfirm, folders, addToast, fetchFolders, fetchDatasets]);
+  }, [
+    folderConfirm,
+    folders,
+    locFolder,
+    pushNav,
+    fetchFolders,
+    fetchDatasets,
+    addToast,
+  ]);
 
-  // ── Breadcrumb chain for the active folder ─────────────────────────────────
+  const confirmFolderModal = useCallback(
+    async (name: string) => {
+      if (!folderModal) return;
+      setFolderBusy(true);
+      try {
+        if (folderModal.mode === "create") {
+          await createFolder(name, folderModal.parentId);
+          addToast("success", `Folder “${name}” created.`);
+        } else {
+          await renameFolder(folderModal.folderId, name);
+          addToast("success", "Folder renamed.");
+        }
+        setFolderModal(null);
+        await fetchFolders();
+        await fetchDatasets();
+      } catch (err: unknown) {
+        addToast(
+          "error",
+          err instanceof Error ? err.message : "Could not save folder."
+        );
+      } finally {
+        setFolderBusy(false);
+      }
+    },
+    [folderModal, addToast, fetchFolders, fetchDatasets]
+  );
+
+  // ── Direct folder create / rename (used by the FolderTree inline inputs) ──
+  const createFolderDirect = useCallback(
+    async (name: string, parentId: string | null) => {
+      try {
+        await createFolder(name, parentId);
+        addToast("success", `Folder “${name}” created.`);
+        await fetchFolders();
+        await fetchDatasets();
+      } catch (err: unknown) {
+        addToast(
+          "error",
+          err instanceof Error ? err.message : "Could not create folder."
+        );
+      }
+    },
+    [addToast, fetchFolders, fetchDatasets]
+  );
+
+  const renameFolderDirect = useCallback(
+    async (folderId: string, name: string) => {
+      try {
+        await renameFolder(folderId, name);
+        addToast("success", "Folder renamed.");
+        await fetchFolders();
+        await fetchDatasets();
+      } catch (err: unknown) {
+        addToast(
+          "error",
+          err instanceof Error ? err.message : "Could not rename folder."
+        );
+      }
+    },
+    [addToast, fetchFolders, fetchDatasets]
+  );
+
+  // ── Drag-and-drop: move dataset(s) into a folder ────────────────────────────
+  const moveDatasetsByIds = useCallback(
+    async (folderId: string, ids: string[]) => {
+      try {
+        await Promise.all(ids.map((id) => moveDataset(id, folderId)));
+        addToast(
+          "success",
+          ids.length === 1 ? "Dataset moved." : `${ids.length} datasets moved.`
+        );
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          ids.forEach((id) => next.delete(id));
+          return next;
+        });
+        setActiveId((cur) => (cur && ids.includes(cur) ? null : cur));
+        await fetchFolders();
+        await fetchDatasets();
+      } catch (err: unknown) {
+        addToast("error", err instanceof Error ? err.message : "Move failed.");
+      }
+    },
+    [addToast, fetchFolders, fetchDatasets]
+  );
+  // ── Derived: breadcrumb, subfolders, sorting, paging ───────────────────────
   const breadcrumb = useMemo(() => {
-    const byId = new Map(folders.map((f) => [f.id, f] as const));
+    const byId = new Map(folders.map((f) => [f.id, f] as [string, DataFolder]));
     const chain: { id: string | null; name: string }[] = [];
-    let cur = selection.folderId;
+    let cur = locFolder;
     let depth = 0;
     while (cur && cur !== ROOT_UNGROUPED && byId.has(cur) && depth < 20) {
       const f = byId.get(cur);
@@ -229,12 +378,20 @@ const DataPageInner = () => {
       cur = f.parent_id;
       depth += 1;
     }
-    if (selection.folderId === ROOT_UNGROUPED)
+    if (locFolder === ROOT_UNGROUPED)
       chain.unshift({ id: ROOT_UNGROUPED, name: "Ungrouped" });
-    if (selection.folderId === null || selection.folderId === ROOT_UNGROUPED)
-      chain.unshift({ id: null, name: "All Data" });
+    chain.unshift({ id: null, name: "All Data" });
     return chain;
-  }, [selection.folderId, folders]);
+  }, [locFolder, folders]);
+
+  const subfolders = useMemo(() => {
+    const byName = (a: DataFolder, b: DataFolder) =>
+      a.name.localeCompare(b.name);
+    if (locFolder === null)
+      return folders.filter((f) => f.parent_id === null).sort(byName);
+    if (locFolder === ROOT_UNGROUPED) return [];
+    return folders.filter((f) => f.parent_id === locFolder).sort(byName);
+  }, [folders, locFolder]);
 
   const processedDatasets = useMemo(() => {
     const sorted = [...datasets].sort((a, b) => {
@@ -258,19 +415,6 @@ const DataPageInner = () => {
     return sorted;
   }, [datasets, sortField, sortDir]);
 
-  // Totals for the sidebar storage footer (from the current dataset list).
-  const totalBytes = useMemo(
-    () => datasets.reduce((s, d) => s + (d.file_size_bytes ?? 0), 0),
-    [datasets]
-  );
-  const tiledCount = useMemo(
-    () =>
-      datasets.filter(
-        (d) => d.meta?.ingested || d.type === "vector" || d.type === "points"
-      ).length,
-    [datasets]
-  );
-
   const totalPages = Math.max(
     1,
     Math.ceil(processedDatasets.length / pageSize)
@@ -281,91 +425,37 @@ const DataPageInner = () => {
     clampedPage * pageSize
   );
 
-  // ── Selection handlers (table view) ─────────────────────────────────────────
   const allOnPageSelected =
     pageItems.length > 0 && pageItems.every((d) => selectedIds.has(d.id));
 
-  const toggleSelectRow = useCallback((id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
-  const toggleSelectAll = useCallback(
+  const handleToggleSelectAll = useCallback(
     (checked: boolean) => {
       setSelectedIds((prev) => {
         const next = new Set(prev);
-        pageItems.forEach((d) => {
-          if (checked) next.add(d.id);
-          else next.delete(d.id);
-        });
+        pageItems.forEach((d) =>
+          checked ? next.add(d.id) : next.delete(d.id)
+        );
         return next;
       });
     },
     [pageItems]
   );
 
-  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
-
-  // ── Filter helpers ───────────────────────────────────────────────────────────
   const activeFilterCount = useMemo(() => {
     let n = 0;
-    if (selection.type !== "all") n += 1;
-    if (selection.folderId) n += 1;
+    if (typeFilter !== "all") n += 1;
+    if (locFolder) n += 1;
     if (formatFilter !== "all") n += 1;
     if (searchQuery.trim()) n += 1;
     return n;
-  }, [selection.type, selection.folderId, formatFilter, searchQuery]);
+  }, [typeFilter, locFolder, formatFilter, searchQuery]);
 
   const clearFilters = useCallback(() => {
-    setSelection({ folderId: null, type: "all" });
+    setTypeFilter("all");
     setFormatFilter("all");
     setSearchQuery("");
-  }, []);
-
-  const onToggleSort = useCallback(
-    (field: SortField) => {
-      if (sortField === field)
-        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-      else {
-        setSortField(field);
-        setSortDir("asc");
-      }
-    },
-    [sortField]
-  );
-
-  // ── Navigation / modal / bulk handlers ─────────────────────────────────────
-  const onNavigate = useCallback((sel: FolderSelection) => {
-    setSelection(sel);
-    setMobileNavOpen(false);
-  }, []);
-
-  const onAddData = useCallback(() => {
-    setIsAddModalOpen(true);
-    setMobileNavOpen(false);
-  }, []);
-
-  const handleAddToProject = useCallback(() => {
-    const n = selectedIds.size;
-    addToast(
-      "info",
-      `Added ${n} dataset${n === 1 ? "" : "s"} - opening Projects.`
-    );
-    navigate("/projects");
-  }, [addToast, selectedIds.size, navigate]);
-
-  const handleBulkDelete = useCallback(() => {
-    actions.requestBulkDelete(Array.from(selectedIds));
-  }, [actions, selectedIds]);
-
-  const handleBulkMove = useCallback(() => {
-    const items = datasets.filter((d) => selectedIds.has(d.id));
-    actions.requestMove(items);
-  }, [actions, datasets, selectedIds]);
+    pushNav(null);
+  }, [pushNav]);
 
   const formatOptions = useMemo(
     () => [
@@ -375,346 +465,410 @@ const DataPageInner = () => {
     []
   );
 
-  return (
-    <div className="mx-auto w-full max-w-[1600px] space-y-6">
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div className="min-w-0">
-          <div className="text-primary mb-1.5 flex items-center gap-1.5 text-xs font-semibold tracking-widest uppercase">
-            <span className="bg-primary h-1.5 w-1.5 rounded-full" />
-            Spatial Catalog
-          </div>
-          <h1 className="text-text-primary text-2xl font-extrabold tracking-tight sm:text-3xl">
-            Data Hub
-          </h1>
-          <p className="text-text-secondary mt-1 max-w-2xl text-sm leading-relaxed">
-            Upload, inspect, and manage your vector and raster datasets -
-            GeoJSON, Shapefile, COG, GeoPackage, GeoParquet, KML, and CSV.
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-2.5">
-          <IconButton
-            className="border-border-primary"
-            label="Refresh catalog"
-            size="md"
-            variant="secondary"
-            icon={
-              <RefreshCw
-                className={loading ? "animate-spin" : ""}
-                size={16}
-              />
-            }
-            onClick={fetchDatasets}
-          />
-          <Button
-            className="font-semibold shadow-sm"
-            leftIcon={<CloudUpload size={16} />}
-            size="md"
-            variant="primary"
-            onClick={onAddData}
-          >
-            Add Dataset
-          </Button>
-        </div>
-      </div>
+  const totalBytes = useMemo(
+    () => datasets.reduce((s, d) => s + (d.file_size_bytes ?? 0), 0),
+    [datasets]
+  );
 
-      {/* ── Fetch error ────────────────────────────────────────────────────── */}
+  const tiledCount = useMemo(
+    () => datasets.filter((d) => isVectorized(d)).length,
+    [datasets]
+  );
+
+  const activeDataset = activeId
+    ? (datasets.find((d) => d.id === activeId) ?? null)
+    : null;
+  // ── Context menu builders ───────────────────────────────────────────────────
+  const datasetMenu = useCallback(
+    (d: DatasetItem): ContextMenuItem[] => [
+      {
+        key: "inspect",
+        label: "Inspect & preview",
+        icon: <Eye size={15} />,
+        onClick: () => actions.openPreview(d),
+      },
+      {
+        key: "edit",
+        label: "Edit metadata",
+        icon: <Pencil size={15} />,
+        onClick: () => actions.openEdit(d),
+      },
+      {
+        key: "move",
+        label: "Move to folder…",
+        icon: <FolderInput size={15} />,
+        onClick: () => actions.requestMove([d]),
+      },
+      {
+        key: "download",
+        label: "Download",
+        icon: <Download size={15} />,
+        onClick: () => actions.handleDownload(d),
+      },
+      ...(isVectorized(d)
+        ? [
+            {
+              key: "tiles",
+              label: "MVT tile URL",
+              icon: <MapIcon size={15} />,
+              onClick: () => actions.openTileUrl(d),
+            },
+          ]
+        : []),
+      {
+        key: "project",
+        label: "Add to project",
+        icon: <FolderPlus size={15} />,
+        onClick: () => handleAddToProject([d.id]),
+      },
+      { key: "sep", label: "", divider: true, onClick: () => {} },
+      {
+        key: "delete",
+        label: "Delete",
+        icon: <Trash2 size={15} />,
+        danger: true,
+        onClick: () => actions.requestDelete(d.id, d.name),
+      },
+    ],
+    [actions, handleAddToProject]
+  );
+
+  const folderMenu = useCallback(
+    (f: { id: string; name: string }): ContextMenuItem[] => [
+      {
+        key: "open",
+        label: "Open",
+        icon: <FolderOpen size={15} />,
+        onClick: () => pushNav(f.id),
+      },
+      {
+        key: "new",
+        label: "New subfolder",
+        icon: <FolderPlus size={15} />,
+        onClick: () =>
+          setFolderModal({
+            mode: "create",
+            parentId: f.id,
+            parentLabel: f.name,
+          }),
+      },
+      {
+        key: "rename",
+        label: "Rename…",
+        icon: <Pencil size={15} />,
+        onClick: () =>
+          setFolderModal({
+            mode: "rename",
+            folderId: f.id,
+            folderName: f.name,
+          }),
+      },
+      { key: "sep", label: "", divider: true, onClick: () => {} },
+      {
+        key: "delete",
+        label: "Delete folder",
+        icon: <Trash2 size={15} />,
+        danger: true,
+        onClick: () => requestDeleteFolder(f),
+      },
+    ],
+    [pushNav, requestDeleteFolder]
+  );
+
+  const ctxDataset =
+    ctx?.kind === "dataset"
+      ? (datasets.find((d) => d.id === ctx.id) ?? null)
+      : null;
+  const ctxFolder =
+    ctx?.kind === "folder"
+      ? (folders.find((f) => f.id === ctx.id) ?? null)
+      : null;
+
+  // ── Global keyboard shortcuts (/, Backspace, Esc) ──────────────────────────
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      const typing =
+        t.tagName === "INPUT" ||
+        t.tagName === "TEXTAREA" ||
+        t.isContentEditable;
+      if (typing) return;
+      if (e.key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      } else if (e.key === "Backspace" && locFolder !== null) {
+        e.preventDefault();
+        goUp();
+      } else if (e.key === "Escape" && selectedIds.size > 0) {
+        clearSelection();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [goUp, clearSelection, locFolder, selectedIds.size]);
+
+  return (
+    <div className="bg-base flex h-full min-h-0 flex-col overflow-hidden">
+      {/* ── Command bar ─────────────────────────────────────────────────────── */}
+      <ExplorerToolbar
+        activeFilterCount={activeFilterCount}
+        breadcrumb={breadcrumb}
+        canBack={canBack}
+        canForward={canForward}
+        canUp={canUp}
+        formatFilter={formatFilter}
+        formatOptions={formatOptions}
+        loading={loading}
+        searchInputRef={searchRef}
+        searchQuery={searchQuery}
+        sortDir={sortDir}
+        sortField={sortField}
+        viewMode={viewMode}
+        onBack={goBack}
+        onClearFilters={clearFilters}
+        onFormatFilterChange={setFormatFilter}
+        onForward={goForward}
+        onNavigateCrumb={(id) => pushNav(id)}
+        onOpenMobileNav={() => setMobileNavOpen(true)}
+        onRefresh={fetchDatasets}
+        onSearchChange={setSearchQuery}
+        onSortFieldChange={setSortField}
+        onUp={goUp}
+        onUpload={() => setIsAddOpen(true)}
+        onViewModeChange={setViewMode}
+        onNewFolder={() =>
+          setFolderModal(
+            locFolder === ROOT_UNGROUPED
+              ? { mode: "create", parentId: null, parentLabel: "Ungrouped" }
+              : {
+                  mode: "create",
+                  parentId: locFolder,
+                  parentLabel:
+                    locFolder === null
+                      ? "All Data"
+                      : (folders.find((f) => f.id === locFolder)?.name ??
+                        "This folder"),
+                }
+          )
+        }
+        onToggleSortDir={() =>
+          setSortDir((d) => (d === "asc" ? "desc" : "asc"))
+        }
+      />
+
       {fetchError ? (
-        <div>
+        <div className="px-4 pt-4 lg:px-6">
           <Alert
-            title="Couldn't load datasets"
+            title="Could not load datasets"
             variant="error"
-            onClose={() => setFetchError(null)}
           >
             {fetchError}
           </Alert>
         </div>
       ) : null}
-
-      {/* ── Summary Stats ─────────────────────────────────────────────────── */}
-      <SummaryStats
-        datasets={datasets}
-        loading={loading}
-      />
-
-      {/* ── Main Catalog Workspace ────────────────────────────────────────── */}
-      <div className="flex items-start gap-6">
-        {/* ── Folder navigation (desktop) ──────────────────────────────────── */}
-        <aside className="hidden w-72 shrink-0 lg:block">
-          <div className="sticky top-4">
-            <FolderTree
-              folders={folders}
-              loading={loading}
-              selection={selection}
-              tiledCount={tiledCount}
-              totalBytes={totalBytes}
-              totalDatasets={datasets.length}
-              onCreateFolder={handleCreateFolder}
-              onDeleteFolder={requestDeleteFolder}
-              onNavigate={onNavigate}
-              onRenameFolder={handleRenameFolder}
-            />
-          </div>
+      {/* ── Body: left nav · main list · right details ──────────────────────── */}
+      <div className="flex min-h-0 flex-1">
+        {/* Left navigation (desktop) */}
+        <aside className="border-border-primary hidden w-64 shrink-0 overflow-y-auto border-r lg:block">
+          <FolderTree
+            folders={folders}
+            loading={loading}
+            selection={{ folderId: locFolder, type: typeFilter }}
+            tiledCount={tiledCount}
+            totalBytes={totalBytes}
+            totalDatasets={datasets.length}
+            onCreateFolder={createFolderDirect}
+            onDeleteFolder={requestDeleteFolder}
+            onNavigate={handleSidebarNavigate}
+            onRenameFolder={renameFolderDirect}
+          />
         </aside>
-
-        {/* ── Main content ─────────────────────────────────────────────────── */}
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
-          {/* Breadcrumb path */}
-          {breadcrumb.length > 1 && (
-            <nav
-              aria-label="Folder path"
-              className="text-text-tertiary flex flex-wrap items-center gap-1 text-xs"
-            >
-              {breadcrumb.map((crumb, i) => {
-                const last = i === breadcrumb.length - 1;
-                return (
-                  <span
-                    key={crumb.id ?? `root-${i}`}
-                    className="flex items-center gap-1"
-                  >
-                    {i > 0 && (
-                      <ChevronRight
-                        className="shrink-0"
-                        size={12}
-                      />
-                    )}
-                    {last ? (
-                      <span className="text-text-primary font-semibold">
-                        {crumb.name}
-                      </span>
-                    ) : (
-                      <button
-                        className="hover:bg-surface-hover hover:text-text-primary cursor-pointer rounded px-1 py-0.5 transition-colors"
-                        type="button"
-                        onClick={() =>
-                          onNavigate({
-                            folderId: crumb.id,
-                            type: "all",
-                          })
-                        }
-                      >
-                        {crumb.name}
-                      </button>
-                    )}
-                  </span>
-                );
-              })}
-            </nav>
-          )}
-          {/* Toolbar */}
-          <div className="card bg-surface border-border-primary flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3 shadow-xs">
-            <div className="flex min-w-[240px] flex-1 items-center gap-2.5">
-              <IconButton
-                className="text-text-secondary shrink-0 lg:hidden"
-                icon={<SlidersHorizontal size={18} />}
-                label="Browse folders"
-                size="md"
-                variant="ghost"
-                onClick={() => setMobileNavOpen(true)}
-              />
-              <div className="max-w-md flex-1">
-                <Input
-                  aria-label="Search datasets"
-                  className="h-9 text-xs"
-                  placeholder="Search by dataset name, format, or tag…"
-                  value={searchQuery}
-                  leftIcon={
-                    <Search
-                      className="text-text-tertiary"
-                      size={16}
-                    />
+        {/* Main content */}
+        <main className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+          <div className="flex-1 p-4 lg:p-6">
+            {/* Bulk action bar (multi-select) */}
+            {selectedIds.size > 1 ? (
+              <div className="mb-4">
+                <BulkActionBar
+                  count={selectedIds.size}
+                  onClear={clearSelection}
+                  onAddToProject={() =>
+                    handleAddToProject(Array.from(selectedIds))
                   }
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onDelete={() => {
+                    actions.requestBulkDelete(Array.from(selectedIds));
+                    clearSelection();
+                  }}
                 />
               </div>
-            </div>
+            ) : null}
 
-            <div className="flex flex-wrap items-center gap-2.5">
-              <div className="w-44">
-                <Select
-                  options={formatOptions}
-                  size="sm"
-                  value={formatFilter}
-                  onChange={(v) => setFormatFilter(v)}
-                />
-              </div>
-
-              {/* View Switcher */}
-              <div
-                aria-label="View mode"
-                className="border-border-primary bg-surface-hover/50 flex overflow-hidden rounded-lg border p-0.5"
-                role="group"
-              >
-                <button
-                  aria-label="Table view"
-                  title="Table view"
-                  type="button"
-                  className={`flex h-7 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition-all ${
-                    viewMode === "table"
-                      ? "bg-surface text-primary shadow-xs"
-                      : "text-text-tertiary hover:text-text-primary"
-                  }`}
-                  onClick={() => setViewMode("table")}
-                >
-                  <List size={14} />
-                  <span>Table</span>
-                </button>
-                <button
-                  aria-label="Grid view"
-                  title="Grid view"
-                  type="button"
-                  className={`flex h-7 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition-all ${
-                    viewMode === "grid"
-                      ? "bg-surface text-primary shadow-xs"
-                      : "text-text-tertiary hover:text-text-primary"
-                  }`}
-                  onClick={() => setViewMode("grid")}
-                >
-                  <LayoutGrid size={14} />
-                  <span>Grid</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Bulk action bar */}
-          {selectedIds.size > 0 && (
-            <div className="card bg-primary/[0.08] border-primary/25 animate-fade-in flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 shadow-xs">
-              <div className="flex items-center gap-2">
-                <span className="bg-primary flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white">
-                  {selectedIds.size}
-                </span>
-                <span className="text-text-primary text-xs font-semibold">
-                  dataset{selectedIds.size === 1 ? "" : "s"} selected
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  className="text-xs font-semibold"
-                  size="sm"
-                  variant="secondary"
-                  onClick={handleBulkMove}
-                >
-                  Move to folder…
-                </Button>
-                <Button
-                  className="text-xs font-semibold"
-                  size="sm"
-                  variant="secondary"
-                  onClick={handleAddToProject}
-                >
-                  Add to Project
-                </Button>
-                <Button
-                  className="text-xs font-semibold"
-                  size="sm"
-                  variant="error"
-                  onClick={handleBulkDelete}
-                >
-                  Delete Selected
-                </Button>
-                <Button
-                  className="text-xs"
-                  size="sm"
-                  variant="ghost"
-                  onClick={clearSelection}
-                >
-                  Deselect All
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Table or Grid */}
-          {viewMode === "table" ? (
-            <DatasetTable
+            <FileList
+              activeDatasetId={activeId}
               activeFilterCount={activeFilterCount}
               allOnPageSelected={allOnPageSelected}
+              folders={subfolders}
               items={pageItems}
               loading={loading}
               selectedIds={selectedIds}
-              sortDir={sortDir}
-              sortField={sortField}
-              onAddData={onAddData}
+              viewMode={viewMode}
+              onActivate={(ds) => actions.openPreview(ds)}
+              onAddData={() => setIsAddOpen(true)}
               onClearFilters={clearFilters}
-              onDownload={actions.handleDownload}
-              onEdit={actions.openEdit}
-              onInspect={actions.openPreview}
-              onMove={(ds) => actions.requestMove([ds])}
-              onOpenTileUrl={actions.openTileUrl}
-              onRequestDelete={actions.requestDelete}
-              onToggleSelectAll={toggleSelectAll}
-              onToggleSelectRow={toggleSelectRow}
-              onToggleSort={onToggleSort}
+              onDropDatasetsOnFolder={moveDatasetsByIds}
+              onOpenFolder={(id) => pushNav(id)}
+              onSingleSelect={handleSingleSelect}
+              onToggleSelect={handleToggleSelect}
+              onToggleSelectAll={handleToggleSelectAll}
+              onDatasetContextMenu={(ds, pos) =>
+                setCtx({
+                  x: pos.clientX,
+                  y: pos.clientY,
+                  kind: "dataset",
+                  id: ds.id,
+                })
+              }
+              onFolderContextMenu={(folder, pos) =>
+                setCtx({
+                  x: pos.clientX,
+                  y: pos.clientY,
+                  kind: "folder",
+                  id: folder.id,
+                })
+              }
             />
-          ) : (
-            <DatasetGrid
-              activeFilterCount={activeFilterCount}
-              items={pageItems}
-              loading={loading}
-              onAddData={onAddData}
-              onClearFilters={clearFilters}
-              onDownload={actions.handleDownload}
-              onEdit={actions.openEdit}
-              onInspect={actions.openPreview}
-              onMove={(ds) => actions.requestMove([ds])}
-              onOpenTileUrl={actions.openTileUrl}
-              onRequestDelete={actions.requestDelete}
-            />
-          )}
+          </div>
 
           {/* Pagination */}
-          <Pagination
+          <div className="px-4 pb-4 lg:px-6">
+            <Pagination
+              loading={loading}
+              page={clampedPage}
+              pageSize={pageSize}
+              totalItems={processedDatasets.length}
+              totalPages={totalPages}
+              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+              onPrev={() => setPage((p) => Math.max(1, p - 1))}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(1);
+              }}
+            />
+          </div>
+        </main>
+        {/* Right details / preview pane (wide screens) */}
+        <aside className="border-border-primary hidden w-[340px] shrink-0 overflow-y-auto border-l xl:block">
+          <DetailsPane
+            allDatasets={datasets}
+            dataset={activeDataset}
+            folders={folders}
+            idCopied={actions.idCopied}
             loading={loading}
-            page={clampedPage}
-            pageSize={pageSize}
-            totalItems={processedDatasets.length}
-            totalPages={totalPages}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-            onPageSizeChange={setPageSize}
-            onPrev={() => setPage((p) => Math.max(1, p - 1))}
+            onAddToProject={handleAddToProject}
+            onClose={clearSelection}
+            onCopyId={actions.handleCopyId}
+            onDownload={actions.handleDownload}
+            onEdit={actions.openEdit}
+            onInspect={actions.openPreview}
+            onOpenTileUrl={actions.openTileUrl}
+            onRequestDelete={(id, name) => {
+              actions.requestDelete(id, name);
+              clearSelection();
+            }}
           />
-        </div>
+        </aside>
       </div>
 
-      {/* ── Mobile folder drawer ────────────────────────────────────────────── */}
+      {/* ── Status bar ──────────────────────────────────────────────────────── */}
+      <StatusBar
+        activeFilterCount={activeFilterCount}
+        folderCount={subfolders.length}
+        itemCount={processedDatasets.length}
+        loading={loading}
+        selectedCount={selectedIds.size}
+        totalBytes={totalBytes}
+        onClearFilters={clearFilters}
+      />
+      {/* ── Mobile navigation drawer ────────────────────────────────────────── */}
       <Drawer
         isOpen={mobileNavOpen}
         position="left"
-        size="md"
-        title="Browse catalog"
+        size="sm"
+        title="Browse"
         onClose={() => setMobileNavOpen(false)}
       >
-        <FolderTree
-          folders={folders}
-          loading={loading}
-          selection={selection}
-          tiledCount={tiledCount}
-          totalBytes={totalBytes}
-          totalDatasets={datasets.length}
-          onCreateFolder={handleCreateFolder}
-          onDeleteFolder={requestDeleteFolder}
-          onNavigate={onNavigate}
-          onRenameFolder={handleRenameFolder}
-        />
+        <div className="h-full overflow-y-auto">
+          <FolderTree
+            folders={folders}
+            loading={loading}
+            selection={{ folderId: locFolder, type: typeFilter }}
+            tiledCount={tiledCount}
+            totalBytes={totalBytes}
+            totalDatasets={datasets.length}
+            onCreateFolder={createFolderDirect}
+            onDeleteFolder={requestDeleteFolder}
+            onRenameFolder={renameFolderDirect}
+            onNavigate={(sel) => {
+              handleSidebarNavigate(sel);
+              setMobileNavOpen(false);
+            }}
+          />
+        </div>
       </Drawer>
 
-      {/* ── Upload ─────────────────────────────────────────────────────────── */}
+      {/* ── Context menus ───────────────────────────────────────────────────── */}
+      {ctx && ctxDataset ? (
+        <ContextMenu
+          items={datasetMenu(ctxDataset)}
+          title={ctxDataset.name}
+          x={ctx.x}
+          y={ctx.y}
+          onClose={() => setCtx(null)}
+        />
+      ) : ctx && ctxFolder ? (
+        <ContextMenu
+          items={folderMenu(ctxFolder)}
+          title={ctxFolder.name}
+          x={ctx.x}
+          y={ctx.y}
+          onClose={() => setCtx(null)}
+        />
+      ) : null}
+      {/* ── Upload ──────────────────────────────────────────────────────────── */}
       <UploadModal
         addToast={addToast}
+        defaultFolderId={locFolder === ROOT_UNGROUPED ? null : locFolder}
         folders={folders}
-        open={isAddModalOpen}
-        defaultFolderId={
-          selection.folderId === ROOT_UNGROUPED ? null : selection.folderId
-        }
-        onClose={() => setIsAddModalOpen(false)}
-        onUploaded={(newDs) => {
-          setDatasets((prev) => [newDs, ...prev]);
+        open={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        onUploaded={() => {
+          fetchDatasets();
           fetchFolders();
         }}
       />
 
-      {/* ── Preview / Inspect ──────────────────────────────────────────────── */}
+      {/* ── New folder / rename folder ──────────────────────────────────────── */}
+      {folderModal ? (
+        <NewFolderModal
+          creating={folderBusy}
+          title={folderModal.mode === "rename" ? "Rename folder" : "New folder"}
+          confirmLabel={
+            folderModal.mode === "rename" ? "Rename" : "Create folder"
+          }
+          description={
+            folderModal.mode === "rename"
+              ? `Rename “${folderModal.folderName}”`
+              : `Create a folder inside “${folderModal.parentLabel}”`
+          }
+          initialValue={
+            folderModal.mode === "rename" ? folderModal.folderName : ""
+          }
+          onClose={() => !folderBusy && setFolderModal(null)}
+          onConfirm={confirmFolderModal}
+        />
+      ) : null}
+
+      {/* ── Dataset modals (preview / edit / tile / move / delete) ─────────── */}
       {actions.inspectTarget ? (
         <PreviewModal
           addToast={addToast}
@@ -728,17 +882,15 @@ const DataPageInner = () => {
         />
       ) : null}
 
-      {/* ── Edit metadata ──────────────────────────────────────────────────── */}
       {actions.editDataset ? (
         <EditModal
           dataset={actions.editDataset}
           saving={actions.editSaving}
           onClose={() => actions.setEditDataset(null)}
-          onSave={(payload) => actions.saveEdit(payload)}
+          onSave={actions.saveEdit}
         />
       ) : null}
 
-      {/* ── Tile URL ───────────────────────────────────────────────────────── */}
       {actions.tileUrlDataset ? (
         <TileUrlModal
           copied={actions.tileCopied}
@@ -748,45 +900,29 @@ const DataPageInner = () => {
         />
       ) : null}
 
-      {/* ── Confirm delete ─────────────────────────────────────────────────── */}
-      {actions.confirmDelete ? (
-        <ConfirmDeleteModal
-          label={actions.confirmDelete.label}
-          onCancel={() => actions.setConfirmDelete(null)}
-          onConfirm={() =>
-            actions.performDelete(() => {
-              setSelectedIds((prev) => {
-                const next = new Set(prev);
-                actions.confirmDelete?.ids.forEach((id) => next.delete(id));
-                return next;
-              });
-            })
-          }
-        />
-      ) : null}
-
-      {/* ── Move to folder ─────────────────────────────────────────────────── */}
       {actions.moveTargets ? (
         <MoveModal
           datasets={actions.moveTargets}
           folders={folders}
           moving={actions.moveSaving}
           onClose={() => actions.setMoveTargets(null)}
-          onMove={(folderId) => {
-            actions.moveDatasets(folderId);
-            setSelectedIds(new Set());
-          }}
+          onMove={(folderId) => actions.moveDatasets(folderId)}
         />
       ) : null}
 
-      {/* ── Confirm delete folder ──────────────────────────────────────────── */}
+      {actions.confirmDelete ? (
+        <ConfirmDeleteModal
+          label={actions.confirmDelete.label}
+          onCancel={() => actions.setConfirmDelete(null)}
+          onConfirm={actions.performDelete}
+        />
+      ) : null}
+
       {folderConfirm ? (
         <ConfirmDeleteModal
-          label={`folder “${folderConfirm.name}”`}
+          label={folderConfirm.name}
           onCancel={() => setFolderConfirm(null)}
-          onConfirm={() => {
-            if (!folderBusy) confirmDeleteFolder();
-          }}
+          onConfirm={confirmDeleteFolder}
         />
       ) : null}
     </div>
