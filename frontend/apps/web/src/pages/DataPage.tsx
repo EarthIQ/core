@@ -5,7 +5,6 @@ import {
   IconButton,
   Input,
   Select,
-  ToastProvider,
   useToast,
 } from "@packages/ui";
 import {
@@ -517,14 +516,14 @@ const DataPageInner = () => {
                 <Input
                   aria-label="Search datasets"
                   className="h-9 text-xs"
+                  placeholder="Search by dataset name, format, or tag…"
+                  value={searchQuery}
                   leftIcon={
                     <Search
                       className="text-text-tertiary"
                       size={16}
                     />
                   }
-                  placeholder="Search by dataset name, format, or tag…"
-                  value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
@@ -795,13 +794,5 @@ const DataPageInner = () => {
 };
 
 export default function DataPage() {
-  return (
-    <ToastProvider
-      defaultDuration={4200}
-      maxToasts={5}
-      position="bottom-right"
-    >
-      <DataPageInner />
-    </ToastProvider>
-  );
+  return <DataPageInner />;
 }

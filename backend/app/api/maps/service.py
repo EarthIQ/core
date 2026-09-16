@@ -1,17 +1,24 @@
 from __future__ import annotations
 
 import uuid
-from typing import List, Optional
+
 from fastapi import HTTPException, status
-from sqlalchemy import select, or_, and_
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.auth.models import User, UserGroup
-from app.api.maps.models import MapModel, MapGroupAccess, MapUserAccess
-from app.api.maps.schemas import MapCreate, MapUpdate, MapShareUpdate, MapRead, GroupAccessSchema, PermissionLevel
+from app.api.auth.models import User
+from app.api.maps.models import MapGroupAccess, MapModel, MapUserAccess
+from app.api.maps.schemas import (
+    GroupAccessSchema,
+    MapCreate,
+    MapRead,
+    MapShareUpdate,
+    MapUpdate,
+    PermissionLevel,
+)
 
 
-def compute_user_permission(map_item: MapModel, user: Optional[User]) -> Optional[PermissionLevel]:
+def compute_user_permission(map_item: MapModel, user: User | None) -> PermissionLevel | None:
     """
     Computes effective permission level for a given user on a map item.
     Returns "admin" | "write" | "read" | None.
@@ -27,7 +34,7 @@ def compute_user_permission(map_item: MapModel, user: Optional[User]) -> Optiona
     if user.is_superuser or map_item.owner_id == user.id:
         return "admin"
 
-    highest_perm: Optional[PermissionLevel] = None
+    highest_perm: PermissionLevel | None = None
 
     if map_item.is_public:
         highest_perm = "read"
@@ -48,7 +55,9 @@ def compute_user_permission(map_item: MapModel, user: Optional[User]) -> Optiona
                     highest_perm = "read"
 
     # Check group access
-    user_group_ids = {g.id for g in user.groups} if hasattr(user, "groups") and user.groups else set()
+    user_group_ids = (
+        {g.id for g in user.groups} if hasattr(user, "groups") and user.groups else set()
+    )
     for access in map_item.group_access:
         if access.group_id in user_group_ids:
             perm = access.permission
@@ -62,14 +71,27 @@ def compute_user_permission(map_item: MapModel, user: Optional[User]) -> Optiona
     return highest_perm
 
 
-async def list_accessible_maps(db: AsyncSession, current_user: Optional[User]) -> List[MapRead]:
-    """Retrieve all maps accessible to the current user (Public + Owned + Group Shared)."""
+async def list_accessible_maps(
+    db: AsyncSession,
+    current_user: User | None,
+    project_id: str | None = None,
+    kind: str | None = None,
+) -> list[MapRead]:
+    """Retrieve all maps accessible to the current user (Public + Owned + Group Shared).
+
+    Optional filters: ``project_id`` (rows scoped to one project) and
+    ``kind`` (``"map"`` | ``"story_map"`` | ``"presentation"``).
+    """
     q = select(MapModel)
+    if project_id:
+        q = q.where(MapModel.project_id == project_id)
+    if kind:
+        q = q.where(MapModel.kind == kind)
 
     result = await db.execute(q.order_by(MapModel.updated_at.desc()))
     all_maps = result.scalars().all()
 
-    accessible: List[MapRead] = []
+    accessible: list[MapRead] = []
     for map_item in all_maps:
         perm = compute_user_permission(map_item, current_user)
         if perm is not None:
@@ -90,6 +112,8 @@ async def list_accessible_maps(db: AsyncSession, current_user: Optional[User]) -
                 "owner": map_item.owner,
                 "widgets_config": map_item.widgets_config or {},
                 "project_id": map_item.project_id,
+                "kind": map_item.kind,
+                "content": map_item.content,
                 "group_access": [
                     GroupAccessSchema(
                         group_id=ga.group_id,
@@ -107,17 +131,22 @@ async def list_accessible_maps(db: AsyncSession, current_user: Optional[User]) -
     return accessible
 
 
-async def get_map_by_id(db: AsyncSession, map_id: str) -> Optional[MapModel]:
+async def get_map_by_id(db: AsyncSession, map_id: str) -> MapModel | None:
     result = await db.execute(select(MapModel).where(MapModel.id == map_id))
     return result.scalar_one_or_none()
 
 
 async def get_accessible_map(
-    db: AsyncSession, map_id: str, current_user: Optional[User], required_perm: PermissionLevel = "read"
+    db: AsyncSession,
+    map_id: str,
+    current_user: User | None,
+    required_perm: PermissionLevel = "read",
 ) -> MapRead:
     map_item = await get_map_by_id(db, map_id)
     if not map_item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Map '{map_id}' not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Map '{map_id}' not found"
+        )
 
     perm = compute_user_permission(map_item, current_user)
     if perm is None:
@@ -149,6 +178,8 @@ async def get_accessible_map(
         owner=map_item.owner,
         widgets_config=map_item.widgets_config or {},
         project_id=map_item.project_id,
+        kind=map_item.kind,
+        content=map_item.content,
         group_access=[
             GroupAccessSchema(
                 group_id=ga.group_id,
@@ -174,11 +205,13 @@ async def create_map(db: AsyncSession, owner: User, body: MapCreate) -> MapRead:
         bearing=body.bearing,
         pitch=body.pitch,
         basemap=body.basemap,
-        layers_config=[l.model_dump() for l in body.layers_config],
+        layers_config=[layer.model_dump() for layer in body.layers_config],
         is_public=body.is_public,
         owner_id=owner.id,
         project_id=body.project_id,
         widgets_config=body.widgets_config,
+        kind=body.kind,
+        content=body.content,
     )
     db.add(map_item)
     await db.flush()
@@ -231,11 +264,14 @@ async def update_map(db: AsyncSession, map_id: str, current_user: User, body: Ma
     if body.pitch is not None:
         map_item.pitch = body.pitch
     if body.layers_config is not None:
-        map_item.layers_config = [l.model_dump() for l in body.layers_config]
+        map_item.layers_config = [layer.model_dump() for layer in body.layers_config]
     if body.is_public is not None:
         map_item.is_public = body.is_public
     if body.widgets_config is not None:
         map_item.widgets_config = body.widgets_config
+    # Story map / presentation payload (``kind`` itself is immutable)
+    if body.content is not None:
+        map_item.content = body.content
 
     await db.flush()
     await db.refresh(map_item)
@@ -250,7 +286,9 @@ async def delete_map(db: AsyncSession, map_id: str, current_user: User) -> None:
         await db.flush()
 
 
-async def share_map(db: AsyncSession, map_id: str, current_user: User, body: MapShareUpdate) -> MapRead:
+async def share_map(
+    db: AsyncSession, map_id: str, current_user: User, body: MapShareUpdate
+) -> MapRead:
     await get_accessible_map(db, map_id, current_user, required_perm="admin")
     map_item = await get_map_by_id(db, map_id)
     if not map_item:

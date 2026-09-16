@@ -1,39 +1,38 @@
 from __future__ import annotations
 
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Query, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import get_db
 from app.api.auth.models import User
 from app.api.auth.router import get_current_user
-from app.core.security import decode_access_token, JWTError
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
-from app.api.maps.schemas import MapCreate, MapRead, MapUpdate, MapShareUpdate
+from app.api.maps.schemas import MapCreate, MapKind, MapRead, MapShareUpdate, MapUpdate
 from app.api.maps.service import (
-    list_accessible_maps,
-    get_accessible_map,
     create_map,
-    update_map,
     delete_map,
+    get_accessible_map,
+    list_accessible_maps,
     share_map,
+    update_map,
 )
+from app.core.db import get_db
+from app.core.security import JWTError, decode_access_token
 
 router = APIRouter(tags=["maps"])
 _optional_bearer = HTTPBearer(auto_error=False)
 
 
 async def get_optional_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(_optional_bearer),
+    credentials: HTTPAuthorizationCredentials | None = Depends(_optional_bearer),
     db: AsyncSession = Depends(get_db),
-) -> Optional[User]:
+) -> User | None:
     if not credentials:
         return None
     try:
         payload = decode_access_token(credentials.credentials)
         user_id: str = payload["sub"]
         from sqlalchemy import select
+
         result = await db.execute(select(User).where(User.id == user_id))
         user = result.scalar_one_or_none()
         return user if (user and user.is_active) else None
@@ -41,15 +40,21 @@ async def get_optional_user(
         return None
 
 
-@router.get("", response_model=List[MapRead], summary="List all maps accessible to current user")
+@router.get("", response_model=list[MapRead], summary="List all maps accessible to current user")
 async def list_maps(
+    project_id: str | None = Query(None, description="Only rows scoped to this project"),
+    kind: MapKind | None = Query(
+        None, description="Only this content kind (map | story_map | presentation)"
+    ),
     db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_user: User | None = Depends(get_optional_user),
 ):
-    return await list_accessible_maps(db, current_user)
+    return await list_accessible_maps(db, current_user, project_id=project_id, kind=kind)
 
 
-@router.post("", response_model=MapRead, status_code=status.HTTP_201_CREATED, summary="Create a new map")
+@router.post(
+    "", response_model=MapRead, status_code=status.HTTP_201_CREATED, summary="Create a new map"
+)
 async def create_new_map(
     body: MapCreate,
     db: AsyncSession = Depends(get_db),
@@ -62,12 +67,16 @@ async def create_new_map(
 async def get_map_by_id(
     map_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_user: User | None = Depends(get_optional_user),
 ):
     return await get_accessible_map(db, map_id, current_user, required_perm="read")
 
 
-@router.put("/{map_id}", response_model=MapRead, summary="Update map viewport/layers (write permission required)")
+@router.put(
+    "/{map_id}",
+    response_model=MapRead,
+    summary="Update map viewport/layers (write permission required)",
+)
 async def update_map_config(
     map_id: str,
     body: MapUpdate,
@@ -77,7 +86,9 @@ async def update_map_config(
     return await update_map(db, map_id, current_user, body)
 
 
-@router.delete("/{map_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete map (owner/admin required)")
+@router.delete(
+    "/{map_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete map (owner/admin required)"
+)
 async def delete_map_item(
     map_id: str,
     db: AsyncSession = Depends(get_db),
@@ -86,7 +97,11 @@ async def delete_map_item(
     await delete_map(db, map_id, current_user)
 
 
-@router.post("/{map_id}/share", response_model=MapRead, summary="Share map with groups or toggle public status")
+@router.post(
+    "/{map_id}/share",
+    response_model=MapRead,
+    summary="Share map with groups or toggle public status",
+)
 async def share_map_config(
     map_id: str,
     body: MapShareUpdate,

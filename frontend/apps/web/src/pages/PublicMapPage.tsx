@@ -1,81 +1,194 @@
-import { Globe, Layers, ZoomIn, ZoomOut, Compass, LogIn } from "lucide-react";
+/**
+ * PublicMapPage.tsx
+ * -----------------
+ * Public, no-auth viewer for `/share/map/:mapId`. All published content is a
+ * `maps` row with a `kind` discriminator, so the page fetches the row once
+ * and dispatches to the right viewer:
+ *
+ *   - kind "map"          → `PublicMapViewer` (this file, MapLibre dashboard)
+ *   - kind "story_map"    → `StoryViewer` (pages/PublicStoryMapPage)
+ *   - kind "presentation" → `PresentationViewer` (pages/PublicPresentationPage)
+ *
+ * Private content falls through to the shared `PublicDenied` screen
+ * (sign-in or request access).
+ */
+import { Globe, Layers, ZoomIn, ZoomOut, Compass } from "lucide-react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
-import { AccessRequestCard } from "@/components/map/share/AccessRequestCard";
+import {
+  PublicDenied,
+  usePublicEntity,
+} from "@/components/map/share/PublicEntity";
 import { BASEMAP_STYLES } from "@/hooks/useMapLibre";
-import { ApiError } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
-import { fetchMapById, type MapItem } from "@/lib/maps";
+import { type MapItem } from "@/lib/maps";
+import { PresentationViewer } from "@/pages/PublicPresentationPage";
+import { StoryViewer } from "@/pages/PublicStoryMapPage";
+
+import type { Deck } from "@/components/builder/presentation";
+import type { StoryMap } from "@/components/builder/storymap";
+
+/* ── Dispatcher ───────────────────────────────────────────────────────────── */
 
 export default function PublicMapPage() {
   const { mapId } = useParams<{ mapId: string }>();
-  const navigate = useNavigate();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { row, loading, denied, errorMsg } = usePublicEntity(mapId ?? "");
+
+  if (loading) {
+    return (
+      <div className="bg-bg-primary text-text-primary flex h-screen w-screen flex-col items-center justify-center">
+        <Globe
+          className="text-primary mb-4 animate-spin"
+          size={40}
+        />
+        <span className="animate-pulse text-sm font-semibold tracking-wider">
+          Loading…
+        </span>
+      </div>
+    );
+  }
+
+  if (denied) {
+    return (
+      <PublicDenied
+        entityId={mapId ?? ""}
+        from={mapId ? `/share/map/${mapId}` : "/share"}
+        noun={
+          row?.kind === "story_map"
+            ? "story map"
+            : row?.kind === "presentation"
+              ? "presentation"
+              : "map"
+        }
+      />
+    );
+  }
+
+  if (errorMsg || !row) {
+    return (
+      <div className="bg-bg-primary text-text-primary flex h-screen w-screen flex-col items-center justify-center px-6 text-center">
+        <div className="mb-4 text-5xl">🔒</div>
+        <h3 className="text-text-primary text-lg font-bold">
+          This content isn't available
+        </h3>
+        <p className="text-text-secondary mt-2 max-w-sm text-sm">
+          {errorMsg ??
+            "This link is incomplete or the content has been removed."}
+        </p>
+        <a
+          className="btn btn-primary btn-md mt-6"
+          href="/"
+        >
+          Go home
+        </a>
+      </div>
+    );
+  }
+
+  /* Story map */
+  if (row.kind === "story_map") {
+    const raw = row.content?.story;
+    const story =
+      raw &&
+      typeof raw === "object" &&
+      typeof (raw as StoryMap).title === "string" &&
+      Array.isArray((raw as StoryMap).scenes)
+        ? (raw as StoryMap)
+        : null;
+    return (
+      <>
+        {story ? (
+          <StoryViewer story={story} />
+        ) : (
+          <EmptyContent noun="story map" />
+        )}
+      </>
+    );
+  }
+
+  /* Presentation */
+  if (row.kind === "presentation") {
+    const raw = row.content?.deck;
+    const deck =
+      raw &&
+      typeof raw === "object" &&
+      typeof (raw as Deck).title === "string" &&
+      Array.isArray((raw as Deck).slides)
+        ? (raw as Deck)
+        : null;
+    return deck ? (
+      <PresentationViewer
+        context={row.content?.context}
+        deck={deck}
+      />
+    ) : (
+      <EmptyContent noun="presentation" />
+    );
+  }
+
+  /* Plain map (default + legacy rows) */
+  return <PublicMapViewer map={row} />;
+}
+
+const EmptyContent = ({ noun }: { noun: string }) => {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[var(--bg-secondary)] px-6 text-center">
+      <p className="text-sm text-[var(--text-primary)]">
+        This {noun} has no content yet.
+      </p>
+      <a
+        className="btn btn-primary btn-md"
+        href="/"
+      >
+        Go home
+      </a>
+    </div>
+  );
+};
+
+/* ── Map dashboard viewer ─────────────────────────────────────────────────── */
+
+export const PublicMapViewer = ({ map }: { map: MapItem }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
-  const [mapData, setMapData] = useState<MapItem | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [denied, setDenied] = useState(false);
   const [mapReady, setMapReady] = useState(false);
-  const [layersList, setLayersList] = useState<any[]>([]);
-
-  // Fetch map details on mount
-  useEffect(() => {
-    if (!mapId) return;
-    fetchMapById(mapId)
-      .then((data) => {
-        setMapData(data);
-        setLayersList(data.layers_config || []);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && err.status === 403) setDenied(true);
-        console.error(err);
-        setErrorMsg(
-          "This map could not be loaded. It may be private or deleted."
-        );
-        setLoading(false);
-      });
-  }, [mapId]);
+  const [layersList, setLayersList] = useState<any[]>(map.layers_config || []);
 
   // Initialize MapLibre
   useEffect(() => {
-    if (loading || errorMsg || !mapData || !mapContainerRef.current) return;
+    if (!map || !mapContainerRef.current) return;
 
     let cancelled = false;
     import("maplibre-gl").then(
       ({ Map, NavigationControl, ScaleControl, GeolocateControl }) => {
         if (cancelled || !mapContainerRef.current) return;
 
-        const widgets = mapData.widgets_config || {};
+        const widgets = map.widgets_config || {};
 
-        const map = new Map({
+        const maplibre = new Map({
           container: mapContainerRef.current,
-          style:
-            BASEMAP_STYLES[mapData.basemap] || BASEMAP_STYLES["opentopomap"],
-          center: [mapData.center_lng, mapData.center_lat],
-          zoom: mapData.zoom,
-          bearing: (mapData as any).bearing || 0,
-          pitch: (mapData as any).pitch || 0,
+          style: BASEMAP_STYLES[map.basemap] || BASEMAP_STYLES["opentopomap"],
+          center: [map.center_lng, map.center_lat],
+          zoom: map.zoom,
+          bearing: (map as any).bearing || 0,
+          pitch: (map as any).pitch || 0,
           attributionControl: false,
         });
 
-        map.on("load", () => {
+        maplibre.on("load", () => {
           setMapReady(true);
           // Add layers if any are configured
-          (mapData.layers_config || []).forEach((layer: any) => {
+          (map.layers_config || []).forEach((layer: any) => {
             if (!layer.url) return;
             try {
               if (layer.type === "raster") {
-                map.addSource(layer.id, {
+                maplibre.addSource(layer.id, {
                   type: "raster",
                   tiles: [layer.url],
                   tileSize: 256,
                 });
-                map.addLayer({
+                maplibre.addLayer({
                   id: layer.id,
                   type: "raster",
                   source: layer.id,
@@ -85,11 +198,11 @@ export default function PublicMapPage() {
                 });
               } else {
                 // Assume vector
-                map.addSource(layer.id, {
+                maplibre.addSource(layer.id, {
                   type: "vector",
                   tiles: [layer.url],
                 });
-                map.addLayer({
+                maplibre.addLayer({
                   id: layer.id,
                   type: "fill",
                   source: layer.id,
@@ -110,7 +223,7 @@ export default function PublicMapPage() {
 
           // Add controls based on widget config
           if (widgets.compass || widgets.zoomControls) {
-            map.addControl(
+            maplibre.addControl(
               new NavigationControl({
                 showCompass: !!widgets.compass,
                 showZoom: !!widgets.zoomControls,
@@ -119,10 +232,13 @@ export default function PublicMapPage() {
             );
           }
           if (widgets.scaleBar) {
-            map.addControl(new ScaleControl({ unit: "metric" }), "bottom-left");
+            maplibre.addControl(
+              new ScaleControl({ unit: "metric" }),
+              "bottom-left"
+            );
           }
           if (widgets.geolocate) {
-            map.addControl(
+            maplibre.addControl(
               new GeolocateControl({
                 positionOptions: { enableHighAccuracy: true },
               }),
@@ -131,7 +247,7 @@ export default function PublicMapPage() {
           }
         });
 
-        mapRef.current = map;
+        mapRef.current = maplibre;
       }
     );
 
@@ -143,7 +259,7 @@ export default function PublicMapPage() {
       }
       setMapReady(false);
     };
-  }, [loading, errorMsg, mapData]);
+  }, [map]);
 
   // Sync layer toggles to MapLibre layers
   const toggleLayerVisibility = (layerId: string) => {
@@ -170,78 +286,7 @@ export default function PublicMapPage() {
   const handleZoomOut = () => mapRef.current?.zoomOut();
   const handleResetNorth = () => mapRef.current?.resetNorthPitch();
 
-  if (loading || (denied && authLoading)) {
-    return (
-      <div className="bg-bg-primary text-text-primary flex h-screen w-screen flex-col items-center justify-center">
-        <Globe
-          className="text-primary mb-4 animate-spin"
-          size={40}
-        />
-        <span className="animate-pulse text-sm font-semibold tracking-wider">
-          Loading map dashboard...
-        </span>
-      </div>
-    );
-  }
-
-  /* ── 403 on a private map ────────────────────────────────────────────────
-     Logged in  → Google-Docs style "Request access" card
-     Logged out → login UI first (return here afterwards)                     */
-  if (denied) {
-    if (isAuthenticated) {
-      return (
-        <div className="bg-bg-primary flex h-screen w-screen items-center justify-center p-6">
-          <AccessRequestCard
-            entityId={mapId ?? ""}
-            entityType="map"
-          />
-        </div>
-      );
-    }
-    const from = mapId ? `/share/map/${mapId}` : "/share";
-    return (
-      <div className="bg-bg-primary text-text-primary flex h-screen w-screen flex-col items-center justify-center px-6 text-center">
-        <div className="mb-4 text-5xl">🔒</div>
-        <h3 className="text-text-primary text-lg font-bold">
-          Sign in to continue
-        </h3>
-        <p className="text-text-secondary mt-2 max-w-sm text-sm leading-relaxed">
-          This map is private. Sign in to view it, or to request access from the
-          owner.
-        </p>
-        <button
-          className="btn btn-primary btn-md mt-6 inline-flex items-center gap-2"
-          type="button"
-          onClick={() =>
-            navigate("/login", { state: { from: { pathname: from } } })
-          }
-        >
-          <LogIn size={15} /> Sign in
-        </button>
-      </div>
-    );
-  }
-
-  if (errorMsg || !mapData) {
-    return (
-      <div className="bg-bg-primary text-text-primary flex h-screen w-screen flex-col items-center justify-center px-6 text-center">
-        <div className="mb-4 text-5xl">🔒</div>
-        <h3 className="text-text-primary text-lg font-bold">Access Denied</h3>
-        <p className="text-text-secondary mt-2 max-w-sm text-sm">
-          {errorMsg ||
-            "This published map has been restricted or removed by the administrator."}
-        </p>
-        <a
-          className="btn btn-primary btn-md mt-6"
-          href="/projects"
-        >
-          Back to Dashboard
-        </a>
-      </div>
-    );
-  }
-
-  const widgets = mapData.widgets_config || {};
+  const widgets = map.widgets_config || {};
 
   return (
     <div className="bg-bg-primary relative h-screen w-screen overflow-hidden select-none">
@@ -255,11 +300,11 @@ export default function PublicMapPage() {
       {widgets.titleCard ? (
         <div className="bg-elevated border-border-primary animate-fade-in absolute top-4 left-4 z-10 flex max-w-sm flex-col gap-1.5 rounded-xl border p-4 shadow-xl">
           <h1 className="text-text-primary text-sm font-bold tracking-wide">
-            {mapData.title}
+            {map.title}
           </h1>
-          {mapData.description ? (
+          {map.description ? (
             <p className="text-text-secondary text-[11px] leading-relaxed">
-              {mapData.description}
+              {map.description}
             </p>
           ) : null}
           <div className="mt-1 flex items-center gap-1.5">
@@ -358,4 +403,4 @@ export default function PublicMapPage() {
       </div>
     </div>
   );
-}
+};

@@ -447,7 +447,7 @@ export default function ProjectsPage() {
   const [deleteTarget, setDeleteTarget] = useState<ProjectItem | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Inline notice (no global ToastProvider is mounted in the shell)
+  // Inline notice (deliberate UX choice; a global ToastProvider is now mounted in the shell)
   const [notice, setNotice] = useState<{
     type: "success" | "error";
     text: string;
@@ -816,18 +816,18 @@ export default function ProjectsPage() {
         <div className="bg-surface border-border-primary rounded-2xl border">
           <EmptyState
             description="Create your first geospatial workspace to start organizing layers, maps, and analysis."
-            icon={
-              <FolderOpen
-                className="text-primary"
-                size={40}
-              />
-            }
             size="lg"
             title="No projects yet"
             action={{
               label: "Create a project",
               onClick: () => setCreateOpen(true),
             }}
+            icon={
+              <FolderOpen
+                className="text-primary"
+                size={40}
+              />
+            }
           />
         </div>
       ) : visibleProjects.length === 0 ? (

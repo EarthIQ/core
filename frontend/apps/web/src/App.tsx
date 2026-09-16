@@ -8,6 +8,7 @@
  *     registry AND enabled server-side. App.tsx itself never references
  *     a module name or import path.
  */
+import { ToastProvider } from "@packages/ui";
 import { Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
@@ -28,6 +29,7 @@ import LoginPage from "@/pages/LoginPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import ProjectsPage from "@/pages/ProjectsPage";
 import PublicMapPage from "@/pages/PublicMapPage";
+import PublicPresentationPage from "@/pages/PublicPresentationPage";
 import PublicStoryMapPage from "@/pages/PublicStoryMapPage";
 import SettingsPage from "@/pages/SettingsPage";
 
@@ -232,43 +234,49 @@ const ProtectedRoutes = () => {
 export default function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <PreferencesProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* Public */}
-              <Route
-                element={<LoginPage />}
-                path="/login"
-              />
-              <Route
-                element={<PublicMapPage />}
-                path="/share/map/:mapId"
-              />
-              <Route
-                element={<PublicStoryMapPage />}
-                path="/share/story/:token"
-              />
+      <ToastProvider>
+        <AuthProvider>
+          <PreferencesProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Public */}
+                <Route
+                  element={<LoginPage />}
+                  path="/login"
+                />
+                <Route
+                  element={<PublicMapPage />}
+                  path="/share/map/:mapId"
+                />
+                <Route
+                  element={<PublicStoryMapPage />}
+                  path="/share/story/:mapId"
+                />
+                <Route
+                  element={<PublicPresentationPage />}
+                  path="/share/presentation/:mapId"
+                />
 
-              {/* Protected shell */}
-              <Route
-                path="/*"
-                element={
-                  <ProtectedRoute>
-                    <NotificationsProvider>
-                      <AppShell>
-                        <Suspense fallback={<PageFallback />}>
-                          <ProtectedRoutes />
-                        </Suspense>
-                      </AppShell>
-                    </NotificationsProvider>
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </BrowserRouter>
-        </PreferencesProvider>
-      </AuthProvider>
+                {/* Protected shell */}
+                <Route
+                  path="/*"
+                  element={
+                    <ProtectedRoute>
+                      <NotificationsProvider>
+                        <AppShell>
+                          <Suspense fallback={<PageFallback />}>
+                            <ProtectedRoutes />
+                          </Suspense>
+                        </AppShell>
+                      </NotificationsProvider>
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </BrowserRouter>
+          </PreferencesProvider>
+        </AuthProvider>
+      </ToastProvider>
     </ThemeProvider>
   );
 }

@@ -20,6 +20,21 @@ select = [
 ]
 ignore = ["E501"]  # line length is enforced by `ruff format`, not the linter
 
+[lint.flake8-bugbear]
+# FastAPI dependency-injection callables are singletons in practice, and the
+# `x: T = Depends(...) / Query(...) / ...` signature is the documented idiom -
+# exempt them from B008 (a call used as an argument default).
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Header",
+    "fastapi.Body",
+    "fastapi.Form",
+    "fastapi.File",
+    "fastapi.Cookie",
+]
+
 [lint.isort]
 # First-party packages so imports group correctly across the pluggable repos.
 known-first-party = [

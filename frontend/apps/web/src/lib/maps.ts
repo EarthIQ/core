@@ -2,6 +2,9 @@ import { api } from "./api";
 
 export type PermissionLevel = "read" | "write" | "admin";
 
+/** Published content kinds a `maps` row can hold (see backend maps.kind). */
+export type MapKind = "map" | "story_map" | "presentation";
+
 export interface MapLayerItem {
   id: string;
   name: string;
@@ -46,6 +49,10 @@ export interface MapItem {
   group_access: GroupAccess[];
   user_permission: PermissionLevel;
   widgets_config: Record<string, boolean>;
+  /** Published content kind (defaults to "map" for historical rows). */
+  kind: MapKind;
+  /** Rich content payload for story maps / presentations (plain JSON). */
+  content?: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
 }
@@ -61,6 +68,12 @@ export interface MapCreateInput {
   is_public?: boolean;
   widgets_config?: Record<string, boolean>;
   group_access?: GroupAccess[];
+  /** Scope the published item to a project. */
+  project_id?: string;
+  /** Content kind (default "map"). */
+  kind?: MapKind;
+  /** Rich content payload (story map / presentation). */
+  content?: Record<string, unknown>;
 }
 
 export interface MapUpdateInput {
@@ -73,6 +86,8 @@ export interface MapUpdateInput {
   layers_config?: MapLayerItem[];
   is_public?: boolean;
   widgets_config?: Record<string, boolean>;
+  /** Replace the story map / presentation payload. */
+  content?: Record<string, unknown>;
 }
 
 export interface GroupItem {
@@ -82,8 +97,16 @@ export interface GroupItem {
   created_at: string;
 }
 
-export async function fetchMaps(): Promise<MapItem[]> {
-  return api.get<MapItem[]>("/api/v1/maps");
+/** List published items accessible to the current user. */
+export async function fetchMaps(params?: {
+  projectId?: string;
+  kind?: MapKind;
+}): Promise<MapItem[]> {
+  const qs = new URLSearchParams();
+  if (params?.projectId) qs.set("project_id", params.projectId);
+  if (params?.kind) qs.set("kind", params.kind);
+  const suffix = qs.toString() ? `?${qs.toString()}` : "";
+  return api.get<MapItem[]>(`/api/v1/maps${suffix}`);
 }
 
 export async function fetchMapById(mapId: string): Promise<MapItem> {

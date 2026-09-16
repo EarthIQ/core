@@ -1,46 +1,38 @@
 /**
  * PublicStoryMapPage.tsx
  * ----------------------
- * Public, no-auth viewer for shared story maps (`/share/story/:token`).
- * The token carries a self-contained snapshot of the story (encoded in
- * `ShareStoryDialog`), so this page needs no account and no project access -
- * it just decodes, validates and plays the scenes.
+ * Public, no-auth viewer for a shared story map (`/share/story/:id`). The id
+ * is a `maps` row with `kind="story_map"`; its `content.story` is a
+ * self-contained snapshot (map blocks hydrated with layer sources + view
+ * data), so this page needs no account and no project access - it just
+ * fetches, validates and plays the scenes.
  *
  * Mirrors the in-builder preview (`PreviewMode`): scene-by-scene guided
  * viewing with keyboard navigation, a scene rail of dots and a progress bar.
+ *
+ * `StoryViewer` is exported so `PublicMapPage` (the `/share/map/:id`
+ * dispatcher) can render story maps from a single fetch.
  */
 import { Button, cn, useLockBodyScroll } from "@packages/ui";
 import { BookOpen, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
+import { StorySceneView, type StoryMap } from "@/components/builder/storymap";
 import {
-  decodeStoryToken,
-  StorySceneView,
-  type StoryMap,
-} from "@/components/builder/storymap";
+  PublicDenied,
+  usePublicEntity,
+} from "@/components/map/share/PublicEntity";
 
-export default function PublicStoryMapPage() {
-  const { token } = useParams<{ token: string }>();
-  const [story, setStory] = useState<StoryMap | null>(null);
-  const [invalid, setInvalid] = useState(false);
+/* ── Scene player (shared with the /share/map dispatcher) ────────────────── */
+
+export const StoryViewer = ({ story }: { story: StoryMap }) => {
   const [index, setIndex] = useState(0);
   useLockBodyScroll(true);
-
-  /* Decode the token whenever the route param changes. */
-  useEffect(() => {
-    setIndex(0);
-    setInvalid(false);
-    const decoded = decodeStoryToken(token ?? "");
-    if (decoded) setStory(decoded);
-    else setInvalid(true);
-  }, [token]);
-
-  const scenes = story?.scenes ?? [];
+  const scenes = story.scenes;
 
   /* Keyboard navigation */
   useEffect(() => {
-    if (invalid || !story) return;
     function onKey(e: KeyboardEvent) {
       if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
         e.preventDefault();
@@ -56,33 +48,7 @@ export default function PublicStoryMapPage() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [invalid, story, scenes.length]);
-
-  /* ── Invalid / truncated link ───────────────────────────────────────── */
-  if (invalid) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--bg-secondary)] px-6">
-        <div className="max-w-md text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--primary)]/10 text-[var(--primary)]">
-            <BookOpen size={24} />
-          </div>
-          <h1 className="mt-4 text-lg font-semibold text-[var(--text-primary)]">
-            This story link looks incomplete
-          </h1>
-          <p className="mt-1.5 text-sm leading-relaxed text-[var(--text-tertiary)]">
-            The link may have been cut off when it was copied. Ask the person
-            who shared it for the full story link.
-          </p>
-          <Link
-            className="mt-5 inline-flex"
-            to="/"
-          >
-            <Button variant="ghost">Go to the home page</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  }, [scenes.length]);
 
   const scene = scenes[Math.min(index, Math.max(scenes.length - 1, 0))];
   const ghostBtn =
@@ -90,21 +56,20 @@ export default function PublicStoryMapPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg-secondary)]">
-      {/* Top bar */}
-      <header className="flex shrink-0 items-center justify-between gap-3 px-4 py-3">
-        <div className="min-w-0">
-          <h1 className="truncate text-sm font-semibold text-[var(--text-primary)]">
-            {story?.title ?? "Story map"}
-          </h1>
-          {story?.author ? (
-            <p className="text-xs text-[var(--text-tertiary)]">
-              {story.author}
-            </p>
-          ) : null}
+      <header className="flex shrink-0 items-center justify-between px-4 py-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <BookOpen
+            aria-hidden
+            className="text-[var(--primary)]"
+            size={18}
+          />
+          <span className="truncate text-sm font-semibold text-[var(--text-primary)]">
+            {story.title}
+          </span>
+          <span className="text-xs text-[var(--text-tertiary)] tabular-nums">
+            {index + 1} / {scenes.length}
+          </span>
         </div>
-        <span className="text-xs text-[var(--text-tertiary)] tabular-nums">
-          {index + 1} / {scenes.length}
-        </span>
       </header>
 
       {/* Progress */}
@@ -208,4 +173,68 @@ export default function PublicStoryMapPage() {
       </footer>
     </div>
   );
+};
+
+/* ── Page ─────────────────────────────────────────────────────────────────── */
+
+export default function PublicStoryMapPage() {
+  const { mapId } = useParams<{ mapId: string }>();
+  const { row, loading, denied, errorMsg } = usePublicEntity(mapId ?? "");
+
+  const story = (() => {
+    const raw = row?.content?.story;
+    if (!raw || typeof raw !== "object") return null;
+    const s = raw as StoryMap;
+    if (typeof s.title !== "string" || !Array.isArray(s.scenes)) return null;
+    return s;
+  })();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[var(--bg-secondary)] text-[var(--text-tertiary)]">
+        <BookOpen
+          className="animate-pulse text-[var(--primary)]"
+          size={36}
+        />
+        <p className="text-sm">Loading story…</p>
+      </div>
+    );
+  }
+
+  if (denied) {
+    return (
+      <PublicDenied
+        entityId={mapId ?? ""}
+        from={mapId ? `/share/story/${mapId}` : "/share"}
+        noun="story map"
+      />
+    );
+  }
+
+  if (errorMsg || !story) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--bg-secondary)] px-6">
+        <div className="max-w-md text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--primary)]/10 text-[var(--primary)]">
+            <BookOpen size={24} />
+          </div>
+          <h1 className="mt-4 text-lg font-semibold text-[var(--text-primary)]">
+            This story can't be shown
+          </h1>
+          <p className="mt-1.5 text-sm leading-relaxed text-[var(--text-tertiary)]">
+            {errorMsg ??
+              "This story has been deleted or is currently unavailable."}
+          </p>
+          <Link
+            className="mt-5 inline-flex"
+            to="/"
+          >
+            <Button variant="ghost">Go to the home page</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return <StoryViewer story={story} />;
 }

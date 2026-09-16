@@ -5,13 +5,10 @@
  * (`pages/builders/PresentationBuilderPage.tsx`) imports from here.
  */
 export * from "./types";
-export { useDeck } from "./useDeck";
+export { useDeckItem } from "./useDeckItem";
 export { useProjectData, type ProjectData } from "./useProjectData";
-export {
-  SlideCanvas,
-  type BlockAction,
-  type EditConfig,
-} from "./SlideCanvas";
+export { buildDeckContext, type DeckShareContext } from "./share";
+export { SlideCanvas, type BlockAction, type EditConfig } from "./SlideCanvas";
 export { SlideThumb } from "./SlideThumb";
 export { Inspector } from "./Inspector";
 export { PresentMode } from "./PresentMode";

@@ -6,7 +6,7 @@
  * (`pages/PublicStoryMapPage.tsx`) import from here.
  */
 export * from "./types";
-export { useStory } from "./useStory";
+export { useStoryItem, type SaveState } from "./useStoryItem";
 export {
   StorySceneView,
   type BlockAction,
@@ -16,7 +16,6 @@ export {
 export { SceneThumb } from "./SceneThumb";
 export { Inspector } from "./Inspector";
 export { PreviewMode } from "./PreviewMode";
-export { ShareStoryDialog } from "./ShareStoryDialog";
 export {
   buildShareUrl,
   decodeStoryToken,

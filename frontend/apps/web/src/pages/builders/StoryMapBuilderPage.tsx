@@ -1,76 +1,179 @@
 /**
  * Story Map builder - narrative, guided journeys through a project's maps.
  *
- * Mirrors the presentation builder's architecture: a data-driven 3-pane
- * workspace (scene rail · scene canvas · inspector) inside the shared
- * `BuilderScaffold`, with state in `useStory` (a **library of multiple story
- * maps** per project, persisted to localStorage). Toolbar actions:
- *   - switch / manage story maps (new, duplicate, delete) via the stories menu
- *   - Preview: fullscreen guided viewing (`PreviewMode`)
- *   - Share: a self-contained public link (`ShareStoryDialog` →
- *     `/share/story/:token`, rendered by `PublicStoryMapPage`)
+ * Two views under one route (`?projectId=`, optionally `&storyId=`):
+ *   - **no storyId** → a `PublishedGrid` of the project's story maps
+ *     (`maps` rows with `kind="story_map"`): create, open, duplicate, share,
+ *     delete - sharing rides the standard `ShareDialog` + share subsystem.
+ *   - **storyId**    → the single-story editor (scene rail · canvas ·
+ *     inspector) that **auto-saves to the server**; Preview uses
+ *     `PreviewMode`, the public link is `/share/story/:id`
+ *     (rendered by `PublicStoryMapPage`).
  *
  * Scene content is composed from blocks (text, key points, live map, image,
- * KPI, quote) with an ArcGIS-style scene layout (text·map, map·text,
- * map-on-top, stacked) - authored in the canvas + inspector, rendered by the
- * shared `StorySceneView`.
+ * KPI, quote) with an ArcGIS-style scene layout - authored in the canvas +
+ * inspector, rendered by the shared `StorySceneView`.
  */
-import { Button, Input } from "@packages/ui";
-import {
-  BookOpen,
-  Check,
-  ChevronDown,
-  Copy,
-  Link2,
-  Play,
-  Plus,
-  Trash2,
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Button, Input, Spinner, useToast } from "@packages/ui";
+import { ArrowLeft, BookOpen, Play, Share2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { BuilderScaffold } from "@/components/builder/BuilderScaffold";
 import { SidebarHeader } from "@/components/builder/BuilderWorkspace";
 import { useProjectData } from "@/components/builder/presentation";
+import { PublishedGrid } from "@/components/builder/PublishedGrid";
 import {
   Inspector,
   PreviewMode,
   SceneThumb,
-  ShareStoryDialog,
   StorySceneView,
-  useStory,
+  defaultStory,
+  hydrateForShare,
+  useStoryItem,
   type BlockAction,
+  type StoryMap,
+  type StoryShareData,
 } from "@/components/builder/storymap";
+import { ShareDialog } from "@/components/map/share/ShareDialog";
 import { getProjectBuilder } from "@/lib/builders";
+import { createMap, deleteMap, fetchMaps, type MapItem } from "@/lib/maps";
 
-const Editor = ({ projectId }: { projectId: string }) => {
+const origin = typeof window !== "undefined" ? window.location.origin : "";
+const shareUrlFor = (id: string) => `${origin}/share/story/${id}`;
+const canManage = (item: MapItem) =>
+  item.user_permission === "admin" || item.user_permission === "write";
+
+/* ── List view ────────────────────────────────────────────────────────────── */
+
+const StoryMapList = ({ projectId }: { projectId: string }) => {
   const data = useProjectData(projectId);
-  const lib = useStory(projectId, data.project?.title);
+  const navigate = useNavigate();
+  const { success: toastSuccess, error: toastError } = useToast();
+  const [busy, setBusy] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [shareTarget, setShareTarget] = useState<MapItem | null>(null);
+
+  const shareData = useMemo<StoryShareData>(
+    () => ({ maps: data.maps, project: data.project }),
+    [data.maps, data.project]
+  );
+
+  const openEditor = (id: string) =>
+    navigate(
+      `/builder/story-map?projectId=${encodeURIComponent(projectId)}&storyId=${encodeURIComponent(id)}`
+    );
+
+  const handleNew = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const story = defaultStory(data.project?.title);
+      const map = await createMap({
+        title: story.title,
+        description: story.subtitle || undefined,
+        kind: "story_map",
+        is_public: false,
+        project_id: projectId,
+        content: { story: hydrateForShare(story, shareData) },
+      });
+      openEditor(map.id);
+    } catch (e) {
+      toastError(e instanceof Error ? e.message : "Failed to create story map");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDuplicate = async (item: MapItem) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const story =
+        (item.content?.story as StoryMap | undefined) ??
+        defaultStory(item.title);
+      await createMap({
+        title: `${item.title} (copy)`,
+        description: item.description,
+        kind: "story_map",
+        is_public: false,
+        project_id: projectId,
+        content: { story },
+      });
+      toastSuccess(`Duplicated "${item.title}"`);
+      setRefreshKey((k) => k + 1);
+    } catch (e) {
+      toastError(
+        e instanceof Error ? e.message : "Failed to duplicate story map"
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDelete = async (item: MapItem) => {
+    await deleteMap(item.id);
+    toastSuccess(`Deleted "${item.title}"`);
+    setRefreshKey((k) => k + 1);
+  };
+
+  return (
+    <div className="space-y-3">
+      <PublishedGrid
+        Icon={BookOpen}
+        canManage={canManage}
+        fetchItems={() => fetchMaps({ projectId, kind: "story_map" })}
+        iconClassName="text-[var(--accent)] bg-[var(--accent)]/10"
+        noun="story map"
+        refreshKey={refreshKey}
+        shareUrlFor={(m) => shareUrlFor(m.id)}
+        metaFor={(m) => {
+          const story = m.content?.story as StoryMap | undefined;
+          const n = story?.scenes?.length ?? 0;
+          return n ? `${n} scene${n === 1 ? "" : "s"}` : "";
+        }}
+        onDelete={(m) => void handleDelete(m)}
+        onDuplicate={(m) => void handleDuplicate(m)}
+        onNew={() => void handleNew()}
+        onOpen={(m) => openEditor(m.id)}
+        onShare={(m) => setShareTarget(m)}
+      />
+      {shareTarget ? (
+        <ShareDialog
+          canManage={canManage(shareTarget)}
+          entityId={shareTarget.id}
+          entityTitle={shareTarget.title}
+          entityType="map"
+          open={!!shareTarget}
+          shareUrl={shareUrlFor(shareTarget.id)}
+          onClose={() => setShareTarget(null)}
+        />
+      ) : null}
+    </div>
+  );
+};
+
+/* ── Editor view ──────────────────────────────────────────────────────────── */
+
+const StoryMapEditor = ({
+  projectId,
+  storyId,
+}: {
+  projectId: string;
+  storyId: string;
+}) => {
+  const data = useProjectData(projectId);
+  const navigate = useNavigate();
   const [previewing, setPreviewing] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
 
-  /* Close the stories menu on outside click / Escape */
-  useEffect(() => {
-    if (!menuOpen) return;
-    function onDown(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setMenuOpen(false);
-    }
-    window.addEventListener("mousedown", onDown);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("mousedown", onDown);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [menuOpen]);
+  const shareData = useMemo<StoryShareData>(
+    () => ({ maps: data.maps, project: data.project }),
+    [data.maps, data.project]
+  );
+  const lib = useStoryItem(storyId, shareData);
 
-  const story = lib.activeStory;
+  const story = lib.story;
   const scene = lib.activeScene;
   const scenes = story?.scenes ?? [];
   const sceneIndex = scene
@@ -83,6 +186,9 @@ const Editor = ({ projectId }: { projectId: string }) => {
     scene && lib.selectedBlock
       ? scene.blocks.findIndex((b) => b.id === lib.selectedBlock?.id)
       : -1;
+
+  const backToList = () =>
+    navigate(`/builder/story-map?projectId=${encodeURIComponent(projectId)}`);
 
   function handleBlockAction(blockId: string, action: BlockAction) {
     switch (action) {
@@ -101,27 +207,46 @@ const Editor = ({ projectId }: { projectId: string }) => {
     }
   }
 
-  if (data.loading) {
+  const saveLabel =
+    lib.saveState === "saving"
+      ? "Saving…"
+      : lib.saveState === "saved"
+        ? "Saved"
+        : lib.saveState === "error"
+          ? "Save failed"
+          : null;
+
+  /* ── Loading / error ──────────────────────────────────────────────────── */
+  if (lib.loading) {
     return (
-      <div className="flex h-[calc(100vh-150px)] min-h-[520px] items-center justify-center">
+      <div className="flex h-[calc(100vh-220px)] min-h-[420px] items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-[var(--text-tertiary)]">
-          <span className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--border-primary)] border-t-[var(--primary)]" />
-          <p className="text-sm">Loading project data…</p>
+          <Spinner size="lg" />
+          <p className="text-sm">Loading story map…</p>
         </div>
       </div>
     );
   }
 
-  if (data.error) {
+  if (lib.error) {
     return (
-      <div className="flex h-[calc(100vh-150px)] min-h-[520px] items-center justify-center">
+      <div className="flex h-[calc(100vh-220px)] min-h-[420px] items-center justify-center">
         <div className="max-w-md rounded-xl border border-[var(--error-border)] bg-[var(--error-bg)] p-5 text-center">
           <p className="text-sm font-semibold text-[var(--error-text)]">
-            Couldn't load project data
+            Couldn't open this story map
           </p>
           <p className="mt-1 text-xs text-[var(--text-secondary)]">
-            {data.error}
+            {lib.error}
           </p>
+          <Button
+            className="mt-4"
+            size="sm"
+            variant="ghost"
+            onClick={backToList}
+          >
+            <ArrowLeft size={14} />
+            Back to story maps
+          </Button>
         </div>
       </div>
     );
@@ -129,149 +254,49 @@ const Editor = ({ projectId }: { projectId: string }) => {
 
   if (!story) return null;
 
-  /* Maps + project view for the canvas (structural match with SceneData). */
   const sceneData = { maps: data.maps, project: data.project };
 
   return (
     <div className="flex flex-col gap-3">
       {/* ── Toolbar ─────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="w-56 max-w-full">
+        <Button
+          iconOnly
+          aria-label="Back to story maps"
+          className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          size="sm"
+          variant="ghost"
+          onClick={backToList}
+        >
+          <ArrowLeft size={16} />
+        </Button>
+        <div className="w-64 max-w-full">
           <Input
             aria-label="Story map title"
             inputSize="sm"
             value={story.title}
-            onChange={(e) =>
-              lib.updateStory(story.id, { title: e.target.value })
-            }
+            onChange={(e) => lib.updateStory({ title: e.target.value })}
           />
         </div>
-
-        {/* Stories menu: switch / manage the project's story maps */}
-        <div
-          ref={menuRef}
-          className="relative"
-        >
-          <button
-            aria-expanded={menuOpen}
-            aria-haspopup="menu"
-            className="flex cursor-pointer items-center gap-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-elevated)] px-3 py-2 text-sm font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
-            type="button"
-            onClick={() => setMenuOpen((o) => !o)}
-          >
-            <BookOpen
-              className="text-[var(--primary)]"
-              size={15}
-            />
-            {lib.stories.length} story map
-            {lib.stories.length === 1 ? "" : "s"}
-            <ChevronDown
-              className="text-[var(--text-tertiary)]"
-              size={14}
-            />
-          </button>
-
-          {menuOpen ? (
-            <div
-              className="absolute top-full left-0 z-[var(--z-dropdown)] mt-1 w-72 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-elevated)] p-2 shadow-lg"
-              role="menu"
-            >
-              <p className="px-2 pt-1 pb-1.5 text-xs font-semibold tracking-wider text-[var(--text-tertiary)] uppercase">
-                Your story maps
-              </p>
-              <div className="flex max-h-64 flex-col gap-0.5 overflow-y-auto">
-                {lib.stories.map((s) => {
-                  const active = s.id === story.id;
-                  return (
-                    <div
-                      key={s.id}
-                      className="group flex items-center gap-1 rounded-lg"
-                    >
-                      <button
-                        aria-checked={active}
-                        className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors hover:bg-[var(--surface-hover)]"
-                        role="menuitemradio"
-                        type="button"
-                        onClick={() => {
-                          lib.setActiveStoryId(s.id);
-                          setMenuOpen(false);
-                        }}
-                      >
-                        <span className="flex w-4 shrink-0 justify-center">
-                          {active ? (
-                            <Check
-                              className="text-[var(--primary)]"
-                              size={14}
-                            />
-                          ) : null}
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block truncate text-[var(--text-primary)]">
-                            {s.title}
-                          </span>
-                          <span className="block text-xs text-[var(--text-tertiary)]">
-                            {s.scenes.length} scene
-                            {s.scenes.length === 1 ? "" : "s"}
-                          </span>
-                        </span>
-                      </button>
-                      <button
-                        aria-label={`Duplicate ${s.title}`}
-                        className="cursor-pointer rounded-md p-1.5 text-[var(--text-tertiary)] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-                        title="Duplicate story map"
-                        type="button"
-                        onClick={() => {
-                          lib.duplicateStory(s.id);
-                          setMenuOpen(false);
-                        }}
-                      >
-                        <Copy size={13} />
-                      </button>
-                      <button
-                        aria-label={`Delete ${s.title}`}
-                        className="cursor-pointer rounded-md p-1.5 text-[var(--text-tertiary)] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[var(--surface-hover)] hover:text-[var(--error-text)] disabled:pointer-events-none disabled:opacity-30"
-                        disabled={lib.stories.length <= 1}
-                        type="button"
-                        title={
-                          lib.stories.length <= 1
-                            ? "A project keeps at least one story map"
-                            : "Delete story map"
-                        }
-                        onClick={() => {
-                          lib.removeStory(s.id);
-                          setMenuOpen(false);
-                        }}
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="my-1.5 h-px border-[var(--border-primary)]" />
-              <button
-                className="text-primary hover:bg-primary/10 flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors"
-                role="menuitem"
-                type="button"
-                onClick={() => {
-                  lib.addStory();
-                  setMenuOpen(false);
-                }}
-              >
-                <Plus size={14} />
-                New story map
-              </button>
-            </div>
-          ) : null}
-        </div>
-
         <span className="text-xs text-[var(--text-tertiary)]">
           {scenes.length} scene{scenes.length === 1 ? "" : "s"}
         </span>
+        {saveLabel ? (
+          <span
+            aria-live="polite"
+            className={`text-xs ${
+              lib.saveState === "error"
+                ? "text-[var(--error-text)]"
+                : "text-[var(--text-tertiary)]"
+            }`}
+          >
+            {saveLabel}
+          </span>
+        ) : null}
 
         <div className="ml-auto flex items-center gap-2">
           <Button
-            leftIcon={<Link2 size={14} />}
+            leftIcon={<Share2 size={14} />}
             size="sm"
             variant="ghost"
             onClick={() => setSharing(true)}
@@ -288,8 +313,8 @@ const Editor = ({ projectId }: { projectId: string }) => {
         </div>
       </div>
 
-      {/* ── 3-pane body: scenes · canvas · inspector ────────────────────── */}
-      <div className="flex h-[calc(100vh-240px)] min-h-[460px] gap-3">
+      {/* ── 3-pane body ──────────────────────────────────────────────────── */}
+      <div className="flex h-[calc(100vh-220px)] min-h-[460px] gap-3">
         {/* Scene rail */}
         <aside className="flex w-[232px] shrink-0 flex-col rounded-xl border border-[var(--border-primary)] bg-[var(--bg-elevated)] p-2">
           <SidebarHeader
@@ -357,7 +382,7 @@ const Editor = ({ projectId }: { projectId: string }) => {
         </aside>
       </div>
 
-      {/* ── Overlays ────────────────────────────────────────────────────── */}
+      {/* ── Overlays ─────────────────────────────────────────────────────── */}
       {previewing ? (
         <PreviewMode
           data={sceneData}
@@ -365,23 +390,32 @@ const Editor = ({ projectId }: { projectId: string }) => {
           onClose={() => setPreviewing(false)}
         />
       ) : null}
-      <ShareStoryDialog
-        data={sceneData}
-        open={sharing}
-        story={story}
-        onClose={() => setSharing(false)}
-      />
+      {sharing ? (
+        <ShareDialog
+          canManage
+          entityId={storyId}
+          entityTitle={story.title}
+          entityType="map"
+          open={sharing}
+          shareUrl={shareUrlFor(storyId)}
+          onClose={() => setSharing(false)}
+        />
+      ) : null}
     </div>
   );
 };
 
+/* ── Page ─────────────────────────────────────────────────────────────────── */
+
 /**
- * Story Map builder page. Reads `?projectId=` from the URL and renders the
- * editor inside the shared builder scaffold (full-width for the wide canvas).
+ * Story Map builder page. Reads `?projectId=` (and optional `&storyId=`)
+ * from the URL and renders the list or the editor inside the shared builder
+ * scaffold (full-width for the wide canvas).
  */
 export default function StoryMapBuilderPage() {
   const [params] = useSearchParams();
   const projectId = params.get("projectId") ?? "";
+  const storyId = params.get("storyId");
   const builder = getProjectBuilder("story-map");
 
   if (!builder) return null;
@@ -392,7 +426,14 @@ export default function StoryMapBuilderPage() {
       builder={builder}
       projectId={projectId}
     >
-      <Editor projectId={projectId} />
+      {storyId ? (
+        <StoryMapEditor
+          projectId={projectId}
+          storyId={storyId}
+        />
+      ) : (
+        <StoryMapList projectId={projectId} />
+      )}
     </BuilderScaffold>
   );
 }

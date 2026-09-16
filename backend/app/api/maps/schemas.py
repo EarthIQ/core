@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, List, Literal, Optional
+from typing import Any, Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
-
 PermissionLevel = Literal["read", "write", "admin"]
+
+# The kinds of published content a ``maps`` row can hold.
+MapKind = Literal["map", "story_map", "presentation"]
 
 
 class MapLayerItem(BaseModel):
@@ -18,69 +21,79 @@ class MapLayerItem(BaseModel):
     ``source``, ...) is declared / allowed so it survives save-and-load
     round-trips untouched.
     """
+
     model_config = ConfigDict(extra="allow")
 
     id: str
     name: str
-    type: Optional[Literal["vector", "raster"]] = None
+    type: Literal["vector", "raster"] | None = None
     visible: bool = False
-    url: Optional[str] = None
-    style: Optional[dict[str, Any]] = None
+    url: str | None = None
+    style: dict[str, Any] | None = None
     # Folder-tree / dataset metadata (round-tripped verbatim)
-    kind: Optional[str] = None
-    parentId: Optional[str] = None
-    order: Optional[int] = None
-    collapsed: Optional[bool] = None
-    datasetId: Optional[str] = None
-    geometryType: Optional[str] = None
-    source: Optional[str] = None
+    kind: str | None = None
+    parentId: str | None = None
+    order: int | None = None
+    collapsed: bool | None = None
+    datasetId: str | None = None
+    geometryType: str | None = None
+    source: str | None = None
 
 
 class GroupAccessSchema(BaseModel):
     group_id: str
-    group_name: Optional[str] = None
+    group_name: str | None = None
     permission: PermissionLevel = "read"
 
 
 class MapCreate(BaseModel):
-    title: str = Field(..., min_length=1, max_length=255, examples=["Global Environmental Dashboard"])
-    description: Optional[str] = Field(None, examples=["Interactive multi-layer map for environmental monitoring"])
+    title: str = Field(
+        ..., min_length=1, max_length=255, examples=["Global Environmental Dashboard"]
+    )
+    description: str | None = Field(
+        None, examples=["Interactive multi-layer map for environmental monitoring"]
+    )
     center_lng: float = Field(default=0.0, ge=-180.0, le=180.0)
     center_lat: float = Field(default=20.0, ge=-90.0, le=90.0)
     zoom: float = Field(default=2.5, ge=0.0, le=24.0)
     bearing: float = Field(default=0.0, ge=-180.0, le=180.0)
     pitch: float = Field(default=0.0, ge=0.0, le=85.0)
     basemap: str = Field(default="opentopomap", examples=["osm", "esri-satellite", "opentopomap"])
-    layers_config: List[MapLayerItem] = Field(default_factory=list)
+    layers_config: list[MapLayerItem] = Field(default_factory=list)
     is_public: bool = False
-    project_id: Optional[str] = None
+    project_id: str | None = None
     widgets_config: dict[str, Any] = Field(default_factory=dict)
-    group_access: List[GroupAccessSchema] = Field(default_factory=list)
+    group_access: list[GroupAccessSchema] = Field(default_factory=list)
+    # Published-content kind + rich payload (story map / presentation)
+    kind: MapKind = "map"
+    content: dict[str, Any] | None = None
 
 
 class MapUpdate(BaseModel):
-    title: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = None
-    center_lng: Optional[float] = Field(None, ge=-180.0, le=180.0)
-    center_lat: Optional[float] = Field(None, ge=-90.0, le=90.0)
-    zoom: Optional[float] = Field(None, ge=0.0, le=24.0)
-    bearing: Optional[float] = Field(None, ge=-180.0, le=180.0)
-    pitch: Optional[float] = Field(None, ge=0.0, le=85.0)
-    basemap: Optional[str] = None
-    layers_config: Optional[List[MapLayerItem]] = None
-    is_public: Optional[bool] = None
-    widgets_config: Optional[dict[str, Any]] = None
+    title: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = None
+    center_lng: float | None = Field(None, ge=-180.0, le=180.0)
+    center_lat: float | None = Field(None, ge=-90.0, le=90.0)
+    zoom: float | None = Field(None, ge=0.0, le=24.0)
+    bearing: float | None = Field(None, ge=-180.0, le=180.0)
+    pitch: float | None = Field(None, ge=0.0, le=85.0)
+    basemap: str | None = None
+    layers_config: list[MapLayerItem] | None = None
+    is_public: bool | None = None
+    widgets_config: dict[str, Any] | None = None
+    # ``kind`` is immutable after creation - only the payload updates
+    content: dict[str, Any] | None = None
 
 
 class MapShareUpdate(BaseModel):
-    is_public: Optional[bool] = None
-    group_access: List[GroupAccessSchema] = Field(default_factory=list)
+    is_public: bool | None = None
+    group_access: list[GroupAccessSchema] = Field(default_factory=list)
 
 
 class MapOwnerRead(BaseModel):
     id: str
     email: str
-    full_name: Optional[str] = None
+    full_name: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -88,21 +101,24 @@ class MapOwnerRead(BaseModel):
 class MapRead(BaseModel):
     id: str
     title: str
-    description: Optional[str]
+    description: str | None
     center_lng: float
     center_lat: float
     zoom: float
     bearing: float = 0.0
     pitch: float = 0.0
     basemap: str
-    layers_config: List[MapLayerItem]
+    layers_config: list[MapLayerItem]
     is_public: bool
-    project_id: Optional[str] = None
+    project_id: str | None = None
     widgets_config: dict[str, Any] = {}
+    # Published-content kind + rich payload (story map / presentation)
+    kind: MapKind = "map"
+    content: dict[str, Any] | None = None
     owner_id: str
-    owner: Optional[MapOwnerRead] = None
-    group_access: List[GroupAccessSchema] = []
-    user_permission: PermissionLevel = "read"   # computed for current user
+    owner: MapOwnerRead | None = None
+    group_access: list[GroupAccessSchema] = []
+    user_permission: PermissionLevel = "read"  # computed for current user
     created_at: datetime
     updated_at: datetime
 
