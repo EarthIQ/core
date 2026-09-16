@@ -1,12 +1,4 @@
-import {
-  Bell,
-  BellOff,
-  CheckCheck,
-  Settings,
-  Sun,
-  Moon,
-  LogOut,
-} from "lucide-react";
+import { Bell, CheckCheck, Settings, Sun, Moon, LogOut } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 
@@ -322,7 +314,7 @@ const NotificationBell = ({ collapsed }: { collapsed: boolean }) => {
         onClick={() => setOpen((o) => !o)}
       >
         <span className="relative flex shrink-0 items-center justify-center">
-          {unread > 0 ? <Bell size={17} /> : <BellOff size={17} />}
+          <Bell size={17} />
           {unread > 0 && (
             <span className="bg-error absolute top-0 -right-1 h-1.5 w-1.5 rounded-full" />
           )}

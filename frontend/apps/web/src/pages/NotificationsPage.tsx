@@ -9,7 +9,18 @@
  *   • infinite "load more" paging
  *   • deep links (each notification can carry a `link` payload)
  */
-import { useMemo, useState } from "react";
+import {
+  Check,
+  CheckCheck,
+  Circle,
+  Inbox,
+  RefreshCw,
+  Search,
+  SlidersHorizontal,
+  Trash2,
+  X,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { timeAgo } from "@/lib/format";
@@ -81,22 +92,24 @@ const NotificationRow = ({
           </div>
         </div>
         <div
-          className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+          className="flex shrink-0 items-center gap-0.5"
           onClick={(e) => e.stopPropagation()}
         >
           <button
+            aria-label={n.read ? "Mark as unread" : "Mark as read"}
             className="btn btn-ghost btn-icon btn-sm"
             title={n.read ? "Mark as unread" : "Mark as read"}
             onClick={() => (n.read ? markUnread(n.id) : markRead(n.id))}
           >
-            {n.read ? "◌" : "✓"}
+            {n.read ? <Circle size={15} /> : <Check size={15} />}
           </button>
           <button
+            aria-label="Delete notification"
             className="btn btn-ghost btn-icon btn-sm text-text-tertiary hover:text-error"
             title="Delete"
             onClick={() => remove(n.id)}
           >
-            🗑
+            <Trash2 size={15} />
           </button>
         </div>
       </div>
@@ -123,6 +136,27 @@ export default function NotificationsPage() {
 
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const filterRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function onDoc(ev: MouseEvent) {
+      if (filterRef.current && !filterRef.current.contains(ev.target as Node))
+        setShowFilters(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  // Label + state for the compact toolbar's Filter button.
+  const activeLabel =
+    filter === "all"
+      ? "All"
+      : filter === "unread"
+        ? "Unread"
+        : (NOTIFICATION_CATEGORIES.find((c) => c.id === filter)?.label ??
+          "Filter");
+  const hasActiveFilter = filter !== "all" || search.trim() !== "";
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -141,12 +175,6 @@ export default function NotificationsPage() {
     });
   }, [items, filter, search]);
 
-  const FILTERS: { id: string; label: string }[] = [
-    { id: "all", label: "All" },
-    { id: "unread", label: "Unread" },
-    ...NOTIFICATION_CATEGORIES.map((c) => ({ id: c.id, label: c.label })),
-  ];
-
   const countFor = (f: string) =>
     f === "all"
       ? total
@@ -157,85 +185,217 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-full">
       {/* ── Header ── */}
-      <div className="bg-elevated border-border-primary sticky top-0 z-20 border-b backdrop-blur">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-6 pt-5 pb-3">
-          <div>
-            <h1 className="text-text-primary flex items-center gap-2 text-lg font-bold">
-              Notifications
+      <div className="border-border-primary bg-elevated sticky top-0 z-20 border-b backdrop-blur">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-2 px-6 py-3">
+          {/* Title + status */}
+          <div className="flex min-w-0 flex-col">
+            <div className="flex items-center gap-2">
+              <h1 className="text-text-primary text-base font-bold">
+                Notifications
+              </h1>
               <span
+                className={`rounded-full border px-2 py-0.5 text-[0.6rem] ${
+                  connected
+                    ? "border-success/20 bg-success-subtle text-success"
+                    : "border-error/20 bg-error-subtle text-error"
+                }`}
                 title={
                   connected ? "Live updates connected" : "Live updates offline"
                 }
-                className={`rounded-full border px-2 py-0.5 text-[0.6rem] ${
-                  connected
-                    ? "bg-success-subtle text-success border-success/20"
-                    : "bg-error-subtle text-error border-error/20"
-                }`}
               >
-                {connected ? "● live" : "○ offline"}
+                {connected ? "live" : "offline"}
               </span>
-            </h1>
-            <p className="text-text-secondary mt-0.5 text-xs">
-              {unread > 0
-                ? `${unread} unread · ${total} total`
-                : `All caught up · ${total} total`}
+            </div>
+            <p className="text-text-secondary text-xs">
+              {unread > 0 ? `${unread} unread` : "All caught up"} · {total}{" "}
+              total
             </p>
           </div>
-          <div className="flex items-center gap-2">
+
+          {/* Actions */}
+          <div className="ml-auto flex items-center gap-2">
+            {/* Filter — hides the rarely-used categories + search behind it */}
+            <div
+              ref={filterRef}
+              className="relative"
+            >
+              <button
+                aria-expanded={showFilters}
+                title="Filter and search"
+                className={`btn btn-sm ${
+                  hasActiveFilter ? "btn-primary" : "btn-ghost"
+                }`}
+                onClick={() => setShowFilters((v) => !v)}
+              >
+                <SlidersHorizontal
+                  className="mr-1.5"
+                  size={15}
+                />
+                {activeLabel}
+              </button>
+
+              {showFilters ? (
+                <div className="bg-elevated border-border-primary animate-fade-in-up absolute right-0 z-30 mt-2 w-72 overflow-hidden rounded-xl border shadow-xl">
+                  {/* Search */}
+                  <div className="border-border-secondary border-b p-3">
+                    <div className="relative">
+                      <Search
+                        className="text-text-tertiary pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2"
+                        size={14}
+                      />
+                      <input
+                        className="input"
+                        placeholder="Search notifications…"
+                        style={{ paddingLeft: "2.1rem" }}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                      />
+                      {search ? (
+                        <button
+                          aria-label="Clear search"
+                          className="text-text-tertiary hover:text-text-primary absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer"
+                          onClick={() => setSearch("")}
+                        >
+                          <X size={13} />
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  {/* Views */}
+                  <div className="py-1">
+                    <div className="text-text-tertiary px-3 pt-2 pb-1 text-[0.6rem] font-bold tracking-widest uppercase">
+                      View
+                    </div>
+                    {(
+                      [
+                        { id: "all", label: "All" },
+                        { id: "unread", label: "Unread" },
+                      ] as { id: Filter; label: string }[]
+                    ).map((v) => (
+                      <button
+                        key={v.id}
+                        className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs font-medium transition-colors ${
+                          filter === v.id
+                            ? "bg-primary/10 text-primary"
+                            : "text-text-secondary hover:bg-surface-hover"
+                        }`}
+                        onClick={() => {
+                          setFilter(v.id);
+                          setShowFilters(false);
+                        }}
+                      >
+                        <span>{v.label}</span>
+                        <span className="opacity-70">{countFor(v.id)}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Categories */}
+                  <div className="border-border-secondary border-t py-1">
+                    <div className="text-text-tertiary px-3 pt-2 pb-1 text-[0.6rem] font-bold tracking-widest uppercase">
+                      Category
+                    </div>
+                    {NOTIFICATION_CATEGORIES.map((c) => (
+                      <button
+                        key={c.id}
+                        className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors ${
+                          filter === c.id
+                            ? "bg-primary/10 text-primary"
+                            : "text-text-secondary hover:bg-surface-hover"
+                        }`}
+                        onClick={() => {
+                          setFilter(c.id);
+                          setShowFilters(false);
+                        }}
+                      >
+                        <span className="truncate">{c.label}</span>
+                        <span className="shrink-0 opacity-70">
+                          {countFor(c.id)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Reset */}
+                  <div className="border-border-secondary border-t">
+                    <button
+                      className="text-primary w-full cursor-pointer py-2 text-center text-xs font-medium hover:underline"
+                      onClick={() => {
+                        setFilter("all");
+                        setSearch("");
+                      }}
+                    >
+                      Reset filters
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
             <button
-              className="btn btn-ghost btn-sm"
+              aria-label="Refresh notifications"
+              className="btn btn-ghost btn-icon btn-sm"
               title="Refresh now"
               onClick={refresh}
             >
-              ↻
+              <RefreshCw size={15} />
             </button>
+
             {unread > 0 && (
               <button
                 className="btn btn-primary btn-sm"
                 onClick={markAllRead}
               >
-                Mark all as read
+                <CheckCheck
+                  className="mr-1.5"
+                  size={15}
+                />
+                Mark all read
               </button>
             )}
           </div>
         </div>
 
-        {/* ── Filters + search ── */}
-        <div className="mx-auto flex max-w-4xl items-center gap-2 overflow-x-auto px-6 pb-3">
-          {FILTERS.map((f) => (
-            <button
-              key={f.id}
-              className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-all ${
-                filter === f.id
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border-secondary text-text-secondary hover:bg-surface-hover"
-              }`}
-              onClick={() => setFilter(f.id)}
-            >
-              {f.label}
-              <span className="ml-1.5 opacity-70">{countFor(f.id)}</span>
-            </button>
-          ))}
-          <div className="relative ml-auto min-w-[10rem] flex-1">
-            <input
-              className="input"
-              placeholder="Search notifications…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+        {/* ── Active filter chip ── */}
+        {hasActiveFilter ? (
+          <div className="border-border-secondary border-t">
+            <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-2 px-6 py-2 text-xs">
+              <span className="text-text-secondary">Showing</span>
+              <span className="badge badge-primary">{activeLabel}</span>
+              {search.trim() && <span className="badge">“{search}”</span>}
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  setFilter("all");
+                  setSearch("");
+                }}
+              >
+                <X
+                  className="mr-1"
+                  size={12}
+                />
+                Clear
+              </button>
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       {/* ── List ── */}
-      <div className="mx-auto flex max-w-4xl flex-col gap-2 p-6">
+      <div className="mx-auto flex max-w-5xl flex-col gap-2 p-6">
         {loading && items.length === 0 ? (
           <div className="card text-text-secondary p-8 text-center text-sm">
             Loading notifications…
           </div>
         ) : visible.length === 0 ? (
           <div className="card p-10 text-center">
-            <div className="mb-3 text-3xl">🔕</div>
+            <div className="bg-surface-hover mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
+              <Inbox
+                className="text-text-tertiary"
+                size={22}
+              />
+            </div>
             <div className="text-text-primary text-sm font-semibold">
               {search || filter !== "all"
                 ? "No notifications match your filter"
