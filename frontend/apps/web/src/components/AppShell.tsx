@@ -1,5 +1,4 @@
 import {
-  Search,
   Bell,
   BellOff,
   CheckCheck,
@@ -7,7 +6,6 @@ import {
   Sun,
   Moon,
   LogOut,
-  X,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
@@ -250,50 +248,104 @@ const UserMenuPopover = ({
   );
 };
 
-// ── Notification Bell (topbar) ─────────────────────────────────────────────────
+// ── Notification Bell (sidebar) ────────────────────────────────────────────────
 //
-// Replaces the old static "Settings" modal. Shows the live unread badge and
-// a quick dropdown (recent items, mark-all-read, open the full center).
+// Lives in the sidebar footer, above the user row. Shows the live unread badge
+// and a quick dropdown (recent items, mark-all-read, open the full center).
+// The panel uses `fixed` positioning so it is never clipped by the sidebar's
+// overflow-hidden, and stays anchored correctly in both collapsed/expanded.
 
-const NotificationBell = () => {
+const NotificationBell = ({ collapsed }: { collapsed: boolean }) => {
   const { unread, items, connected, markAllRead, markRead } =
     useNotifications();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
+  // Close on outside click.
   useEffect(() => {
     function onDoc(ev: MouseEvent) {
-      if (ref.current && !ref.current.contains(ev.target as Node))
+      if (rootRef.current && !rootRef.current.contains(ev.target as Node))
         setOpen(false);
     }
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
+  // A fixed-anchored panel can go stale on resize → close it.
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("resize", close);
+    return () => window.removeEventListener("resize", close);
+  }, [open]);
+
   const recent = items.slice(0, 5);
+
+  // Anchor the panel just right of the button; `fixed` escapes the sidebar's
+  // overflow-hidden and the clamp keeps it inside the viewport.
+  const rect = buttonRef.current?.getBoundingClientRect();
+  const PANEL_WIDTH = Math.min(336, window.innerWidth - 16);
+  const PANEL_MAX_H = 420;
+  const panelStyle: React.CSSProperties | undefined = rect
+    ? {
+        left: Math.min(
+          rect.right + 8,
+          Math.max(8, window.innerWidth - PANEL_WIDTH - 8)
+        ),
+        top: Math.min(
+          rect.top,
+          Math.max(8, window.innerHeight - PANEL_MAX_H - 8)
+        ),
+        width: PANEL_WIDTH,
+        maxHeight: window.innerHeight - 16,
+      }
+    : undefined;
 
   return (
     <div
-      ref={ref}
+      ref={rootRef}
       className="relative"
     >
       <button
+        ref={buttonRef}
+        aria-expanded={open}
         aria-label={`Notifications (${unread} unread)`}
-        className="btn btn-ghost btn-icon btn-sm text-text-secondary hover:text-text-primary relative"
         title={connected ? "Notifications" : "Notifications (offline)"}
+        className={
+          "text-text-secondary hover:bg-surface-hover hover:text-text-primary flex cursor-pointer items-center border-none bg-transparent transition-colors duration-150 " +
+          (collapsed
+            ? "mx-auto h-10 w-10 justify-center"
+            : "w-full gap-2.5 p-2")
+        }
         onClick={() => setOpen((o) => !o)}
       >
-        {unread > 0 ? <Bell size={18} /> : <BellOff size={18} />}
-        {unread > 0 && (
-          <span className="bg-error absolute -top-0.5 -right-0.5 flex h-[0.95rem] min-w-[0.95rem] items-center justify-center rounded-full px-1 text-[0.6rem] font-bold text-white">
-            {unread > 99 ? "99+" : unread}
-          </span>
+        <span className="relative flex shrink-0 items-center justify-center">
+          {unread > 0 ? <Bell size={17} /> : <BellOff size={17} />}
+          {unread > 0 && (
+            <span className="bg-error absolute top-0 -right-1 h-1.5 w-1.5 rounded-full" />
+          )}
+        </span>
+        {!collapsed && (
+          <>
+            <span className="flex-1 truncate text-left text-xs font-semibold">
+              Notifications
+            </span>
+            {unread > 0 && (
+              <span className="bg-error shrink-0 rounded-full px-1.5 py-px text-[0.6rem] font-bold text-white">
+                {unread > 99 ? "99+" : unread}
+              </span>
+            )}
+          </>
         )}
       </button>
 
       {open ? (
-        <div className="bg-elevated border-border-primary shadow-dropdown animate-fade-in-up absolute top-full right-0 z-50 mt-2 w-[min(92vw,21rem)] overflow-hidden rounded-xl border">
+        <div
+          className="bg-elevated border-border-primary shadow-dropdown animate-fade-in-up fixed z-50 overflow-hidden rounded-xl border"
+          style={panelStyle}
+        >
           <div className="border-border-secondary flex items-center justify-between border-b px-4 py-3">
             <span className="text-text-primary text-sm font-semibold">
               Notifications
@@ -392,11 +444,9 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
 
   const popoverRef = useRef<HTMLDivElement>(null);
   const userBtnRef = useRef<HTMLButtonElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
   const { canView } = usePermissions();
   const moduleNav = useModuleNavItems();
   const adminNav = user?.is_superuser
@@ -412,7 +462,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
   });
 
   // Full-bleed "builder views" - the map builder (`/map`) and every `/builder/*`
-  // page hide the shell sidebar + topbar. Each renders its own chrome, similar
+  // page hide the shell sidebar. Each renders its own chrome, similar
   // to the standalone published-map experience.
   const isStandaloneView =
     location.pathname.startsWith("/map") ||
@@ -440,32 +490,6 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
     window.addEventListener("resize", close);
     return () => window.removeEventListener("resize", close);
   }, [isUserMenuOpen]);
-
-  // Search shortcuts: "/" focuses the search box (when not already typing in
-  // a field), Escape clears it and blurs - matches the visible "/" kbd hint.
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      const el = e.target as HTMLElement | null;
-      const isTyping =
-        el instanceof HTMLInputElement ||
-        el instanceof HTMLTextAreaElement ||
-        el instanceof HTMLSelectElement ||
-        Boolean(el?.isContentEditable);
-      if (e.key === "/" && !isTyping) {
-        e.preventDefault();
-        searchRef.current?.focus();
-      } else if (
-        e.key === "Escape" &&
-        document.activeElement === searchRef.current
-      ) {
-        e.stopPropagation();
-        setSearchValue("");
-        searchRef.current?.blur();
-      }
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
 
   const userInitial = user ? initials(user.full_name || user.email) : "U";
 
@@ -560,8 +584,11 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
         {/* Footer / User */}
         <div
           ref={popoverRef}
-          className="border-border-secondary relative shrink-0 border-t px-2 pt-2 pb-3"
+          className="border-border-secondary relative flex shrink-0 flex-col gap-1 border-t px-2 pt-2 pb-3"
         >
+          {/* Notifications (moved from the topbar into the sidebar) */}
+          <NotificationBell collapsed={isCollapsed} />
+
           {/* Popover */}
           {isUserMenuOpen ? (
             <UserMenuPopover
@@ -623,56 +650,6 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
       <div
         className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ease-in-out ${mainOffset}`}
       >
-        {/* Topbar */}
-        {!isStandaloneView && (
-          <header className="navbar flex h-14 shrink-0 items-center justify-between px-4">
-            {/* Left */}
-            <div className="flex items-center" />
-
-            {/* Center - Search */}
-            <div className="flex min-w-0 flex-1 justify-center px-2">
-              <div className="group relative w-full max-w-md">
-                <Search
-                  className="group-focus-within:text-primary pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[var(--text-tertiary)] transition-colors duration-150"
-                  size={15}
-                />
-                <input
-                  ref={searchRef}
-                  aria-label="Search"
-                  className="h-9 w-full rounded-[var(--radius-md)] border border-[var(--input-border)] bg-[var(--input-bg)] pr-16 pl-9 text-xs text-[var(--text-primary)] transition-all duration-150 focus:border-[var(--input-focus-border)] focus:shadow-[0_0_0_3px_oklch(from_var(--primary)_l_c_h/0.15)] focus:outline-none"
-                  placeholder="Search projects, layers, datasets…"
-                  type="text"
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                />
-                <div className="absolute top-1/2 right-2.5 flex -translate-y-1/2 items-center gap-1.5">
-                  {searchValue ? (
-                    <button
-                      aria-label="Clear search"
-                      className="cursor-pointer rounded-md p-0.5 text-[var(--text-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-                      type="button"
-                      onClick={() => {
-                        setSearchValue("");
-                        searchRef.current?.focus();
-                      }}
-                    >
-                      <X size={13} />
-                    </button>
-                  ) : null}
-                  <kbd className="pointer-events-none hidden h-5 min-w-5 items-center justify-center rounded-md border border-[var(--border-primary)] bg-[var(--surface-hover)] px-1.5 text-[0.6rem] font-semibold text-[var(--text-tertiary)] select-none sm:flex">
-                    /
-                  </kbd>
-                </div>
-              </div>
-            </div>
-
-            {/* Right */}
-            <div className="flex items-center gap-3">
-              <NotificationBell />
-            </div>
-          </header>
-        )}
-
         {/* Content */}
         <main
           className={`flex-1 overflow-y-auto ${
