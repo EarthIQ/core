@@ -13,7 +13,7 @@ export default function BulkActionBar({
 }: Props) {
   if (count === 0) return null;
   return (
-    <div className="card bg-primary/5 border-primary/20 animate-fade-in flex items-center justify-between gap-3 px-4 py-2.5">
+    <div className="animate-fade-in border-border-primary bg-surface fixed bottom-12 left-1/2 z-30 flex -translate-x-1/2 items-center gap-4 rounded-full border px-5 py-2 shadow-lg backdrop-blur-sm">
       <div className="text-text-primary text-sm font-medium">
         {count} selected
       </div>

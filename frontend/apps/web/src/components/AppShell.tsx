@@ -460,6 +460,12 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
     location.pathname.startsWith("/map") ||
     location.pathname.startsWith("/builder/");
 
+  // App-like full-height pages (e.g. the Data catalog): the shell content area
+  // drops its padding so the page can own the full viewport, while the nav
+  // sidebar stays visible.
+  const isFullBleedView =
+    isStandaloneView || location.pathname.startsWith("/data");
+
   // Close user menu on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -645,7 +651,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
         {/* Content */}
         <main
           className={`flex-1 overflow-y-auto ${
-            isStandaloneView ? "p-0" : "p-6 lg:p-8"
+            isFullBleedView ? "p-0" : "p-6 lg:p-8"
           }`}
         >
           {children}

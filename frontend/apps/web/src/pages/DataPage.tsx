@@ -24,7 +24,6 @@ import {
   FolderTree,
   MoveModal,
   NewFolderModal,
-  Pagination,
   PreviewModal,
   ROOT_UNGROUPED,
   StatusBar,
@@ -87,7 +86,6 @@ const DataPageInner = () => {
     idx: 0,
   });
   const locFolder = nav.stack[nav.idx];
-  const [typeFilter, setTypeFilter] = useState("all");
   const [formatFilter, setFormatFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
@@ -96,12 +94,15 @@ const DataPageInner = () => {
   const [sortField, setSortField] = useState<SortField>("updated");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [viewMode, setViewMode] = useState<ViewMode>("details");
+  const [previewPinned, setPreviewPinned] = useState(false);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
+  const [pageSize, setPageSize] = useState(25);
 
   // ── Selection (single → preview pane; multi → bulk) ────────────────────────
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [activeId, setActiveId] = useState<string | null>(null);
+  // The preview target is derived from the selection itself (the sole selected
+  // item) so it can never desync — deselecting always closes the preview pane.
+  const activeId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : null;
 
   // ── Modals / menus ──────────────────────────────────────────────────────────
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -132,7 +133,6 @@ const DataPageInner = () => {
     setFetchError(null);
     try {
       const items: GeoDatasetOut[] = await listDatasets({
-        type: typeFilter,
         format: formatFilter,
         search: searchQuery,
         folder: locFolder ?? undefined,
@@ -145,7 +145,7 @@ const DataPageInner = () => {
     } finally {
       setLoading(false);
     }
-  }, [typeFilter, formatFilter, searchQuery, locFolder]);
+  }, [formatFilter, searchQuery, locFolder]);
 
   useEffect(() => {
     const t = setTimeout(fetchDatasets, 250);
@@ -191,7 +191,6 @@ const DataPageInner = () => {
 
   const handleSidebarNavigate = useCallback(
     (sel: FolderSelection) => {
-      setTypeFilter(sel.type);
       if (sel.folderId !== locFolder) pushNav(sel.folderId);
     },
     [locFolder, pushNav]
@@ -201,13 +200,11 @@ const DataPageInner = () => {
   useEffect(() => {
     setPage(1);
     setSelectedIds(new Set());
-    setActiveId(null);
-  }, [locFolder, typeFilter, searchQuery, formatFilter]);
+  }, [locFolder, searchQuery, formatFilter]);
 
   // ── Selection handlers ──────────────────────────────────────────────────────
   const handleSingleSelect = useCallback((id: string) => {
     setSelectedIds(new Set([id]));
-    setActiveId(id);
   }, []);
 
   const handleToggleSelect = useCallback((id: string) => {
@@ -217,12 +214,10 @@ const DataPageInner = () => {
       else next.add(id);
       return next;
     });
-    setActiveId(id);
   }, []);
 
   const clearSelection = useCallback(() => {
     setSelectedIds(new Set());
-    setActiveId(null);
   }, []);
 
   // ── Add to project (navigates to the Projects workspace) ───────────────────
@@ -357,7 +352,6 @@ const DataPageInner = () => {
           ids.forEach((id) => next.delete(id));
           return next;
         });
-        setActiveId((cur) => (cur && ids.includes(cur) ? null : cur));
         await fetchFolders();
         await fetchDatasets();
       } catch (err: unknown) {
@@ -443,15 +437,12 @@ const DataPageInner = () => {
 
   const activeFilterCount = useMemo(() => {
     let n = 0;
-    if (typeFilter !== "all") n += 1;
-    if (locFolder) n += 1;
     if (formatFilter !== "all") n += 1;
     if (searchQuery.trim()) n += 1;
     return n;
-  }, [typeFilter, locFolder, formatFilter, searchQuery]);
+  }, [formatFilter, searchQuery]);
 
   const clearFilters = useCallback(() => {
-    setTypeFilter("all");
     setFormatFilter("all");
     setSearchQuery("");
     pushNav(null);
@@ -478,6 +469,10 @@ const DataPageInner = () => {
   const activeDataset = activeId
     ? (datasets.find((d) => d.id === activeId) ?? null)
     : null;
+
+  // Preview pane: open when a single dataset is selected, or when pinned via
+  // the toolbar toggle. Default state is closed (Explorer "Preview" button).
+  const previewVisible = previewPinned || activeDataset !== null;
   // ── Context menu builders ───────────────────────────────────────────────────
   const datasetMenu = useCallback(
     (d: DatasetItem): ContextMenuItem[] => [
@@ -621,6 +616,7 @@ const DataPageInner = () => {
         loading={loading}
         searchInputRef={searchRef}
         searchQuery={searchQuery}
+        showPreview={previewVisible}
         sortDir={sortDir}
         sortField={sortField}
         viewMode={viewMode}
@@ -633,6 +629,7 @@ const DataPageInner = () => {
         onRefresh={fetchDatasets}
         onSearchChange={setSearchQuery}
         onSortFieldChange={setSortField}
+        onTogglePreview={() => setPreviewPinned((v) => !v)}
         onUp={goUp}
         onUpload={() => setIsAddOpen(true)}
         onViewModeChange={setViewMode}
@@ -673,7 +670,7 @@ const DataPageInner = () => {
           <FolderTree
             folders={folders}
             loading={loading}
-            selection={{ folderId: locFolder, type: typeFilter }}
+            selection={{ folderId: locFolder }}
             tiledCount={tiledCount}
             totalBytes={totalBytes}
             totalDatasets={datasets.length}
@@ -685,109 +682,101 @@ const DataPageInner = () => {
         </aside>
         {/* Main content */}
         <main className="flex min-w-0 flex-1 flex-col overflow-y-auto">
-          <div className="flex-1 p-4 lg:p-6">
-            {/* Bulk action bar (multi-select) */}
-            {selectedIds.size > 1 ? (
-              <div className="mb-4">
-                <BulkActionBar
-                  count={selectedIds.size}
-                  onClear={clearSelection}
-                  onAddToProject={() =>
-                    handleAddToProject(Array.from(selectedIds))
-                  }
-                  onDelete={() => {
-                    actions.requestBulkDelete(Array.from(selectedIds));
-                    clearSelection();
-                  }}
-                />
-              </div>
-            ) : null}
-
-            <FileList
-              activeDatasetId={activeId}
-              activeFilterCount={activeFilterCount}
-              allOnPageSelected={allOnPageSelected}
-              folders={subfolders}
-              items={pageItems}
+          <FileList
+            activeDatasetId={activeId}
+            activeFilterCount={activeFilterCount}
+            allOnPageSelected={allOnPageSelected}
+            folders={subfolders}
+            items={pageItems}
+            loading={loading}
+            selectedIds={selectedIds}
+            viewMode={viewMode}
+            onActivate={(ds) => actions.openPreview(ds)}
+            onAddData={() => setIsAddOpen(true)}
+            onClearFilters={clearFilters}
+            onDropDatasetsOnFolder={moveDatasetsByIds}
+            onOpenFolder={(id) => pushNav(id)}
+            onSingleSelect={handleSingleSelect}
+            onToggleSelect={handleToggleSelect}
+            onToggleSelectAll={handleToggleSelectAll}
+            onDatasetContextMenu={(ds, pos) =>
+              setCtx({
+                x: pos.clientX,
+                y: pos.clientY,
+                kind: "dataset",
+                id: ds.id,
+              })
+            }
+            onFolderContextMenu={(folder, pos) =>
+              setCtx({
+                x: pos.clientX,
+                y: pos.clientY,
+                kind: "folder",
+                id: folder.id,
+              })
+            }
+          />
+        </main>
+        {/* Right details / preview pane — only when selected or pinned (wide screens) */}
+        {previewVisible ? (
+          <aside className="border-border-primary hidden w-[340px] shrink-0 overflow-y-auto border-l xl:block">
+            <DetailsPane
+              allDatasets={datasets}
+              dataset={activeDataset}
+              folders={folders}
+              idCopied={actions.idCopied}
               loading={loading}
-              selectedIds={selectedIds}
-              viewMode={viewMode}
-              onActivate={(ds) => actions.openPreview(ds)}
-              onAddData={() => setIsAddOpen(true)}
-              onClearFilters={clearFilters}
-              onDropDatasetsOnFolder={moveDatasetsByIds}
-              onOpenFolder={(id) => pushNav(id)}
-              onSingleSelect={handleSingleSelect}
-              onToggleSelect={handleToggleSelect}
-              onToggleSelectAll={handleToggleSelectAll}
-              onDatasetContextMenu={(ds, pos) =>
-                setCtx({
-                  x: pos.clientX,
-                  y: pos.clientY,
-                  kind: "dataset",
-                  id: ds.id,
-                })
-              }
-              onFolderContextMenu={(folder, pos) =>
-                setCtx({
-                  x: pos.clientX,
-                  y: pos.clientY,
-                  kind: "folder",
-                  id: folder.id,
-                })
-              }
-            />
-          </div>
-
-          {/* Pagination */}
-          <div className="px-4 pb-4 lg:px-6">
-            <Pagination
-              loading={loading}
-              page={clampedPage}
-              pageSize={pageSize}
-              totalItems={processedDatasets.length}
-              totalPages={totalPages}
-              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-              onPrev={() => setPage((p) => Math.max(1, p - 1))}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setPage(1);
+              onAddToProject={handleAddToProject}
+              onCopyId={actions.handleCopyId}
+              onDownload={actions.handleDownload}
+              onEdit={actions.openEdit}
+              onInspect={actions.openPreview}
+              onOpenTileUrl={actions.openTileUrl}
+              onClose={() => {
+                setPreviewPinned(false);
+                clearSelection();
+              }}
+              onRequestDelete={(id, name) => {
+                actions.requestDelete(id, name);
+                clearSelection();
               }}
             />
-          </div>
-        </main>
-        {/* Right details / preview pane (wide screens) */}
-        <aside className="border-border-primary hidden w-[340px] shrink-0 overflow-y-auto border-l xl:block">
-          <DetailsPane
-            allDatasets={datasets}
-            dataset={activeDataset}
-            folders={folders}
-            idCopied={actions.idCopied}
-            loading={loading}
-            onAddToProject={handleAddToProject}
-            onClose={clearSelection}
-            onCopyId={actions.handleCopyId}
-            onDownload={actions.handleDownload}
-            onEdit={actions.openEdit}
-            onInspect={actions.openPreview}
-            onOpenTileUrl={actions.openTileUrl}
-            onRequestDelete={(id, name) => {
-              actions.requestDelete(id, name);
-              clearSelection();
-            }}
-          />
-        </aside>
+          </aside>
+        ) : null}
       </div>
 
-      {/* ── Status bar ──────────────────────────────────────────────────────── */}
+      {/* ── Floating bulk action bar (multi-select) ──────────────────────────── */}
+      {selectedIds.size > 1 ? (
+        <BulkActionBar
+          count={selectedIds.size}
+          onAddToProject={() => handleAddToProject(Array.from(selectedIds))}
+          onClear={clearSelection}
+          onDelete={() => {
+            actions.requestBulkDelete(Array.from(selectedIds));
+            clearSelection();
+          }}
+        />
+      ) : null}
+
+      {/* ── Status bar (with inline pagination) ──────────────────────────────── */}
       <StatusBar
         activeFilterCount={activeFilterCount}
         folderCount={subfolders.length}
         itemCount={processedDatasets.length}
         loading={loading}
+        page={clampedPage}
+        pageSize={pageSize}
         selectedCount={selectedIds.size}
         totalBytes={totalBytes}
+        totalItems={processedDatasets.length}
+        totalPages={totalPages}
         onClearFilters={clearFilters}
+        onNextPage={() => setPage((p) => Math.min(totalPages, p + 1))}
+        onPrevPage={() => setPage((p) => Math.max(1, p - 1))}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPage(1);
+        }}
       />
       {/* ── Mobile navigation drawer ────────────────────────────────────────── */}
       <Drawer
@@ -801,7 +790,7 @@ const DataPageInner = () => {
           <FolderTree
             folders={folders}
             loading={loading}
-            selection={{ folderId: locFolder, type: typeFilter }}
+            selection={{ folderId: locFolder }}
             tiledCount={tiledCount}
             totalBytes={totalBytes}
             totalDatasets={datasets.length}

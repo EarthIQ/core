@@ -9,7 +9,6 @@ import {
   FolderPlus,
   FolderX,
   HardDrive,
-  Layers,
   Pencil,
   Plus,
   Sparkles,
@@ -20,9 +19,6 @@ import { useMemo, useState } from "react";
 
 import { formatBytes, type DataFolder } from "@/lib/datasets";
 
-import { TYPES } from "./constants";
-import { typeLabel, typeLucide } from "./helpers";
-
 /** Current catalog navigation (single-select). */
 export interface FolderSelection {
   /**
@@ -31,8 +27,6 @@ export interface FolderSelection {
    * - folder id → that folder's datasets only
    */
   folderId: string | null;
-  /** "all" or a dataset type value (quick filter). */
-  type: string;
 }
 
 /** Special folderId value = "datasets not in any folder". */
@@ -154,11 +148,8 @@ export default function FolderTree({
   }
 
   const isFolderActive = (id: string) => selection.folderId === id;
-  const isAllActive = selection.folderId === null && selection.type === "all";
-  const isUngroupedActive =
-    selection.folderId === ROOT_UNGROUPED && selection.type === "all";
-  const isTypeActive = (t: string) =>
-    selection.type === t && selection.type !== "all";
+  const isAllActive = selection.folderId === null;
+  const isUngroupedActive = selection.folderId === ROOT_UNGROUPED;
 
   // ── Inline "new folder" input ──────────────────────────────────────────────
   function renderCreateInput(indent: number) {
@@ -223,12 +214,12 @@ export default function FolderTree({
           )}
           onClick={() => {
             if (renaming === node.id) return;
-            onNavigate({ folderId: node.id, type: "all" });
+            onNavigate({ folderId: node.id });
             if (hasChildren) expand(node.id);
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && renaming !== node.id)
-              onNavigate({ folderId: node.id, type: "all" });
+              onNavigate({ folderId: node.id });
           }}
         >
           {hasChildren ? (
@@ -335,10 +326,10 @@ export default function FolderTree({
   }
 
   return (
-    <div className="card bg-surface border-border-primary overflow-hidden rounded-xl border shadow-xs">
+    <div className="bg-surface flex h-full flex-col">
       <nav
         aria-label="Data catalog folders"
-        className="flex max-h-[calc(100vh-16rem)] scrollbar-thin flex-col gap-4 overflow-y-auto p-3 pr-1"
+        className="flex min-h-0 flex-1 scrollbar-thin flex-col gap-4 overflow-y-auto p-3 pr-1"
       >
         {/* ── All data / ungrouped ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-1">
@@ -352,9 +343,9 @@ export default function FolderTree({
                 ? "bg-primary/[0.1] text-primary"
                 : "text-text-primary hover:bg-surface-hover"
             )}
-            onClick={() => onNavigate({ folderId: null, type: "all" })}
+            onClick={() => onNavigate({ folderId: null })}
             onKeyDown={(e) =>
-              e.key === "Enter" && onNavigate({ folderId: null, type: "all" })
+              e.key === "Enter" && onNavigate({ folderId: null })
             }
           >
             <Database
@@ -374,12 +365,9 @@ export default function FolderTree({
                 ? "bg-primary/[0.1] text-primary"
                 : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
             )}
-            onClick={() =>
-              onNavigate({ folderId: ROOT_UNGROUPED, type: "all" })
-            }
+            onClick={() => onNavigate({ folderId: ROOT_UNGROUPED })}
             onKeyDown={(e) =>
-              e.key === "Enter" &&
-              onNavigate({ folderId: ROOT_UNGROUPED, type: "all" })
+              e.key === "Enter" && onNavigate({ folderId: ROOT_UNGROUPED })
             }
           >
             <FolderX
@@ -438,57 +426,10 @@ export default function FolderTree({
             </p>
           )}
         </div>
-
-        {/* ── Types (quick filter) ─────────────────────────────────────────── */}
-        <div className="flex flex-col gap-1">
-          <div className="text-text-tertiary flex items-center gap-1.5 px-2.5 pb-1 text-[0.65rem] font-bold tracking-wider uppercase">
-            <Layers
-              className="text-secondary"
-              size={11}
-            />
-            <span>Types</span>
-          </div>
-          {TYPES.map((t) => {
-            const TIcon = typeLucide(t.value);
-            const active = isTypeActive(t.value);
-            return (
-              <div
-                key={t.value}
-                aria-current={active ? "true" : undefined}
-                role="button"
-                tabIndex={0}
-                className={cn(
-                  "flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors select-none",
-                  active
-                    ? "bg-primary/[0.1] text-primary"
-                    : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
-                )}
-                onClick={() =>
-                  onNavigate({
-                    folderId: null,
-                    type: active ? "all" : t.value,
-                  })
-                }
-                onKeyDown={(e) =>
-                  e.key === "Enter" &&
-                  onNavigate({ folderId: null, type: active ? "all" : t.value })
-                }
-              >
-                <TIcon
-                  className={active ? "text-primary" : "text-text-tertiary"}
-                  size={14}
-                />
-                <span className="text-xs font-medium">
-                  {typeLabel(t.value)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
       </nav>
 
       {/* ── Storage meter footer ──────────────────────────────────────────── */}
-      <div className="border-border-secondary bg-surface-hover/40 flex flex-col gap-2 rounded-b-xl border-t p-3">
+      <div className="border-border-secondary bg-surface-hover/40 flex shrink-0 flex-col gap-2 border-t p-3">
         <div className="text-text-primary flex items-center justify-between text-xs font-semibold">
           <div className="flex items-center gap-1.5">
             <HardDrive

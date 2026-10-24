@@ -9,6 +9,7 @@ import {
   FolderPlus,
   LayoutGrid,
   List,
+  PanelRight,
   RefreshCw,
   Search,
   SlidersHorizontal,
@@ -59,12 +60,16 @@ interface Props {
   onRefresh: () => void;
   loading?: boolean;
   onOpenMobileNav: () => void;
+
+  // Preview pane (Explorer-style toggle)
+  showPreview: boolean;
+  onTogglePreview: () => void;
 }
 
 /**
- * Explorer-style command bar: back / forward / up, a clickable breadcrumb
- * address bar, search (with a "/" shortcut hint), and the view / sort /
- * format / folder / upload controls.
+ * Explorer-style two-row ribbon toolbar:
+ * Row 1 — navigation (back / forward / up), breadcrumb address bar, search.
+ * Row 2 — format filter, sort, view mode toggle, folder / upload actions.
  */
 export default function ExplorerToolbar(props: Props) {
   const {
@@ -95,6 +100,8 @@ export default function ExplorerToolbar(props: Props) {
     onRefresh,
     loading,
     onOpenMobileNav,
+    showPreview,
+    onTogglePreview,
   } = props;
 
   const navBtn = (
@@ -105,7 +112,7 @@ export default function ExplorerToolbar(props: Props) {
   ) => (
     <button
       aria-label={label}
-      className="text-text-secondary hover:bg-surface-hover hover:text-text-primary flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-colors disabled:pointer-events-none disabled:opacity-30"
+      className="text-text-secondary hover:bg-surface-hover hover:text-text-primary flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors disabled:pointer-events-none disabled:opacity-30"
       disabled={disabled}
       title={label}
       type="button"
@@ -116,220 +123,253 @@ export default function ExplorerToolbar(props: Props) {
   );
 
   return (
-    <div className="border-border-primary bg-surface sticky top-0 z-20 flex flex-wrap items-center gap-2 border-b px-4 py-2.5 shadow-xs lg:px-6">
-      {/* Mobile: open the nav drawer */}
-      <button
-        aria-label="Browse folders"
-        className="text-text-secondary hover:bg-surface-hover hover:text-text-primary flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-colors lg:hidden"
-        type="button"
-        onClick={onOpenMobileNav}
-      >
-        <SlidersHorizontal size={17} />
-      </button>
+    <div className="border-border-primary bg-surface sticky top-0 z-20 border-b shadow-xs">
+      {/* ── Row 1: Navigation + Address bar + Search ────────────────────────── */}
+      <div className="flex items-center gap-1.5 px-3 py-1.5 lg:px-4">
+        {/* Mobile: open the nav drawer */}
+        <button
+          aria-label="Browse folders"
+          className="text-text-secondary hover:bg-surface-hover hover:text-text-primary flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors lg:hidden"
+          type="button"
+          onClick={onOpenMobileNav}
+        >
+          <SlidersHorizontal size={16} />
+        </button>
 
-      {/* History navigation */}
-      <div className="flex shrink-0 items-center gap-0.5 rounded-lg">
-        {navBtn(<ArrowLeft size={16} />, "Back", onBack, !canBack)}
-        {navBtn(<ArrowRight size={16} />, "Forward", onForward, !canForward)}
-        {navBtn(<ArrowUp size={16} />, "Up one level", onUp, !canUp)}
-      </div>
+        {/* History navigation */}
+        <div className="flex shrink-0 items-center gap-0.5">
+          {navBtn(<ArrowLeft size={15} />, "Back", onBack, !canBack)}
+          {navBtn(<ArrowRight size={15} />, "Forward", onForward, !canForward)}
+          {navBtn(<ArrowUp size={15} />, "Up one level", onUp, !canUp)}
+        </div>
 
-      {/* Breadcrumb address bar */}
-      <nav
-        aria-label="Breadcrumb"
-        className="border-border-primary bg-surface-hover/40 flex min-w-0 flex-1 scrollbar-none items-center gap-0.5 overflow-x-auto rounded-lg border px-2 py-1.5 whitespace-nowrap"
-      >
-        <Folder
-          className="text-primary mr-1 shrink-0"
-          size={14}
-        />
-        {breadcrumb.map((crumb, i) => {
-          const last = i === breadcrumb.length - 1;
-          return (
-            <span
-              key={crumb.id ?? `root-${i}`}
-              className="flex shrink-0 items-center gap-0.5"
-            >
-              {i > 0 ? (
-                <ChevronRight
-                  className="text-text-tertiary shrink-0"
-                  size={13}
-                />
-              ) : null}
-              {last ? (
-                <span
-                  aria-current="page"
-                  className="text-text-primary px-1.5 text-xs font-semibold"
-                >
-                  {crumb.name}
-                </span>
-              ) : (
-                <button
-                  className="text-text-secondary hover:bg-surface-hover hover:text-text-primary cursor-pointer rounded px-1.5 py-0.5 text-xs transition-colors"
-                  type="button"
-                  onClick={() => onNavigateCrumb(crumb.id)}
-                >
-                  {crumb.name}
-                </button>
-              )}
-            </span>
-          );
-        })}
-      </nav>
-      {/* Search */}
-      <div className="relative w-full min-w-0 sm:w-52 lg:w-64">
-        <Search
-          className="text-text-tertiary pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2"
-          size={15}
-        />
-        <input
-          ref={searchInputRef}
-          aria-label="Search datasets"
-          className="input h-8 pl-8 text-xs"
-          placeholder="Search datasets…"
-          type="text"
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-        />
-        <div className="absolute top-1/2 right-1.5 flex -translate-y-1/2 items-center gap-1">
-          {searchQuery ? (
-            <button
-              aria-label="Clear search"
-              className="text-text-tertiary hover:text-text-primary cursor-pointer rounded p-0.5"
-              type="button"
-              onClick={() => {
-                onSearchChange("");
-                searchInputRef.current?.focus();
-              }}
-            >
-              <X size={13} />
-            </button>
-          ) : null}
-          <kbd className="hidden h-5 min-w-5 items-center justify-center rounded border border-[var(--border-primary)] bg-[var(--surface-hover)] px-1.5 text-[0.6rem] font-semibold text-[var(--text-tertiary)] select-none sm:flex">
-            /
-          </kbd>
+        {/* Breadcrumb address bar */}
+        <nav
+          aria-label="Breadcrumb"
+          className="border-border-primary bg-surface-hover/40 flex min-w-0 flex-1 scrollbar-none items-center gap-0.5 overflow-x-auto rounded-lg border px-2 py-1 whitespace-nowrap"
+        >
+          <Folder
+            className="text-primary mr-1 shrink-0"
+            size={13}
+          />
+          {breadcrumb.map((crumb, i) => {
+            const last = i === breadcrumb.length - 1;
+            return (
+              <span
+                key={crumb.id ?? `root-${i}`}
+                className="flex shrink-0 items-center gap-0.5"
+              >
+                {i > 0 ? (
+                  <ChevronRight
+                    className="text-text-tertiary shrink-0"
+                    size={12}
+                  />
+                ) : null}
+                {last ? (
+                  <span
+                    aria-current="page"
+                    className="text-text-primary px-1.5 text-xs font-semibold"
+                  >
+                    {crumb.name}
+                  </span>
+                ) : (
+                  <button
+                    className="text-text-secondary hover:bg-surface-hover hover:text-text-primary cursor-pointer rounded px-1.5 py-0.5 text-xs transition-colors"
+                    type="button"
+                    onClick={() => onNavigateCrumb(crumb.id)}
+                  >
+                    {crumb.name}
+                  </button>
+                )}
+              </span>
+            );
+          })}
+        </nav>
+
+        {/* Search */}
+        <div className="relative w-full min-w-0 sm:w-48 lg:w-56">
+          <Search
+            className="text-text-tertiary pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2"
+            size={14}
+          />
+          <input
+            ref={searchInputRef}
+            aria-label="Search datasets"
+            className="input h-7 text-xs"
+            placeholder="Search datasets…"
+            style={{ paddingLeft: 28, paddingRight: 32 }}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+          <div className="absolute top-1/2 right-1.5 flex -translate-y-1/2 items-center gap-1">
+            {searchQuery ? (
+              <button
+                aria-label="Clear search"
+                className="text-text-tertiary hover:text-text-primary cursor-pointer rounded p-0.5"
+                type="button"
+                onClick={() => {
+                  onSearchChange("");
+                  searchInputRef.current?.focus();
+                }}
+              >
+                <X size={12} />
+              </button>
+            ) : null}
+            <kbd className="hidden h-4 min-w-4 items-center justify-center rounded border border-[var(--border-primary)] bg-[var(--surface-hover)] px-1 text-[0.55rem] font-semibold text-[var(--text-tertiary)] select-none sm:flex">
+              /
+            </kbd>
+          </div>
         </div>
       </div>
 
-      {/* Format filter */}
-      <div className="hidden w-40 md:block">
-        <Select
-          options={formatOptions}
-          size="sm"
-          value={formatFilter}
-          onChange={onFormatFilterChange}
-        />
-      </div>
-
-      {/* Sort */}
-      <div className="hidden items-center gap-1.5 lg:flex">
+      {/* ── Row 2: Filters + Sort + View + Actions ─────────────────────────── */}
+      <div className="border-border-secondary flex items-center gap-1.5 border-t px-3 py-1 lg:px-4">
+        {/* Format filter */}
         <div className="w-36">
           <Select
+            options={formatOptions}
             size="sm"
-            value={sortField}
-            options={[
-              { value: "updated", label: "Last modified" },
-              { value: "name", label: "Name" },
-              { value: "format", label: "Format" },
-              { value: "size", label: "Size" },
-            ]}
-            onChange={(v) => onSortFieldChange(v as SortField)}
+            value={formatFilter}
+            onChange={onFormatFilterChange}
           />
         </div>
-        <button
-          aria-label={sortDir === "asc" ? "Sort ascending" : "Sort descending"}
-          className="text-text-secondary hover:bg-surface-hover hover:text-text-primary flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[var(--border-primary)] transition-colors"
-          title={sortDir === "asc" ? "Ascending" : "Descending"}
-          type="button"
-          onClick={onToggleSortDir}
-        >
-          <ArrowUp
-            size={15}
-            className={cn(
-              "transition-transform",
-              sortDir === "desc" && "rotate-180"
-            )}
-          />
-        </button>
-      </div>
-      {/* View switcher */}
-      <div
-        aria-label="View mode"
-        className="border-border-primary bg-surface-hover/50 flex shrink-0 items-center rounded-lg border p-0.5"
-        role="group"
-      >
-        <button
-          aria-label="Details view"
-          title="Details view"
-          type="button"
-          className={cn(
-            "flex h-7 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition-all",
-            viewMode === "details"
-              ? "bg-surface text-primary shadow-xs"
-              : "text-text-tertiary hover:text-text-primary"
-          )}
-          onClick={() => onViewModeChange("details")}
-        >
-          <List size={14} />
-        </button>
-        <button
-          aria-label="Grid view"
-          title="Grid view"
-          type="button"
-          className={cn(
-            "flex h-7 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition-all",
-            viewMode === "grid"
-              ? "bg-surface text-primary shadow-xs"
-              : "text-text-tertiary hover:text-text-primary"
-          )}
-          onClick={() => onViewModeChange("grid")}
-        >
-          <LayoutGrid size={14} />
-        </button>
-      </div>
 
-      <div className="ml-auto flex shrink-0 items-center gap-2">
-        {activeFilterCount > 0 ? (
-          <button
-            className="text-error hover:bg-error/10 hidden h-8 cursor-pointer items-center gap-1 rounded-lg px-2 text-xs font-semibold transition-colors sm:flex"
-            type="button"
-            onClick={onClearFilters}
-          >
-            <X size={13} /> Clear
-          </button>
-        ) : null}
-
-        <IconButton
-          aria-label="Refresh catalog"
-          label="Refresh catalog"
-          size="md"
-          variant="outline"
-          icon={
-            <RefreshCw
-              className={loading ? "animate-spin" : ""}
-              size={16}
+        {/* Sort */}
+        <div className="hidden items-center gap-1 sm:flex">
+          <div className="w-32">
+            <Select
+              size="sm"
+              value={sortField}
+              options={[
+                { value: "updated", label: "Last modified" },
+                { value: "name", label: "Name" },
+                { value: "format", label: "Format" },
+                { value: "size", label: "Size" },
+              ]}
+              onChange={(v) => onSortFieldChange(v as SortField)}
             />
-          }
-          onClick={onRefresh}
-        />
+          </div>
+          <button
+            className="text-text-secondary hover:bg-surface-hover hover:text-text-primary flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-[var(--border-primary)] transition-colors"
+            title={sortDir === "asc" ? "Ascending" : "Descending"}
+            type="button"
+            aria-label={
+              sortDir === "asc" ? "Sort ascending" : "Sort descending"
+            }
+            onClick={onToggleSortDir}
+          >
+            <ArrowUp
+              size={14}
+              className={cn(
+                "transition-transform",
+                sortDir === "desc" && "rotate-180"
+              )}
+            />
+          </button>
+        </div>
 
-        <button
-          className="btn btn-secondary btn-md hidden gap-2 sm:flex"
-          type="button"
-          onClick={onNewFolder}
+        {/* Separator */}
+        <div className="border-border-secondary mx-1 hidden h-5 border-l sm:block" />
+
+        {/* View switcher */}
+        <div
+          aria-label="View mode"
+          className="border-border-primary bg-surface-hover/50 flex shrink-0 items-center rounded-md border p-px"
+          role="group"
         >
-          <FolderPlus size={16} />
-          New folder
+          <button
+            aria-label="Details view"
+            title="Details view"
+            type="button"
+            className={cn(
+              "flex h-6 cursor-pointer items-center gap-1.5 rounded px-2 text-xs font-semibold transition-all",
+              viewMode === "details"
+                ? "bg-surface text-primary shadow-xs"
+                : "text-text-tertiary hover:text-text-primary"
+            )}
+            onClick={() => onViewModeChange("details")}
+          >
+            <List size={13} />
+          </button>
+          <button
+            aria-label="Grid view"
+            title="Grid view"
+            type="button"
+            className={cn(
+              "flex h-6 cursor-pointer items-center gap-1.5 rounded px-2 text-xs font-semibold transition-all",
+              viewMode === "grid"
+                ? "bg-surface text-primary shadow-xs"
+                : "text-text-tertiary hover:text-text-primary"
+            )}
+            onClick={() => onViewModeChange("grid")}
+          >
+            <LayoutGrid size={13} />
+          </button>
+        </div>
+
+        {/* Preview pane toggle (Explorer "Preview" button) */}
+        <div className="border-border-secondary mx-1 hidden h-5 border-l sm:block" />
+        <button
+          aria-label={showPreview ? "Hide preview pane" : "Show preview pane"}
+          aria-pressed={showPreview}
+          title={showPreview ? "Hide preview pane" : "Show preview pane"}
+          type="button"
+          className={cn(
+            "hidden h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md border transition-colors sm:flex",
+            showPreview
+              ? "border-primary/40 bg-primary/10 text-primary"
+              : "text-text-secondary hover:bg-surface-hover hover:text-text-primary border-[var(--border-primary)]"
+          )}
+          onClick={onTogglePreview}
+        >
+          <PanelRight size={14} />
         </button>
 
-        <button
-          className="btn btn-primary btn-md gap-2 shadow-sm"
-          type="button"
-          onClick={onUpload}
-        >
-          <CloudUpload size={16} />
-          <span className="hidden sm:inline">Upload</span>
-        </button>
+        {/* Actions (right-aligned) */}
+        <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          {activeFilterCount > 0 ? (
+            <button
+              className="text-error hover:bg-error/10 hidden h-7 cursor-pointer items-center gap-1 rounded-md px-2 text-xs font-semibold transition-colors sm:flex"
+              type="button"
+              onClick={onClearFilters}
+            >
+              <X size={12} /> Clear
+            </button>
+          ) : null}
+
+          <IconButton
+            aria-label="Refresh catalog"
+            label="Refresh catalog"
+            size="sm"
+            variant="outline"
+            icon={
+              <RefreshCw
+                className={loading ? "animate-spin" : ""}
+                size={15}
+              />
+            }
+            onClick={onRefresh}
+          />
+
+          <button
+            className="btn btn-secondary btn-sm hidden gap-1.5 sm:flex"
+            type="button"
+            onClick={onNewFolder}
+          >
+            <FolderPlus size={15} />
+            New folder
+          </button>
+
+          <button
+            className="btn btn-primary btn-sm gap-1.5 shadow-sm"
+            type="button"
+            onClick={onUpload}
+          >
+            <CloudUpload size={15} />
+            <span className="hidden sm:inline">Upload</span>
+          </button>
+        </div>
       </div>
     </div>
   );
