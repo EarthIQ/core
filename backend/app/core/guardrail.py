@@ -11,6 +11,7 @@ harness are unaffected.
 
 Ticket: T-04 (prod secret guardrail).
 """
+
 from __future__ import annotations
 
 import logging

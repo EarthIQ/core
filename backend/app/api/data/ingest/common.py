@@ -9,8 +9,10 @@ These are the low-level building blocks used by the per-format parsers
 old single ``service.py`` god-file so each concern lives in a focused module
 (ticket T-09).
 """
+
 from __future__ import annotations
 
+import contextlib
 import json
 import uuid
 from typing import Any
@@ -21,10 +23,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.data.models import GeoDataset
 from app.core import storage as object_storage
 
-
 # ---------------------------------------------------------------------------
 # Attribute / type helpers
 # ---------------------------------------------------------------------------
+
 
 def _python_type_name(value: Any) -> str:
     """Map a Python value to a GIS-friendly type label."""
@@ -85,6 +87,7 @@ def _content_type_for_format(fmt: str) -> str:
 # Geometry helpers
 # ---------------------------------------------------------------------------
 
+
 def _geometry_to_geojson(obj: Any) -> dict[str, Any] | None:
     """Convert an object exposing ``__geo_interface__`` (e.g. a pyshp Shape)
     to a GeoJSON geometry dict. Returns ``None`` when not representable."""
@@ -104,6 +107,7 @@ def _geometry_to_geojson(obj: Any) -> dict[str, Any] | None:
 # ---------------------------------------------------------------------------
 # Feature store insertion (raw SQL, PostGIS ST_GeomFromGeoJSON)
 # ---------------------------------------------------------------------------
+
 
 async def _insert_features_raw(
     db: AsyncSession,
@@ -150,6 +154,7 @@ async def _insert_features_raw(
 # Dataset row + object storage helpers
 # ---------------------------------------------------------------------------
 
+
 async def _create_dataset_row(
     db: AsyncSession,
     *,
@@ -189,26 +194,21 @@ async def _create_dataset_row(
     return dataset
 
 
-async def _upload_best_effort(
-    file_bytes: bytes, storage_key: str, content_type: str
-) -> None:
-    try:
+async def _upload_best_effort(file_bytes: bytes, storage_key: str, content_type: str) -> None:
+    with contextlib.suppress(Exception):  # Storage failure is non-fatal for the DB record
         await object_storage.upload_file(
             key=storage_key, data=file_bytes, content_type=content_type
         )
-    except Exception:
-        # Storage failure is non-fatal for the DB record
-        pass
 
 
 __all__ = [
-    "_python_type_name",
-    "_sample",
-    "_extract_attributes",
-    "_normalize_tags",
     "_content_type_for_format",
+    "_create_dataset_row",
+    "_extract_attributes",
     "_geometry_to_geojson",
     "_insert_features_raw",
-    "_create_dataset_row",
+    "_normalize_tags",
+    "_python_type_name",
+    "_sample",
     "_upload_best_effort",
 ]

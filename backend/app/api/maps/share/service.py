@@ -13,38 +13,51 @@ Entity support:
     whether it is a map or a project and delegates to the matching access
     table (MapUserAccess / ProjectUserAccess).
 """
+
 from __future__ import annotations
 
 import secrets
 import uuid
-from typing import List, Optional, Tuple, Type, Union
 
 from fastapi import HTTPException, status
-from sqlalchemy import select, or_
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.auth.models import User
 from app.api.maps.models import MapModel, MapUserAccess
-from app.api.projects.models import ProjectModel, ProjectUserAccess
+from app.api.maps.share.models import AccessRequest
 from app.api.maps.share.schemas import (
     AccessEntryRead,
     AccessRequestRead,
     GeneralAccessRead,
     InviteAcceptRead,
     InviteRequest,
+    PeopleSearchResult,
     RequestAccessBody,
+    Role,
     ShareSettingsRead,
     ShareStateRead,
     UpdateGeneralAccessRequest,
     UpdateShareSettingsRequest,
-    PeopleSearchResult,
-    Role,
 )
-from app.api.maps.share.models import AccessRequest
+from app.api.projects.models import ProjectModel, ProjectUserAccess
 
 # ── Type alias for the two shareable entity types ─────────────────────────────
-ShareableEntity = Union[MapModel, ProjectModel]
-UserAccessRow = Union[MapUserAccess, ProjectUserAccess]
+ShareableEntity = MapModel | ProjectModel
+UserAccessRow = MapUserAccess | ProjectUserAccess
+
+# Keep strong references to fire-and-forget background tasks so the event loop
+# does not garbage-collect them before they complete (ruff RUF006).
+_BACKGROUND_TASKS: set = set()
+
+
+def _spawn_background_task(coro) -> None:
+    """Schedule *coro* to run in the background, retaining a reference to its task."""
+    import asyncio
+
+    task = asyncio.ensure_future(coro)
+    _BACKGROUND_TASKS.add(task)
+    task.add_done_callback(_BACKGROUND_TASKS.discard)
 
 
 _ROLE_RANK: dict[str, int] = {
@@ -66,7 +79,7 @@ def _entity_type(item: ShareableEntity) -> str:
 
 async def _resolve_entity(
     db: AsyncSession, entity_id: str
-) -> Tuple[ShareableEntity, Type[UserAccessRow], str]:
+) -> tuple[ShareableEntity, type[UserAccessRow], str]:
     """Resolve an id to a map or project entity.
 
     Returns a tuple of (entity, its user-access ORM model, the foreign-key
@@ -103,7 +116,7 @@ def _can_manage(item: ShareableEntity, actor: User) -> bool:
     return False
 
 
-def _entry_to_schema(entry: UserAccessRow, current_user: Optional[User] = None) -> AccessEntryRead:
+def _entry_to_schema(entry: UserAccessRow, current_user: User | None = None) -> AccessEntryRead:
     user = entry.user
     name = user.full_name if user else None
     is_you = bool(current_user and entry.user_id == current_user.id)
@@ -117,7 +130,7 @@ def _entry_to_schema(entry: UserAccessRow, current_user: Optional[User] = None) 
     )
 
 
-def _to_share_state(item: ShareableEntity, current_user: Optional[User] = None) -> ShareStateRead:
+def _to_share_state(item: ShareableEntity, current_user: User | None = None) -> ShareStateRead:
     raw_settings = item.share_settings or {}
     settings = ShareSettingsRead(
         editors_can_share=raw_settings.get("editorsCanShare", True),
@@ -128,7 +141,7 @@ def _to_share_state(item: ShareableEntity, current_user: Optional[User] = None) 
         type=general_type,  # type: ignore[arg-type]
         role=item.share_link_role,  # type: ignore[arg-type]
     )
-    
+
     entries_list = list(item.user_access)
     # If legacy entity without owner in user_access, add synthetic owner entry
     has_owner_entry = any(e.role == "owner" or e.user_id == item.owner_id for e in entries_list)
@@ -143,7 +156,10 @@ def _to_share_state(item: ShareableEntity, current_user: Optional[User] = None) 
         )
         existing_schemas = [_entry_to_schema(e, current_user) for e in entries_list]
         return ShareStateRead(
-            entries=[owner_entry] + sorted(existing_schemas, key=lambda e: (-_rank(e.role), e.pending, e.email)),
+            entries=[
+                owner_entry,
+                *sorted(existing_schemas, key=lambda e: (-_rank(e.role), e.pending, e.email)),
+            ],
             general=general,
             settings=settings,
         )
@@ -160,7 +176,9 @@ def _to_share_state(item: ShareableEntity, current_user: Optional[User] = None) 
     )
 
 
-async def _require_manage(db: AsyncSession, entity_id: str, actor: User) -> Tuple[ShareableEntity, Type[UserAccessRow], str]:
+async def _require_manage(
+    db: AsyncSession, entity_id: str, actor: User
+) -> tuple[ShareableEntity, type[UserAccessRow], str]:
     item, access_model, fk_name = await _resolve_entity(db, entity_id)
     if not _can_manage(item, actor):
         raise HTTPException(
@@ -172,6 +190,7 @@ async def _require_manage(db: AsyncSession, entity_id: str, actor: User) -> Tupl
 
 # ── Public service functions ──────────────────────────────────────────────────
 
+
 async def get_share_state(db: AsyncSession, entity_id: str, actor: User) -> ShareStateRead:
     """Return full share state for a map or project. Editors (if editorsCanShare) may also read it."""
     item = (await _resolve_entity(db, entity_id))[0]
@@ -180,16 +199,17 @@ async def get_share_state(db: AsyncSession, entity_id: str, actor: User) -> Shar
     user_access_list = list(item.user_access)
 
     # Viewers can see the dialog but we restrict full listing to managers
-    if not _can_manage(item, actor):
-        if item.owner_id != actor.id and not actor.is_superuser:
-            actor_entry = next((e for e in user_access_list if e.user_id == actor.id), None)
-            if actor_entry is None:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+    if not _can_manage(item, actor) and item.owner_id != actor.id and not actor.is_superuser:
+        actor_entry = next((e for e in user_access_list if e.user_id == actor.id), None)
+        if actor_entry is None:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
     return _to_share_state(item, actor)
 
 
-async def search_people(db: AsyncSession, query: str, entity_id: Optional[str] = None) -> List[PeopleSearchResult]:
+async def search_people(
+    db: AsyncSession, query: str, entity_id: str | None = None
+) -> list[PeopleSearchResult]:
     """Search registered users by email or name for the people autocomplete.
 
     ``entity_id`` (a map or project id) is used to exclude users who already
@@ -233,7 +253,7 @@ async def invite(
     entity_id: str,
     body: InviteRequest,
     actor: User,
-) -> List[AccessEntryRead]:
+) -> list[AccessEntryRead]:
     """Invite one or more email addresses to a map or project."""
     item, access_model, fk_name = await _require_manage(db, entity_id, actor)
 
@@ -245,7 +265,7 @@ async def invite(
         )
 
     existing_by_email = {e.email: e for e in item.user_access}
-    created: List[AccessEntryRead] = []
+    created: list[AccessEntryRead] = []
     entity_label = _entity_type(item)  # "map" | "project"
 
     for email_str in body.emails:
@@ -278,13 +298,12 @@ async def invite(
 
         # Send email asynchronously (fire-and-forget with error logging)
         if body.notify:
-            from app.core.config import get_settings
             from app.api.maps.share.email import send_invite_email
-            import asyncio
+            from app.core.config import get_settings
 
             settings = get_settings()
             accept_url = f"{settings.frontend_url}/invite/accept?token={invite_token}"
-            asyncio.ensure_future(
+            _spawn_background_task(
                 send_invite_email(
                     to=email,
                     inviter_name=actor.full_name or actor.email,
@@ -335,7 +354,9 @@ async def update_role(
     if new_role == "editor" and not (actor.is_superuser or item.owner_id == actor.id):
         actor_entry = next((e for e in item.user_access if e.user_id == actor.id), None)
         if not actor_entry or actor_entry.role != "editor":
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+            )
 
     entry.role = new_role
     await db.flush()
@@ -348,7 +369,7 @@ async def remove_access(
     actor: User,
 ) -> None:
     """Remove a user's access to a map or project."""
-    item, access_model, fk_name = await _require_manage(db, entity_id, actor)
+    _item, access_model, fk_name = await _require_manage(db, entity_id, actor)
 
     result = await db.execute(
         select(access_model).where(
@@ -405,9 +426,7 @@ async def transfer_ownership(
         )
 
     # Demote old owner → editor in user_access, update entity owner_id
-    old_owner_entry = next(
-        (e for e in item.user_access if e.user_id == item.owner_id), None
-    )
+    old_owner_entry = next((e for e in item.user_access if e.user_id == item.owner_id), None)
     if old_owner_entry:
         old_owner_entry.role = "editor"
 
@@ -468,11 +487,9 @@ async def accept_invite(
     Searches both the map and project access tables for the token. If the
     actor's email matches the invite email, the access is activated.
     """
-    entry: Optional[UserAccessRow] = None
+    entry: UserAccessRow | None = None
     for access_model in (MapUserAccess, ProjectUserAccess):
-        result = await db.execute(
-            select(access_model).where(access_model.invite_token == token)
-        )
+        result = await db.execute(select(access_model).where(access_model.invite_token == token))
         found = result.scalar_one_or_none()
         if found:
             entry = found
@@ -542,6 +559,7 @@ async def get_share_state_by_token(db: AsyncSession, token: str) -> ShareStateRe
 
 # ── Access requests (Google-Docs style) ───────────────────────────────────────
 
+
 def _request_to_schema(req: AccessRequest, item: ShareableEntity) -> AccessRequestRead:
     return AccessRequestRead(
         id=req.id,
@@ -570,10 +588,8 @@ async def request_access(
     email with a review link. Re-submitting while a request is pending just
     refreshes the message (no duplicate email).
     """
-    import asyncio
-
-    from app.core.config import get_settings
     from app.api.maps.share.email import send_request_access_email
+    from app.core.config import get_settings
 
     item = (await _resolve_entity(db, entity_id))[0]
     label = _entity_type(item)
@@ -624,7 +640,7 @@ async def request_access(
     if owner:
         settings = get_settings()
         approve_url = f"{settings.frontend_url}/access/grant?token={approval_token}"
-        asyncio.ensure_future(
+        _spawn_background_task(
             send_request_access_email(
                 to=owner.email,
                 requester_name=actor.full_name or actor.email,
@@ -642,11 +658,9 @@ async def request_access(
 
 async def _load_access_request(
     db: AsyncSession, token: str, actor: User
-) -> Tuple[AccessRequest, ShareableEntity]:
+) -> tuple[AccessRequest, ShareableEntity]:
     """Load a request by its one-time token and verify the actor owns the entity."""
-    result = await db.execute(
-        select(AccessRequest).where(AccessRequest.approval_token == token)
-    )
+    result = await db.execute(select(AccessRequest).where(AccessRequest.approval_token == token))
     req = result.scalar_one_or_none()
     if not req:
         raise HTTPException(
@@ -669,23 +683,17 @@ async def _load_access_request(
     return req, item
 
 
-async def get_access_request(
-    db: AsyncSession, token: str, actor: User
-) -> AccessRequestRead:
+async def get_access_request(db: AsyncSession, token: str, actor: User) -> AccessRequestRead:
     """Fetch the request behind an owner approval link (owner/superuser only)."""
     req, item = await _load_access_request(db, token, actor)
     return _request_to_schema(req, item)
 
 
-async def grant_access(
-    db: AsyncSession, token: str, actor: User, role: str
-) -> AccessRequestRead:
+async def grant_access(db: AsyncSession, token: str, actor: User, role: str) -> AccessRequestRead:
     """Approve an access request: create/update the user's access entry and
     notify the requester (owner/superuser only)."""
-    import asyncio
-
-    from app.core.config import get_settings
     from app.api.maps.share.email import send_access_granted_email
+    from app.core.config import get_settings
 
     req, item = await _load_access_request(db, token, actor)
     if req.status != "pending":
@@ -729,7 +737,7 @@ async def grant_access(
         open_url = f"{settings.frontend_url}/share/map/{req.entity_id}"
     else:
         open_url = f"{settings.frontend_url}/map?projectId={req.entity_id}"
-    asyncio.ensure_future(
+    _spawn_background_task(
         send_access_granted_email(
             to=req.email,
             grantor_name=actor.full_name or actor.email,
@@ -743,9 +751,7 @@ async def grant_access(
     return _request_to_schema(req, item)
 
 
-async def deny_access(
-    db: AsyncSession, token: str, actor: User
-) -> AccessRequestRead:
+async def deny_access(db: AsyncSession, token: str, actor: User) -> AccessRequestRead:
     """Decline an access request (owner/superuser only)."""
     req, item = await _load_access_request(db, token, actor)
     if req.status != "pending":

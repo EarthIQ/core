@@ -63,7 +63,9 @@ export function useProjectData(projectId: string): ProjectData {
         setPreviews({ ...previewCache.current });
       } catch (e) {
         if (!active) return;
-        setError(e instanceof Error ? e.message : "Failed to load project data");
+        setError(
+          e instanceof Error ? e.message : "Failed to load project data"
+        );
       } finally {
         if (active) setLoading(false);
       }

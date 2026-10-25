@@ -1,7 +1,8 @@
 from pathlib import Path
+
 import yaml
 
-ROOT = Path(__file__).resolve().parents[3]           # core/
+ROOT = Path(__file__).resolve().parents[3]  # core/
 REGISTRY_FILE = ROOT / "modules.registry.yaml"
 LOCK_FILE = ROOT / "modules.lock.yaml"
 MODULES_DIR = ROOT / "modules"

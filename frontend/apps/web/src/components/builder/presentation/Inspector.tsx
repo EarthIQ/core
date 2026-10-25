@@ -213,7 +213,10 @@ function BlockPanel({
   const def = blockDef(block.type);
   const Icon = def.icon;
   const columns = columnsFor(data, block.datasetId);
-  const columnOptions = columns.map((c) => ({ value: c.field, label: c.field }));
+  const columnOptions = columns.map((c) => ({
+    value: c.field,
+    label: c.field,
+  }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -242,16 +245,32 @@ function BlockPanel({
           />
         </Field>
         <div className="grid grid-cols-2 gap-2">
-          <Button size="sm" variant="ghost" onClick={() => onAction(block.id, "up")}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onAction(block.id, "up")}
+          >
             Move up
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => onAction(block.id, "down")}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onAction(block.id, "down")}
+          >
             Move down
           </Button>
-          <Button size="sm" variant="outline" onClick={() => onAction(block.id, "duplicate")}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onAction(block.id, "duplicate")}
+          >
             Duplicate
           </Button>
-          <Button size="sm" variant="error" onClick={() => onAction(block.id, "delete")}>
+          <Button
+            size="sm"
+            variant="error"
+            onClick={() => onAction(block.id, "delete")}
+          >
             Delete
           </Button>
         </div>
@@ -325,7 +344,9 @@ function BlockPanel({
                 size="sm"
                 options={datasetOptions(data)}
                 placeholder={
-                  data.datasets.length ? "Select a dataset" : "No datasets in scope"
+                  data.datasets.length
+                    ? "Select a dataset"
+                    : "No datasets in scope"
                 }
                 value={block.datasetId ?? ""}
                 onChange={(v) =>
@@ -340,10 +361,15 @@ function BlockPanel({
             <Field label="Chart type">
               <Select
                 size="sm"
-                options={CHART_KINDS.map((c) => ({ value: c.id, label: c.label }))}
+                options={CHART_KINDS.map((c) => ({
+                  value: c.id,
+                  label: c.label,
+                }))}
                 value={block.chartType ?? "bar"}
                 onChange={(v) =>
-                  onUpdate(block.id, { chartType: v as SlideBlock["chartType"] })
+                  onUpdate(block.id, {
+                    chartType: v as SlideBlock["chartType"],
+                  })
                 }
               />
             </Field>
@@ -376,7 +402,9 @@ function BlockPanel({
               size="sm"
               options={datasetOptions(data)}
               placeholder={
-                data.datasets.length ? "Select a dataset" : "No datasets in scope"
+                data.datasets.length
+                  ? "Select a dataset"
+                  : "No datasets in scope"
               }
               value={block.datasetId ?? ""}
               onChange={(v) => onUpdate(block.id, { datasetId: v })}
@@ -391,7 +419,9 @@ function BlockPanel({
                 inputSize="sm"
                 placeholder="e.g. 42%"
                 value={block.kpiValue ?? ""}
-                onChange={(e) => onUpdate(block.id, { kpiValue: e.target.value })}
+                onChange={(e) =>
+                  onUpdate(block.id, { kpiValue: e.target.value })
+                }
               />
             </Field>
             <Field label="Label">
@@ -399,7 +429,9 @@ function BlockPanel({
                 inputSize="sm"
                 placeholder="e.g. Coverage this year"
                 value={block.kpiLabel ?? ""}
-                onChange={(e) => onUpdate(block.id, { kpiLabel: e.target.value })}
+                onChange={(e) =>
+                  onUpdate(block.id, { kpiLabel: e.target.value })
+                }
               />
             </Field>
           </>

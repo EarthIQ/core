@@ -1,4 +1,5 @@
 """GeoRSS (RSS/Atom) parser → GeoJSON point features."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -59,9 +60,7 @@ def parse_georss_bytes(file_bytes: bytes) -> list[dict[str, Any]]:
         geom = point or linearring
         if geom is None:
             continue
-        features.append(
-            {"type": "Feature", "geometry": geom, "properties": props}
-        )
+        features.append({"type": "Feature", "geometry": geom, "properties": props})
 
     if not features:
         raise ValueError("GeoRSS feed contained no usable point geometry.")

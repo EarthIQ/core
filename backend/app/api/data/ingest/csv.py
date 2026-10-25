@@ -1,16 +1,17 @@
 """CSV / TSV parsing + coordinate-column detection + row→point features."""
+
 from __future__ import annotations
 
 import csv
 import io
-from typing import Any, Tuple
+from typing import Any
 
 
-def detect_coord_columns(rows: list[dict[str, Any]]) -> Tuple[str | None, str | None]:
+def detect_coord_columns(rows: list[dict[str, Any]]) -> tuple[str | None, str | None]:
     """Heuristically find (lon, lat) column names from a header row."""
     if not rows:
         return None, None
-    headers = [str(h).strip().lower() for h in rows[0].keys()]
+    headers = [str(h).strip().lower() for h in rows[0]]
 
     def find(candidates: list[str]) -> str | None:
         for cand in candidates:
@@ -21,13 +22,16 @@ def detect_coord_columns(rows: list[dict[str, Any]]) -> Tuple[str | None, str | 
     lon = find(["lon", "lng", "longitude", "x"])
     lat = find(["lat", "latitude", "y"])
     # Disambiguate the x/y shortcut (only if lon/lat weren't explicitly present)
-    if lon in ("x",) and lat in ("y",):
-        if not any(h in ("lon", "lng", "longitude", "lat", "latitude") for h in headers):
-            pass  # keep x/y
+    if (
+        lon in ("x",)
+        and lat in ("y",)
+        and not any(h in ("lon", "lng", "longitude", "lat", "latitude") for h in headers)
+    ):
+        pass  # keep x/y
     return lon, lat
 
 
-def parse_csv_bytes(file_bytes: bytes) -> Tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def parse_csv_bytes(file_bytes: bytes) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Parse a CSV file into ``(rows, header)``.
 
     ``rows`` is a list of ``{column: value}`` dicts (values kept as strings,
@@ -91,8 +95,8 @@ def _rows_to_features(
 
 
 __all__ = [
-    "detect_coord_columns",
-    "parse_csv_bytes",
     "_coerce_scalar",
     "_rows_to_features",
+    "detect_coord_columns",
+    "parse_csv_bytes",
 ]

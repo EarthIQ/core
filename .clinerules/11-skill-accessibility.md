@@ -1,8 +1,8 @@
 ---
 paths:
-- "frontend/apps/web/src/**"
-- "frontend/packages/**"
-- "modules/*/frontend/src/**"
+  - "frontend/apps/web/src/**"
+  - "frontend/packages/**"
+  - "modules/*/frontend/src/**"
 ---
 
 # Skill: Accessibility — WCAG 2.2 AA (Sumi-derived)
@@ -11,6 +11,7 @@ paths:
 > change is auditable.
 
 ## Must-pass (AA)
+
 - **1.4.3 Contrast** — text/graphics ≥ 4.5:1 (large ≥ 3:1). Verify against the
   CURRENT token values in BOTH light and `.dark`.
 - **1.4.11 Non-text Contrast** — controls & focus indicators ≥ 3:1.
@@ -25,6 +26,7 @@ paths:
 - **2.5.10 Reflow (320px)** + **1.4.12 Text Spacing** — verify at narrow widths.
 
 ## React / `@packages/ui` specifics
+
 - Interactive elements are `<button>`/`<a>` by default; if using a div, add
   `role`, `tabIndex={0}`, and full key handling (Enter/Space, arrows, Esc).
 - Icon-only controls need an accessible name (`aria-label`).
@@ -38,6 +40,7 @@ paths:
   me" control, and an alternative text list of the key features/markers shown.
 
 ## Quick audit
+
 1. Tab through the whole flow — every control reachable & clearly focused?
 2. Zoom to 200% — nothing clipped or unusable?
 3. Reading-order (screen-reader) pass — does the story make sense?

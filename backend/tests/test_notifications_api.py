@@ -1,10 +1,11 @@
 """API integration tests - auth gating + full notification lifecycle over HTTP."""
+
 from __future__ import annotations
 
 from httpx import AsyncClient
 
-
 # ── Auth gating ────────────────────────────────────────────────────────────────
+
 
 async def test_notifications_requires_auth(client: AsyncClient):
     resp = await client.get("/api/v1/notifications")
@@ -21,6 +22,7 @@ async def test_non_admin_cannot_broadcast(client: AsyncClient, user_a, user_b):
 
 
 # ── Peer-to-peer mentions (any authenticated user) ─────────────────────────────
+
 
 async def test_mention_between_regular_users(client: AsyncClient, user_a, user_b):
     # A NON-admin user can mention another user.
@@ -66,12 +68,18 @@ async def test_mention_self_is_noop(client: AsyncClient, user_a):
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
+
 async def test_admin_create_and_list(client: AsyncClient, admin, user_a):
     resp = await client.post(
         "/api/v1/notifications",
-        json={"title": "Shared with you", "body": "A shared a project",
-              "category": "project", "kind": "success", "link": "/projects/p1",
-              "user_id": user_a["id"]},
+        json={
+            "title": "Shared with you",
+            "body": "A shared a project",
+            "category": "project",
+            "kind": "success",
+            "link": "/projects/p1",
+            "user_id": user_a["id"],
+        },
         headers=admin["headers"],
     )
     assert resp.status_code == 201, resp.text
@@ -107,7 +115,8 @@ async def test_mark_read_updates_count(client: AsyncClient, admin, user_a):
 async def test_mark_all_read(client: AsyncClient, admin, user_a):
     for _ in range(3):
         await client.post(
-            "/api/v1/notifications", json={"title": "m", "user_id": user_a["id"]},
+            "/api/v1/notifications",
+            json={"title": "m", "user_id": user_a["id"]},
             headers=admin["headers"],
         )
     resp = await client.post("/api/v1/notifications/read-all", headers=user_a["headers"])
@@ -134,21 +143,27 @@ async def test_summary_endpoint(client: AsyncClient, admin, user_a):
     assert data["by_category"]["system"] == 1
 
 
-async def test_user_cannot_read_another_users_notification(client: AsyncClient, admin, user_a, user_b):
+async def test_user_cannot_read_another_users_notification(
+    client: AsyncClient, admin, user_a, user_b
+):
     created = (
         await client.post(
-            "/api/v1/notifications", json={"title": "x", "user_id": user_a["id"]},
+            "/api/v1/notifications",
+            json={"title": "x", "user_id": user_a["id"]},
             headers=admin["headers"],
         )
     ).json()
-    resp = await client.post(f"/api/v1/notifications/{created['id']}/read", headers=user_b["headers"])
+    resp = await client.post(
+        f"/api/v1/notifications/{created['id']}/read", headers=user_b["headers"]
+    )
     assert resp.status_code == 404
 
 
 async def test_delete_own(client: AsyncClient, admin, user_a):
     created = (
         await client.post(
-            "/api/v1/notifications", json={"title": "x", "user_id": user_a["id"]},
+            "/api/v1/notifications",
+            json={"title": "x", "user_id": user_a["id"]},
             headers=admin["headers"],
         )
     ).json()
@@ -159,6 +174,7 @@ async def test_delete_own(client: AsyncClient, admin, user_a):
 
 
 # ── Preferences via API ────────────────────────────────────────────────────────
+
 
 async def test_preferences_get_put(client: AsyncClient, user_a):
     got = await client.get("/api/v1/notifications/preferences", headers=user_a["headers"])

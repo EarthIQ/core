@@ -10,10 +10,11 @@ These share the core ``Base`` so the core Alembic env + ``create_all`` pick them
 up automatically. The ``User`` model (``app.api.auth.models``) already carries
 the additional self-service profile columns (bio, avatar_url, ...).
 """
+
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import (
     Boolean,
@@ -29,19 +30,18 @@ from app.core.db import Base
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 # ── Organization ───────────────────────────────────────────────────────────────
+
 
 class Organization(Base):
     """A workspace / team / company a user can belong to (the "organization profile")."""
 
     __tablename__ = "organizations"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String(160), unique=True, index=True, nullable=False)
     # Stable, human-friendly identifier used in URLs / slugs (e.g. "nasa-ghg").
     slug: Mapped[str] = mapped_column(String(180), unique=True, index=True, nullable=False)
@@ -88,9 +88,7 @@ class UserOrganization(Base):
         UniqueConstraint("user_id", "organization_id", name="uq_user_org_membership"),
     )
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
@@ -106,15 +104,18 @@ class UserOrganization(Base):
     organization: Mapped[Organization] = relationship(
         "Organization", back_populates="members", lazy="joined"
     )
-    user: Mapped["User"] = relationship(  # type: ignore[name-defined]
+    user: Mapped[User] = relationship(  # noqa: F821  # type: ignore[name-defined]
         "User", back_populates="organizations", lazy="joined"
     )
 
     def __repr__(self) -> str:
-        return f"<UserOrganization user={self.user_id} org={self.organization_id} role={self.role!r}>"
+        return (
+            f"<UserOrganization user={self.user_id} org={self.organization_id} role={self.role!r}>"
+        )
 
 
 # ── User Preferences (customizable UX) ─────────────────────────────────────────
+
 
 class UserPreferences(Base):
     """Per-user, server-persisted UI preferences (theme, units, basemap, ...).
@@ -127,11 +128,13 @@ class UserPreferences(Base):
 
     __tablename__ = "user_preferences"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
     )
 
     theme_mode: Mapped[str] = mapped_column(String(16), nullable=False, default="dark")

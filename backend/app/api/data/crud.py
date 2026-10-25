@@ -5,26 +5,28 @@ Dataset CRUD + preview/download + geometry profiling. Split out of the old
 single-file ``service.py`` (ticket T-09). All functions keep the same
 signatures/behaviour as before; :mod:`app.api.data.service` re-exports them.
 """
+
 from __future__ import annotations
 
+import contextlib
 import json
-from typing import Any, Tuple
+from typing import Any
 
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.data.models import GeoDataset
 from app.api.data.ingest.common import (
     _content_type_for_format,
     _extract_attributes,
     _insert_features_raw,
 )
+from app.api.data.models import GeoDataset
 from app.core import storage as object_storage
-
 
 # ---------------------------------------------------------------------------
 # CRUD helpers
 # ---------------------------------------------------------------------------
+
 
 async def list_datasets(
     db: AsyncSession,
@@ -68,9 +70,7 @@ async def list_datasets(
 
 
 async def get_dataset(db: AsyncSession, dataset_id: str) -> GeoDataset | None:
-    result = await db.execute(
-        select(GeoDataset).where(GeoDataset.id == dataset_id)
-    )
+    result = await db.execute(select(GeoDataset).where(GeoDataset.id == dataset_id))
     return result.scalar_one_or_none()
 
 
@@ -89,9 +89,7 @@ async def update_dataset(
     return dataset
 
 
-async def get_dataset_features(
-    db: AsyncSession, dataset_id: str
-) -> list[dict[str, Any]] | None:
+async def get_dataset_features(db: AsyncSession, dataset_id: str) -> list[dict[str, Any]] | None:
     """Return a dataset's stored features as GeoJSON feature dicts.
 
     Returns ``None`` when the dataset does not exist (distinct from an
@@ -164,9 +162,7 @@ async def replace_dataset_features(
         await _insert_features_raw(db, dataset_id, sanitized)
 
     dataset.feature_count = len(sanitized)
-    dataset.attributes = _extract_attributes(
-        [f["properties"] for f in sanitized]
-    )
+    dataset.attributes = _extract_attributes([f["properties"] for f in sanitized])
     await db.flush()
     await db.refresh(dataset)
     return dataset
@@ -179,10 +175,8 @@ async def delete_dataset(db: AsyncSession, dataset_id: str) -> bool:
         return False
 
     if dataset.storage_key:
-        try:
+        with contextlib.suppress(Exception):
             await object_storage.delete_file(dataset.storage_key)
-        except Exception:
-            pass
 
     await db.delete(dataset)
     return True
@@ -191,6 +185,7 @@ async def delete_dataset(db: AsyncSession, dataset_id: str) -> bool:
 # ---------------------------------------------------------------------------
 # Preview + download
 # ---------------------------------------------------------------------------
+
 
 async def get_preview(
     db: AsyncSession, dataset_id: str, max_rows: int = 20
@@ -204,7 +199,11 @@ async def get_preview(
     ingested = bool(meta.get("ingested"))
 
     columns = [
-        {"field": a.get("field", ""), "type": a.get("type", "String"), "sample": a.get("sample", "")}
+        {
+            "field": a.get("field", ""),
+            "type": a.get("type", "String"),
+            "sample": a.get("sample", ""),
+        }
         for a in (dataset.attributes or [])
     ]
 
@@ -231,9 +230,7 @@ async def get_preview(
     }
 
 
-async def get_download(
-    db: AsyncSession, dataset_id: str
-) -> Tuple[bytes, str, str] | None:
+async def get_download(db: AsyncSession, dataset_id: str) -> tuple[bytes, str, str] | None:
     """Return ``(bytes, filename, content_type)`` for a stored dataset file."""
     dataset = await get_dataset(db, dataset_id)
     if not dataset or not dataset.storage_key:
@@ -274,9 +271,7 @@ _GEOMETRY_PROFILE_SQL = text(
 _GEOMETRY_KINDS = ("point", "line", "polygon")
 
 
-async def get_geometry_summary(
-    db: AsyncSession, dataset_id: str
-) -> dict[str, Any] | None:
+async def get_geometry_summary(db: AsyncSession, dataset_id: str) -> dict[str, Any] | None:
     """Compute the geometry-type profile of a dataset's features.
 
     Returns a dict (shaped like ``GeometrySummary``) with:
@@ -303,9 +298,7 @@ async def get_geometry_summary(
 
     counts: dict[str, int] = {}
     try:
-        row = (
-            await db.execute(_GEOMETRY_PROFILE_SQL, {"dsid": dataset_id})
-        ).first()
+        row = (await db.execute(_GEOMETRY_PROFILE_SQL, {"dsid": dataset_id})).first()
         if row is not None:
             for attr, label in (
                 ("points", "point"),
@@ -356,14 +349,14 @@ async def get_geometry_summaries(
 
 
 __all__ = [
-    "list_datasets",
-    "get_dataset",
-    "update_dataset",
-    "get_dataset_features",
-    "replace_dataset_features",
     "delete_dataset",
-    "get_preview",
+    "get_dataset",
+    "get_dataset_features",
     "get_download",
-    "get_geometry_summary",
     "get_geometry_summaries",
+    "get_geometry_summary",
+    "get_preview",
+    "list_datasets",
+    "replace_dataset_features",
+    "update_dataset",
 ]

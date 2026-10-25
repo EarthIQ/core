@@ -13,11 +13,12 @@ Design notes
 * The client authenticates via the ``?token=`` query param (WebSocket handshakes
   cannot carry an ``Authorization`` header).
 """
+
 from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import WebSocket
 
@@ -54,7 +55,7 @@ class NotificationHub:
         self,
         user_id: str,
         notification: dict[str, Any],
-        unread_count: Optional[int] = None,
+        unread_count: int | None = None,
     ) -> None:
         """Send a new-notification event to one user's live sockets."""
         payload = {

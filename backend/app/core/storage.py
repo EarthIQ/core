@@ -5,21 +5,23 @@ Async object-storage service backed by RustFS (S3-compatible).
 All public helpers are coroutines so they integrate cleanly with FastAPI's
 async request cycle.
 """
+
 from __future__ import annotations
 
-import io
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, BinaryIO, List
+from typing import BinaryIO
+from urllib.parse import urlsplit, urlunsplit
 
 import aioboto3
 from botocore.exceptions import ClientError
-from urllib.parse import urlsplit, urlunsplit
 
 from app.core.config import get_settings
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _session():
     """Return a fresh aioboto3 Session (cheap, not a connection)."""
@@ -44,6 +46,7 @@ async def _client() -> AsyncGenerator:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 async def ensure_bucket() -> None:
     """
@@ -162,7 +165,7 @@ def _apply_public_base(url: str) -> str:
     return urlunsplit((scheme, base_netloc, new_path, parts.query, parts.fragment))
 
 
-async def list_objects(prefix: str = "") -> List[dict]:
+async def list_objects(prefix: str = "") -> list[dict]:
     """
     List objects in the configured bucket, optionally filtered by *prefix*.
 

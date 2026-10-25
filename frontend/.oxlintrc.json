@@ -1,0 +1,16 @@
+{
+  "plugins": ["react", "jsx_a11y", "import", "typescript"],
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-key": "error",
+    "react/jsx-no-duplicate-props": "error",
+    "react/no-unsafe": "error",
+    "react/exhaustive-deps": "warn",
+    "react/refs": "warn",
+    "jsx_a11y/anchor-is-valid": "warn",
+    "jsx_a11y/click-events-have-key-events": "warn",
+    "jsx_a11y/no-static-element-interactions": "warn",
+    "typescript/no-explicit-any": "warn"
+  },
+  "ignorePatterns": ["node_modules", "dist", ".vite", "**/*.generated.ts"]
+}

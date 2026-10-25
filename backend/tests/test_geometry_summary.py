@@ -6,6 +6,7 @@ The PostGIS-backed aggregation path (``ST_GeometryType``) is covered by
 behaviours: raster short-circuit, unknown dataset, and graceful fallback on a
 non-PostGIS engine (in-memory SQLite, where the aggregation query fails).
 """
+
 from __future__ import annotations
 
 import pytest

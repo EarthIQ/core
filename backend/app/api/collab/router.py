@@ -5,18 +5,18 @@ Endpoint: /api/v1/collab/ws/{project_id}?token=<jwt>
 Authentication via query param because HTTP Authorization headers
 are not supported in the WebSocket upgrade handshake.
 """
+
 from __future__ import annotations
 
 import logging
 
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.auth.service import get_user_by_id
 from app.api.collab.manager import manager
+from app.api.projects.service import compute_user_permission, get_project_by_id
 from app.core.db import AsyncSessionLocal
 from app.core.security import JWTError, decode_access_token
-from app.api.auth.service import get_user_by_id
-from app.api.projects.service import get_project_by_id, compute_user_permission
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["collaboration"])

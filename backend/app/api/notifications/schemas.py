@@ -4,13 +4,13 @@ Notifications - Pydantic Schemas (core).
 These mirror the ORM models in ``models.py`` and define the request/response
 contracts for the REST router.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
-
 
 # ── Category / kind vocab ──────────────────────────────────────────────────────
 
@@ -19,25 +19,26 @@ from pydantic import BaseModel, Field
 CATEGORIES = ["system", "project", "dataset", "access_request", "ai", "mention"]
 KINDS = ["info", "success", "warning", "error"]
 
-DEFAULT_CATEGORY_PREFS: dict[str, bool] = {c: True for c in CATEGORIES}
+DEFAULT_CATEGORY_PREFS: dict[str, bool] = dict.fromkeys(CATEGORIES, True)
 
 
 # ── Read-only views ────────────────────────────────────────────────────────────
 
+
 class NotificationRead(BaseModel):
     """A single notification as shown to one user."""
 
-    id: str                       # recipient id (per-user row) - used for read/unread actions
+    id: str  # recipient id (per-user row) - used for read/unread actions
     message_id: str
     category: str
     kind: str
     title: str
-    body: Optional[str] = None
-    payload: Optional[dict[str, Any]] = None
-    source: Optional[str] = None
-    link: Optional[str] = None
+    body: str | None = None
+    payload: dict[str, Any] | None = None
+    source: str | None = None
+    link: str | None = None
     read: bool
-    read_at: Optional[datetime] = None
+    read_at: datetime | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -51,7 +52,7 @@ class NotificationSummary(BaseModel):
 
 
 class NotificationListResponse(BaseModel):
-    items: List[NotificationRead]
+    items: list[NotificationRead]
     total: int
     page: int
     page_size: int
@@ -75,28 +76,29 @@ class PreferencesRead(BaseModel):
     categories: dict[str, bool] = Field(default_factory=dict)
     toasts: bool
     sound: bool
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
 
 class PreferencesUpdate(BaseModel):
-    enabled: Optional[bool] = None
-    categories: Optional[dict[str, bool]] = None
-    toasts: Optional[bool] = None
-    sound: Optional[bool] = None
+    enabled: bool | None = None
+    categories: dict[str, bool] | None = None
+    toasts: bool | None = None
+    sound: bool | None = None
 
 
 # ── Create / broadcast ─────────────────────────────────────────────────────────
+
 
 class NotificationCreate(BaseModel):
     """Create and deliver a single notification to one user."""
 
     title: str = Field(..., min_length=1, max_length=255)
-    body: Optional[str] = None
+    body: str | None = None
     category: str = Field(default="system")
     kind: str = Field(default="info")
-    payload: Optional[dict[str, Any]] = None
-    source: Optional[str] = None
-    link: Optional[str] = None
+    payload: dict[str, Any] | None = None
+    source: str | None = None
+    link: str | None = None
     user_id: str = Field(..., description="Recipient user id")
 
 
@@ -104,15 +106,15 @@ class NotificationBroadcast(BaseModel):
     """Create one message and deliver it to many users (or everyone)."""
 
     title: str = Field(..., min_length=1, max_length=255)
-    body: Optional[str] = None
+    body: str | None = None
     category: str = Field(default="system")
     kind: str = Field(default="info")
-    payload: Optional[dict[str, Any]] = None
-    source: Optional[str] = None
-    link: Optional[str] = None
+    payload: dict[str, Any] | None = None
+    source: str | None = None
+    link: str | None = None
     # Explicit recipient list. When empty/omitted, broadcast to ALL users
     # (subject to each user's own preferences).
-    user_ids: List[str] = Field(default_factory=list)
+    user_ids: list[str] = Field(default_factory=list)
     # Skip recipients whose preferences disable this category / in-app delivery.
     respect_preferences: bool = True
 
@@ -126,6 +128,6 @@ class MentionCreate(BaseModel):
 
     to_user_id: str = Field(..., description="Recipient user id")
     title: str = Field(default="You were mentioned", min_length=1, max_length=255)
-    body: Optional[str] = None
-    link: Optional[str] = None
-    payload: Optional[dict[str, Any]] = None
+    body: str | None = None
+    link: str | None = None
+    payload: dict[str, Any] | None = None

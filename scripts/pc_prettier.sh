@@ -2,6 +2,9 @@
 # Format staged files with the workspace Prettier.
 # Single source of truth for JS/TS style: @packages/prettier-config (via frontend/prettier.config.mjs).
 # Works for both core files (frontend/...) and module files (modules/*/frontend/...).
+#
+# Memory-safe: files are processed in batches of BATCH_SIZE to keep each
+# Node.js process's heap bounded.
 set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/pc_lib.sh"
 
@@ -15,6 +18,18 @@ root="$(git rev-parse --show-toplevel)"
 abs=()
 for f in "$@"; do abs+=("$root/$f"); done
 
-# Run from the workspace root so `pnpm exec` resolves the workspace's prettier,
-# but pass absolute file paths so they resolve correctly regardless of cwd.
-( cd "$ws" && pnpm exec prettier --config ./prettier.config.mjs --ignore-path ./.prettierignore --write -- "${abs[@]}" )
+# Cap Node heap (512 MB) as a safety net so a single batch can't blow up.
+export NODE_OPTIONS="${NODE_OPTIONS:-} --max-old-space-size=512"
+
+# Process in batches to keep memory bounded (avoids one giant Node process
+# loading 500+ file ASTs simultaneously).
+BATCH_SIZE=50
+total=${#abs[@]}
+i=0
+rc=0
+while [ "$i" -lt "$total" ]; do
+  batch=("${abs[@]:i:BATCH_SIZE}")
+  ( cd "$ws" && pnpm exec prettier --config ./prettier.config.mjs --ignore-path ./.prettierignore --write -- "${batch[@]}" ) || rc=$?
+  i=$((i + BATCH_SIZE))
+done
+exit "$rc"

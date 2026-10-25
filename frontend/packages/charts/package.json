@@ -32,7 +32,7 @@
     "build": "tsup",
     "clean": "rm -rf dist",
     "dev": "tsup --watch",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
@@ -43,7 +43,6 @@
     "recharts": "^3.10.1"
   },
   "devDependencies": {
-    "@packages/eslint-config": "workspace:*",
     "@packages/prettier-config": "workspace:*",
     "@packages/typescript-config": "workspace:*",
     "@tailwindcss/vite": "^4.1.18",

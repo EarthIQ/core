@@ -2,12 +2,12 @@ import importlib
 import logging
 import sys
 from pathlib import Path
+
 import yaml
-from fastapi import FastAPI
 
 logger = logging.getLogger("module_loader")
 
-ROOT = Path(__file__).resolve().parents[2]        # core/
+ROOT = Path(__file__).resolve().parents[2]  # core/
 LOCK_FILE = ROOT / "modules.lock.yaml"
 
 
@@ -54,7 +54,9 @@ def load_modules(app, prefix: str = "/api/v1") -> None:
             except Exception as exc:
                 logger.error(
                     "Failed to load models for module '%s': %s",
-                    mod["name"], exc, exc_info=True,
+                    mod["name"],
+                    exc,
+                    exc_info=True,
                 )
 
         # ── 3. Import and mount the API router ────────────────────────────────

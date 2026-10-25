@@ -46,5 +46,10 @@ known-first-party = [
     "module_urban",
 ]
 
+[lint.per-file-ignores]
+# Alembic's env.py must insert the backend dir on sys.path *before* importing the
+# app's ORM models, so those imports intentionally sit below top-of-file code.
+"**/alembic/env.py" = ["E402"]
+
 [format]
 quote-style = "double"

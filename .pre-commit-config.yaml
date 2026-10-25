@@ -6,7 +6,7 @@
 #   - Bump remote-hook versions:        pre-commit autoupdate
 #
 # The Python + JS/TS hooks are `language: system` and shell out to the repo's OWN
-# toolchain (uv-managed ruff + the pnpm workspace's prettier/eslint). That keeps
+# toolchain (uv-managed ruff + the pnpm workspace's prettier/oxlint). That keeps
 # tool versions and config in lock-step with the codebase — no isolated hook envs
 # pulling divergent versions.
 fail_fast: false
@@ -32,9 +32,9 @@ repos:
         language: system
         files: '\.(t|j)sx?$|\.(json|md|css|html|ya?ml)$'
 
-      - id: eslint
-        name: eslint (workspace)
-        entry: scripts/pc_eslint.sh
+      - id: oxlint
+        name: oxlint (workspace)
+        entry: scripts/pc_oxlint.sh
         language: system
         files: '\.(t|j)sx?$'
 

@@ -69,13 +69,7 @@ function extractLayerColor(
  * List of source prefixes that are considered "base map" and should be locked.
  * Customize this based on your application's base style.
  */
-const BASE_MAP_SOURCES = new Set([
-  "openmaptiles",
-  "maptiler",
-  "mapbox",
-  "composite",
-  "",
-]);
+const BASE_MAP_SOURCES = new Set(["openmaptiles", "mapbox", "composite", ""]);
 
 export function useLayerPanel() {
   const { map, isLoaded } = useMap();

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import List
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -22,9 +21,7 @@ class Settings(BaseSettings):
     app_env: str = "dev"
 
     # ── Database ──────────────────────────────────────────────────────────────
-    database_url: str = (
-        "postgresql+asyncpg://earthiq:earthiq@localhost:5432/earthiq"
-    )
+    database_url: str = "postgresql+asyncpg://earthiq:earthiq@localhost:5432/earthiq"
 
     # ── JWT ───────────────────────────────────────────────────────────────────
     jwt_secret: str = "change-me-in-production"
@@ -32,10 +29,9 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 60 * 24  # 24 h
 
     # ── CORS ──────────────────────────────────────────────────────────────────
-    cors_origins: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    cors_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
 
-    # ── Tiles / Basemaps ──────────────────────────────────────────────────────
-    maptiler_key: str = ""
+    # ── Basemaps ──────────────────────────────────────────────────────────────
     # Optional JSON list of basemap definitions to *replace* the built-in
     # defaults (see app.api.viz.router.get_basemaps). Example:
     #   [{"id":"osm","name":"OSM","style_url":"https://.../{z}/{x}/{y}.png"}]
@@ -59,8 +55,12 @@ class Settings(BaseSettings):
     # ── Rate limiting ─────────────────────────────────────────────────────────
     # Applied to the heavy/sensitive endpoints (dataset upload, AI, storage).
     rate_limit_enabled: bool = True
-    rate_limit_requests: int = 60        # max requests per window per client
+    rate_limit_requests: int = 60  # max requests per window per client
     rate_limit_window_seconds: int = 60  # sliding window size (seconds)
+    # IPs of reverse proxies whose ``X-Forwarded-For`` header the rate limiter
+    # may trust to derive the per-client key. Empty (default) = trust the peer
+    # address directly (never an untrusted header), which is the safe default.
+    trusted_proxy_ips: list[str] = []
 
     # ── Email / SMTP ──────────────────────────────────────────────────────────
     # Leave smtp_host empty to disable email sending entirely (graceful no-op)

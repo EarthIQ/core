@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import yaml
+
 from .registry import ROOT, load_module_meta
 
 BASE_COMPOSE = ROOT / "infra" / "docker" / "docker-compose.base.yaml"
@@ -90,9 +91,7 @@ def generate_compose(lock: dict) -> None:
     for svc in base.get("services", {}).values():
         env_files = svc.get("env_file")
         if isinstance(env_files, list):
-            svc["env_file"] = [
-                str((base_dir / f).resolve().relative_to(ROOT)) for f in env_files
-            ]
+            svc["env_file"] = [str((base_dir / f).resolve().relative_to(ROOT)) for f in env_files]
         elif isinstance(env_files, str):
             svc["env_file"] = str((base_dir / env_files).resolve().relative_to(ROOT))
 
@@ -111,9 +110,7 @@ def generate_compose(lock: dict) -> None:
         if mode == "prod":
             # Remove dev-only volumes
             if svc_name in DEV_VOLUMES and "volumes" in svc_def:
-                remaining = [
-                    v for v in svc_def["volumes"] if v not in DEV_VOLUMES[svc_name]
-                ]
+                remaining = [v for v in svc_def["volumes"] if v not in DEV_VOLUMES[svc_name]]
                 if remaining:
                     svc_def["volumes"] = remaining
                 else:

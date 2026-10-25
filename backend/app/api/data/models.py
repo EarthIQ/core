@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from geoalchemy2 import Geometry
@@ -24,9 +24,7 @@ class GeoDataset(Base):
 
     __tablename__ = "geo_datasets"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String(512), nullable=False, index=True)
     format: Mapped[str] = mapped_column(
         String(32), nullable=False, default="GeoJSON"
@@ -46,16 +44,14 @@ class GeoDataset(Base):
     source: Mapped[str | None] = mapped_column(String(512), nullable=True)
     # Free-form, format-specific metadata (dimensions, bands, columns, preview,
     # "ingested" flag, etc.). Kept as JSONB so new data types need no new columns.
-    meta: Mapped[dict[str, Any]] = mapped_column(
-        JSONB, nullable=False, default=dict
-    )
+    meta: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
     )
 
     # Parent folder in the catalog tree (NULL = ungrouped / root level).
@@ -66,7 +62,7 @@ class GeoDataset(Base):
         index=True,
     )
 
-    features: Mapped[list["GeoFeature"]] = relationship(
+    features: Mapped[list[GeoFeature]] = relationship(
         "GeoFeature",
         back_populates="dataset",
         cascade="all, delete-orphan",
@@ -87,9 +83,7 @@ class DataFolder(Base):
 
     __tablename__ = "data_folders"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String(256), nullable=False, index=True)
     parent_id: Mapped[str | None] = mapped_column(
         String(36),
@@ -98,18 +92,18 @@ class DataFolder(Base):
         index=True,
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
     )
 
-    parent: Mapped["DataFolder | None"] = relationship(
+    parent: Mapped[DataFolder | None] = relationship(
         "DataFolder", remote_side="DataFolder.id", lazy="noload"
     )
-    children: Mapped[list["DataFolder"]] = relationship(
+    children: Mapped[list[DataFolder]] = relationship(
         "DataFolder",
         back_populates="parent",
         cascade="all, delete-orphan",
@@ -129,9 +123,7 @@ class GeoFeature(Base):
 
     __tablename__ = "geo_features"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     dataset_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("geo_datasets.id", ondelete="CASCADE"),
@@ -142,13 +134,9 @@ class GeoFeature(Base):
         Geometry(geometry_type="GEOMETRY", srid=4326, nullable=True),
         nullable=True,
     )
-    properties: Mapped[dict[str, Any]] = mapped_column(
-        JSONB, nullable=False, default=dict
-    )
+    properties: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
 
-    dataset: Mapped["GeoDataset"] = relationship(
-        "GeoDataset", back_populates="features"
-    )
+    dataset: Mapped[GeoDataset] = relationship("GeoDataset", back_populates="features")
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<GeoFeature id={self.id} dataset_id={self.dataset_id}>"

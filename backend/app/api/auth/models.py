@@ -1,14 +1,15 @@
 from __future__ import annotations
-import uuid
-from datetime import datetime, timezone
 
-from sqlalchemy import String, Boolean, DateTime, ForeignKey, Table, Column, Text
+import uuid
+from datetime import UTC, datetime
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base
 
-
 # ── Association Tables ─────────────────────────────────────────────────────────
+
 
 class UserGroup(Base):
     __tablename__ = "user_groups"
@@ -20,7 +21,7 @@ class UserGroup(Base):
         String(36), ForeignKey("groups.id", ondelete="CASCADE"), primary_key=True
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
 
 
@@ -37,12 +38,11 @@ class GroupPermission(Base):
 
 # ── Main Auth & RBAC Models ────────────────────────────────────────────────────
 
+
 class Permission(Base):
     __tablename__ = "permissions"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
@@ -50,13 +50,11 @@ class Permission(Base):
 class Group(Base):
     __tablename__ = "groups"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
 
     users: Mapped[list[User]] = relationship(
@@ -73,16 +71,14 @@ class Group(Base):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     email: Mapped[str] = mapped_column(String(254), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
     # ── Profile (self-service) ──────────────────────────────────────────────
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -99,15 +95,13 @@ class User(Base):
         nullable=True,
         index=True,
     )
-    last_login_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     groups: Mapped[list[Group]] = relationship(
         "Group", secondary="user_groups", back_populates="users", lazy="selectin"
     )
     # Organization memberships (owned by the profile domain).
-    organizations: Mapped[list["UserOrganization"]] = relationship(  # type: ignore[name-defined]
+    organizations: Mapped[list[UserOrganization]] = relationship(  # noqa: F821  # type: ignore[name-defined]
         "UserOrganization",
         back_populates="user",
         cascade="all, delete-orphan",

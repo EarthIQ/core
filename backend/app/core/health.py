@@ -14,16 +14,18 @@ Exposes two endpoints (wired in ``app.main``):
 
 Ticket: T-10 (health expands to db/storage/redis).
 """
+
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from typing import Any
 from urllib.parse import urlsplit
 
 from sqlalchemy import text
 
-from app.core.config import get_settings
 from app.core import storage as object_storage
+from app.core.config import get_settings
 
 
 def _short(exc: Exception) -> str:
@@ -70,10 +72,8 @@ async def _redis_ping(host: str, port: int) -> str:
         return data.decode("utf-8", errors="replace").strip()
     finally:
         writer.close()
-        try:
+        with contextlib.suppress(Exception):  # pragma: no cover - defensive
             await writer.wait_closed()
-        except Exception:  # pragma: no cover - defensive
-            pass
 
 
 async def check_redis() -> dict[str, Any]:

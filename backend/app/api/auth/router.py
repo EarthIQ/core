@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-from typing import Optional, Union
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -17,6 +16,7 @@ from app.api.auth.schemas import (
     PermissionCreate,
     PermissionRead,
     PermissionUpdate,
+    RegisterRequest,
     Token,
     UserAdminRead,
     UserCreate,
@@ -25,8 +25,6 @@ from app.api.auth.schemas import (
     UserRead,
     UserUpdate,
 )
-
-
 from app.api.auth.service import (
     authenticate_user,
     create_group,
@@ -54,15 +52,29 @@ _bearer = HTTPBearer()
 
 # ── Register ──────────────────────────────────────────────────────────────────
 
+
 @router.post("/register", response_model=UserRead, status_code=201)
-async def register(body: UserCreate, db: AsyncSession = Depends(get_db)):
+async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     existing = await get_user_by_email(db, body.email)
     if existing:
+        # Rate limiting on this route (see app.main) throttles brute-force and
+        # account-existence probing.
         raise HTTPException(status_code=409, detail="Email already registered")
-    return await create_user(db, body)
+    # Public sign-up must never create a privileged account: force
+    # ``is_superuser=False`` and drop any group assignments.
+    return await create_user(
+        db,
+        UserCreate(
+            email=body.email,
+            password=body.password,
+            full_name=body.full_name,
+            is_superuser=False,
+        ),
+    )
 
 
 # ── Login ─────────────────────────────────────────────────────────────────────
+
 
 @router.post("/token", response_model=Token)
 async def login(body: UserLogin, db: AsyncSession = Depends(get_db)):
@@ -73,13 +85,14 @@ async def login(body: UserLogin, db: AsyncSession = Depends(get_db)):
             detail="Invalid credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    user.last_login_at = datetime.now(timezone.utc)
+    user.last_login_at = datetime.now(UTC)
     await db.flush()
     token = create_access_token(subject=user.id)
     return Token(access_token=token)
 
 
 # ── Current user ──────────────────────────────────────────────────────────────
+
 
 async def _get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(_bearer),
@@ -89,7 +102,7 @@ async def _get_current_user(
         payload = decode_access_token(credentials.credentials)
         user_id: str = payload["sub"]
     except (JWTError, KeyError):
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="Invalid token") from None
 
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -104,9 +117,53 @@ async def _require_admin(current_user: User = Depends(_get_current_user)):
     return current_user
 
 
+# ── Reusable auth dependencies (exported for other routers) ──────────────────
+
+_bearer_optional = HTTPBearer(auto_error=False)
+
+
+async def get_optional_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_optional),
+    token: str | None = Query(
+        None,
+        description="Alternative to the Authorization header (for clients that "
+        "cannot set headers, e.g. map tile requests).",
+    ),
+    db: AsyncSession = Depends(get_db),
+) -> User | None:
+    """Like :func:`_get_current_user` but returns ``None`` (instead of raising)
+    when no valid credentials are supplied.
+
+    Accepts either an ``Authorization: Bearer <jwt>`` header **or** a
+    ``?token=<jwt>`` query parameter. Used by asset endpoints (tiles / file
+    downloads) that must also be reachable by the authenticated owner.
+    """
+    tok: str | None = credentials.credentials if credentials else None
+    if not tok and token:
+        tok = token
+    if not tok:
+        return None
+    try:
+        payload = decode_access_token(tok)
+        user_id: str = payload["sub"]
+    except (JWTError, KeyError):
+        return None
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    return user if (user and user.is_active) else None
+
+
+async def require_admin(current_user: User = Depends(_get_current_user)) -> User:
+    """Dependency: allow only superusers (admins)."""
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    return current_user
+
+
 @router.get("/me", response_model=UserMeRead)
 async def me(current_user=Depends(_get_current_user), db: AsyncSession = Depends(get_db)):
     from app.api.auth.service import get_user_effective_permissions
+
     perms = await get_user_effective_permissions(db, current_user)
     user_dict = UserRead.model_validate(current_user).model_dump()
     user_dict["effective_permissions"] = perms
@@ -115,11 +172,12 @@ async def me(current_user=Depends(_get_current_user), db: AsyncSession = Depends
 
 # ── User management ─────────────────────────────────────────────────────────
 
+
 @router.get("/users", response_model=PaginatedUsersResponse, summary="List all users")
 async def get_users(
-    search: Optional[str] = Query(None, description="Search by email or full name"),
-    is_superuser: Optional[bool] = Query(None, description="Filter by superuser status"),
-    group_id: Optional[str] = Query(None, description="Filter by group ID"),
+    search: str | None = Query(None, description="Search by email or full name"),
+    is_superuser: bool | None = Query(None, description="Filter by superuser status"),
+    group_id: str | None = Query(None, description="Filter by group ID"),
     sort_by: str = Query("created_at", description="Sort field (created_at, email, full_name)"),
     sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
     page: int = Query(1, ge=1, description="Page number"),
@@ -144,7 +202,6 @@ async def get_users(
         page_size=page_size,
         total_pages=total_pages,
     )
-
 
 
 @router.post(
@@ -207,17 +264,18 @@ async def delete_user_route(
 
 # ── Groups & Permissions ───────────────────────────────────────────────────────
 
+
 @router.get(
     "/permissions",
-    response_model=Union[PaginatedPermissionsResponse, list[PermissionRead]],
+    response_model=PaginatedPermissionsResponse | list[PermissionRead],
     summary="List all permissions",
 )
 async def get_permissions(
-    search: Optional[str] = Query(None, description="Search by permission name or description"),
+    search: str | None = Query(None, description="Search by permission name or description"),
     sort_by: str = Query("name", description="Sort field"),
     sort_order: str = Query("asc", pattern="^(asc|desc)$", description="Sort order"),
-    page: Optional[int] = Query(None, ge=1, description="Page number"),
-    page_size: Optional[int] = Query(None, ge=1, le=100, description="Items per page"),
+    page: int | None = Query(None, ge=1, description="Page number"),
+    page_size: int | None = Query(None, ge=1, le=100, description="Items per page"),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(_require_admin),
 ):
@@ -254,7 +312,9 @@ async def create_permission_route(
     return await create_permission(db, body)
 
 
-@router.put("/permissions/{permission_id}", response_model=PermissionRead, summary="Update a permission")
+@router.put(
+    "/permissions/{permission_id}", response_model=PermissionRead, summary="Update a permission"
+)
 async def update_permission_route(
     permission_id: str,
     body: PermissionUpdate,
@@ -284,15 +344,15 @@ async def delete_permission_route(
 
 @router.get(
     "/groups",
-    response_model=Union[PaginatedGroupsResponse, list[GroupRead]],
+    response_model=PaginatedGroupsResponse | list[GroupRead],
     summary="List all groups",
 )
 async def list_groups_route(
-    search: Optional[str] = Query(None, description="Search by group name or description"),
+    search: str | None = Query(None, description="Search by group name or description"),
     sort_by: str = Query("name", description="Sort field"),
     sort_order: str = Query("asc", pattern="^(asc|desc)$", description="Sort order"),
-    page: Optional[int] = Query(None, ge=1, description="Page number"),
-    page_size: Optional[int] = Query(None, ge=1, le=100, description="Items per page"),
+    page: int | None = Query(None, ge=1, description="Page number"),
+    page_size: int | None = Query(None, ge=1, le=100, description="Items per page"),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(_require_admin),
 ):
@@ -313,7 +373,6 @@ async def list_groups_route(
             total_pages=total_pages,
         )
     return groups
-
 
 
 @router.post(

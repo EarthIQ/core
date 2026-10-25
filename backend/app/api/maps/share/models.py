@@ -3,17 +3,17 @@
 Register with ``Base.metadata`` via the ``main.py`` import so that
 ``create_all`` (dev) and Alembic (production) both see the tables.
 """
+
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy import DateTime, ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db import Base
 from app.api.auth.models import User
+from app.core.db import Base
 
 
 class AccessRequest(Base):
@@ -29,9 +29,7 @@ class AccessRequest(Base):
         UniqueConstraint("entity_type", "entity_id", "user_id", name="uq_access_request"),
     )
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     # "map" | "project"
     entity_type: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     entity_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
@@ -47,23 +45,19 @@ class AccessRequest(Base):
     # Role the requester would like (informational) - viewer | commenter | editor
     requested_role: Mapped[str] = mapped_column(String(20), default="viewer", nullable=False)
     # Role actually granted when the owner approved
-    granted_role: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    granted_role: Mapped[str | None] = mapped_column(String(20), nullable=True)
     # One-time token for the owner's approval link
-    approval_token: Mapped[str] = mapped_column(
-        String(64), nullable=False, unique=True, index=True
-    )
+    approval_token: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
     )
 
-    requester: Mapped[Optional[User]] = relationship(
-        "User", foreign_keys=[user_id], lazy="selectin"
-    )
+    requester: Mapped[User | None] = relationship("User", foreign_keys=[user_id], lazy="selectin")
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<AccessRequest {self.entity_type}/{self.entity_id} by={self.email} status={self.status}>"

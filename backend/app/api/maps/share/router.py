@@ -6,28 +6,34 @@ Additional:  /api/v1/people             (user search, mounted on the app)
              /api/v1/invite/accept      (token acceptance, any entity)
              /api/v1/maps/invite/accept (legacy alias)
 """
-from __future__ import annotations
 
-from typing import List, Optional
+from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import get_db
 from app.api.auth.models import User
 from app.api.auth.router import get_current_user
 from app.api.maps.share import schemas as s
 from app.api.maps.share import service as svc
+from app.core.db import get_db
 
 router = APIRouter(tags=["share"])
 
 # ── People search (no entity id needed) ───────────────────────────────────────
 
-@router.get("/people", response_model=List[s.PeopleSearchResult], summary="Search users for share autocomplete")
+
+@router.get(
+    "/people",
+    response_model=list[s.PeopleSearchResult],
+    summary="Search users for share autocomplete",
+)
 async def search_people(
     q: str = Query("", description="Search term (email or name)"),
-    entity_id: Optional[str] = Query(None, description="Map or project id - exclude users already on this entity"),
-    map_id: Optional[str] = Query(None, description="Legacy alias for entity_id"),
+    entity_id: str | None = Query(
+        None, description="Map or project id - exclude users already on this entity"
+    ),
+    map_id: str | None = Query(None, description="Legacy alias for entity_id"),
     db: AsyncSession = Depends(get_db),
     _actor: User = Depends(get_current_user),
 ):
@@ -35,6 +41,7 @@ async def search_people(
 
 
 # ── Invite accept (token-based, works for maps and projects, requires login) ──
+
 
 @router.get(
     "/invite/accept",
@@ -65,6 +72,7 @@ async def accept_invite_legacy(
 
 
 # ── Access requests (owner approval, token-based) ─────────────────────────────
+
 
 @router.get(
     "/access/request",
@@ -129,7 +137,7 @@ async def get_share_state(
 
 @entity_share_router.post(
     "/invite",
-    response_model=List[s.AccessEntryRead],
+    response_model=list[s.AccessEntryRead],
     status_code=201,
     summary="Invite users by email",
 )

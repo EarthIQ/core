@@ -402,9 +402,12 @@ export const MentionTextarea = ({
                   No users match “{query}”
                 </div>
               ) : (
-                <ul className="max-h-52 overflow-y-auto">
+                <div
+                  className="max-h-52 overflow-y-auto"
+                  role="listbox"
+                >
                   {results.map((u, i) => (
-                    <li
+                    <div
                       key={u.id}
                       aria-selected={i === hi}
                       role="option"
@@ -433,9 +436,9 @@ export const MentionTextarea = ({
                           </span>
                         </span>
                       </button>
-                    </li>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
             </div>,
             document.body

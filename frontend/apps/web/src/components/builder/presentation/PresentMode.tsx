@@ -95,7 +95,12 @@ export function PresentMode({
       {/* Stage */}
       <div className="flex flex-1 items-center justify-center px-4 pb-2">
         <div className="w-full max-w-[1200px]">
-          <SlideCanvas data={data} key={slide.id} mode="present" slide={slide} />
+          <SlideCanvas
+            data={data}
+            key={slide.id}
+            mode="present"
+            slide={slide}
+          />
           {showNotes && slide.notes ? (
             <div className="mt-3 rounded-lg border border-white/10 bg-white/5 p-3">
               <span className="mb-1 block text-xs font-semibold tracking-wide text-white/50 uppercase">
@@ -122,7 +127,11 @@ export function PresentMode({
           Prev
         </Button>
 
-        <div className="flex items-center gap-1.5" role="tablist" aria-label="Slides">
+        <div
+          className="flex items-center gap-1.5"
+          role="tablist"
+          aria-label="Slides"
+        >
           {slides.map((s, i) => (
             <button
               aria-label={`Go to slide ${i + 1}`}

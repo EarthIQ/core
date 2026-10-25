@@ -12,15 +12,19 @@ Covers:
 Hermetic: in-memory SQLite where needed, an in-process fake Redis server for
 the socket probe, and monkeypatched settings. No external services required.
 """
+
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 
 import pytest
 from fastapi import APIRouter, FastAPI, HTTPException
 from httpx import ASGITransport, AsyncClient
 
+import app.api.viz.router as viz_router
+import app.core.health as health_mod
 from app.core import storage as object_storage
 from app.core.config import Settings
 from app.core.errors import register_error_handlers
@@ -30,22 +34,20 @@ from app.core.guardrail import (
     validate_production_settings,
 )
 from app.core.rate_limit import RateLimitMiddleware, SlidingWindowLimiter
-import app.core.health as health_mod
-import app.api.viz.router as viz_router
-
 
 # ────────────────────────────────────────────────────────────────────────────
 # T-04 - production secret guardrail
 # ────────────────────────────────────────────────────────────────────────────
 
+
 def _settings(**overrides) -> Settings:
-    base = dict(
-        app_env="prod",
-        jwt_secret="super-secret-value",
-        storage_access_key="prodkey",
-        storage_secret_key="prodsecret",
-        database_url="postgresql+asyncpg://prod:supersecret@db:5432/prod",
-    )
+    base = {
+        "app_env": "prod",
+        "jwt_secret": "super-secret-value",
+        "storage_access_key": "prodkey",
+        "storage_secret_key": "prodsecret",
+        "database_url": "postgresql+asyncpg://prod:supersecret@db:5432/prod",
+    }
     base.update(overrides)
     return Settings(**base)
 
@@ -95,6 +97,7 @@ def test_is_production_variants():
 # ────────────────────────────────────────────────────────────────────────────
 # T-05 - rate limiting
 # ────────────────────────────────────────────────────────────────────────────
+
 
 def test_sliding_window_limiter_basic():
     lim = SlidingWindowLimiter(limit=3, window_seconds=60)
@@ -152,6 +155,7 @@ async def test_rate_limit_does_not_affect_other_paths(rate_client):
 # ────────────────────────────────────────────────────────────────────────────
 # T-06 - uniform error envelope
 # ────────────────────────────────────────────────────────────────────────────
+
 
 def _error_app() -> FastAPI:
     app = FastAPI()
@@ -211,9 +215,11 @@ async def test_error_envelope_internal():
 # T-03 - presigned-URL host rewrite
 # ────────────────────────────────────────────────────────────────────────────
 
+
 def test_apply_public_base_rewrites_host(monkeypatch):
     monkeypatch.setattr(
-        object_storage, "get_settings",
+        object_storage,
+        "get_settings",
         lambda: Settings(storage_public_base_url="https://storage.example.com"),
     )
     url = "http://rustfs:9000/earthiq/a/b.geojson?X-Amz-Signature=abc"
@@ -224,7 +230,8 @@ def test_apply_public_base_rewrites_host(monkeypatch):
 
 def test_apply_public_base_with_basepath(monkeypatch):
     monkeypatch.setattr(
-        object_storage, "get_settings",
+        object_storage,
+        "get_settings",
         lambda: Settings(storage_public_base_url="https://cdn.example.com/geodata"),
     )
     out = object_storage._apply_public_base("http://rustfs:9000/bucket/key.tif?sig=1")
@@ -233,7 +240,8 @@ def test_apply_public_base_with_basepath(monkeypatch):
 
 def test_apply_public_base_noop_when_unset(monkeypatch):
     monkeypatch.setattr(
-        object_storage, "get_settings",
+        object_storage,
+        "get_settings",
         lambda: Settings(storage_public_base_url=""),
     )
     url = "http://rustfs:9000/bucket/key.tif?sig=1"
@@ -244,6 +252,7 @@ def test_apply_public_base_noop_when_unset(monkeypatch):
 # T-07 - basemaps data-driven
 # ────────────────────────────────────────────────────────────────────────────
 
+
 def test_basemaps_override(monkeypatch):
     cfg = json.dumps(
         [{"id": "custom", "name": "Custom", "style_url": "https://x/{z}/{x}/{y}.png", "dark": True}]
@@ -252,14 +261,6 @@ def test_basemaps_override(monkeypatch):
     bm = viz_router.get_basemaps()
     assert [b.id for b in bm] == ["custom"]
     assert bm[0].dark is True
-
-
-def test_basemaps_maptiler_appended(monkeypatch):
-    monkeypatch.setattr(viz_router, "get_settings", lambda: Settings(maptiler_key="K"))
-    bm = viz_router.get_basemaps()
-    ids = [b.id for b in bm]
-    assert "maptiler-streets" in ids
-    assert any("K" in b.style_url for b in bm if b.id == "maptiler-streets")
 
 
 def test_basemaps_invalid_json_falls_back(monkeypatch):
@@ -272,6 +273,7 @@ def test_basemaps_invalid_json_falls_back(monkeypatch):
 # T-10 - component health (db / redis / storage)
 # ────────────────────────────────────────────────────────────────────────────
 
+
 def test_parse_redis_url():
     assert health_mod._parse_redis_url("redis://10.0.0.5:6380/2") == ("10.0.0.5", 6380)
     assert health_mod._parse_redis_url("redis://localhost/0") == ("localhost", 6379)
@@ -283,16 +285,15 @@ async def test_check_redis_against_fake_server(monkeypatch):
         writer.write(b"+PONG\r\n")
         await writer.drain()
         writer.close()
-        try:
+        with contextlib.suppress(Exception):
             await writer.wait_closed()
-        except Exception:
-            pass
 
     server = await asyncio.start_server(handle, "127.0.0.1", 0)
     port = server.sockets[0].getsockname()[1]
     try:
         monkeypatch.setattr(
-            health_mod, "get_settings",
+            health_mod,
+            "get_settings",
             lambda: Settings(redis_url=f"redis://127.0.0.1:{port}/0"),
         )
         res = await health_mod.check_redis()
@@ -305,7 +306,8 @@ async def test_check_redis_against_fake_server(monkeypatch):
 async def test_check_redis_down(monkeypatch):
     # Port 1 is virtually never listening → connection refused → error.
     monkeypatch.setattr(
-        health_mod, "get_settings",
+        health_mod,
+        "get_settings",
         lambda: Settings(redis_url="redis://127.0.0.1:1/0"),
     )
     res = await health_mod.check_redis()
@@ -316,6 +318,7 @@ async def test_check_redis_down(monkeypatch):
 async def test_run_health_checks_ok(monkeypatch):
     async def ok():
         return {"status": "ok"}
+
     monkeypatch.setattr(health_mod, "check_database", ok)
     monkeypatch.setattr(health_mod, "check_storage", ok)
     monkeypatch.setattr(health_mod, "check_redis", ok)
@@ -327,8 +330,10 @@ async def test_run_health_checks_ok(monkeypatch):
 async def test_run_health_checks_degraded(monkeypatch):
     async def ok():
         return {"status": "ok"}
+
     async def bad():
         return {"status": "error", "error": "down"}
+
     monkeypatch.setattr(health_mod, "check_database", ok)
     monkeypatch.setattr(health_mod, "check_storage", ok)
     monkeypatch.setattr(health_mod, "check_redis", bad)
@@ -356,6 +361,7 @@ async def health_client(monkeypatch):
 
     async def ok():
         return {"status": "ok"}
+
     monkeypatch.setattr(health_mod, "check_database", ok)
     monkeypatch.setattr(health_mod, "check_storage", ok)
     monkeypatch.setattr(health_mod, "check_redis", ok)
@@ -372,6 +378,7 @@ async def test_health_and_ready_ok(health_client):
 async def test_ready_503_when_degraded(health_client, monkeypatch):
     async def bad():
         return {"status": "error", "error": "down"}
+
     monkeypatch.setattr(health_mod, "check_redis", bad)
     # Liveness stays 200 but reports degraded…
     r = await health_client.get("/api/v1/health")
@@ -386,6 +393,7 @@ async def test_ready_503_when_degraded(health_client, monkeypatch):
 # ────────────────────────────────────────────────────────────────────────────
 # T-06 - versioned /api/v1 API root (single prefix, no bare /api feature routes)
 # ────────────────────────────────────────────────────────────────────────────
+
 
 async def test_versioned_prefix_serves_routes():
     """A router mounted under the versioned /api/v1 prefix is served at that path."""
@@ -426,6 +434,3 @@ def test_main_app_serves_v1_only():
         "/api/data/datasets/upload",
     ):
         assert p not in paths, f"legacy bare /api path should be gone: {p}"
-
-
-

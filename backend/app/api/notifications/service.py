@@ -8,11 +8,12 @@ transaction (the core ``get_db`` dependency commits at the end of each request).
 The real-time fan-out to connected clients is the *router's* job (see
 ``hub.py``) so that the service stays transport-agnostic and testable.
 """
+
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
-from typing import Any, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
@@ -27,12 +28,13 @@ from .models import (
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 # ── Preferences helpers ────────────────────────────────────────────────────────
 
-def _parse_categories(raw: Optional[str]) -> dict[str, bool]:
+
+def _parse_categories(raw: str | None) -> dict[str, bool]:
     if not raw:
         return dict(schemas.DEFAULT_CATEGORY_PREFS)
     try:
@@ -86,7 +88,8 @@ def delivery_allowed(prefs: NotificationPreferences, category: str) -> bool:
 
 # ── Serialization ──────────────────────────────────────────────────────────────
 
-def _parse_payload(raw: Optional[str]) -> Optional[dict[str, Any]]:
+
+def _parse_payload(raw: str | None) -> dict[str, Any] | None:
     if raw in (None, ""):
         return None
     try:
@@ -114,7 +117,7 @@ def recipient_to_read(recipient: NotificationRecipient) -> schemas.NotificationR
     )
 
 
-def _dump_payload(payload: Optional[dict[str, Any]]) -> Optional[str]:
+def _dump_payload(payload: dict[str, Any] | None) -> str | None:
     if payload is None:
         return None
     return json.dumps(payload)
@@ -122,10 +125,11 @@ def _dump_payload(payload: Optional[dict[str, Any]]) -> Optional[str]:
 
 # ── Create / deliver ───────────────────────────────────────────────────────────
 
+
 async def create_single(
     db: AsyncSession,
     body: schemas.NotificationCreate,
-) -> Optional[NotificationRecipient]:
+) -> NotificationRecipient | None:
     """Create a message and deliver it to one user. Skipped if disallowed."""
     prefs = await _get_preferences(db, body.user_id)
     if not delivery_allowed(prefs, body.category):
@@ -153,23 +157,21 @@ async def create_single(
 async def create_broadcast(
     db: AsyncSession,
     body: schemas.NotificationBroadcast,
-) -> List[NotificationRecipient]:
+) -> list[NotificationRecipient]:
     """Create one message and deliver it to a set of users (or everyone)."""
     if body.user_ids:
         user_ids = list(dict.fromkeys(body.user_ids))  # de-dup, keep order
     else:
         from app.api.auth.models import User
 
-        result = await db.execute(
-            select(User.id).where(User.is_active.is_(True))
-        )
+        result = await db.execute(select(User.id).where(User.is_active.is_(True)))
         user_ids = list(result.scalars().all())
 
     if not user_ids:
         return []
 
     # Decide which recipients actually allow this category (if requested).
-    allowed: List[str] = []
+    allowed: list[str] = []
     if body.respect_preferences:
         for uid in user_ids:
             prefs = await _get_preferences(db, uid)
@@ -193,7 +195,7 @@ async def create_broadcast(
     db.add(msg)
     await db.flush()
 
-    recipients: List[NotificationRecipient] = []
+    recipients: list[NotificationRecipient] = []
     for uid in allowed:
         rec = NotificationRecipient(message_id=msg.id, user_id=uid, read=False)
         db.add(rec)
@@ -206,13 +208,14 @@ async def create_broadcast(
 
 # ── Read / list / counts ───────────────────────────────────────────────────────
 
+
 async def list_for_user(
     db: AsyncSession,
     user_id: str,
     *,
-    category: Optional[str] = None,
+    category: str | None = None,
     unread_only: bool = False,
-    search: Optional[str] = None,
+    search: str | None = None,
     page: int = 1,
     page_size: int = 20,
 ) -> schemas.NotificationListResponse:
@@ -228,8 +231,7 @@ async def list_for_user(
     if search:
         needle = f"%{search}%"
         q = q.where(
-            NotificationMessage.title.ilike(needle)
-            | NotificationMessage.body.ilike(needle)
+            NotificationMessage.title.ilike(needle) | NotificationMessage.body.ilike(needle)
         )
 
     total = (await db.execute(select(func.count()).select_from(q.subquery()))).scalar_one()
@@ -267,9 +269,11 @@ async def unread_count(db: AsyncSession, user_id: str) -> int:
 
 
 async def summary(db: AsyncSession, user_id: str) -> schemas.NotificationSummary:
-    base = select(NotificationMessage).join(
-        NotificationRecipient, NotificationRecipient.message_id == NotificationMessage.id
-    ).where(NotificationRecipient.user_id == user_id)
+    base = (
+        select(NotificationMessage)
+        .join(NotificationRecipient, NotificationRecipient.message_id == NotificationMessage.id)
+        .where(NotificationRecipient.user_id == user_id)
+    )
 
     total = (await db.execute(select(func.count()).select_from(base.subquery()))).scalar_one()
 
@@ -324,9 +328,7 @@ async def _get_owned_recipient(
     return rec
 
 
-async def mark_read(
-    db: AsyncSession, user_id: str, recipient_id: str
-) -> schemas.NotificationRead:
+async def mark_read(db: AsyncSession, user_id: str, recipient_id: str) -> schemas.NotificationRead:
     rec = await _get_owned_recipient(db, user_id, recipient_id)
     rec.read = True
     rec.read_at = _utcnow()
@@ -362,9 +364,7 @@ async def mark_all_read(db: AsyncSession, user_id: str) -> int:
     return len(recs)
 
 
-async def delete_notification(
-    db: AsyncSession, user_id: str, recipient_id: str
-) -> None:
+async def delete_notification(db: AsyncSession, user_id: str, recipient_id: str) -> None:
     rec = await _get_owned_recipient(db, user_id, recipient_id)
     await db.delete(rec)
     await db.flush()
@@ -372,9 +372,8 @@ async def delete_notification(
 
 # ── Preferences ────────────────────────────────────────────────────────────────
 
-async def get_preferences(
-    db: AsyncSession, user_id: str
-) -> schemas.PreferencesRead:
+
+async def get_preferences(db: AsyncSession, user_id: str) -> schemas.PreferencesRead:
     prefs = await _get_preferences(db, user_id)
     await db.refresh(prefs)
     return _prefs_to_read(prefs)

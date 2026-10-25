@@ -6,20 +6,23 @@ Covers:
   • JWT create / decode round-trip
   • JWT rejection of expired & tampered tokens
 """
+
 from __future__ import annotations
 
 from datetime import timedelta
 
 import pytest
 
+from app.core.config import get_settings
 from app.core.security import (
     create_access_token,
     decode_access_token,
     hash_password,
     verify_password,
 )
-from app.core.config import get_settings
+
 # ── Password hashing ─────────────────────────────────────────────────────────
+
 
 def test_hash_password_returns_bcrypt_hash():
     hashed = hash_password("mySecret123")
@@ -62,6 +65,7 @@ def test_verify_password_garbage_hash_does_not_raise():
 
 # ── JWT ──────────────────────────────────────────────────────────────────────
 
+
 def test_jwt_roundtrip_preserves_subject():
     token = create_access_token(subject="user-123")
     payload = decode_access_token(token)
@@ -84,9 +88,7 @@ def test_jwt_custom_expiry():
 def test_jwt_expired_token_rejected():
     from jose import ExpiredSignatureError
 
-    token = create_access_token(
-        subject="u", expires_delta=timedelta(seconds=-10)
-    )
+    token = create_access_token(subject="u", expires_delta=timedelta(seconds=-10))
     with pytest.raises(ExpiredSignatureError):
         decode_access_token(token)
 
@@ -103,11 +105,10 @@ def test_jwt_tampered_token_rejected():
 def test_jwt_wrong_secret_rejected():
     """A token signed with a different secret must not verify."""
     from jose import jwt
+
     from app.core.security import JWTError
 
     settings = get_settings()
-    foreign = jwt.encode(
-        {"sub": "u"}, "totally-different-secret", algorithm=settings.jwt_algorithm
-    )
+    foreign = jwt.encode({"sub": "u"}, "totally-different-secret", algorithm=settings.jwt_algorithm)
     with pytest.raises(JWTError):
         decode_access_token(foreign)

@@ -6,6 +6,7 @@ The public :func:`ingest_dataset` entry point. It inspects the declared
 modules), persists metadata + (where applicable) features, and keeps the raw
 upload in object storage.
 """
+
 from __future__ import annotations
 
 import uuid
@@ -13,8 +14,6 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.data.models import GeoDataset
-from app.api.data.schemas import INGESTED_VECTOR_FORMATS, TABULAR_FORMATS
 from app.api.data.ingest.common import (
     _content_type_for_format,
     _create_dataset_row,
@@ -24,15 +23,17 @@ from app.api.data.ingest.common import (
     _sample,
     _upload_best_effort,
 )
-from app.api.data.ingest.geojson import parse_geojson_bytes
-from app.api.data.ingest.shapefile import parse_shapefile_bytes
-from app.api.data.ingest.kml import parse_kml_bytes
-from app.api.data.ingest.georss import parse_georss_bytes
 from app.api.data.ingest.csv import (
+    _rows_to_features,
     detect_coord_columns,
     parse_csv_bytes,
-    _rows_to_features,
 )
+from app.api.data.ingest.geojson import parse_geojson_bytes
+from app.api.data.ingest.georss import parse_georss_bytes
+from app.api.data.ingest.kml import parse_kml_bytes
+from app.api.data.ingest.shapefile import parse_shapefile_bytes
+from app.api.data.models import GeoDataset
+from app.api.data.schemas import INGESTED_VECTOR_FORMATS, TABULAR_FORMATS
 
 
 async def ingest_dataset(
@@ -78,19 +79,25 @@ async def ingest_dataset(
         else:  # pragma: no cover - defensive
             raise ValueError(f"No parser available for format '{fmt}'.")
         feature_count = len(features)
-        attributes = _extract_attributes(
-            [f.get("properties") or {} for f in features]
-        )
+        attributes = _extract_attributes([f.get("properties") or {} for f in features])
         meta["ingested"] = True
         ingested = True
     elif fmt in TABULAR_FORMATS:
         rows, header = parse_csv_bytes(file_bytes)
         feature_count = len(rows)
         attributes = _extract_attributes(rows)
-        attributes = [
-            {"field": h, "type": "String", "sample": _sample(rows[0].get(h)) if rows else "null"}
-            for h in header
-        ] if header else attributes
+        attributes = (
+            [
+                {
+                    "field": h,
+                    "type": "String",
+                    "sample": _sample(rows[0].get(h)) if rows else "null",
+                }
+                for h in header
+            ]
+            if header
+            else attributes
+        )
         lon, lat = detect_coord_columns(rows)
         meta["ingested"] = bool(lon and lat)
         meta["coordinate_columns"] = {"lon": lon, "lat": lat} if lon and lat else None
@@ -114,9 +121,7 @@ async def ingest_dataset(
             folder_id=folder_id,
         )
         if ingested:
-            await _insert_features_raw(
-                db, dataset_id, _rows_to_features(rows, lon, lat)
-            )
+            await _insert_features_raw(db, dataset_id, _rows_to_features(rows, lon, lat))
         await _upload_best_effort(file_bytes, storage_key, _content_type_for_format(fmt))
         return dataset
     else:

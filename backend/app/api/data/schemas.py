@@ -1,41 +1,42 @@
 from __future__ import annotations
-from typing import List, Optional, Dict, Any
+
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
-
 # ── Existing layer schemas (used by legacy stub endpoints) ────────────────────
+
 
 class LayerInfo(BaseModel):
     id: str
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     type: str  # "vector" | "raster"
-    source_url: Optional[str] = None
+    source_url: str | None = None
     available: bool = True
 
 
 class VectorFeature(BaseModel):
     type: str = "Feature"
-    geometry: Dict[str, Any]
-    properties: Dict[str, Any] = {}
+    geometry: dict[str, Any]
+    properties: dict[str, Any] = {}
 
 
 class VectorFeatureCollection(BaseModel):
     type: str = "FeatureCollection"
     layer_id: str
-    features: List[VectorFeature] = []
+    features: list[VectorFeature] = []
 
 
 class RasterLayerMeta(BaseModel):
     layer_id: str
     name: str
-    tile_url: str   # e.g. https://tiles.example.com/{z}/{x}/{y}.png
+    tile_url: str  # e.g. https://tiles.example.com/{z}/{x}/{y}.png
     min_zoom: int = 0
     max_zoom: int = 22
     attribution: str = ""
-    bounds: Optional[List[float]] = None  # [west, south, east, north]
+    bounds: list[float] | None = None  # [west, south, east, north]
 
 
 # ── Supported format / type vocabularies ──────────────────────────────────────
@@ -48,7 +49,7 @@ class RasterLayerMeta(BaseModel):
 # "stored"    formats are registered as downloadable assets (metadata + the
 #             raw file in object storage) without server-side geometry parsing.
 
-DATA_FORMATS: List[str] = [
+DATA_FORMATS: list[str] = [
     "GeoJSON",
     "Shapefile",
     "KML",
@@ -60,7 +61,7 @@ DATA_FORMATS: List[str] = [
     "CSV",
 ]
 
-DATA_TYPES: List[str] = [
+DATA_TYPES: list[str] = [
     "vector",
     "raster",
     "tabular",
@@ -69,13 +70,13 @@ DATA_TYPES: List[str] = [
 ]
 
 # Formats that are parsed into the feature store (vector).
-INGESTED_VECTOR_FORMATS: List[str] = ["GeoJSON", "Shapefile", "KML", "GeoRSS"]
+INGESTED_VECTOR_FORMATS: list[str] = ["GeoJSON", "Shapefile", "KML", "GeoRSS"]
 
 # Formats that are tabular (CSV / TSV / delimited).
-TABULAR_FORMATS: List[str] = ["CSV"]
+TABULAR_FORMATS: list[str] = ["CSV"]
 
 # Formats that are registered as stored assets (not geometry-parsed).
-STORED_ASSET_FORMATS: List[str] = [
+STORED_ASSET_FORMATS: list[str] = [
     "GeoTIFF",
     "COG",
     "GeoPackage",
@@ -84,7 +85,7 @@ STORED_ASSET_FORMATS: List[str] = [
 
 # Suggested (format, type) pairing used as a default when the client does not
 # specify a type. Used only for client-side guidance; the server accepts any.
-DEFAULT_TYPE_FOR_FORMAT: Dict[str, str] = {
+DEFAULT_TYPE_FOR_FORMAT: dict[str, str] = {
     "GeoJSON": "vector",
     "Shapefile": "vector",
     "KML": "vector",
@@ -99,6 +100,7 @@ DEFAULT_TYPE_FOR_FORMAT: Dict[str, str] = {
 
 # ── GeoDataset schemas ────────────────────────────────────────────────────────
 
+
 class AttributeField(BaseModel):
     field: str
     type: str
@@ -107,20 +109,21 @@ class AttributeField(BaseModel):
 
 class GeoDatasetOut(BaseModel):
     """API response shape for a spatial dataset record."""
+
     id: str
     name: str
     format: str
     type: str
     crs: str
-    tags: List[str]
-    feature_count: Optional[int] = None
+    tags: list[str]
+    feature_count: int | None = None
     file_size_bytes: int
-    storage_key: Optional[str] = None
-    folder_id: Optional[str] = None
-    attributes: List[AttributeField] = []
-    description: Optional[str] = None
-    source: Optional[str] = None
-    meta: Dict[str, Any] = Field(default_factory=dict)
+    storage_key: str | None = None
+    folder_id: str | None = None
+    attributes: list[AttributeField] = []
+    description: str | None = None
+    source: str | None = None
+    meta: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime
     updated_at: datetime
 
@@ -129,11 +132,11 @@ class GeoDatasetOut(BaseModel):
     def size_label(self) -> str:
         if self.file_size_bytes < 1024:
             return f"{self.file_size_bytes} B"
-        if self.file_size_bytes < 1024 ** 2:
+        if self.file_size_bytes < 1024**2:
             return f"{self.file_size_bytes / 1024:.1f} KB"
-        if self.file_size_bytes < 1024 ** 3:
-            return f"{self.file_size_bytes / (1024 ** 2):.1f} MB"
-        return f"{self.file_size_bytes / (1024 ** 3):.1f} GB"
+        if self.file_size_bytes < 1024**3:
+            return f"{self.file_size_bytes / (1024**2):.1f} MB"
+        return f"{self.file_size_bytes / (1024**3):.1f} GB"
 
     model_config = {"from_attributes": True}
 
@@ -144,34 +147,36 @@ class GeometrySummary(BaseModel):
     ``dominant`` is the most common geometry kind among the dataset's
     features (``None`` when the dataset is raster or has no geometries).
     """
+
     dataset_id: str
     kind: str  # "vector" | "raster"
-    dominant: Optional[str] = None  # "point" | "line" | "polygon"
-    counts: Dict[str, int] = Field(default_factory=dict)
+    dominant: str | None = None  # "point" | "line" | "polygon"
+    counts: dict[str, int] = Field(default_factory=dict)
     total: int = 0
 
 
 class GeoDatasetUpdate(BaseModel):
     """Partial metadata update payload (PATCH /datasets/{id})."""
-    name: Optional[str] = Field(default=None, min_length=1, max_length=512)
-    description: Optional[str] = Field(default=None, max_length=4000)
-    source: Optional[str] = Field(default=None, max_length=512)
-    tags: Optional[List[str]] = None
-    meta: Optional[Dict[str, Any]] = None
-    crs: Optional[str] = Field(default=None, max_length=128)
+
+    name: str | None = Field(default=None, min_length=1, max_length=512)
+    description: str | None = Field(default=None, max_length=4000)
+    source: str | None = Field(default=None, max_length=512)
+    tags: list[str] | None = None
+    meta: dict[str, Any] | None = None
+    crs: str | None = Field(default=None, max_length=128)
 
 
 class FeaturesIn(BaseModel):
     """Payload for replacing a dataset's features (in-app map editor)."""
 
-    features: List[Dict[str, Any]] = Field(
+    features: list[dict[str, Any]] = Field(
         default_factory=list,
         description="GeoJSON features (id / geometry / properties) to store.",
     )
 
 
 class GeoDatasetListResponse(BaseModel):
-    items: List[GeoDatasetOut]
+    items: list[GeoDatasetOut]
     total: int
 
 
@@ -182,7 +187,7 @@ class DataFolderIn(BaseModel):
     """Payload for creating a folder (POST /folders)."""
 
     name: str = Field(min_length=1, max_length=256)
-    parent_id: Optional[str] = None
+    parent_id: str | None = None
 
 
 class DataFolderRename(BaseModel):
@@ -197,7 +202,7 @@ class DataFolderMove(BaseModel):
     ``parent_id`` of ``None`` moves the folder to the root level.
     """
 
-    parent_id: Optional[str] = None
+    parent_id: str | None = None
 
 
 class DataFolderOut(BaseModel):
@@ -205,7 +210,7 @@ class DataFolderOut(BaseModel):
 
     id: str
     name: str
-    parent_id: Optional[str] = None
+    parent_id: str | None = None
     dataset_count: int = 0
     child_folder_count: int = 0
     created_at: datetime
@@ -220,14 +225,16 @@ class DatasetMoveIn(BaseModel):
     ``folder_id`` of ``None`` moves the dataset back to the root level.
     """
 
-    folder_id: Optional[str] = None
+    folder_id: str | None = None
 
 
 # ── Preview ───────────────────────────────────────────────────────────────────
 
+
 class PreviewRow(BaseModel):
     """A single tabular/feature preview row (column -> value)."""
-    values: Dict[str, Any]
+
+    values: dict[str, Any]
 
 
 class DatasetPreview(BaseModel):
@@ -236,13 +243,14 @@ class DatasetPreview(BaseModel):
     For vector/tabular data this returns up to ``max_rows`` sample rows and the
     inferred column schema. For stored assets it returns asset metadata only.
     """
+
     dataset_id: str
     name: str
     format: str
     type: str
     ingested: bool
-    row_count: Optional[int] = None
-    columns: List[AttributeField] = []
-    rows: List[PreviewRow] = []
+    row_count: int | None = None
+    columns: list[AttributeField] = []
+    rows: list[PreviewRow] = []
     # Asset-specific metadata (dimensions, bands, etc.) when available.
-    asset_meta: Dict[str, Any] = Field(default_factory=dict)
+    asset_meta: dict[str, Any] = Field(default_factory=dict)

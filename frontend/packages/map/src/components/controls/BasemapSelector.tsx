@@ -58,7 +58,6 @@ const BASEMAP_SOURCE_PREFIXES = [
   "composite",
   "mapbox",
   "openmaptiles",
-  "maptiler",
   "carto",
   "esri",
   "stadia",

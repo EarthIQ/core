@@ -2,13 +2,13 @@
 Collaboration Connection Manager
 Manages in-memory WebSocket connections per project room.
 """
+
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
-from dataclasses import dataclass, field
-from typing import Any, Optional
+from dataclasses import dataclass
+from typing import Any
 
 from fastapi import WebSocket
 
@@ -19,10 +19,10 @@ logger = logging.getLogger(__name__)
 class CollaboratorInfo:
     user_id: str
     email: str
-    full_name: Optional[str]
+    full_name: str | None
     websocket: WebSocket
-    cursor: Optional[dict] = None      # {"lng": float, "lat": float}
-    viewport: Optional[dict] = None   # {"zoom": float, "center": {"lng": float, "lat": float}}
+    cursor: dict | None = None  # {"lng": float, "lat": float}
+    viewport: dict | None = None  # {"zoom": float, "center": {"lng": float, "lat": float}}
 
 
 class ConnectionManager:
@@ -43,7 +43,7 @@ class ConnectionManager:
         project_id: str,
         user_id: str,
         email: str,
-        full_name: Optional[str],
+        full_name: str | None,
         websocket: WebSocket,
     ) -> None:
         await websocket.accept()
@@ -57,22 +57,27 @@ class ConnectionManager:
         logger.info("WS connect: user=%s project=%s total=%d", user_id, project_id, len(room))
 
         # Send the new user a snapshot of current collaborators
-        await self._send_json(websocket, {
-            "type": "snapshot",
-            "collaborators": [
-                self._collaborator_payload(c)
-                for uid, c in room.items()
-                if uid != user_id
-            ],
-        })
+        await self._send_json(
+            websocket,
+            {
+                "type": "snapshot",
+                "collaborators": [
+                    self._collaborator_payload(c) for uid, c in room.items() if uid != user_id
+                ],
+            },
+        )
 
         # Notify all others that this user joined
-        await self.broadcast(project_id, {
-            "type": "join",
-            "user_id": user_id,
-            "email": email,
-            "full_name": full_name,
-        }, exclude=user_id)
+        await self.broadcast(
+            project_id,
+            {
+                "type": "join",
+                "user_id": user_id,
+                "email": email,
+                "full_name": full_name,
+            },
+            exclude=user_id,
+        )
 
     async def disconnect(self, project_id: str, user_id: str) -> None:
         room = self._rooms.get(project_id, {})
@@ -81,16 +86,17 @@ class ConnectionManager:
             self._rooms.pop(project_id, None)
         logger.info("WS disconnect: user=%s project=%s", user_id, project_id)
 
-        await self.broadcast(project_id, {
-            "type": "leave",
-            "user_id": user_id,
-        })
+        await self.broadcast(
+            project_id,
+            {
+                "type": "leave",
+                "user_id": user_id,
+            },
+        )
 
     # ── Message handling ──────────────────────────────────────────────────────
 
-    async def handle_message(
-        self, project_id: str, user_id: str, raw: str
-    ) -> None:
+    async def handle_message(self, project_id: str, user_id: str, raw: str) -> None:
         try:
             msg: dict[str, Any] = json.loads(raw)
         except json.JSONDecodeError:
@@ -105,10 +111,14 @@ class ConnectionManager:
         if msg_type == "presence":
             collab.cursor = msg.get("cursor")
             collab.viewport = msg.get("viewport")
-            await self.broadcast(project_id, {
-                "type": "presence",
-                **self._collaborator_payload(collab),
-            }, exclude=user_id)
+            await self.broadcast(
+                project_id,
+                {
+                    "type": "presence",
+                    **self._collaborator_payload(collab),
+                },
+                exclude=user_id,
+            )
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -121,9 +131,7 @@ class ConnectionManager:
             "viewport": c.viewport,
         }
 
-    async def broadcast(
-        self, project_id: str, payload: dict, exclude: Optional[str] = None
-    ) -> None:
+    async def broadcast(self, project_id: str, payload: dict, exclude: str | None = None) -> None:
         room = self._rooms.get(project_id, {})
         dead: list[str] = []
         for uid, collab in room.items():

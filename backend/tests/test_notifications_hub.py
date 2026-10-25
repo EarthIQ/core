@@ -1,4 +1,5 @@
 """Tests for the notifications real-time hub (per-user fan-out + dead-socket cleanup)."""
+
 from __future__ import annotations
 
 from app.api.notifications.hub import NotificationHub

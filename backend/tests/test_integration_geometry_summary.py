@@ -6,6 +6,7 @@ Skipped automatically when the database is unreachable.
 
     cd backend && python -m pytest tests/test_integration_geometry_summary.py -ra
 """
+
 from __future__ import annotations
 
 import uuid
@@ -19,11 +20,11 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from app.core.config import get_settings
-from app.api.data.models import GeoDataset
 from app.api.auth.models import User
 from app.api.data import service as data_service
+from app.api.data.models import GeoDataset
 from app.api.data.schemas import GeometrySummary
+from app.core.config import get_settings
 
 pytestmark = pytest.mark.integration
 
@@ -83,7 +84,7 @@ async def test_geometry_summary_counts_and_dominant(db: AsyncSession):
         "VALUES (:id, :dsid, ST_GeomFromGeoJSON(:geom), CAST(:props AS jsonb))"
     )
     try:
-        for i, geom in enumerate(geoms):
+        for _i, geom in enumerate(geoms):
             await db.execute(
                 insert,
                 {
@@ -111,7 +112,5 @@ async def test_geometry_summary_counts_and_dominant(db: AsyncSession):
         assert set(batch.keys()) == {ds.id}
         assert batch[ds.id]["dominant"] == "polygon"
     finally:
-        await db.execute(
-            text("DELETE FROM geo_features WHERE dataset_id = :id"), {"id": ds.id}
-        )
+        await db.execute(text("DELETE FROM geo_features WHERE dataset_id = :id"), {"id": ds.id})
         await db.delete(ds)

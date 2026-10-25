@@ -6,6 +6,7 @@ The manager is pure in-memory (no DB), so we drive it directly with a
 presence protocol: join/leave broadcasts, snapshot-on-connect, presence
 relaying, and dead-connection cleanup.
 """
+
 from __future__ import annotations
 
 import json
@@ -79,9 +80,7 @@ async def test_presence_relays_to_others(manager: ConnectionManager):
     await manager.connect(PROJECT, "u-b", "b@x.com", "B", b)
 
     cursor = {"lng": 12.5, "lat": 55.7}
-    await manager.handle_message(
-        PROJECT, "u-a", json.dumps({"type": "presence", "cursor": cursor})
-    )
+    await manager.handle_message(PROJECT, "u-a", json.dumps({"type": "presence", "cursor": cursor}))
 
     b_msgs = b.sent_json()
     presence = [m for m in b_msgs if m["type"] == "presence"]

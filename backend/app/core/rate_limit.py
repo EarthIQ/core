@@ -11,11 +11,11 @@ on the heaviest endpoints - not to replace an edge load-balancer rate limiter.
 
 Ticket: T-05 (rate limit upload + AI endpoints).
 """
+
 from __future__ import annotations
 
 import time
 from collections import defaultdict, deque
-from typing import Deque, Dict
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -30,7 +30,7 @@ class SlidingWindowLimiter:
     def __init__(self, limit: int, window_seconds: float):
         self.limit = max(1, int(limit))
         self.window = float(window_seconds)
-        self._hits: Dict[str, Deque[float]] = defaultdict(deque)
+        self._hits: dict[str, deque[float]] = defaultdict(deque)
 
     def allow(self, key: str) -> bool:
         """Record a hit for *key*; return ``True`` if within the limit."""
@@ -52,13 +52,22 @@ class SlidingWindowLimiter:
 
 
 def _client_key(request: Request) -> str:
-    """Derive a stable per-client key, honouring a reverse proxy."""
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    if request.client and request.client.host:
-        return request.client.host
-    return "unknown"
+    """Derive a stable per-client key, honouring a *trusted* reverse proxy.
+
+    ``X-Forwarded-For`` is only consulted when the immediate peer address is
+    listed in ``Settings.trusted_proxy_ips``. Otherwise the peer address itself
+    is used, so a client cannot rotate the rate-limit key by spoofing the
+    header (which would let it evade the limiter).
+    """
+    peer = request.client.host if request.client else None
+    trusted = set(get_settings().trusted_proxy_ips)
+    if peer and peer in trusted:
+        forwarded = request.headers.get("x-forwarded-for")
+        if forwarded:
+            first = forwarded.split(",")[0].strip()
+            if first:
+                return first
+    return peer or "unknown"
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -84,18 +93,17 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             settings.rate_limit_enabled
             and request.method != "OPTIONS"
             and self._is_sensitive(request.url.path)
-        ):
-            if not self.limiter.allow(_client_key(request)):
-                return JSONResponse(
-                    status_code=429,
-                    content={
-                        "error": {
-                            "code": "rate_limited",
-                            "message": "Too many requests. Please slow down and retry.",
-                            "details": None,
-                        },
-                        "detail": "Too many requests.",
+        ) and not self.limiter.allow(_client_key(request)):
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "error": {
+                        "code": "rate_limited",
+                        "message": "Too many requests. Please slow down and retry.",
+                        "details": None,
                     },
-                    headers={"Retry-After": str(int(self.window))},
-                )
+                    "detail": "Too many requests.",
+                },
+                headers={"Retry-After": str(int(self.window))},
+            )
         return await call_next(request)

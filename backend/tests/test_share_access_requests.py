@@ -12,32 +12,34 @@ on ``POST /api/v1/access/request/grant``.
 Hermetic: in-memory SQLite (StaticPool), FastAPI over ASGITransport,
 ``get_db`` overridden. No venv, no network, no real SMTP (email no-ops).
 """
+
 from __future__ import annotations
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event, select
 from sqlalchemy.ext.asyncio import (
-    AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
 from sqlalchemy.pool import StaticPool
 
-from app.core.db import Base, get_db
+import app.api.auth.models
+import app.api.maps.models
+import app.api.maps.share.models
+import app.api.profile.models
+import app.api.projects.models  # noqa: F401 - projects, project access tables
 from app.api.auth.router import router as auth_router
 from app.api.maps.share.router import (
-    router as share_util_router,
     entity_share_router,
 )
-import app.api.auth.models  # noqa: F401 - users, groups, permissions
-import app.api.profile.models  # noqa: F401 - organizations (FK target of users)
-import app.api.maps.models  # noqa: F401 - maps, map access tables
-import app.api.projects.models  # noqa: F401 - projects, project access tables
-import app.api.maps.share.models  # noqa: F401 - access_requests
+from app.api.maps.share.router import (
+    router as share_util_router,
+)
+from app.core.db import Base, get_db
 
 # Tables this flow touches (FK targets included so SQLite FK enforcement is clean).
 _TEST_TABLE_NAMES = [
@@ -59,6 +61,7 @@ _TEST_TABLE_NAMES = [
 
 
 # ── Hermetic app + engine (share router, not in the shared conftest app) ──────
+
 
 def _make_share_test_app() -> FastAPI:
     app = FastAPI()
@@ -118,6 +121,7 @@ async def share_client(
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+
 async def _register(
     client: AsyncClient,
     email: str,
@@ -125,12 +129,15 @@ async def _register(
     full_name: str = "Test User",
     is_superuser: bool = False,
 ) -> dict:
-    resp = await client.post("/api/v1/auth/register", json={
-        "email": email,
-        "password": password,
-        "full_name": full_name,
-        "is_superuser": is_superuser,
-    })
+    resp = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": email,
+            "password": password,
+            "full_name": full_name,
+            "is_superuser": is_superuser,
+        },
+    )
     assert resp.status_code == 201, resp.text
     resp = await client.post("/api/v1/auth/token", json={"email": email, "password": password})
     assert resp.status_code == 200, resp.text
@@ -169,13 +176,12 @@ async def _map_access_rows(share_engine, map_id: str):
 
     factory = async_sessionmaker(share_engine, expire_on_commit=False)
     async with factory() as session:
-        result = await session.execute(
-            select(MapUserAccess).where(MapUserAccess.map_id == map_id)
-        )
+        result = await session.execute(select(MapUserAccess).where(MapUserAccess.map_id == map_id))
         return result.scalars().all()
 
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
+
 
 async def test_owner_can_grant_access_request(share_client: AsyncClient, share_engine):
     """The exact flow that used to 500: POST /api/v1/access/request/grant."""
@@ -338,4 +344,3 @@ async def test_grant_unknown_token_404(share_client: AsyncClient, share_engine):
         headers=owner["headers"],
     )
     assert resp.status_code == 404
-

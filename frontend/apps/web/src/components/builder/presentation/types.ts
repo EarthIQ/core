@@ -28,13 +28,7 @@ export type IconType = ComponentType<{ size?: number; className?: string }>;
 
 /** The kinds of content a slide can hold. */
 export type SlideBlockType =
-  | "text"
-  | "bullets"
-  | "map"
-  | "chart"
-  | "table"
-  | "kpi"
-  | "image";
+  "text" | "bullets" | "map" | "chart" | "table" | "kpi" | "image";
 
 /** Chart rendering style for `chart` blocks. */
 export type ChartKind = "bar" | "line" | "area" | "pie";
@@ -302,9 +296,7 @@ export function makeBlock(type: SlideBlockType): SlideBlock {
 }
 
 /** A fresh slide. */
-export function makeSlide(
-  overrides: Partial<Omit<Slide, "id">> = {}
-): Slide {
+export function makeSlide(overrides: Partial<Omit<Slide, "id">> = {}): Slide {
   return {
     id: uid("slide"),
     name: "Slide",

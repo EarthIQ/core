@@ -1,13 +1,18 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import Response
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import get_db
+from app.api.auth.models import User
+from app.api.auth.router import (
+    get_current_user,
+    get_optional_current_user,
+    require_admin,
+)
+from app.api.data import folders as folder_service
+from app.api.data import service as data_service
 from app.api.data.schemas import (
     DATA_FORMATS,
     DATA_TYPES,
@@ -27,10 +32,45 @@ from app.api.data.schemas import (
     RasterLayerMeta,
     VectorFeatureCollection,
 )
-from app.api.data import folders as folder_service
-from app.api.data import service as data_service
+from app.core.db import get_db
 
-router = APIRouter(tags=["data"])
+# Every data-catalog route requires an authenticated user (the ``data`` domain
+# was previously completely open). The two *asset-serving* routes (MVT vector
+# tiles + the original-file download) are mounted on ``asset_router`` below
+# instead: they must remain reachable by the anonymous viewer of a public /
+# link-shared map, so they enforce access per-dataset (see
+# :func:`dataset_is_shared`) rather than via the router-level dependency.
+router = APIRouter(tags=["data"], dependencies=[Depends(get_current_user)])
+asset_router = APIRouter(tags=["data"])
+
+
+async def dataset_is_shared(db: AsyncSession, dataset_id: str) -> bool:
+    """Return ``True`` if ``dataset_id`` is referenced by a map that is public
+    or link-shared.
+
+    Used only by the asset endpoints (vector tiles / original-file download) so
+    they can serve data to the anonymous viewer of a shared map while every
+    other catalog route stays behind authentication.
+    """
+    from sqlalchemy import or_, select
+
+    from app.api.maps.models import MapModel
+
+    rows = await db.execute(
+        select(MapModel.layers_config).where(
+            or_(MapModel.is_public.is_(True), MapModel.share_link_enabled.is_(True))
+        )
+    )
+    for (layers,) in rows.all():
+        if not isinstance(layers, list):
+            continue
+        for layer in layers:
+            if not isinstance(layer, dict):
+                continue
+            if layer.get("datasetId") == dataset_id or layer.get("dataset_id") == dataset_id:
+                return True
+    return False
+
 
 # ── Upload constraints ────────────────────────────────────────────────────────
 MAX_UPLOAD_BYTES = 500 * 1024 * 1024  # 500 MB hard cap
@@ -63,10 +103,7 @@ def _validate_format(filename: str, fmt: str) -> None:
     if fmt not in DATA_FORMATS:
         raise HTTPException(
             status_code=422,
-            detail=(
-                f"Unsupported format '{fmt}'. "
-                f"Supported formats: {', '.join(DATA_FORMATS)}."
-            ),
+            detail=(f"Unsupported format '{fmt}'. Supported formats: {', '.join(DATA_FORMATS)}."),
         )
     ext = _file_ext(filename)
     if ext in {"shp", "zip"}:
@@ -85,20 +122,20 @@ def _validate_format(filename: str, fmt: str) -> None:
 
 # ── Legacy layer catalogue (in-memory stub) ───────────────────────────────────
 
-_VECTOR_LAYERS: List[LayerInfo] = [
+_VECTOR_LAYERS: list[LayerInfo] = [
     LayerInfo(id="admin-boundaries", name="Administrative Boundaries", type="vector"),
     LayerInfo(id="land-use", name="Land Use / Land Cover", type="vector"),
     LayerInfo(id="elevation-contours", name="Elevation Contours", type="vector"),
 ]
 
-_RASTER_LAYERS: List[LayerInfo] = [
+_RASTER_LAYERS: list[LayerInfo] = [
     LayerInfo(id="sentinel-2-rgb", name="Sentinel-2 True Colour", type="raster"),
     LayerInfo(id="ndvi-2024", name="NDVI 2024 Composite", type="raster"),
     LayerInfo(id="dem-30m", name="Digital Elevation Model 30m", type="raster"),
 ]
 
 
-@router.get("/vector", response_model=List[LayerInfo])
+@router.get("/vector", response_model=list[LayerInfo])
 def list_vector_layers():
     """List all available vector layers."""
     return _VECTOR_LAYERS
@@ -107,13 +144,13 @@ def list_vector_layers():
 @router.get("/vector/{layer_id}", response_model=VectorFeatureCollection)
 def get_vector_layer(layer_id: str):
     """Return a GeoJSON FeatureCollection for a vector layer (stub)."""
-    layer = next((l for l in _VECTOR_LAYERS if l.id == layer_id), None)
+    layer = next((ly for ly in _VECTOR_LAYERS if ly.id == layer_id), None)
     if not layer:
         raise HTTPException(status_code=404, detail=f"Vector layer '{layer_id}' not found")
     return VectorFeatureCollection(layer_id=layer_id, features=[])
 
 
-@router.get("/raster", response_model=List[LayerInfo])
+@router.get("/raster", response_model=list[LayerInfo])
 def list_raster_layers():
     """List all available raster layers."""
     return _RASTER_LAYERS
@@ -122,7 +159,7 @@ def list_raster_layers():
 @router.get("/raster/{layer_id}", response_model=RasterLayerMeta)
 def get_raster_layer(layer_id: str):
     """Return tile URL and metadata for a raster layer (stub)."""
-    layer = next((l for l in _RASTER_LAYERS if l.id == layer_id), None)
+    layer = next((ly for ly in _RASTER_LAYERS if ly.id == layer_id), None)
     if not layer:
         raise HTTPException(status_code=404, detail=f"Raster layer '{layer_id}' not found")
     return RasterLayerMeta(
@@ -134,6 +171,7 @@ def get_raster_layer(layer_id: str):
 
 
 # ── Metadata + vocabulary ─────────────────────────────────────────────────────
+
 
 @router.get(
     "/datasets/meta",
@@ -206,7 +244,7 @@ def _folder_out(folder, counts: dict) -> DataFolderOut:
     )
 
 
-@router.get("/folders", response_model=List[DataFolderOut], summary="List catalog folders")
+@router.get("/folders", response_model=list[DataFolderOut], summary="List catalog folders")
 async def list_folders(db: AsyncSession = Depends(get_db)):
     """Return all folders as a flat list (nest via ``parent_id``)."""
     folders = await folder_service.list_folders(db)
@@ -214,26 +252,20 @@ async def list_folders(db: AsyncSession = Depends(get_db)):
     return [_folder_out(f, counts) for f in folders]
 
 
-@router.post(
-    "/folders", response_model=DataFolderOut, status_code=201, summary="Create a folder"
-)
-async def create_folder(
-    payload: DataFolderIn, db: AsyncSession = Depends(get_db)
-):
+@router.post("/folders", response_model=DataFolderOut, status_code=201, summary="Create a folder")
+async def create_folder(payload: DataFolderIn, db: AsyncSession = Depends(get_db)):
     """Create a folder at the root level or inside another folder."""
     try:
         folder = await folder_service.create_folder(
             db, name=payload.name, parent_id=(payload.parent_id or None)
         )
     except folder_service.FolderError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc)) from None
     counts = await folder_service.folder_counts(db)
     return _folder_out(folder, counts)
 
 
-@router.patch(
-    "/folders/{folder_id}", response_model=DataFolderOut, summary="Rename a folder"
-)
+@router.patch("/folders/{folder_id}", response_model=DataFolderOut, summary="Rename a folder")
 async def rename_folder(
     folder_id: str, payload: DataFolderRename, db: AsyncSession = Depends(get_db)
 ):
@@ -241,7 +273,7 @@ async def rename_folder(
     try:
         folder = await folder_service.rename_folder(db, folder_id, payload.name)
     except folder_service.FolderError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc)) from None
     if folder is None:
         raise HTTPException(status_code=404, detail=f"Folder '{folder_id}' not found.")
     counts = await folder_service.folder_counts(db)
@@ -253,16 +285,12 @@ async def rename_folder(
     response_model=DataFolderOut,
     summary="Move a folder to another parent",
 )
-async def move_folder(
-    folder_id: str, payload: DataFolderMove, db: AsyncSession = Depends(get_db)
-):
+async def move_folder(folder_id: str, payload: DataFolderMove, db: AsyncSession = Depends(get_db)):
     """Re-parent a folder (``parent_id: null`` moves it to the root level)."""
     try:
-        folder = await folder_service.move_folder(
-            db, folder_id, (payload.parent_id or None)
-        )
+        folder = await folder_service.move_folder(db, folder_id, (payload.parent_id or None))
     except folder_service.FolderError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc)) from None
     if folder is None:
         raise HTTPException(status_code=404, detail=f"Folder '{folder_id}' not found.")
     counts = await folder_service.folder_counts(db)
@@ -273,7 +301,11 @@ async def move_folder(
     "/folders/{folder_id}",
     summary="Delete a folder (its datasets move to the parent folder)",
 )
-async def delete_folder(folder_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_folder(
+    folder_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
     """Delete a folder.
 
     The folder's datasets are moved to its parent (or the root level).
@@ -284,7 +316,7 @@ async def delete_folder(folder_id: str, db: AsyncSession = Depends(get_db)):
     try:
         moved = await folder_service.delete_folder(db, folder_id)
     except folder_service.FolderError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc)) from None
     return {"deleted": True, "moved_datasets": moved}
 
 
@@ -293,10 +325,10 @@ async def delete_folder(folder_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.get("/datasets", response_model=GeoDatasetListResponse, summary="List spatial datasets")
 async def list_datasets(
-    type: Optional[str] = None,
-    format: Optional[str] = None,
-    search: Optional[str] = None,
-    folder: Optional[str] = None,
+    type: str | None = None,
+    format: str | None = None,
+    search: str | None = None,
+    folder: str | None = None,
     limit: int = 200,
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
@@ -376,9 +408,7 @@ async def upload_dataset(
 
     resolved_folder = (folder_id or "").strip() or None
     if resolved_folder and not await folder_service.get_folder(db, resolved_folder):
-        raise HTTPException(
-            status_code=404, detail=f"Folder '{resolved_folder}' not found."
-        )
+        raise HTTPException(status_code=404, detail=f"Folder '{resolved_folder}' not found.")
 
     try:
         dataset = await data_service.ingest_dataset(
@@ -394,7 +424,7 @@ async def upload_dataset(
             folder_id=resolved_folder,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc))
+        raise HTTPException(status_code=422, detail=str(exc)) from None
 
     return GeoDatasetOut.model_validate(dataset)
 
@@ -436,7 +466,7 @@ async def update_dataset(
     try:
         ds = await data_service.update_dataset(db, dataset_id, updates)
     except Exception as exc:  # pragma: no cover - defensive
-        raise HTTPException(status_code=500, detail=f"Update failed: {exc}")
+        raise HTTPException(status_code=500, detail=f"Update failed: {exc}") from None
 
     if not ds:
         raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")
@@ -455,9 +485,7 @@ async def get_dataset_features(
     """Return the dataset's stored features as a GeoJSON FeatureCollection."""
     features = await data_service.get_dataset_features(db, dataset_id)
     if features is None:
-        raise HTTPException(
-            status_code=404, detail=f"Dataset '{dataset_id}' not found."
-        )
+        raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")
     return {"type": "FeatureCollection", "features": features}
 
 
@@ -470,6 +498,7 @@ async def replace_dataset_features(
     dataset_id: str,
     payload: FeaturesIn,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Replace all stored features of a vector dataset with the given GeoJSON
@@ -477,16 +506,12 @@ async def replace_dataset_features(
     then persist them back to the same layer.
     """
     try:
-        ds = await data_service.replace_dataset_features(
-            db, dataset_id, payload.features
-        )
+        ds = await data_service.replace_dataset_features(db, dataset_id, payload.features)
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc)) from None
 
     if not ds:
-        raise HTTPException(
-            status_code=404, detail=f"Dataset '{dataset_id}' not found."
-        )
+        raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")
     return GeoDatasetOut.model_validate(ds)
 
 
@@ -508,7 +533,7 @@ async def preview_dataset(
     return preview
 
 
-@router.get(
+@asset_router.get(
     "/datasets/{dataset_id}/download",
     summary="Download the original uploaded file",
     responses={200: {"content": {"application/octet-stream": {}}}},
@@ -516,8 +541,16 @@ async def preview_dataset(
 async def download_dataset(
     dataset_id: str,
     db: AsyncSession = Depends(get_db),
+    current_user: User | None = Depends(get_optional_current_user),
 ):
-    """Stream the original uploaded file back to the client."""
+    """Stream the original uploaded file back to the client.
+
+    Reachable for the anonymous viewer of a public / link-shared map (via
+    :func:`dataset_is_shared`) or for any authenticated user (``Bearer`` header
+    or ``?token=``).
+    """
+    if current_user is None and not await dataset_is_shared(db, dataset_id):
+        raise HTTPException(status_code=401, detail="Not authenticated")
     dl = await data_service.get_download(db, dataset_id)
     if dl is None:
         raise HTTPException(
@@ -536,6 +569,7 @@ async def download_dataset(
 async def delete_dataset(
     dataset_id: str,
     db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
 ):
     """Delete a dataset record (and all its features) from the DB and object storage."""
     deleted = await data_service.delete_dataset(db, dataset_id)
@@ -556,11 +590,9 @@ async def move_dataset(
 ):
     """Move a dataset into a folder, or back to the root level (``folder_id: null``)."""
     try:
-        dataset = await folder_service.move_dataset(
-            db, dataset_id, (payload.folder_id or None)
-        )
+        dataset = await folder_service.move_dataset(db, dataset_id, (payload.folder_id or None))
     except folder_service.FolderError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc)) from None
     if dataset is None:
         raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")
     return GeoDatasetOut.model_validate(dataset)
@@ -569,7 +601,7 @@ async def move_dataset(
 # ── Vector Tile (MVT) endpoint ────────────────────────────────────────────────
 
 
-@router.get(
+@asset_router.get(
     "/tiles/{dataset_id}/{z}/{x}/{y}.mvt",
     summary="Vector tile (MVT) for a GeoDataset",
     response_class=Response,
@@ -581,13 +613,20 @@ async def get_mvt_tile(
     x: int,
     y: int,
     db: AsyncSession = Depends(get_db),
+    current_user: User | None = Depends(get_optional_current_user),
 ):
     """
     Serve a Mapbox Vector Tile for the specified dataset tile coordinates.
 
     Uses PostGIS `ST_AsMVT` + `ST_TileEnvelope` for efficient server-side
     tile generation directly from the `geo_features` table.
+
+    Reachable for the anonymous viewer of a public / link-shared map (via
+    :func:`dataset_is_shared`) or for any authenticated user (``Bearer`` header
+    or ``?token=``).
     """
+    if current_user is None and not await dataset_is_shared(db, dataset_id):
+        raise HTTPException(status_code=401, detail="Not authenticated")
     dataset = await data_service.get_dataset(db, dataset_id)
     if not dataset:
         raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found.")

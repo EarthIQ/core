@@ -5,12 +5,9 @@ modules:
   - name: hydrology-module
     version: 1.0.0
     repo: git@github.com:EarthIQ/hydrology.git
-    # for local testing without a real remote, use:
-    # repo: file:///Users/you/dev/module-hello
   - name: resources-module
     version: 1.0.0
     repo: git@github.com:EarthIQ/resources.git
   - name: urban-planning-module
     version: 0.1.0
     repo: git@github.com:EarthIQ/urban-planning.git
-    # developed locally in modules/urban-planning-module (no remote needed)

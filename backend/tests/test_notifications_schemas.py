@@ -1,4 +1,5 @@
 """Unit tests for the notifications Pydantic schemas."""
+
 from __future__ import annotations
 
 from app.api.notifications import schemas

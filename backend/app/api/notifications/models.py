@@ -15,10 +15,11 @@ stored once; each recipient gets their own row tracking whether they've read it.
 This makes "mark as read" per-user and lets a single broadcast fan out to many
 users cheaply.
 """
+
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import (
     Boolean,
@@ -35,23 +36,20 @@ from app.core.db import Base
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 # ── Message ────────────────────────────────────────────────────────────────────
+
 
 class NotificationMessage(Base):
     """A single notification event (title + body + optional structured payload)."""
 
     __tablename__ = "notification_messages"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     # e.g. "system" | "access_request" | "project" | "dataset" | "ai" | "mention"
-    category: Mapped[str] = mapped_column(
-        String(40), nullable=False, default="system", index=True
-    )
+    category: Mapped[str] = mapped_column(String(40), nullable=False, default="system", index=True)
     # e.g. "info" | "success" | "warning" | "error"
     kind: Mapped[str] = mapped_column(String(20), nullable=False, default="info")
     title: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -80,6 +78,7 @@ class NotificationMessage(Base):
 
 # ── Recipient ──────────────────────────────────────────────────────────────────
 
+
 class NotificationRecipient(Base):
     """Delivery + read-state of a :class:`NotificationMessage` to one user."""
 
@@ -89,9 +88,7 @@ class NotificationRecipient(Base):
         Index("ix_notification_recipients_unread", "user_id", "read"),
     )
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     message_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("notification_messages.id", ondelete="CASCADE"),
@@ -111,9 +108,7 @@ class NotificationRecipient(Base):
     # otherwise serializing a recipient outside a greenlet context
     # (``recipient_to_read`` in an async request handler) triggers a lazy-load
     # and raises ``MissingGreenlet``.
-    message: Mapped[NotificationMessage] = relationship(
-        back_populates="recipients", lazy="joined"
-    )
+    message: Mapped[NotificationMessage] = relationship(back_populates="recipients", lazy="joined")
 
     def __repr__(self) -> str:
         return f"<NotificationRecipient user={self.user_id} message={self.message_id} read={self.read}>"
@@ -121,14 +116,13 @@ class NotificationRecipient(Base):
 
 # ── Preferences ────────────────────────────────────────────────────────────────
 
+
 class NotificationPreferences(Base):
     """Per-user notification delivery / category preferences."""
 
     __tablename__ = "notification_preferences"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("users.id", ondelete="CASCADE"),

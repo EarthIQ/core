@@ -1,4 +1,5 @@
 """Tests for the notifications service layer (delivery, preferences, counts, mutations)."""
+
 from __future__ import annotations
 
 import pytest
@@ -19,7 +20,8 @@ async def test_create_single_delivers(db_session, user_a):
 
 async def test_create_single_respects_disabled_category(db_session, user_a):
     await service.update_preferences(
-        db_session, user_a["id"],
+        db_session,
+        user_a["id"],
         schemas.PreferencesUpdate(categories={"system": False}),
     )
     rec = await service.create_single(

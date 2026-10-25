@@ -1,12 +1,12 @@
 ---
 paths:
-- "frontend/packages/charts/**"
-- "frontend/apps/web/src/components/data/**"
-- "frontend/apps/web/src/components/map/**"
-- "frontend/apps/web/src/components/builder/**"
-- "frontend/apps/web/src/pages/**"
-- "frontend/apps/web/src/hooks/**"
-- "modules/*/frontend/src/**"
+  - "frontend/packages/charts/**"
+  - "frontend/apps/web/src/components/data/**"
+  - "frontend/apps/web/src/components/map/**"
+  - "frontend/apps/web/src/components/builder/**"
+  - "frontend/apps/web/src/pages/**"
+  - "frontend/apps/web/src/hooks/**"
+  - "modules/*/frontend/src/**"
 ---
 
 # Skill: Data Visualization & Maps (Sumi-derived, EarthIQ-tailored)
@@ -15,6 +15,7 @@ paths:
 > platform — **data legibility IS the product.**
 
 ## Chart discipline
+
 1. **State the point.** One chart, one message; the title = the conclusion, not
    "Monthly Values". Readable in <2s.
 2. **Right chart, minimal ink.** Prefer one series over stacked; line over area
@@ -32,12 +33,14 @@ paths:
    next action → inline error with retry. Never a blank plot.
 
 ## Tables & KPIs
+
 - Sticky header; ONE of zebra/divider; right-align numbers with `tabular-nums`;
   sortable with visible affordance; a row count / filter summary.
 - KPI cards: big number + label + delta (direction + reference period). A KPI
   with no context is decoration.
 
 ## Map (MapLibre) guidance
+
 - A base-map weight that lets the data carry; avoid basemap clutter.
 - Layered data: legend, layer toggles, and a "what am I looking at" readout.
 - Performance: cluster/aggregate dense points; virtualize; debounce fit-bounds.
@@ -45,6 +48,7 @@ paths:
   fallback (list/table) for the same data.
 
 ## Definition of done (data view)
+
 - [ ] One clear takeaway; correct chart type; token-based palette.
 - [ ] Loading / empty / error all handled.
 - [ ] Accessible alternative (text/table) + keyboard operable.

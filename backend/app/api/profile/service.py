@@ -3,16 +3,17 @@
 Pure business logic operating on an ``AsyncSession``. Does **not** commit - the
 caller (the ``get_db`` dependency / router) owns the transaction.
 """
+
 from __future__ import annotations
 
 import json
 import re
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, or_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.auth.models import User
@@ -25,7 +26,7 @@ _SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _slugify(value: str) -> str:
@@ -38,11 +39,14 @@ def _slugify(value: str) -> str:
 
 # ── User profile (self-service) ────────────────────────────────────────────────
 
+
 async def get_profile(db: AsyncSession, user: User) -> schemas.ProfileRead:
     return schemas.ProfileRead.model_validate(user)
 
 
-async def update_profile(db: AsyncSession, user: User, data: schemas.ProfileUpdate) -> schemas.ProfileRead:
+async def update_profile(
+    db: AsyncSession, user: User, data: schemas.ProfileUpdate
+) -> schemas.ProfileRead:
     payload = data.model_dump(exclude_unset=True)
     for field, value in payload.items():
         setattr(user, field, value)
@@ -68,10 +72,9 @@ async def change_password(db: AsyncSession, user: User, body: schemas.ChangePass
 
 # ── Preferences ─────────────────────────────────────────────────────────────────
 
+
 async def _get_preferences(db: AsyncSession, user_id: str) -> UserPreferences:
-    result = await db.execute(
-        select(UserPreferences).where(UserPreferences.user_id == user_id)
-    )
+    result = await db.execute(select(UserPreferences).where(UserPreferences.user_id == user_id))
     prefs = result.scalar_one_or_none()
     if prefs is None:
         prefs = UserPreferences(user_id=user_id)
@@ -81,7 +84,7 @@ async def _get_preferences(db: AsyncSession, user_id: str) -> UserPreferences:
 
 
 def _prefs_to_read(p: UserPreferences) -> schemas.PreferencesRead:
-    extra: Dict[str, Any] = {}
+    extra: dict[str, Any] = {}
     if p.extra:
         try:
             parsed = json.loads(p.extra)
@@ -133,7 +136,8 @@ async def update_preferences(
 
 # ── Organizations ──────────────────────────────────────────────────────────────
 
-def _parse_meta(raw: Optional[str]) -> Optional[Dict[str, Any]]:
+
+def _parse_meta(raw: str | None) -> dict[str, Any] | None:
     if raw in (None, ""):
         return None
     try:
@@ -147,12 +151,12 @@ def _org_to_read(
     db: AsyncSession,
     org: Organization,
     *,
-    current_user_id: Optional[str] = None,
+    current_user_id: str | None = None,
     current_user_is_superuser: bool = False,
-    primary_org_id: Optional[str] = None,
+    primary_org_id: str | None = None,
 ) -> schemas.OrganizationRead:
     members = list(org.members or [])
-    my_role: Optional[str] = None
+    my_role: str | None = None
     if current_user_id:
         for m in members:
             if m.user_id == current_user_id:
@@ -180,7 +184,7 @@ def _org_to_read(
     )
 
 
-def _membership(org: Organization, user_id: str) -> Optional[UserOrganization]:
+def _membership(org: Organization, user_id: str) -> UserOrganization | None:
     for m in org.members or []:
         if m.user_id == user_id:
             return m
@@ -217,7 +221,7 @@ async def _org_by_slug_or_404(db: AsyncSession, slug: str) -> Organization:
 
 async def list_my_organizations(
     db: AsyncSession, user: User, *, include_all: bool = False
-) -> List[schemas.OrganizationRead]:
+) -> list[schemas.OrganizationRead]:
     """Organizations the user belongs to, plus (for superusers) every org.
 
     ``include_all`` (used by superusers) exposes every organization so admins can
@@ -229,20 +233,28 @@ async def list_my_organizations(
         .order_by(UserOrganization.joined_at.desc())
     )
     if user.is_superuser or include_all:
-        org_ids = [user_id for user_id in (await db.execute(select(Organization.id))).scalars().all()]
+        org_ids = list((await db.execute(select(Organization.id))).scalars().all())
         if not org_ids:
             # no organizations at all
-            orgs: List[Organization] = []
+            orgs: list[Organization] = []
         else:
-            orgs = list((await db.execute(select(Organization).where(Organization.id.in_(org_ids)))).scalars().all())
+            orgs = list(
+                (await db.execute(select(Organization).where(Organization.id.in_(org_ids))))
+                .scalars()
+                .all()
+            )
     else:
         memberships = list((await db.execute(membership)).scalars().all())
         if not memberships:
             return []
         org_ids = [m.organization_id for m in memberships]
-        orgs = list((await db.execute(select(Organization).where(Organization.id.in_(org_ids)))).scalars().all())
+        orgs = list(
+            (await db.execute(select(Organization).where(Organization.id.in_(org_ids))))
+            .scalars()
+            .all()
+        )
 
-    out: List[schemas.OrganizationRead] = []
+    out: list[schemas.OrganizationRead] = []
     for org in orgs:
         out.append(
             _org_to_read(
@@ -333,7 +345,9 @@ async def update_organization(
     )
 
 
-async def set_primary_organization(db: AsyncSession, user: User, org_id: Optional[str]) -> schemas.OrganizationRead:
+async def set_primary_organization(
+    db: AsyncSession, user: User, org_id: str | None
+) -> schemas.OrganizationRead:
     if org_id is None:
         user.primary_organization_id = None
         await db.flush()
@@ -359,7 +373,8 @@ async def set_primary_organization(db: AsyncSession, user: User, org_id: Optiona
 
 # ── Membership management ──────────────────────────────────────────────────────
 
-async def list_members(db: AsyncSession, org_id: str) -> List[Dict[str, Any]]:
+
+async def list_members(db: AsyncSession, org_id: str) -> list[dict[str, Any]]:
     org = await _get_org_or_404(db, org_id)
     # Query memberships directly (NOT ``org.members``): the relationship list is
     # cached by the identity map for the duration of the session, so it would be
@@ -379,11 +394,9 @@ async def list_members(db: AsyncSession, org_id: str) -> List[Dict[str, Any]]:
     if not memberships:
         return []
     user_ids = [m.user_id for m in memberships]
-    users = list(
-        (await db.execute(select(User).where(User.id.in_(user_ids)))).scalars().all()
-    )
+    users = list((await db.execute(select(User).where(User.id.in_(user_ids)))).scalars().all())
     by_id = {u.id: u for u in users}
-    out: List[Dict[str, Any]] = []
+    out: list[dict[str, Any]] = []
     for m in sorted(memberships, key=lambda x: x.joined_at, reverse=True):
         u = by_id.get(m.user_id)
         if u is None:
@@ -403,7 +416,7 @@ async def list_members(db: AsyncSession, org_id: str) -> List[Dict[str, Any]]:
 
 async def add_member_by_email(
     db: AsyncSession, actor: User, org_id: str, email: str, role: str = "member"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     org = await _get_org_or_404(db, org_id)
     _require_org_role(actor, org)
     if role not in ("owner", "admin", "member", "viewer"):
@@ -424,7 +437,7 @@ async def add_member_by_email(
 
 async def update_member_role(
     db: AsyncSession, actor: User, org_id: str, member_id: str, role: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     org = await _get_org_or_404(db, org_id)
     _require_org_role(actor, org)
     if role not in ("owner", "admin", "member", "viewer"):
@@ -436,7 +449,9 @@ async def update_member_role(
     if existing.role == "owner" and role != "owner":
         owner_count = sum(1 for m in org.members if m.role == "owner")
         if owner_count <= 1:
-            raise HTTPException(status_code=400, detail="An organization must keep at least one owner")
+            raise HTTPException(
+                status_code=400, detail="An organization must keep at least one owner"
+            )
     existing.role = role
     await db.flush()
     return await list_members(db, org_id)

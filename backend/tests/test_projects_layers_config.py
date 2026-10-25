@@ -10,6 +10,7 @@ whole layer tree (folders AND layers) was silently lost.
 
 Hermetic: in-memory SQLite + ASGITransport, no external services.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -22,14 +23,13 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.pool import StaticPool
 
-from app.core.db import Base, get_db
+import app.api.auth.models
+import app.api.maps.models
+import app.api.profile.models
+import app.api.projects.models  # noqa: F401 - registers projects tables
 from app.api.auth.router import router as auth_router
 from app.api.projects.router import router as projects_router
-
-import app.api.auth.models  # noqa: F401 - registers users/groups/permissions
-import app.api.profile.models  # noqa: F401 - organizations (User selectin rel.)
-import app.api.projects.models  # noqa: F401 - registers projects tables
-import app.api.maps.models  # noqa: F401 - registers maps tables (related)
+from app.core.db import Base, get_db
 
 _TEST_TABLE_NAMES = [
     # auth
@@ -118,12 +118,15 @@ async def client():
 
 
 async def _auth(client: AsyncClient) -> dict:
-    await client.post("/api/v1/auth/register", json={
-        "email": "owner@test.com",
-        "password": "S3curePass!2024",
-        "full_name": "Owner",
-        "is_superuser": False,
-    })
+    await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "owner@test.com",
+            "password": "S3curePass!2024",
+            "full_name": "Owner",
+            "is_superuser": False,
+        },
+    )
     resp = await client.post(
         "/api/v1/auth/token",
         json={"email": "owner@test.com", "password": "S3curePass!2024"},
@@ -196,4 +199,3 @@ async def test_update_project_folder_structure_roundtrip(client: AsyncClient):
     assert items["folder_1"]["kind"] == "folder"
     assert items["layer_1"]["parentId"] == "folder_1"
     assert items["layer_1"]["datasetId"] == "ds_rivers"
-

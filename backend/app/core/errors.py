@@ -18,6 +18,7 @@ Register the handlers on the app with :func:`register_error_handlers`.
 
 Ticket: T-06 (consistent errors).
 """
+
 from __future__ import annotations
 
 import logging

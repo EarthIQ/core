@@ -31,12 +31,7 @@ import {
 import { useEffect, useState, type CSSProperties } from "react";
 
 import { Button, cn } from "@packages/ui";
-import {
-  AreaChart,
-  BarChart,
-  LineChart,
-  PieChart,
-} from "@packages/charts";
+import { AreaChart, BarChart, LineChart, PieChart } from "@packages/charts";
 import { Map as MapCanvas } from "@packages/map";
 
 import { BASEMAP_STYLES } from "@/hooks/useMapLibre";
@@ -69,7 +64,9 @@ function WidgetHint({
       <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface-hover)] text-[var(--text-tertiary)]">
         <Icon size={18} />
       </span>
-      <p className="text-xs font-medium text-[var(--text-secondary)]">{label}</p>
+      <p className="text-xs font-medium text-[var(--text-secondary)]">
+        {label}
+      </p>
       {sub ? (
         <p className="max-w-[16rem] text-[0.7rem] leading-snug text-[var(--text-tertiary)]">
           {sub}
@@ -174,7 +171,10 @@ function TextBlock({
 }) {
   return (
     <div className="flex h-full flex-col justify-start">
-      <BlockHeading heading={block.heading} surface={surface} />
+      <BlockHeading
+        heading={block.heading}
+        surface={surface}
+      />
       <p
         className="whitespace-pre-wrap"
         style={{ color: surface.sub, fontSize: "1.9cqw", lineHeight: 1.55 }}
@@ -195,11 +195,20 @@ function BulletsBlock({
   const items = (block.bullets ?? []).filter((b) => b.trim().length > 0);
   return (
     <div className="flex h-full flex-col justify-start">
-      <BlockHeading heading={block.heading} surface={surface} />
+      <BlockHeading
+        heading={block.heading}
+        surface={surface}
+      />
       {items.length ? (
-        <ul className="flex flex-col" style={{ gap: "0.8cqw" }}>
+        <ul
+          className="flex flex-col"
+          style={{ gap: "0.8cqw" }}
+        >
           {items.map((item, i) => (
-            <li key={i} className="flex items-start gap-2">
+            <li
+              key={i}
+              className="flex items-start gap-2"
+            >
               <span
                 aria-hidden
                 className="mt-0.5"
@@ -208,7 +217,11 @@ function BulletsBlock({
                 •
               </span>
               <span
-                style={{ color: surface.text, fontSize: "1.9cqw", lineHeight: 1.5 }}
+                style={{
+                  color: surface.text,
+                  fontSize: "1.9cqw",
+                  lineHeight: 1.5,
+                }}
               >
                 {item}
               </span>
@@ -233,20 +246,23 @@ function KpiBlock({
     <div className="flex h-full flex-col items-center justify-center text-center">
       {block.heading ? (
         <p
-          className="mb-1 font-medium uppercase tracking-wide"
+          className="mb-1 font-medium tracking-wide uppercase"
           style={{ color: surface.sub, fontSize: "1.7cqw" }}
         >
           {block.heading}
         </p>
       ) : null}
       <p
-        className="font-bold leading-none tabular-nums"
+        className="leading-none font-bold tabular-nums"
         style={{ color: surface.accent, fontSize: "7cqw" }}
       >
         {block.kpiValue || "0"}
       </p>
       {block.kpiLabel ? (
-        <p className="mt-1" style={{ color: surface.sub, fontSize: "1.9cqw" }}>
+        <p
+          className="mt-1"
+          style={{ color: surface.sub, fontSize: "1.9cqw" }}
+        >
           {block.kpiLabel}
         </p>
       ) : null}
@@ -445,15 +461,37 @@ function renderChart(
     width: "100%",
   };
   if (type === "line") {
-    return <LineChart {...common} lines={[{ dataKey: value, name: label }]} />;
+    return (
+      <LineChart
+        {...common}
+        lines={[{ dataKey: value, name: label }]}
+      />
+    );
   }
   if (type === "area") {
-    return <AreaChart {...common} areas={[{ dataKey: value, name: label }]} />;
+    return (
+      <AreaChart
+        {...common}
+        areas={[{ dataKey: value, name: label }]}
+      />
+    );
   }
   if (type === "pie") {
-    return <PieChart {...common} dataKey={value} legend nameKey="name" />;
+    return (
+      <PieChart
+        {...common}
+        dataKey={value}
+        legend
+        nameKey="name"
+      />
+    );
   }
-  return <BarChart {...common} bars={[{ dataKey: value, name: label }]} />;
+  return (
+    <BarChart
+      {...common}
+      bars={[{ dataKey: value, name: label }]}
+    />
+  );
 }
 
 function SlideChart({ block, data }: { block: SlideBlock; data: ProjectData }) {
@@ -496,14 +534,22 @@ function SlideChart({ block, data }: { block: SlideBlock; data: ProjectData }) {
     body = <Loading />;
   } else if (error) {
     body = (
-      <WidgetHint icon={BarChart3} label="Couldn't load chart" sub={error} />
+      <WidgetHint
+        icon={BarChart3}
+        label="Couldn't load chart"
+        sub={error}
+      />
     );
   } else {
     const columns = preview?.columns ?? [];
     const defaults = pickColumns(columns);
     const label = block.labelColumn || defaults.label;
     const value = block.valueColumn || defaults.value;
-    const chartData = toChartData((preview?.rows ?? []).slice(0, 24), label, value);
+    const chartData = toChartData(
+      (preview?.rows ?? []).slice(0, 24),
+      label,
+      value
+    );
     body = chartData.length ? (
       renderChart(block.chartType ?? "bar", chartData, value, label)
     ) : (
@@ -590,7 +636,9 @@ function SlideTable({ block, data }: { block: SlideBlock; data: ProjectData }) {
         <div className="flex h-full flex-col">
           <div className="min-h-0 flex-1 overflow-auto">
             <table className="w-full border-collapse text-[0.72rem]">
-              <caption className="sr-only">Data preview: {preview.name}</caption>
+              <caption className="sr-only">
+                Data preview: {preview.name}
+              </caption>
               <thead>
                 <tr>
                   {cols.map((c) => (
@@ -606,7 +654,10 @@ function SlideTable({ block, data }: { block: SlideBlock; data: ProjectData }) {
               </thead>
               <tbody>
                 {rows.map((row, i) => (
-                  <tr key={i} className="even:bg-slate-50/60">
+                  <tr
+                    key={i}
+                    className="even:bg-slate-50/60"
+                  >
                     {cols.map((c) => (
                       <td
                         key={c}
@@ -621,7 +672,8 @@ function SlideTable({ block, data }: { block: SlideBlock; data: ProjectData }) {
             </table>
           </div>
           <div className="border-t border-slate-100 px-2 py-1 text-[0.65rem] text-slate-400">
-            {preview.row_count ?? rows.length} rows total · showing {rows.length}
+            {preview.row_count ?? rows.length} rows total · showing{" "}
+            {rows.length}
           </div>
         </div>
       );
@@ -652,19 +704,55 @@ function renderBlockContent(
 ) {
   switch (block.type) {
     case "text":
-      return <TextBlock block={block} surface={surface} />;
+      return (
+        <TextBlock
+          block={block}
+          surface={surface}
+        />
+      );
     case "bullets":
-      return <BulletsBlock block={block} surface={surface} />;
+      return (
+        <BulletsBlock
+          block={block}
+          surface={surface}
+        />
+      );
     case "kpi":
-      return <KpiBlock block={block} surface={surface} />;
+      return (
+        <KpiBlock
+          block={block}
+          surface={surface}
+        />
+      );
     case "image":
-      return <ImageBlock block={block} surface={surface} />;
+      return (
+        <ImageBlock
+          block={block}
+          surface={surface}
+        />
+      );
     case "map":
-      return <SlideMap block={block} data={data} interactive={interactive} />;
+      return (
+        <SlideMap
+          block={block}
+          data={data}
+          interactive={interactive}
+        />
+      );
     case "chart":
-      return <SlideChart block={block} data={data} />;
+      return (
+        <SlideChart
+          block={block}
+          data={data}
+        />
+      );
     case "table":
-      return <SlideTable block={block} data={data} />;
+      return (
+        <SlideTable
+          block={block}
+          data={data}
+        />
+      );
     default:
       return null;
   }
@@ -848,7 +936,10 @@ export function SlideCanvas({
         } as CSSProperties
       }
     >
-      <div className="flex h-full w-full flex-col" style={{ padding: "3.4cqw" }}>
+      <div
+        className="flex h-full w-full flex-col"
+        style={{ padding: "3.4cqw" }}
+      >
         {/* Header */}
         <div
           className={
@@ -866,7 +957,7 @@ export function SlideCanvas({
                 EarthIQ
               </p>
               <h1
-                className="font-bold leading-tight"
+                className="leading-tight font-bold"
                 style={{ fontSize: "5.4cqw", color: surface.text }}
               >
                 {slide.title || "Untitled"}
@@ -883,7 +974,7 @@ export function SlideCanvas({
           ) : (
             <>
               <h2
-                className="font-bold leading-tight"
+                className="leading-tight font-bold"
                 style={{ fontSize: "3.3cqw", color: surface.text }}
               >
                 {slide.title || " "}
@@ -912,7 +1003,10 @@ export function SlideCanvas({
           >
             {rows.length === 0 ? (
               mode === "edit" ? (
-                <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed" style={{ borderColor: surface.divider }}>
+                <div
+                  className="flex flex-1 items-center justify-center rounded-lg border border-dashed"
+                  style={{ borderColor: surface.divider }}
+                >
                   <p style={{ color: surface.sub, fontSize: "1.8cqw" }}>
                     This slide has no content yet — add blocks on the right.
                   </p>

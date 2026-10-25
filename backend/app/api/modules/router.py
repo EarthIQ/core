@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import List, Optional
 
 import yaml
 from fastapi import APIRouter
@@ -12,31 +11,33 @@ logger = logging.getLogger("modules.registry")
 
 router = APIRouter(tags=["modules"])
 
-ROOT = Path(__file__).resolve().parents[4]   # core/
+ROOT = Path(__file__).resolve().parents[4]  # core/
 LOCK_FILE = ROOT / "modules.lock.yaml"
 REGISTRY_FILE = ROOT / "modules.registry.yaml"
 
 
 # ── Schema ─────────────────────────────────────────────────────────────────────
 
+
 class ModuleCapabilities(BaseModel):
     has_backend: bool = False
     has_frontend: bool = False
     has_infra: bool = False
-    extras: List[str] = []
+    extras: list[str] = []
 
 
 class ModuleInfo(BaseModel):
     name: str
     version: str
     enabled: bool
-    description: Optional[str] = None
+    description: str | None = None
     capabilities: ModuleCapabilities = ModuleCapabilities()
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-def _read_lock() -> List[dict]:
+
+def _read_lock() -> list[dict]:
     if not LOCK_FILE.exists():
         return []
     data = yaml.safe_load(LOCK_FILE.read_text()) or {}
@@ -56,7 +57,7 @@ def _build_module_info(mod: dict) -> ModuleInfo:
     meta_path = mod_path / "module.yaml"
 
     version = mod.get("ref", "unknown")
-    description: Optional[str] = None
+    description: str | None = None
     caps = ModuleCapabilities()
 
     if meta_path.exists():
@@ -82,7 +83,8 @@ def _build_module_info(mod: dict) -> ModuleInfo:
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
 
-@router.get("", response_model=List[ModuleInfo])
+
+@router.get("", response_model=list[ModuleInfo])
 def list_modules():
     """
     Return all **installed** modules with availability status.
@@ -95,7 +97,7 @@ def list_modules():
     return [_build_module_info(m) for m in lock]
 
 
-@router.get("/registry", response_model=List[dict])
+@router.get("/registry", response_model=list[dict])
 def list_registry():
     """Return all modules *known* to this platform (from modules.registry.yaml)."""
     registry = _read_registry()
@@ -106,6 +108,7 @@ def list_registry():
 def get_module(module_name: str):
     """Return info for a single installed module, or 404 if not installed."""
     from fastapi import HTTPException
+
     lock = _read_lock()
     mod = next((m for m in lock if m["name"] == module_name), None)
     if mod is None:

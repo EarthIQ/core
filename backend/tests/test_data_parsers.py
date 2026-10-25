@@ -7,14 +7,15 @@ Python-side logic. Run with:
 
     cd backend && uv run pytest tests/test_data_parsers.py -v
 """
+
 from __future__ import annotations
 
 import pytest
 
 from app.api.data import service as svc
 
-
 # ── GeoJSON parsing ───────────────────────────────────────────────────────────
+
 
 def test_parse_geojson_feature_collection():
     payload = b'{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[12,52]},"properties":{"name":"Amsterdam"}}]}'
@@ -25,7 +26,9 @@ def test_parse_geojson_feature_collection():
 
 
 def test_parse_geojson_single_feature():
-    payload = b'{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{"a":1}}'
+    payload = (
+        b'{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{"a":1}}'
+    )
     feats = svc.parse_geojson_bytes(payload)
     assert len(feats) == 1
     assert feats[0]["properties"]["a"] == 1
@@ -44,6 +47,7 @@ def test_parse_geojson_invalid_raises():
 
 
 # ── CSV parsing ───────────────────────────────────────────────────────────────
+
 
 def test_parse_csv_basic():
     payload = b"name,age\nAlice,30\nBob,41\n"
@@ -78,6 +82,7 @@ def test_parse_csv_semicolon_delimiter():
 
 # ── Coordinate column detection ───────────────────────────────────────────────
 
+
 def test_detect_coord_columns_lat_lon():
     rows = [{"lat": 52.3, "lon": 4.8, "name": "Amsterdam"}]
     lon, lat = svc.detect_coord_columns(rows)
@@ -104,6 +109,7 @@ def test_detect_coord_columns_empty_rows():
 
 
 # ── Rows -> features ──────────────────────────────────────────────────────────
+
 
 def test_rows_to_features_with_coords():
     rows = [
@@ -136,6 +142,7 @@ def test_rows_to_features_no_coords_returns_empty():
 
 # ── Type name helper ──────────────────────────────────────────────────────────
 
+
 def test_python_type_name():
     assert svc._python_type_name(True) == "Boolean"
     assert svc._python_type_name(5) == "Integer"
@@ -154,6 +161,7 @@ def test_extract_attributes_order_and_cap():
 
 # ── Content type mapping ──────────────────────────────────────────────────────
 
+
 def test_content_type_for_format():
     assert svc._content_type_for_format("GeoJSON").startswith("application/geo+json")
     assert svc._content_type_for_format("CSV").startswith("text/csv")
@@ -163,15 +171,16 @@ def test_content_type_for_format():
 
 # ── KML parsing ───────────────────────────────────────────────────────────────
 
+
 def test_parse_kml_points():
     kml = (
         b'<?xml version="1.0"?>'
         b'<kml xmlns="http://www.opengis.net/kml/2.2"><Document>'
-        b'<Placemark><name>Amsterdam</name><Point>'
-        b'<coordinates>4.8952,52.3702,0</coordinates></Point></Placemark>'
-        b'<Placemark><name>NYC</name><Point>'
-        b'<coordinates>-74.006,40.7128,0</coordinates></Point></Placemark>'
-        b'</Document></kml>'
+        b"<Placemark><name>Amsterdam</name><Point>"
+        b"<coordinates>4.8952,52.3702,0</coordinates></Point></Placemark>"
+        b"<Placemark><name>NYC</name><Point>"
+        b"<coordinates>-74.006,40.7128,0</coordinates></Point></Placemark>"
+        b"</Document></kml>"
     )
     feats = svc.parse_kml_bytes(kml)
     assert len(feats) == 2
@@ -192,15 +201,16 @@ def test_parse_kml_no_geometry_raises():
 
 # ── GeoRSS parsing ────────────────────────────────────────────────────────────
 
+
 def test_parse_georss_points():
     rss = (
         b'<?xml version="1.0"?>'
         b'<rss xmlns:georss="http://www.georss.org/georss"><channel>'
-        b'<item><title>Amsterdam</title>'
-        b'<georss:point>52.3702 4.8952</georss:point></item>'
-        b'<item><title>NYC</title>'
-        b'<georss:point>40.7128 -74.006</georss:point></item>'
-        b'</channel></rss>'
+        b"<item><title>Amsterdam</title>"
+        b"<georss:point>52.3702 4.8952</georss:point></item>"
+        b"<item><title>NYC</title>"
+        b"<georss:point>40.7128 -74.006</georss:point></item>"
+        b"</channel></rss>"
     )
     feats = svc.parse_georss_bytes(rss)
     assert len(feats) == 2
@@ -215,6 +225,7 @@ def test_parse_georss_invalid_raises():
 
 def test_vocabulary_includes_new_formats():
     from app.api.data import schemas
+
     assert "KML" in schemas.DATA_FORMATS
     assert "GeoRSS" in schemas.DATA_FORMATS
     assert "GeoParquet" in schemas.DATA_FORMATS

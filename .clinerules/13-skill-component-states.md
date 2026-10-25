@@ -1,8 +1,8 @@
 ---
 paths:
-- "frontend/packages/ui/src/**"
-- "frontend/apps/web/src/components/**"
-- "modules/*/frontend/src/components/**"
+  - "frontend/packages/ui/src/**"
+  - "frontend/apps/web/src/components/**"
+  - "modules/*/frontend/src/components/**"
 ---
 
 # Skill: Component Completeness & Design Tokens (Sumi-derived)
@@ -11,10 +11,12 @@ paths:
 > it is a complete, reusable primitive.
 
 ## Every component ships these states
+
 default · hover · focus-visible · active · disabled · **loading** · **error** ·
 **empty** (where data is involved). Missing any = incomplete.
 
 ## Build rules
+
 1. **Prefer `@packages/ui`** (§5.3) — check the existing primitive (Button, Input,
    Select, Modal, ...) BEFORE writing a new one; extend the package over inlining.
 2. **Tokens only** (§5.4) — colors/radii/shadows/spacing via `globals.css` vars;
@@ -27,6 +29,7 @@ default · hover · focus-visible · active · disabled · **loading** · **erro
    `prefers-reduced-motion`.
 
 ## Quality bar
+
 - [ ] All 8 states render and are testable.
 - [ ] Focus ring visible & consistent; disabled is clearly non-interactive.
 - [ ] Works in light + dark (tokens flip, no per-theme CSS).

@@ -8,7 +8,9 @@ services:
       - ../../.env
     volumes:
       - postgres_data:/var/lib/postgresql
-    ports: ["5432:5432"]
+    # No host port mapping: reachable on the internal compose network as
+    # ``db:5432`` (which is all the backend/migrate services use). Add an
+    # explicit ``ports: ["5432:5432"]`` only if you need a local psql client.
     healthcheck:
       test:
         [
@@ -22,14 +24,13 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    ports: ["6379:6379"]
+    # No host port mapping: reachable internally as ``redis:6379``.
 
   rustfs:
     image: rustfs/rustfs:latest
     restart: unless-stopped
-    ports:
-      - "9000:9000"
-      - "9001:9001"
+    # No host port mapping: reachable internally as ``rustfs:9000``/``:9001``.
+    # (S3 console 9001 and API 9000 are only needed by the backend service.)
     volumes:
       - rustfs_data:/data
     env_file:

@@ -24,10 +24,11 @@ Programmatic API for *other* modules
 Any module can fire a notification with ``app.api.notifications.router.emit(...)``
 which persists it and pushes it to live clients in one call.
 """
+
 from __future__ import annotations
 
 import logging
-from typing import Any, List, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -46,10 +47,10 @@ router = APIRouter()
 # Reuse the core "current user" dependency (single source of truth for auth).
 from app.api.auth.router import get_current_user  # noqa: E402
 
-
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-async def _auth_ws(websocket: WebSocket) -> Optional[str]:
+
+async def _auth_ws(websocket: WebSocket) -> str | None:
     """Authenticate a WebSocket via ?token= query param. Returns user id or None."""
     token = websocket.query_params.get("token")
     if not token:
@@ -71,11 +72,14 @@ async def _auth_ws(websocket: WebSocket) -> Optional[str]:
 
 def _require_admin(user: User) -> User:
     if not user.is_superuser:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required"
+        )
     return user
 
 
 # ── Read endpoints (current user) ──────────────────────────────────────────────
+
 
 @router.get(
     "",
@@ -84,9 +88,9 @@ def _require_admin(user: User) -> User:
     tags=["notifications"],
 )
 async def list_mine(
-    category: Optional[str] = Query(None, description="Filter by category"),
+    category: str | None = Query(None, description="Filter by category"),
     unread_only: bool = Query(False, description="Only unread"),
-    search: Optional[str] = Query(None, description="Search title/body"),
+    search: str | None = Query(None, description="Search title/body"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -131,6 +135,7 @@ async def unread_count(
 
 # ── Create / broadcast (admin) ─────────────────────────────────────────────────
 
+
 @router.post(
     "",
     response_model=schemas.NotificationRead,
@@ -169,7 +174,7 @@ async def broadcast(
     user: User = Depends(get_current_user),
 ):
     _require_admin(user)
-    recipients: List[NotificationRecipient] = await service.create_broadcast(db, body)
+    recipients: list[NotificationRecipient] = await service.create_broadcast(db, body)
     # Push to every live recipient.
     for rec in recipients:
         payload = service.recipient_to_read(rec).model_dump(mode="json")
@@ -213,8 +218,7 @@ async def create_mention(
     recipients = await service.create_broadcast(db, msg)
     await db.commit()
     pushed = [
-        (rec.user_id, service.recipient_to_read(rec).model_dump(mode="json"))
-        for rec in recipients
+        (rec.user_id, service.recipient_to_read(rec).model_dump(mode="json")) for rec in recipients
     ]
     counts = {uid: await service.unread_count(db, uid) for uid, _ in pushed}
     await db.commit()
@@ -224,6 +228,7 @@ async def create_mention(
 
 
 # ── Mutations (current user) ───────────────────────────────────────────────────
+
 
 @router.post(
     "/read-all",
@@ -284,6 +289,7 @@ async def delete_one(
 
 # ── Preferences (current user) ─────────────────────────────────────────────────
 
+
 @router.get(
     "/preferences",
     response_model=schemas.PreferencesRead,
@@ -312,6 +318,7 @@ async def update_prefs(
 
 
 # ── Real-time stream (WebSocket) ───────────────────────────────────────────────
+
 
 @router.websocket("/stream")
 async def stream(websocket: WebSocket) -> None:
@@ -348,16 +355,17 @@ async def stream(websocket: WebSocket) -> None:
 
 # ── Programmatic API for other modules ────────────────────────────────────────
 
+
 async def emit(
-    user_ids: List[str] | str,
+    user_ids: list[str] | str,
     title: str,
     *,
-    body: Optional[str] = None,
+    body: str | None = None,
     category: str = "system",
     kind: str = "info",
-    payload: Optional[dict[str, Any]] = None,
-    source: Optional[str] = None,
-    link: Optional[str] = None,
+    payload: dict[str, Any] | None = None,
+    source: str | None = None,
+    link: str | None = None,
 ) -> int:
     """
     Fire a notification from any other module.
@@ -404,4 +412,4 @@ async def emit(
     return len(recipients)
 
 
-__all__ = ["router", "emit"]
+__all__ = ["emit", "router"]

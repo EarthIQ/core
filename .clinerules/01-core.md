@@ -292,7 +292,7 @@ depends_on: []
     Each entry must have non-empty `id`/`label`/`category` strings, optional
     `description`/`icon`, optional `inputs` (list of
     `{ key, type: text|textarea|number|integer|select|boolean, required?,
-    default?, options? }`), and a `run(inputs, ctx)` function where `ctx` gives
+default?, options? }`), and a `run(inputs, ctx)` function where `ctx` gives
     the authenticated `api` client + live map state. Invalid entries are skipped
     at runtime (console warning). Contract + validator:
     `frontend/apps/web/src/lib/tools.ts`; working examples: urban-planning

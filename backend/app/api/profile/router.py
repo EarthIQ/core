@@ -24,11 +24,10 @@ Endpoints
   DELETE /organizations/{org_id}/members/{user_id} → remove a member (owner/admin)
   DELETE /organizations/{org_id}/me     → leave this organization
 """
+
 from __future__ import annotations
 
-from typing import List, Optional
-
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -43,16 +42,18 @@ router = APIRouter(tags=["profile"])
 
 # ── Request bodies not part of the shared schemas ─────────────────────────────
 
+
 class AddMemberRequest(BaseModel):
     email: EmailStr
     role: str = Field(default="member", pattern="^(owner|admin|member|viewer)$")
 
 
 class SetPrimaryRequest(BaseModel):
-    organization_id: Optional[str] = None
+    organization_id: str | None = None
 
 
 # ── My profile ─────────────────────────────────────────────────────────────────
+
 
 @router.get("/me", response_model=schemas.ProfileRead, summary="Get my profile")
 async def my_profile(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
@@ -85,6 +86,7 @@ async def change_my_password(
 
 # ── My preferences ─────────────────────────────────────────────────────────────
 
+
 @router.get(
     "/me/preferences",
     response_model=schemas.PreferencesRead,
@@ -111,9 +113,10 @@ async def update_my_preferences(
 
 # ── Organizations ──────────────────────────────────────────────────────────────
 
+
 @router.get(
     "/organizations",
-    response_model=List[schemas.OrganizationRead],
+    response_model=list[schemas.OrganizationRead],
     summary="List my organizations (superuser: all)",
 )
 async def list_orgs(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
@@ -197,9 +200,10 @@ async def set_primary(
 
 # ── Membership ─────────────────────────────────────────────────────────────────
 
+
 @router.get(
     "/organizations/{org_id}/members",
-    response_model=List[dict],
+    response_model=list[dict],
     summary="List members of an organization",
 )
 async def list_members(
@@ -213,7 +217,7 @@ async def list_members(
 
 @router.post(
     "/organizations/{org_id}/members",
-    response_model=List[dict],
+    response_model=list[dict],
     summary="Add a member by email (owner/admin)",
 )
 async def add_member(
@@ -227,7 +231,7 @@ async def add_member(
 
 @router.put(
     "/organizations/{org_id}/members/{member_id}",
-    response_model=List[dict],
+    response_model=list[dict],
     summary="Change a member's role (owner/admin)",
 )
 async def change_role(

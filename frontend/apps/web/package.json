@@ -6,7 +6,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite --clearScreen false",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -24,13 +24,11 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@packages/eslint-config": "workspace:*",
     "@packages/typescript-config": "workspace:*",
     "@tailwindcss/vite": "^4.0.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
-    "eslint": "^10.10.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^6.0.3",
     "vite": "^8.2.2"

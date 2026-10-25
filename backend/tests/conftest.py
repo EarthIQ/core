@@ -11,12 +11,12 @@ Design decisions
   ``httpx.ASGITransport`` (which skips the ASGI lifespan).
 • This keeps tests fast (< 2 s) and fully hermetic.
 """
+
 from __future__ import annotations
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pytest
-import pytest_asyncio
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event
@@ -27,14 +27,13 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.pool import StaticPool
 
-from app.core.db import Base, get_db
+import app.api.auth.models
+import app.api.notifications.models
+import app.api.profile.models  # noqa: F401 - registers organizations, memberships, prefs
 from app.api.auth.router import router as auth_router
 from app.api.notifications.router import router as notifications_router
 from app.api.profile.router import router as profile_router
-import app.api.auth.models  # noqa: F401 - registers users, groups, permissions
-import app.api.notifications.models  # noqa: F401 - registers notification tables
-import app.api.profile.models  # noqa: F401 - registers organizations, memberships, prefs
-
+from app.core.db import Base, get_db
 
 # Tables the hermetic test app actually uses. We deliberately do **not** create
 # the full ``Base.metadata``: other core models (e.g. ``app.api.data.models``)
@@ -66,6 +65,7 @@ def _test_tables():
 
 # ── Build a hermetic test app ─────────────────────────────────────────────────
 
+
 def _make_test_app() -> FastAPI:
     """Create a minimal FastAPI app with the auth + notifications routers."""
     test_app = FastAPI()
@@ -89,6 +89,7 @@ def _make_test_app() -> FastAPI:
 # to the *first* loop, and every later test would fail with cross-loop errors
 # (surfacing as 500s → KeyError: 'access_token' in the login helpers). Creating
 # a small engine per test is cheap (<10 ms) and gives perfect isolation.
+
 
 @pytest.fixture
 async def test_engine():
@@ -130,6 +131,7 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
 
 # ── HTTP client fixture ──────────────────────────────────────────────────────
 
+
 @pytest.fixture
 async def client(db_session, test_engine) -> AsyncGenerator[AsyncClient, None]:
     """
@@ -158,20 +160,40 @@ async def client(db_session, test_engine) -> AsyncGenerator[AsyncClient, None]:
 
 # ── Helper: register + login, return auth headers ────────────────────────────
 
+
+async def _grant_superuser(session: AsyncSession, email: str) -> None:
+    """Test helper: public registration never grants superuser, so flip it here.
+
+    (The production API intentionally does not allow self-escalation; tests set
+    the flag directly on the shared in-memory DB to stand up an admin.)
+    """
+    from sqlalchemy import update
+
+    from app.api.auth.models import User
+
+    await session.execute(update(User).where(User.email == email).values(is_superuser=True))
+    await session.commit()
+
+
 async def _register_and_login(
     client: AsyncClient,
+    session: AsyncSession,
     email: str = "admin@test.com",
     password: str = "S3curePass!2024",
     full_name: str = "Test Admin",
     is_superuser: bool = True,
 ) -> dict:
     """Register a user and return auth headers for subsequent requests."""
-    await client.post("/api/v1/auth/register", json={
-        "email": email,
-        "password": password,
-        "full_name": full_name,
-        "is_superuser": is_superuser,
-    })
+    await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": email,
+            "password": password,
+            "full_name": full_name,
+        },
+    )
+    if is_superuser:
+        await _grant_superuser(session, email)
     resp = await client.post("/api/v1/auth/token", json={"email": email, "password": password})
     token = resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
@@ -179,18 +201,23 @@ async def _register_and_login(
 
 async def _register_login_with_id(
     client: AsyncClient,
+    session: AsyncSession,
     email: str,
     password: str = "S3curePass!2024",
     full_name: str = "Test User",
     is_superuser: bool = False,
 ) -> tuple[dict, str, str]:
     """Register + login, returning ``(headers, user_id, token)``."""
-    await client.post("/api/v1/auth/register", json={
-        "email": email,
-        "password": password,
-        "full_name": full_name,
-        "is_superuser": is_superuser,
-    })
+    await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": email,
+            "password": password,
+            "full_name": full_name,
+        },
+    )
+    if is_superuser:
+        await _grant_superuser(session, email)
     resp = await client.post("/api/v1/auth/token", json={"email": email, "password": password})
     token = resp.json()["access_token"]
     me = await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
@@ -199,38 +226,42 @@ async def _register_login_with_id(
 
 
 @pytest.fixture
-async def admin_headers(client: AsyncClient) -> dict:
+async def admin_headers(client: AsyncClient, db_session) -> dict:
     """Pre-registered superuser with auth headers."""
-    return await _register_and_login(client, email="admin@test.com")
+    return await _register_and_login(client, db_session, email="admin@test.com")
 
 
 @pytest.fixture
-async def user_headers(client: AsyncClient) -> dict:
+async def user_headers(client: AsyncClient, db_session) -> dict:
     """Pre-registered regular user with auth headers."""
     return await _register_and_login(
-        client, email="user@test.com", full_name="Regular User", is_superuser=False,
+        client,
+        db_session,
+        email="user@test.com",
+        full_name="Regular User",
+        is_superuser=False,
     )
 
 
 @pytest.fixture
-async def admin(client: AsyncClient):
+async def admin(client: AsyncClient, db_session):
     headers, user_id, token = await _register_login_with_id(
-        client, email="admin@eqcorp.com", full_name="Admin", is_superuser=True
-    )
-    return {"headers": headers, "id": user_id, "token": token}
-
-
-@pytest.fixture
-async def user_a(client: AsyncClient):
-    headers, user_id, token = await _register_login_with_id(
-        client, email="alice@eqcorp.com", full_name="Alice"
+        client, db_session, email="admin@eqcorp.com", full_name="Admin", is_superuser=True
     )
     return {"headers": headers, "id": user_id, "token": token}
 
 
 @pytest.fixture
-async def user_b(client: AsyncClient):
+async def user_a(client: AsyncClient, db_session):
     headers, user_id, token = await _register_login_with_id(
-        client, email="bob@eqcorp.com", full_name="Bob"
+        client, db_session, email="alice@eqcorp.com", full_name="Alice"
+    )
+    return {"headers": headers, "id": user_id, "token": token}
+
+
+@pytest.fixture
+async def user_b(client: AsyncClient, db_session):
+    headers, user_id, token = await _register_login_with_id(
+        client, db_session, email="bob@eqcorp.com", full_name="Bob"
     )
     return {"headers": headers, "id": user_id, "token": token}

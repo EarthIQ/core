@@ -1,4 +1,5 @@
 """KML parser (Placemark point/line geometry → GeoJSON features)."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -63,21 +64,24 @@ def parse_kml_bytes(file_bytes: bytes) -> list[dict[str, Any]]:
         props: dict[str, Any] = {}
         for child in pm:
             ctag = _local(child.tag)
-            if ctag in ("name", "description", "id"):
-                if child.text is not None:
-                    props[ctag] = child.text.strip()
+            if ctag in ("name", "description", "id") and child.text is not None:
+                props[ctag] = child.text.strip()
         geom = None
         for child in pm.iter():
-            if _local(child.tag) in ("Point", "LineString", "LinearRing", "Polygon", "MultiGeometry"):
+            if _local(child.tag) in (
+                "Point",
+                "LineString",
+                "LinearRing",
+                "Polygon",
+                "MultiGeometry",
+            ):
                 g = _parse_geometry(child)
                 if g:
                     geom = g
                     break
         if geom is None:
             continue
-        features.append(
-            {"type": "Feature", "geometry": geom, "properties": props}
-        )
+        features.append({"type": "Feature", "geometry": geom, "properties": props})
 
     if not features:
         raise ValueError("KML contained no usable point/line geometries.")

@@ -3,12 +3,12 @@
 Uses aiosmtplib with an inline Jinja2 HTML template.
 Gracefully no-ops when SMTP is not configured (SMTP_HOST is empty).
 """
+
 from __future__ import annotations
 
 import logging
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -257,7 +257,7 @@ async def send_request_access_email(
             subject=f'{requester_name} is requesting access to "{entity_title}" on EarthIQ',
             html=html,
         )
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.error("Failed to send access-request email to %s: %s", to, exc)
 
 
@@ -288,7 +288,7 @@ async def send_access_granted_email(
             subject=f'You now have access to "{entity_title}" on EarthIQ',
             html=html,
         )
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.error("Failed to send access-granted email to %s: %s", to, exc)
 
 
@@ -347,6 +347,6 @@ async def send_invite_email(
         )
         logger.info("Invite email sent to %s", to)
 
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         # Email is best-effort - don't fail the invite API call
         logger.error("Failed to send invite email to %s: %s", to, exc)

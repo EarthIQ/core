@@ -1,36 +1,40 @@
 from __future__ import annotations
 
-from typing import Optional
-
 import math
+
 from sqlalchemy import distinct, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api.auth.models import Group, GroupPermission, Permission, User, UserGroup
-from app.api.auth.schemas import GroupCreate, GroupUpdate, PermissionCreate, PermissionUpdate, UserCreate, UserUpdate
+from app.api.auth.schemas import (
+    GroupCreate,
+    GroupUpdate,
+    PermissionCreate,
+    PermissionUpdate,
+    UserCreate,
+    UserUpdate,
+)
 from app.core.security import hash_password, verify_password
 
 
-async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
+async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     result = await db.execute(select(User).where(User.email == email))
     return result.scalar_one_or_none()
 
 
-async def get_user_by_id(db: AsyncSession, user_id: str) -> Optional[User]:
+async def get_user_by_id(db: AsyncSession, user_id: str) -> User | None:
     result = await db.execute(
-        select(User)
-        .options(selectinload(User.groups))
-        .where(User.id == user_id)
+        select(User).options(selectinload(User.groups)).where(User.id == user_id)
     )
     return result.scalar_one_or_none()
 
 
 async def list_users(
     db: AsyncSession,
-    search: Optional[str] = None,
-    is_superuser: Optional[bool] = None,
-    group_id: Optional[str] = None,
+    search: str | None = None,
+    is_superuser: bool | None = None,
+    group_id: str | None = None,
     sort_by: str = "created_at",
     sort_order: str = "desc",
     page: int = 1,
@@ -60,10 +64,7 @@ async def list_users(
 
     # Sorting
     sort_column = getattr(User, sort_by, User.created_at)
-    if sort_order.lower() == "asc":
-        order_clause = sort_column.asc()
-    else:
-        order_clause = sort_column.desc()
+    order_clause = sort_column.asc() if sort_order.lower() == "asc" else sort_column.desc()
 
     total_pages = max(1, math.ceil(total / page_size)) if total > 0 else 1
     offset = (page - 1) * page_size
@@ -82,11 +83,10 @@ async def list_users(
     return users, total, total_pages
 
 
-
 async def create_user(
     db: AsyncSession,
     data: UserCreate,
-    assigned_group_ids: Optional[list[str]] = None,
+    assigned_group_ids: list[str] | None = None,
 ) -> User:
     user = User(
         email=str(data.email),
@@ -114,7 +114,7 @@ async def update_user(
     db: AsyncSession,
     user: User,
     data: UserUpdate,
-    assigned_group_ids: Optional[list[str]] = None,
+    assigned_group_ids: list[str] | None = None,
 ) -> User:
     if data.email is not None:
         user.email = str(data.email)
@@ -140,7 +140,9 @@ async def update_user(
         for group_id in existing_group_ids:
             if group_id not in desired_group_ids:
                 result = await db.execute(
-                    select(UserGroup).where(UserGroup.user_id == user.id, UserGroup.group_id == group_id)
+                    select(UserGroup).where(
+                        UserGroup.user_id == user.id, UserGroup.group_id == group_id
+                    )
                 )
                 for link in result.scalars().all():
                     await db.delete(link)
@@ -156,11 +158,11 @@ async def delete_user(db: AsyncSession, user: User) -> None:
 
 async def list_permissions(
     db: AsyncSession,
-    search: Optional[str] = None,
+    search: str | None = None,
     sort_by: str = "name",
     sort_order: str = "asc",
-    page: Optional[int] = None,
-    page_size: Optional[int] = None,
+    page: int | None = None,
+    page_size: int | None = None,
 ) -> tuple[list[Permission], int, int]:
     base_query = select(Permission)
     if search:
@@ -220,11 +222,11 @@ async def delete_permission(db: AsyncSession, permission: Permission) -> None:
 
 async def list_groups(
     db: AsyncSession,
-    search: Optional[str] = None,
+    search: str | None = None,
     sort_by: str = "name",
     sort_order: str = "asc",
-    page: Optional[int] = None,
-    page_size: Optional[int] = None,
+    page: int | None = None,
+    page_size: int | None = None,
 ) -> tuple[list[Group], int, int]:
     base_query = select(Group)
     if search:
@@ -266,12 +268,11 @@ async def list_groups(
     return groups, total, total_pages
 
 
-
 async def create_group(
     db: AsyncSession,
     data: GroupCreate,
-    assigned_permission_ids: Optional[list[str]] = None,
-    assigned_user_ids: Optional[list[str]] = None,
+    assigned_permission_ids: list[str] | None = None,
+    assigned_user_ids: list[str] | None = None,
 ) -> Group:
     group = Group(name=data.name, description=data.description)
     db.add(group)
@@ -305,8 +306,8 @@ async def update_group(
     db: AsyncSession,
     group: Group,
     data: GroupUpdate,
-    assigned_permission_ids: Optional[list[str]] = None,
-    assigned_user_ids: Optional[list[str]] = None,
+    assigned_permission_ids: list[str] | None = None,
+    assigned_user_ids: list[str] | None = None,
 ) -> Group:
     if data.name is not None:
         group.name = data.name
@@ -349,7 +350,9 @@ async def update_group(
         for user_id in list(existing_user_ids):
             if user_id not in desired_user_ids:
                 result = await db.execute(
-                    select(UserGroup).where(UserGroup.user_id == user_id, UserGroup.group_id == group.id)
+                    select(UserGroup).where(
+                        UserGroup.user_id == user_id, UserGroup.group_id == group.id
+                    )
                 )
                 for link in result.scalars().all():
                     await db.delete(link)
@@ -363,7 +366,7 @@ async def delete_group(db: AsyncSession, group: Group) -> None:
     await db.flush()
 
 
-async def get_group_by_id(db: AsyncSession, group_id: str) -> Optional[Group]:
+async def get_group_by_id(db: AsyncSession, group_id: str) -> Group | None:
     result = await db.execute(
         select(Group)
         .options(selectinload(Group.permissions), selectinload(Group.users))
@@ -372,9 +375,7 @@ async def get_group_by_id(db: AsyncSession, group_id: str) -> Optional[Group]:
     return result.scalar_one_or_none()
 
 
-async def authenticate_user(
-    db: AsyncSession, email: str, password: str
-) -> Optional[User]:
+async def authenticate_user(db: AsyncSession, email: str, password: str) -> User | None:
     user = await get_user_by_email(db, email)
     if not user or not verify_password(password, user.hashed_password):
         return None
@@ -404,19 +405,30 @@ async def get_user_effective_permissions(db: AsyncSession, user: User) -> list[s
             for p in full_group.permissions:
                 perms.add(p.name)
 
-    return sorted(list(perms))
+    return sorted(perms)
 
 
 async def ensure_default_component_permissions(db: AsyncSession) -> None:
     """
     Automatically seeds view, add, edit, delete permissions for core components and installed modules.
     """
-    core_components = ["projects", "maps", "users", "groups", "permissions", "data", "admin", "notifications"]
+    core_components = [
+        "projects",
+        "maps",
+        "users",
+        "groups",
+        "permissions",
+        "data",
+        "admin",
+        "notifications",
+    ]
     actions = ["view", "add", "edit", "delete"]
 
     # Discover components from installed modules.lock.yaml if present
-    import yaml
     from pathlib import Path
+
+    import yaml
+
     lock_file = Path("modules.lock.yaml")
     module_components: list[str] = []
     if lock_file.exists():
@@ -429,7 +441,7 @@ async def ensure_default_component_permissions(db: AsyncSession) -> None:
         except Exception:
             pass
 
-    all_components = sorted(list(set(core_components + module_components)))
+    all_components = sorted(set(core_components + module_components))
     existing_perms_res = await db.execute(select(Permission.name))
     existing_perm_names = set(existing_perms_res.scalars().all())
 
@@ -444,4 +456,3 @@ async def ensure_default_component_permissions(db: AsyncSession) -> None:
     if new_permissions:
         db.add_all(new_permissions)
         await db.flush()
-

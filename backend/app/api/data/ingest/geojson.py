@@ -1,4 +1,5 @@
 """GeoJSON parser (FeatureCollection / Feature / bare geometry)."""
+
 from __future__ import annotations
 
 import json

@@ -5,38 +5,38 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+# ── Ensure all ORM models are registered with Base.metadata ──────────────────
+import app.api.auth.models
+import app.api.data.models
+import app.api.maps.models
+import app.api.maps.share.models
+import app.api.notifications.models
+import app.api.profile.models
+import app.api.projects.models
+
+# ── Core API routers ──────────────────────────────────────────────────────────
+from app.api.auth.router import router as auth_router
+from app.api.collab.router import router as collab_router
+from app.api.data.router import asset_router as data_asset_router
+from app.api.data.router import router as data_router
+from app.api.geocode.router import router as geocode_router
+from app.api.maps.router import router as maps_router
+from app.api.maps.share.router import entity_share_router
+from app.api.maps.share.router import router as share_util_router
+from app.api.modules.router import router as modules_router
+from app.api.notifications.router import router as notifications_router
+from app.api.profile.router import router as profile_router
+from app.api.projects.router import router as projects_router
+from app.api.storage.router import router as storage_router
+from app.api.viz.router import router as viz_router
+from app.core import storage as object_storage
 from app.core.config import get_settings
 from app.core.db import engine
-from app.core import storage as object_storage
 from app.core.errors import register_error_handlers
 from app.core.guardrail import validate_production_settings
 from app.core.health import run_health_checks
 from app.core.rate_limit import RateLimitMiddleware, SlidingWindowLimiter
 from app.module_loader import load_modules
-
-# ── Core API routers ──────────────────────────────────────────────────────────
-from app.api.auth.router import router as auth_router
-from app.api.data.router import router as data_router
-from app.api.viz.router import router as viz_router
-from app.api.modules.router import router as modules_router
-from app.api.maps.router import router as maps_router
-from app.api.projects.router import router as projects_router
-from app.api.storage.router import router as storage_router
-from app.api.collab.router import router as collab_router
-from app.api.notifications.router import router as notifications_router
-from app.api.profile.router import router as profile_router
-from app.api.geocode.router import router as geocode_router
-from app.api.maps.share.router import router as share_util_router
-from app.api.maps.share.router import entity_share_router
-
-# ── Ensure all ORM models are registered with Base.metadata ──────────────────
-import app.api.auth.models  # noqa: F401 - registers User, Group, Permission
-import app.api.data.models  # noqa: F401 - registers GeoDataset, GeoFeature
-import app.api.projects.models  # noqa: F401
-import app.api.maps.models  # noqa: F401 - registers MapModel, MapGroupAccess, MapUserAccess
-import app.api.maps.share.models  # noqa: F401 - registers AccessRequest
-import app.api.notifications.models  # noqa: F401 - registers notification tables
-import app.api.profile.models  # noqa: F401 - registers organizations, memberships, prefs
 
 
 @asynccontextmanager
@@ -44,8 +44,9 @@ async def lifespan(app: FastAPI):
     # Fail fast on insecure default secrets in production (ticket T-04).
     validate_production_settings()
     # Ensure default permissions for core components & installed modules
-    from app.core.db import AsyncSessionLocal
     from app.api.auth.service import ensure_default_component_permissions
+    from app.core.db import AsyncSessionLocal
+
     async with AsyncSessionLocal() as db:
         await ensure_default_component_permissions(db)
         await db.commit()
@@ -57,12 +58,17 @@ async def lifespan(app: FastAPI):
 
 settings = get_settings()
 
+# ── App ──────────────────────────────────────────────────────────────────────
+# Interactive API docs are only exposed outside production (avoids leaking the
+# full endpoint map to anonymous callers in a public deployment).
+_docs_enabled = settings.app_env.strip().lower() not in ("prod", "production")
+
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json",
+    docs_url="/api/docs" if _docs_enabled else None,
+    redoc_url="/api/redoc" if _docs_enabled else None,
+    openapi_url="/api/openapi.json" if _docs_enabled else None,
     lifespan=lifespan,
 )
 
@@ -83,6 +89,9 @@ app.add_middleware(
         "/api/v1/data/datasets/upload",
         "/api/v1/ai/",
         "/api/v1/storage/upload",
+        # Auth endpoints: throttle sign-up spam and credential brute-forcing.
+        "/api/v1/auth/register",
+        "/api/v1/auth/token",
     ),
 )
 app.add_middleware(
@@ -128,6 +137,7 @@ async def health_readiness():
 _CORE_ROUTERS = [
     (auth_router, "/auth"),
     (data_router, "/data"),
+    (data_asset_router, "/data"),
     (viz_router, "/viz"),
     (modules_router, "/modules"),
     (maps_router, "/maps"),

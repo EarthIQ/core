@@ -11,6 +11,7 @@ Run with:
 
 They will be skipped automatically if the database is unreachable.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -22,12 +23,11 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from app.core.config import get_settings
-from app.core.db import Base
+from app.api.auth.models import User
 from app.api.data.models import GeoDataset, GeoFeature
-from app.api.auth.models import User, UserGroup, GroupPermission
-from app.api.maps.models import MapModel, MapGroupAccess, MapUserAccess
-from app.api.projects.models import ProjectModel, ProjectGroupAccess, ProjectUserAccess
+from app.api.maps.models import MapModel
+from app.api.projects.models import ProjectModel
+from app.core.config import get_settings
 
 # Import all models so Base.metadata is fully populated
 # (main.py already does this, but we're not importing main)
@@ -37,6 +37,7 @@ pytestmark = pytest.mark.integration
 
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
+
 
 @pytest_asyncio.fixture
 async def engine():
@@ -70,6 +71,7 @@ async def db(engine) -> AsyncSession:
 
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
+
 
 async def test_can_create_geo_dataset(db: AsyncSession):
     """Smoke test: create a dataset row, read it back, delete it."""
@@ -126,6 +128,7 @@ async def test_create_geo_feature_with_geometry(db: AsyncSession):
 
     # Use GeoAlchemy2's WKT to create a point geometry
     from geoalchemy2 import WKTElement
+
     point = WKTElement("POINT(12.5 55.7)", srid=4326)
 
     feature = GeoFeature(

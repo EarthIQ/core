@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Literal, Optional
+from typing import Literal
+
 from pydantic import BaseModel, EmailStr, Field
 
 # ── Role literals - mirror frontend types.ts ──────────────────────────────────
@@ -13,13 +14,14 @@ EntityType = Literal["map", "project"]
 
 # ── Core share models ─────────────────────────────────────────────────────────
 
+
 class AccessEntryRead(BaseModel):
     """Represents a single user's access entry in the Share Dialog."""
 
     id: str
     email: str
-    name: Optional[str] = None
-    avatar_url: Optional[str] = None
+    name: str | None = None
+    avatar_url: str | None = None
     role: Role
     pending: bool = False
     is_you: bool = False
@@ -56,18 +58,19 @@ class ShareSettingsRead(BaseModel):
 class ShareStateRead(BaseModel):
     """Full share state returned by GET /api/v1/maps/{id}/share."""
 
-    entries: List[AccessEntryRead]
+    entries: list[AccessEntryRead]
     general: GeneralAccessRead
     settings: ShareSettingsRead
 
 
 # ── People search ─────────────────────────────────────────────────────────────
 
+
 class PeopleSearchResult(BaseModel):
     id: str
     email: str
-    name: Optional[str] = None
-    avatar_url: Optional[str] = None
+    name: str | None = None
+    avatar_url: str | None = None
     role: Role = "viewer"  # default suggestion role
 
     model_config = {"from_attributes": True}
@@ -75,8 +78,9 @@ class PeopleSearchResult(BaseModel):
 
 # ── Request bodies ────────────────────────────────────────────────────────────
 
+
 class InviteRequest(BaseModel):
-    emails: List[EmailStr] = Field(..., min_length=1)
+    emails: list[EmailStr] = Field(..., min_length=1)
     role: Role = "viewer"
     message: str = ""
     notify: bool = True
@@ -96,13 +100,14 @@ class UpdateGeneralAccessRequest(BaseModel):
 
 
 class UpdateShareSettingsRequest(BaseModel):
-    editors_can_share: Optional[bool] = None
-    viewers_can_download: Optional[bool] = None
+    editors_can_share: bool | None = None
+    viewers_can_download: bool | None = None
 
     model_config = {"populate_by_name": True}
 
 
 # ── Access requests (Google-Docs style) ───────────────────────────────────────
+
 
 class RequestAccessBody(BaseModel):
     """Sent by a logged-in user who does not have access to the entity."""
@@ -122,12 +127,12 @@ class AccessRequestRead(BaseModel):
     entity_type: EntityType
     entity_id: str
     title: str
-    requester_name: Optional[str] = None
+    requester_name: str | None = None
     requester_email: str
     message: str = ""
     requested_role: LinkRole
     status: Literal["pending", "granted", "denied"]
-    granted_role: Optional[LinkRole] = None
+    granted_role: LinkRole | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

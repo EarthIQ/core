@@ -11,7 +11,7 @@
     "analyze": "vite-bundle-visualizer",
     "build": "vite build",
     "build-storybook": "storybook build",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "storybook": "storybook dev -p 6006"
   },
   "dependencies": {
@@ -30,7 +30,6 @@
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.3.0",
-    "@packages/eslint-config": "workspace:*",
     "@packages/prettier-config": "workspace:*",
     "@packages/typescript-config": "workspace:*",
     "@storybook/addon-a11y": "^10.5.10",
@@ -42,7 +41,6 @@
     "@types/react-dnd": "^3.0.2",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
-    "eslint-plugin-storybook": "^10.5.10",
     "storybook": "^10.5.10",
     "typescript": "^6.0.3",
     "vite": "^8.2.2",

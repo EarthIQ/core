@@ -10,7 +10,7 @@
   "types": "./src/index.ts",
   "scripts": {
     "build": "vite build",
-    "lint": "eslint ."
+    "lint": "oxlint"
   },
   "dependencies": {
     "framer-motion": "^13.1.1",
@@ -18,7 +18,6 @@
     "react-joyride": "^3.2.0"
   },
   "devDependencies": {
-    "@packages/eslint-config": "workspace:*",
     "@packages/prettier-config": "workspace:*",
     "@packages/typescript-config": "workspace:*",
     "@types/react": "^19.2.18",

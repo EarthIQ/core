@@ -61,7 +61,9 @@ export function SlideThumb({
 }) {
   const surface = slideSurface(slide.background);
   const isTitle = slide.blocks.length === 0;
-  const tileBg = surface.dark ? "rgba(255,255,255,0.16)" : "rgba(15,23,42,0.10)";
+  const tileBg = surface.dark
+    ? "rgba(255,255,255,0.16)"
+    : "rgba(15,23,42,0.10)";
   const tileFg = surface.dark ? "rgba(255,255,255,0.85)" : "rgba(15,23,42,0.6)";
 
   return (
@@ -119,7 +121,9 @@ export function SlideThumb({
         <span
           className="absolute top-1 left-1 rounded px-1 text-[9px] font-semibold"
           style={{
-            background: surface.dark ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.75)",
+            background: surface.dark
+              ? "rgba(0,0,0,0.35)"
+              : "rgba(255,255,255,0.75)",
             color: surface.dark ? "#fff" : "#0f172a",
           }}
         >
@@ -127,11 +131,18 @@ export function SlideThumb({
         </span>
 
         <span className="absolute top-1 right-1 hidden gap-0.5 group-hover:flex">
-          <MiniAction label="Duplicate slide" onClick={onDuplicate}>
+          <MiniAction
+            label="Duplicate slide"
+            onClick={onDuplicate}
+          >
             <Copy size={11} />
           </MiniAction>
           {canRemove ? (
-            <MiniAction danger label="Delete slide" onClick={onRemove}>
+            <MiniAction
+              danger
+              label="Delete slide"
+              onClick={onRemove}
+            >
               <Trash2 size={11} />
             </MiniAction>
           ) : null}

@@ -1,7 +1,9 @@
 import shutil
 import subprocess
 from pathlib import Path
+
 from rich.console import Console
+
 from .registry import MODULES_DIR, load_module_meta, save_lock
 
 console = Console()
@@ -56,7 +58,9 @@ def install_selected(names: list[str], registry: list[dict]) -> dict:
     selected = []
     for name in ordered:
         meta = load_module_meta(name)
-        selected.append({"name": name, "ref": meta.get("version", "main"), "path": f"modules/{name}"})
+        selected.append(
+            {"name": name, "ref": meta.get("version", "main"), "path": f"modules/{name}"}
+        )
 
     lock = {"selected": selected}
     save_lock(lock)
@@ -65,6 +69,7 @@ def install_selected(names: list[str], registry: list[dict]) -> dict:
 
 def remove_module(name: str) -> dict:
     from .registry import load_lock
+
     lock = load_lock()
     lock["selected"] = [m for m in lock["selected"] if m["name"] != name]
     save_lock(lock)
@@ -77,18 +82,31 @@ def remove_module(name: str) -> dict:
             # Use docker run/exec to remove root-owned directory cleanly.
             try:
                 subprocess.run(
-                    ["docker", "run", "--rm", "-v", f"{dest.parent.resolve()}:/modules", "alpine", "rm", "-rf", f"/modules/{name}"],
+                    [
+                        "docker",
+                        "run",
+                        "--rm",
+                        "-v",
+                        f"{dest.parent.resolve()}:/modules",
+                        "alpine",
+                        "rm",
+                        "-rf",
+                        f"/modules/{name}",
+                    ],
                     check=True,
-                    capture_output=True
+                    capture_output=True,
                 )
             except Exception:
                 # If docker is not available or fails, fallback to chmod/rm via shell
-                import os, stat
+                import os
+                import stat
+
                 def handle_remove_readonly(func, path, exc_info):
                     try:
                         os.chmod(path, stat.S_IWRITE | stat.S_IWUSR | stat.S_IRUSR)
                         func(path)
                     except Exception:
                         pass
+
                 shutil.rmtree(dest, onerror=handle_remove_readonly)
     return lock

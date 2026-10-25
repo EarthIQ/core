@@ -1,8 +1,8 @@
 ---
 paths:
-- "frontend/apps/web/src/**"
-- "frontend/packages/**"
-- "modules/*/frontend/src/**"
+  - "frontend/apps/web/src/**"
+  - "frontend/packages/**"
+  - "modules/*/frontend/src/**"
 ---
 
 # Skill: Design Quality (Sumi-derived)
@@ -12,6 +12,7 @@ paths:
 > design decisions.
 
 ## Non-negotiable UI rules
+
 1. **One design system.** Reuse `@packages/ui` components + the `globals.css`
    tokens. No ad-hoc hex/oklch colors, radii, shadows, or spacing — use the vars.
 2. **No AI-slop.** Reject: aurora/gradient blobs, default glassmorphism, emoji as
@@ -25,6 +26,7 @@ paths:
    `11-skill-accessibility.md`).
 
 ## Laws of UX (apply by instinct; cite when you fix)
+
 - **Fitts's Law** — larger + closer targets are faster. Primary action gets the
   largest target in the natural gaze path.
 - **Hick's Law** — fewer, clearer choices load faster; group secondary actions.
@@ -34,6 +36,7 @@ paths:
 - **Doherty Threshold** — keep interactive feedback < ~400ms or show progress.
 
 ## Nielsen's 10 heuristics (review checklist)
+
 1. **Visibility of system status** — show progress/results (loading, saved, sync).
 2. **Match the real world** — geo/spatial language & real names, not DB ids.
 3. **User control & freedom** — back, cancel, undo, clear filters.
@@ -46,6 +49,7 @@ paths:
 10. **Help & documentation** — discoverable when the UI can't speak for itself.
 
 ## Definition of done (UI)
+
 - [ ] Uses `@packages/ui` + tokens; no stray CSS or raw colors.
 - [ ] All states present (loading / empty / error / success).
 - [ ] Keyboard operable + visible focus; WCAG contrast met.

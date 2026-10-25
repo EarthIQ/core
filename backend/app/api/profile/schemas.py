@@ -1,9 +1,10 @@
 """Profile / Organization / Preferences - Pydantic schemas (core)."""
+
 from __future__ import annotations
 
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
@@ -15,7 +16,7 @@ FONT_SCALES = ["small", "normal", "large"]
 _SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
-def _valid_hex_color(v: Optional[str]) -> Optional[str]:
+def _valid_hex_color(v: str | None) -> str | None:
     if v in (None, ""):
         return None
     v = v.strip()
@@ -26,22 +27,23 @@ def _valid_hex_color(v: Optional[str]) -> Optional[str]:
 
 # ── User profile (self-service) ────────────────────────────────────────────────
 
+
 class ProfileRead(BaseModel):
     """The signed-in user's public + profile fields (no secrets)."""
 
     id: str
     email: EmailStr
-    full_name: Optional[str] = None
-    bio: Optional[str] = None
-    avatar_url: Optional[str] = None
-    job_title: Optional[str] = None
-    location: Optional[str] = None
-    phone: Optional[str] = None
-    website: Optional[str] = None
-    preferred_timezone: Optional[str] = None
+    full_name: str | None = None
+    bio: str | None = None
+    avatar_url: str | None = None
+    job_title: str | None = None
+    location: str | None = None
+    phone: str | None = None
+    website: str | None = None
+    preferred_timezone: str | None = None
     is_superuser: bool
     created_at: datetime
-    last_login_at: Optional[datetime] = None
+    last_login_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
@@ -49,18 +51,18 @@ class ProfileRead(BaseModel):
 class ProfileUpdate(BaseModel):
     """Partial update for the user's own profile (``PUT /me/profile``)."""
 
-    full_name: Optional[str] = Field(None, max_length=255)
-    bio: Optional[str] = Field(None, max_length=4000)
-    avatar_url: Optional[str] = Field(None, max_length=512)
-    job_title: Optional[str] = Field(None, max_length=120)
-    location: Optional[str] = Field(None, max_length=255)
-    phone: Optional[str] = Field(None, max_length=60)
-    website: Optional[str] = Field(None, max_length=255)
-    preferred_timezone: Optional[str] = Field(None, max_length=64)
+    full_name: str | None = Field(None, max_length=255)
+    bio: str | None = Field(None, max_length=4000)
+    avatar_url: str | None = Field(None, max_length=512)
+    job_title: str | None = Field(None, max_length=120)
+    location: str | None = Field(None, max_length=255)
+    phone: str | None = Field(None, max_length=60)
+    website: str | None = Field(None, max_length=255)
+    preferred_timezone: str | None = Field(None, max_length=64)
 
     @field_validator("avatar_url", "website")
     @classmethod
-    def _normalize_url(cls, v: Optional[str]) -> Optional[str]:
+    def _normalize_url(cls, v: str | None) -> str | None:
         if v in (None, ""):
             return None
         v = v.strip()
@@ -74,8 +76,10 @@ class ChangePassword(BaseModel):
     @field_validator("new_password")
     @classmethod
     def _strong(cls, v: str) -> str:
-        if not any(c.isupper() for c in v) or not any(c.islower() for c in v) or not any(
-            c.isdigit() for c in v
+        if (
+            not any(c.isupper() for c in v)
+            or not any(c.islower() for c in v)
+            or not any(c.isdigit() for c in v)
         ):
             raise ValueError("Password must contain upper, lower, and a number")
         return v
@@ -87,11 +91,12 @@ class ChangePasswordResponse(BaseModel):
 
 # ── Organizations ──────────────────────────────────────────────────────────────
 
+
 class OrgMemberRead(BaseModel):
     user_id: str
     email: EmailStr
-    full_name: Optional[str] = None
-    avatar_url: Optional[str] = None
+    full_name: str | None = None
+    avatar_url: str | None = None
     role: str
     joined_at: datetime
 
@@ -102,36 +107,36 @@ class OrganizationRead(BaseModel):
     id: str
     name: str
     slug: str
-    description: Optional[str] = None
-    industry: Optional[str] = None
-    website: Optional[str] = None
-    logo_url: Optional[str] = None
-    location: Optional[str] = None
-    accent_color: Optional[str] = None
-    meta: Optional[Dict[str, Any]] = None
+    description: str | None = None
+    industry: str | None = None
+    website: str | None = None
+    logo_url: str | None = None
+    location: str | None = None
+    accent_color: str | None = None
+    meta: dict[str, Any] | None = None
     created_at: datetime
     updated_at: datetime
     # Filled in by the router for context:
     member_count: int = 0
-    my_role: Optional[str] = None  # role of the current user (None if not a member)
-    is_primary: bool = False       # is this the user's primary organization?
+    my_role: str | None = None  # role of the current user (None if not a member)
+    is_primary: bool = False  # is this the user's primary organization?
 
     model_config = {"from_attributes": True}
 
 
 class OrganizationCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=160)
-    description: Optional[str] = Field(None, max_length=4000)
-    industry: Optional[str] = Field(None, max_length=120)
-    website: Optional[str] = Field(None, max_length=255)
-    logo_url: Optional[str] = Field(None, max_length=512)
-    location: Optional[str] = Field(None, max_length=255)
-    accent_color: Optional[str] = None
-    meta: Optional[Dict[str, Any]] = None
+    description: str | None = Field(None, max_length=4000)
+    industry: str | None = Field(None, max_length=120)
+    website: str | None = Field(None, max_length=255)
+    logo_url: str | None = Field(None, max_length=512)
+    location: str | None = Field(None, max_length=255)
+    accent_color: str | None = None
+    meta: dict[str, Any] | None = None
 
     @field_validator("accent_color")
     @classmethod
-    def _accent(cls, v: Optional[str]) -> Optional[str]:
+    def _accent(cls, v: str | None) -> str | None:
         out = _valid_hex_color(v)
         if v and not out:
             raise ValueError("accent_color must be a hex color like #22c55e")
@@ -139,18 +144,18 @@ class OrganizationCreate(BaseModel):
 
 
 class OrganizationUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=160)
-    description: Optional[str] = Field(None, max_length=4000)
-    industry: Optional[str] = Field(None, max_length=120)
-    website: Optional[str] = Field(None, max_length=255)
-    logo_url: Optional[str] = Field(None, max_length=512)
-    location: Optional[str] = Field(None, max_length=255)
-    accent_color: Optional[str] = None
-    meta: Optional[Dict[str, Any]] = None
+    name: str | None = Field(None, min_length=1, max_length=160)
+    description: str | None = Field(None, max_length=4000)
+    industry: str | None = Field(None, max_length=120)
+    website: str | None = Field(None, max_length=255)
+    logo_url: str | None = Field(None, max_length=512)
+    location: str | None = Field(None, max_length=255)
+    accent_color: str | None = None
+    meta: dict[str, Any] | None = None
 
     @field_validator("accent_color")
     @classmethod
-    def _accent(cls, v: Optional[str]) -> Optional[str]:
+    def _accent(cls, v: str | None) -> str | None:
         out = _valid_hex_color(v)
         if v and not out:
             raise ValueError("accent_color must be a hex color like #22c55e")
@@ -163,31 +168,32 @@ class OrgMemberUpdate(BaseModel):
 
 # ── User preferences (customizable UX) ─────────────────────────────────────────
 
+
 class PreferencesRead(BaseModel):
     theme_mode: str = "dark"
     map_units: str = "metric"
-    default_basemap: Optional[str] = None
-    accent_color: Optional[str] = None
+    default_basemap: str | None = None
+    accent_color: str | None = None
     compact_mode: bool = False
     font_scale: str = "normal"
-    extra: Dict[str, Any] = Field(default_factory=dict)
-    updated_at: Optional[datetime] = None
+    extra: dict[str, Any] = Field(default_factory=dict)
+    updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
 
 class PreferencesUpdate(BaseModel):
-    theme_mode: Optional[str] = Field(None, pattern="^(dark|light|system)$")
-    map_units: Optional[str] = Field(None, pattern="^(metric|imperial)$")
-    default_basemap: Optional[str] = Field(None, max_length=64)
-    accent_color: Optional[str] = None
-    compact_mode: Optional[bool] = None
-    font_scale: Optional[str] = Field(None, pattern="^(small|normal|large)$")
-    extra: Optional[Dict[str, Any]] = None
+    theme_mode: str | None = Field(None, pattern="^(dark|light|system)$")
+    map_units: str | None = Field(None, pattern="^(metric|imperial)$")
+    default_basemap: str | None = Field(None, max_length=64)
+    accent_color: str | None = None
+    compact_mode: bool | None = None
+    font_scale: str | None = Field(None, pattern="^(small|normal|large)$")
+    extra: dict[str, Any] | None = None
 
     @field_validator("accent_color")
     @classmethod
-    def _accent(cls, v: Optional[str]) -> Optional[str]:
+    def _accent(cls, v: str | None) -> str | None:
         out = _valid_hex_color(v)
         if v and not out:
             raise ValueError("accent_color must be a hex color like #22c55e")
@@ -195,18 +201,18 @@ class PreferencesUpdate(BaseModel):
 
 
 __all__ = [
-    "ProfileRead",
-    "ProfileUpdate",
+    "FONT_SCALES",
+    "MAP_UNITS",
+    "THEME_MODES",
     "ChangePassword",
     "ChangePasswordResponse",
     "OrgMemberRead",
-    "OrganizationRead",
-    "OrganizationCreate",
-    "OrganizationUpdate",
     "OrgMemberUpdate",
+    "OrganizationCreate",
+    "OrganizationRead",
+    "OrganizationUpdate",
     "PreferencesRead",
     "PreferencesUpdate",
-    "THEME_MODES",
-    "MAP_UNITS",
-    "FONT_SCALES",
+    "ProfileRead",
+    "ProfileUpdate",
 ]

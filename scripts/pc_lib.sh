@@ -36,20 +36,3 @@ find_ws_root() {
     printf ''
   fi
 }
-
-# Print the nearest ESLint flat config (eslint.config.{js,mjs,cjs}) at or above
-# the file $1, searching no higher than the directory $2. Prints nothing (and
-# returns non-zero) if none is found, so callers can skip such files.
-nearest_eslint_config() {
-  local f bound d c
-  f="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
-  bound="$( (cd "$2" 2>/dev/null && pwd) )"
-  d="$(dirname "$f")"
-  while :; do
-    for c in eslint.config.js eslint.config.mjs eslint.config.cjs; do
-      [ -f "$d/$c" ] && { printf '%s' "$d/$c"; return 0; }
-    done
-    { [ -z "$bound" ] || [ "$d" = "$bound" ] || [ "$d" = "/" ]; } && return 1
-    d="$(dirname "$d")"
-  done
-}

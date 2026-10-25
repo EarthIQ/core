@@ -5,11 +5,13 @@ These exercise the real FastAPI endpoints over an ASGI transport backed by an
 in-memory SQLite database. They cover the full user lifecycle and the
 admin-privilege gating (401 vs 403) that protects the management routes.
 """
+
 from __future__ import annotations
 
-import pytest
 from httpx import AsyncClient
+
 # ── Health / smoke ───────────────────────────────────────────────────────────
+
 
 async def test_health_endpoint(client: AsyncClient):
     resp = await client.get("/api/v1/health")
@@ -19,12 +21,16 @@ async def test_health_endpoint(client: AsyncClient):
 
 # ── Registration ─────────────────────────────────────────────────────────────
 
+
 async def test_register_creates_user(client: AsyncClient):
-    resp = await client.post("/api/v1/auth/register", json={
-        "email": "new@example.com",
-        "password": "strongPass1",
-        "full_name": "New Person",
-    })
+    resp = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "new@example.com",
+            "password": "strongPass1",
+            "full_name": "New Person",
+        },
+    )
     assert resp.status_code == 201, resp.text
     body = resp.json()
     assert body["email"] == "new@example.com"
@@ -44,22 +50,34 @@ async def test_register_duplicate_email_conflict(client: AsyncClient):
 
 
 async def test_register_rejects_invalid_email(client: AsyncClient):
-    resp = await client.post("/api/v1/auth/register", json={
-        "email": "not-an-email",
-        "password": "pass12345",
-    })
+    resp = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "not-an-email",
+            "password": "pass12345",
+        },
+    )
     assert resp.status_code == 422
 
 
 # ── Login / token ────────────────────────────────────────────────────────────
 
+
 async def test_login_returns_bearer_token(client: AsyncClient):
-    await client.post("/api/v1/auth/register", json={
-        "email": "login@example.com", "password": "pass12345",
-    })
-    resp = await client.post("/api/v1/auth/token", json={
-        "email": "login@example.com", "password": "pass12345",
-    })
+    await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "login@example.com",
+            "password": "pass12345",
+        },
+    )
+    resp = await client.post(
+        "/api/v1/auth/token",
+        json={
+            "email": "login@example.com",
+            "password": "pass12345",
+        },
+    )
     assert resp.status_code == 200, resp.text
     body = resp.json()
     assert body["token_type"] == "bearer"
@@ -67,24 +85,37 @@ async def test_login_returns_bearer_token(client: AsyncClient):
 
 
 async def test_login_wrong_password_unauthorized(client: AsyncClient):
-    await client.post("/api/v1/auth/register", json={
-        "email": "secure@example.com", "password": "rightPass1",
-    })
-    resp = await client.post("/api/v1/auth/token", json={
-        "email": "secure@example.com", "password": "wrongPass99",
-    })
+    await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "secure@example.com",
+            "password": "rightPass1",
+        },
+    )
+    resp = await client.post(
+        "/api/v1/auth/token",
+        json={
+            "email": "secure@example.com",
+            "password": "wrongPass99",
+        },
+    )
     assert resp.status_code == 401
     assert resp.headers.get("WWW-Authenticate") == "Bearer"
 
 
 async def test_login_unknown_user_unauthorized(client: AsyncClient):
-    resp = await client.post("/api/v1/auth/token", json={
-        "email": "ghost@example.com", "password": "whatever",
-    })
+    resp = await client.post(
+        "/api/v1/auth/token",
+        json={
+            "email": "ghost@example.com",
+            "password": "whatever",
+        },
+    )
     assert resp.status_code == 401
 
 
 # ── /me (auth + effective permissions) ───────────────────────────────────────
+
 
 async def test_me_requires_valid_token(client: AsyncClient):
     resp = await client.get("/api/v1/auth/me")
@@ -101,13 +132,12 @@ async def test_me_returns_user_and_permissions(client: AsyncClient, admin_header
 
 
 async def test_me_rejects_garbage_token(client: AsyncClient):
-    resp = await client.get(
-        "/api/v1/auth/me", headers={"Authorization": "Bearer not.a.jwt"}
-    )
+    resp = await client.get("/api/v1/auth/me", headers={"Authorization": "Bearer not.a.jwt"})
     assert resp.status_code == 401
 
 
 # ── RBAC gating: regular users must NOT access admin routes ──────────────────
+
 
 async def test_list_users_requires_admin(client: AsyncClient, user_headers: dict):
     resp = await client.get("/api/v1/auth/users", headers=user_headers)
@@ -132,6 +162,7 @@ async def test_create_user_requires_admin(client: AsyncClient, user_headers: dic
 
 
 # ── Permissions & groups CRUD (admin) ────────────────────────────────────────
+
 
 async def test_permission_crud_roundtrip(client: AsyncClient, admin_headers: dict):
     # Create
@@ -159,9 +190,7 @@ async def test_permission_crud_roundtrip(client: AsyncClient, admin_headers: dic
     assert update.json()["description"] == "Updated desc"
 
     # Delete
-    delete = await client.delete(
-        f"/api/v1/auth/permissions/{perm_id}", headers=admin_headers
-    )
+    delete = await client.delete(f"/api/v1/auth/permissions/{perm_id}", headers=admin_headers)
     assert delete.status_code == 204
 
     # 404 after delete
@@ -173,9 +202,7 @@ async def test_permission_crud_roundtrip(client: AsyncClient, admin_headers: dic
     assert gone.status_code == 404
 
 
-async def test_group_crud_with_permission_assignment(
-    client: AsyncClient, admin_headers: dict
-):
+async def test_group_crud_with_permission_assignment(client: AsyncClient, admin_headers: dict):
     # Create a permission to assign
     perm = await client.post(
         "/api/v1/auth/permissions",
@@ -198,7 +225,9 @@ async def test_group_crud_with_permission_assignment(
 
 async def test_group_duplicate_name_conflict(client: AsyncClient, admin_headers: dict):
     payload = {"name": "Duplicable"}
-    assert (await client.post("/api/v1/auth/groups", json=payload, headers=admin_headers)).status_code == 201
+    assert (
+        await client.post("/api/v1/auth/groups", json=payload, headers=admin_headers)
+    ).status_code == 201
     resp = await client.post("/api/v1/auth/groups", json=payload, headers=admin_headers)
     assert resp.status_code == 409
 

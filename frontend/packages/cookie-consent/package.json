@@ -54,7 +54,7 @@
     "build": "tsup",
     "clean": "rm -rf dist",
     "dev": "tsup --watch",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
@@ -62,7 +62,6 @@
     "lucide-react": "^1.33.0"
   },
   "devDependencies": {
-    "@packages/eslint-config": "workspace:^",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "react": "^19.2.8",

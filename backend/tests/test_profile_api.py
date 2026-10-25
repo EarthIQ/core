@@ -1,10 +1,11 @@
 """API integration tests - user profile, organizations, preferences over HTTP."""
+
 from __future__ import annotations
 
 from httpx import AsyncClient
 
-
 # ── Auth gating ────────────────────────────────────────────────────────────────
+
 
 async def test_profile_requires_auth(client: AsyncClient):
     assert (await client.get("/api/v1/profile/me")).status_code in (401, 403)
@@ -12,6 +13,7 @@ async def test_profile_requires_auth(client: AsyncClient):
 
 
 # ── Profile ────────────────────────────────────────────────────────────────────
+
 
 async def test_get_and_update_my_profile(client: AsyncClient, user_a):
     h = user_a["headers"]
@@ -63,16 +65,21 @@ async def test_change_password_success_then_relogin(client: AsyncClient, user_a)
     assert resp.status_code == 200, resp.text
 
     # Old password no longer works.
-    bad = await client.post("/api/v1/auth/token", json={"email": "alice@eqcorp.com", "password": "S3curePass!2024"})
+    bad = await client.post(
+        "/api/v1/auth/token", json={"email": "alice@eqcorp.com", "password": "S3curePass!2024"}
+    )
     assert bad.status_code == 401
 
     # New password works.
-    good = await client.post("/api/v1/auth/token", json={"email": "alice@eqcorp.com", "password": new_pw})
+    good = await client.post(
+        "/api/v1/auth/token", json={"email": "alice@eqcorp.com", "password": new_pw}
+    )
     assert good.status_code == 200
     assert good.json()["access_token"]
 
 
 # ── Preferences ────────────────────────────────────────────────────────────────
+
 
 async def test_preferences_defaults_and_update(client: AsyncClient, user_a):
     h = user_a["headers"]
@@ -82,7 +89,12 @@ async def test_preferences_defaults_and_update(client: AsyncClient, user_a):
 
     updated = await client.put(
         "/api/v1/profile/me/preferences",
-        json={"theme_mode": "light", "map_units": "imperial", "compact_mode": True, "extra": {"locale": "en"}},
+        json={
+            "theme_mode": "light",
+            "map_units": "imperial",
+            "compact_mode": True,
+            "extra": {"locale": "en"},
+        },
         headers=h,
     )
     assert updated.status_code == 200, updated.text
@@ -101,6 +113,7 @@ async def test_preferences_validation(client: AsyncClient, user_a):
 
 
 # ── Organizations ──────────────────────────────────────────────────────────────
+
 
 async def test_create_org_and_membership(client: AsyncClient, user_a):
     h = user_a["headers"]
@@ -181,7 +194,9 @@ async def test_org_crud_and_members(client: AsyncClient, user_a, user_b):
 
 
 async def test_cannot_remove_sole_owner(client: AsyncClient, user_a):
-    created = await client.post("/api/v1/profile/organizations", json={"name": "Solo Org"}, headers=user_a["headers"])
+    created = await client.post(
+        "/api/v1/profile/organizations", json={"name": "Solo Org"}, headers=user_a["headers"]
+    )
     org_id = created.json()["id"]
     resp = await client.delete(
         f"/api/v1/profile/organizations/{org_id}/members/{user_a['id']}",
@@ -192,7 +207,9 @@ async def test_cannot_remove_sole_owner(client: AsyncClient, user_a):
 
 async def test_superuser_sees_all_orgs(client: AsyncClient, admin, user_a):
     # user_a creates an org they own; admin (superuser) should see it too.
-    created = await client.post("/api/v1/profile/organizations", json={"name": "A Org"}, headers=user_a["headers"])
+    created = await client.post(
+        "/api/v1/profile/organizations", json={"name": "A Org"}, headers=user_a["headers"]
+    )
     org_id = created.json()["id"]
 
     admin_list = await client.get("/api/v1/profile/organizations", headers=admin["headers"])
@@ -202,14 +219,18 @@ async def test_superuser_sees_all_orgs(client: AsyncClient, admin, user_a):
 
 
 async def test_leave_organization(client: AsyncClient, user_a, user_b):
-    created = await client.post("/api/v1/profile/organizations", json={"name": "Shared"}, headers=user_a["headers"])
+    created = await client.post(
+        "/api/v1/profile/organizations", json={"name": "Shared"}, headers=user_a["headers"]
+    )
     org_id = created.json()["id"]
     await client.post(
         f"/api/v1/profile/organizations/{org_id}/members",
         json={"email": "bob@eqcorp.com", "role": "member"},
         headers=user_a["headers"],
     )
-    left = await client.delete(f"/api/v1/profile/organizations/{org_id}/me", headers=user_b["headers"])
+    left = await client.delete(
+        f"/api/v1/profile/organizations/{org_id}/me", headers=user_b["headers"]
+    )
     assert left.status_code == 204
 
     b_list = await client.get("/api/v1/profile/organizations", headers=user_b["headers"])
@@ -217,9 +238,13 @@ async def test_leave_organization(client: AsyncClient, user_a, user_b):
 
 
 async def test_delete_org_cascades(client: AsyncClient, user_a):
-    created = await client.post("/api/v1/profile/organizations", json={"name": "Temp Org"}, headers=user_a["headers"])
+    created = await client.post(
+        "/api/v1/profile/organizations", json={"name": "Temp Org"}, headers=user_a["headers"]
+    )
     org_id = created.json()["id"]
-    deleted = await client.delete(f"/api/v1/profile/organizations/{org_id}", headers=user_a["headers"])
+    deleted = await client.delete(
+        f"/api/v1/profile/organizations/{org_id}", headers=user_a["headers"]
+    )
     assert deleted.status_code == 204
 
     gone = await client.get(f"/api/v1/profile/organizations/{org_id}", headers=user_a["headers"])

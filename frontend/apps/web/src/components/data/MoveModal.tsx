@@ -109,10 +109,10 @@ export default function MoveModal({
               <span className="text-text-tertiary shrink-0 select-none">└</span>
             )}
             <Folder
+              size={14}
               className={
                 target === f.id ? "text-primary" : "text-secondary shrink-0"
               }
-              size={14}
             />
             <span className="flex-1 truncate">{f.name}</span>
             <span className="text-text-tertiary shrink-0 text-[0.62rem] tabular-nums">

@@ -1,6 +1,6 @@
 """setup_cli - CLI for managing pluggable modules in the core monolith."""
 
-from importlib.metadata import version, PackageNotFoundError
+from importlib.metadata import PackageNotFoundError, version
 
 try:
     __version__ = version("setup-cli")
@@ -9,4 +9,4 @@ except PackageNotFoundError:
 
 from .cli import app  # re-export Typer app for `python -m setup_cli`
 
-__all__ = ["app", "__version__"]
+__all__ = ["__version__", "app"]
