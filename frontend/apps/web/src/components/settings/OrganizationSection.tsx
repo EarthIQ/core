@@ -336,8 +336,14 @@ export default function OrganizationSection() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="form-field">
-            <label className="form-label">Name</label>
+            <label
+              className="form-label"
+              htmlFor="org-create-name"
+            >
+              Name
+            </label>
             <input
+              id="org-create-name"
               className="input"
               placeholder="Rhine Basin Initiative"
               value={create.name}
@@ -347,8 +353,14 @@ export default function OrganizationSection() {
             />
           </div>
           <div className="form-field">
-            <label className="form-label">Industry (optional)</label>
+            <label
+              className="form-label"
+              htmlFor="org-create-industry"
+            >
+              Industry (optional)
+            </label>
             <input
+              id="org-create-industry"
               className="input"
               placeholder="Water utilities"
               value={create.industry}
@@ -358,8 +370,14 @@ export default function OrganizationSection() {
             />
           </div>
           <div className="form-field sm:col-span-2">
-            <label className="form-label">Description (optional)</label>
+            <label
+              className="form-label"
+              htmlFor="org-create-desc"
+            >
+              Description (optional)
+            </label>
             <textarea
+              id="org-create-desc"
               className="input min-h-[3.5rem] resize-y"
               placeholder="What is this organization about?"
               value={create.description}
@@ -551,8 +569,14 @@ export default function OrganizationSection() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="form-field">
-              <label className="form-label">Name</label>
+              <label
+                className="form-label"
+                htmlFor="org-edit-name"
+              >
+                Name
+              </label>
               <input
+                id="org-edit-name"
                 className="input"
                 disabled={!canManage}
                 value={edit.name}
@@ -562,8 +586,14 @@ export default function OrganizationSection() {
               />
             </div>
             <div className="form-field">
-              <label className="form-label">Industry</label>
+              <label
+                className="form-label"
+                htmlFor="org-edit-industry"
+              >
+                Industry
+              </label>
               <input
+                id="org-edit-industry"
                 className="input"
                 disabled={!canManage}
                 value={edit.industry}
@@ -573,8 +603,14 @@ export default function OrganizationSection() {
               />
             </div>
             <div className="form-field">
-              <label className="form-label">Website</label>
+              <label
+                className="form-label"
+                htmlFor="org-edit-website"
+              >
+                Website
+              </label>
               <input
+                id="org-edit-website"
                 className="input"
                 disabled={!canManage}
                 value={edit.website}
@@ -584,8 +620,14 @@ export default function OrganizationSection() {
               />
             </div>
             <div className="form-field">
-              <label className="form-label">Location</label>
+              <label
+                className="form-label"
+                htmlFor="org-edit-location"
+              >
+                Location
+              </label>
               <input
+                id="org-edit-location"
                 className="input"
                 disabled={!canManage}
                 value={edit.location}
@@ -595,8 +637,14 @@ export default function OrganizationSection() {
               />
             </div>
             <div className="form-field">
-              <label className="form-label">Accent color</label>
+              <label
+                className="form-label"
+                htmlFor="org-edit-accent"
+              >
+                Accent color
+              </label>
               <input
+                id="org-edit-accent"
                 className="input"
                 disabled={!canManage}
                 placeholder="#50aad1"
@@ -607,8 +655,14 @@ export default function OrganizationSection() {
               />
             </div>
             <div className="form-field sm:col-span-2">
-              <label className="form-label">Description</label>
+              <label
+                className="form-label"
+                htmlFor="org-edit-desc"
+              >
+                Description
+              </label>
               <textarea
+                id="org-edit-desc"
                 className="input min-h-[3.5rem] resize-y"
                 disabled={!canManage}
                 value={edit.description}
@@ -642,8 +696,14 @@ export default function OrganizationSection() {
           {canManage ? (
             <div className="flex flex-wrap items-end gap-3">
               <div className="form-field min-w-[14rem] flex-1">
-                <label className="form-label">Add member by email</label>
+                <label
+                  className="form-label"
+                  htmlFor="org-member-email"
+                >
+                  Add member by email
+                </label>
                 <input
+                  id="org-member-email"
                   className="input"
                   placeholder="teammate@company.com"
                   type="email"
@@ -655,8 +715,14 @@ export default function OrganizationSection() {
                 />
               </div>
               <div className="form-field w-32">
-                <label className="form-label">Role</label>
+                <label
+                  className="form-label"
+                  htmlFor="org-member-role"
+                >
+                  Role
+                </label>
                 <select
+                  id="org-member-role"
                   className="input"
                   value={addMemberDraft.role}
                   onChange={(e) =>

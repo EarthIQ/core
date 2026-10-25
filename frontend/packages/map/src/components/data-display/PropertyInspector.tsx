@@ -200,7 +200,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         } else {
           info["Area"] = `${area.toFixed(0)} m²`;
         }
-      } catch (_e) {
+      } catch {
         // Turf not available
       }
     } else if (
@@ -210,7 +210,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
       try {
         const length = turf.length(feature, { units: "kilometers" });
         info["Length"] = `${length.toFixed(2)} km`;
-      } catch (_e) {
+      } catch {
         // Turf not available
       }
     }

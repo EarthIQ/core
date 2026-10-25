@@ -38,4 +38,4 @@ report pass/fail per item with the offending code.
 ## `/design:component` — build a component properly
 
 Deliver a complete `@packages/ui` component: all 8 states, tokens, a11y, motion,
-variants, and a Storybook story (see `13-skill-component-states.md`).
+variants (see `13-skill-component-states.md`).

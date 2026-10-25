@@ -211,7 +211,7 @@ export const GeoJSONSource: React.FC<GeoJSONSourceProps> = ({
           source.setData(newData);
           onDataChange?.(newData);
         }
-      } catch (_error) {
+      } catch {
         // Error already handled in fetchData
       }
     };

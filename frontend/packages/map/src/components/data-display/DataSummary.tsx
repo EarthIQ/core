@@ -149,7 +149,7 @@ export const DataSummary: React.FC<DataSummaryProps> = ({
             ) {
               totalLength += turf.length(f, { units: "kilometers" });
             }
-          } catch (_e) {
+          } catch {
             // Skip invalid geometries
           }
         });
@@ -170,7 +170,7 @@ export const DataSummary: React.FC<DataSummaryProps> = ({
           const fc = turf.featureCollection(features);
           const bbox = turf.bbox(fc);
           geoSummary.bounds = `${bbox[0].toFixed(4)}, ${bbox[1].toFixed(4)} - ${bbox[2].toFixed(4)}, ${bbox[3].toFixed(4)}`;
-        } catch (_e) {
+        } catch {
           // Skip if bbox fails
         }
 

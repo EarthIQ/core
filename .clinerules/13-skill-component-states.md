@@ -34,4 +34,4 @@ default · hover · focus-visible · active · disabled · **loading** · **erro
 - [ ] Focus ring visible & consistent; disabled is clearly non-interactive.
 - [ ] Works in light + dark (tokens flip, no per-theme CSS).
 - [ ] Responsive to mobile; no horizontal overflow.
-- [ ] Documented props (JSDoc) + a Storybook story if the package uses one.
+- [ ] Documented props (JSDoc).

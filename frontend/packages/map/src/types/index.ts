@@ -1,5 +1,10 @@
 import type { GeoJSON } from "geojson";
 import type { ReactNode } from "react";
+import type {
+  SourceSpecification,
+  LayerSpecification,
+  SkySpecification,
+} from "maplibre-gl";
 
 // Re-export GeoJSON types
 export type {
@@ -43,8 +48,8 @@ export interface BaseLayerProps {
 }
 
 export interface InteractiveLayerProps {
-  onClick?: (feature: GeoJSON.Feature, event: any) => void;
-  onHover?: (feature: GeoJSON.Feature | null, event: any) => void;
+  onClick?: (feature: GeoJSON.Feature, event: unknown) => void;
+  onHover?: (feature: GeoJSON.Feature | null, event: unknown) => void;
   hoverable?: boolean;
   selectable?: boolean;
   cursor?: string;
@@ -52,20 +57,20 @@ export interface InteractiveLayerProps {
 
 // Paint properties
 export interface FillPaint {
-  "fill-color"?: string | any[];
-  "fill-opacity"?: number | any[];
+  "fill-color"?: string | Expression;
+  "fill-opacity"?: number | Expression;
   "fill-pattern"?: string;
-  "fill-outline-color"?: string | any[];
+  "fill-outline-color"?: string | Expression;
   "fill-antialias"?: boolean;
   "fill-translate"?: [number, number];
 }
 
 export interface LinePaint {
-  "line-color"?: string | any[];
-  "line-opacity"?: number | any[];
-  "line-width"?: number | any[];
-  "line-gap-width"?: number | any[];
-  "line-blur"?: number | any[];
+  "line-color"?: string | Expression;
+  "line-opacity"?: number | Expression;
+  "line-width"?: number | Expression;
+  "line-gap-width"?: number | Expression;
+  "line-blur"?: number | Expression;
   "line-dasharray"?: number[];
   "line-pattern"?: string;
   "line-cap"?: "butt" | "round" | "square";
@@ -73,19 +78,19 @@ export interface LinePaint {
 }
 
 export interface CirclePaint {
-  "circle-color"?: string | any[];
-  "circle-opacity"?: number | any[];
-  "circle-radius"?: number | any[];
-  "circle-stroke-color"?: string | any[];
-  "circle-stroke-width"?: number | any[];
-  "circle-stroke-opacity"?: number | any[];
-  "circle-blur"?: number | any[];
+  "circle-color"?: string | Expression;
+  "circle-opacity"?: number | Expression;
+  "circle-radius"?: number | Expression;
+  "circle-stroke-color"?: string | Expression;
+  "circle-stroke-width"?: number | Expression;
+  "circle-stroke-opacity"?: number | Expression;
+  "circle-blur"?: number | Expression;
   "circle-translate"?: [number, number];
 }
 
 export interface SymbolLayout {
-  "icon-image"?: string | any[];
-  "icon-size"?: number | any[];
+  "icon-image"?: string | Expression;
+  "icon-size"?: number | Expression;
   "icon-rotation-alignment"?: "map" | "viewport" | "auto";
   "icon-allow-overlap"?: boolean;
   "icon-anchor"?:
@@ -99,10 +104,10 @@ export interface SymbolLayout {
     | "bottom-left"
     | "bottom-right";
   "icon-offset"?: [number, number];
-  "icon-rotate"?: number | any[];
-  "text-field"?: string | any[];
+  "icon-rotate"?: number | Expression;
+  "text-field"?: string | Expression;
   "text-font"?: string[];
-  "text-size"?: number | any[];
+  "text-size"?: number | Expression;
   "text-anchor"?:
     | "center"
     | "left"
@@ -125,31 +130,31 @@ export interface SymbolLayout {
 }
 
 export interface SymbolPaint {
-  "icon-color"?: string | any[];
-  "icon-opacity"?: number | any[];
+  "icon-color"?: string | Expression;
+  "icon-opacity"?: number | Expression;
   "icon-halo-color"?: string;
   "icon-halo-width"?: number;
   "icon-halo-blur"?: number;
-  "text-color"?: string | any[];
-  "text-opacity"?: number | any[];
+  "text-color"?: string | Expression;
+  "text-opacity"?: number | Expression;
   "text-halo-color"?: string;
   "text-halo-width"?: number;
   "text-halo-blur"?: number;
 }
 
 export interface HeatmapPaint {
-  "heatmap-radius"?: number | any[];
-  "heatmap-weight"?: number | any[];
-  "heatmap-intensity"?: number | any[];
-  "heatmap-color"?: any[];
-  "heatmap-opacity"?: number | any[];
+  "heatmap-radius"?: number | Expression;
+  "heatmap-weight"?: number | Expression;
+  "heatmap-intensity"?: number | Expression;
+  "heatmap-color"?: Expression;
+  "heatmap-opacity"?: number | Expression;
 }
 
 export interface FillExtrusionPaint {
-  "fill-extrusion-color"?: string | any[];
+  "fill-extrusion-color"?: string | Expression;
   "fill-extrusion-opacity"?: number;
-  "fill-extrusion-height"?: number | any[];
-  "fill-extrusion-base"?: number | any[];
+  "fill-extrusion-height"?: number | Expression;
+  "fill-extrusion-base"?: number | Expression;
   "fill-extrusion-pattern"?: string;
   "fill-extrusion-translate"?: [number, number];
   "fill-extrusion-vertical-gradient"?: boolean;
@@ -190,8 +195,9 @@ export type ControlPosition =
 export type BoundsArray = [number, number, number, number]; // [west, south, east, north]
 export type BoundsLike = BoundsArray | [[number, number], [number, number]];
 
-// Expression type
-export type Expression = any[];
+// Expression type — a MapLibre data-driven expression: a nested array of
+// literals (strings / numbers / booleans) and nested expression arrays.
+export type Expression = (string | number | boolean | Expression[])[];
 
 // Data source types
 export interface GeoJSONSourceSpecification {
@@ -205,7 +211,7 @@ export interface GeoJSONSourceSpecification {
   clusterRadius?: number;
   clusterMaxZoom?: number;
   clusterMinPoints?: number;
-  clusterProperties?: Record<string, any>;
+  clusterProperties?: Record<string, unknown>;
   lineMetrics?: boolean;
   generateId?: boolean;
   promoteId?: string | { [key: string]: string };
@@ -264,20 +270,20 @@ export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<
 export interface StyleSpecification {
   version: 8;
   name?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   center?: [number, number];
   zoom?: number;
   bearing?: number;
   pitch?: number;
-  sources: Record<string, any>;
+  sources: Record<string, SourceSpecification>;
   sprite?: string;
   glyphs?: string;
-  layers: any[];
+  layers: LayerSpecification[];
   terrain?: {
     source: string;
     exaggeration?: number;
   };
-  sky?: any;
+  sky?: SkySpecification;
 }
 
 export interface MapCoordinates {
@@ -341,4 +347,7 @@ export type OnLoadCallback = () => void;
 export type OnErrorCallback = (error: Error) => void;
 export type OnClickCallback = (event: MapClickEvent) => void;
 export type OnMoveCallback = (event: MapMoveEvent) => void;
-export type OnFeatureCallback = (feature: GeoJSON.Feature, event: any) => void;
+export type OnFeatureCallback = (
+  feature: GeoJSON.Feature,
+  event: unknown
+) => void;

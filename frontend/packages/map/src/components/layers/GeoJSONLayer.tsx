@@ -517,7 +517,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
     // Safety check: Ensure map is not removed/partially destroyed
     try {
       if (!map.getContainer()) return;
-    } catch (_e) {
+    } catch {
       return;
     }
 
@@ -601,7 +601,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
                 { source: sourceId, id: hoveredFeatureIdRef.current },
                 { hover: false }
               );
-            } catch (_e) {
+            } catch {
               // ignore if source already gone
             }
             hoveredFeatureIdRef.current = null;
@@ -612,14 +612,14 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
                 { source: sourceId, id: selectedFeatureIdRef.current },
                 { selected: false }
               );
-            } catch (_e) {
+            } catch {
               // ignore
             }
             selectedFeatureIdRef.current = null;
           }
           map.removeSource(sourceId);
         }
-      } catch (_err) {
+      } catch {
         // Silent catch for cleanup
       }
     };
@@ -656,7 +656,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
       if (source) {
         source.setData(typeof data === "string" ? data : data);
       }
-    } catch (_e) {
+    } catch {
       // Map might be in a removed state, ignore
     }
   }, [data, map, isLoaded, sourceId]);
@@ -672,7 +672,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
   useEffect(() => {
     try {
       if (!map || !isLoaded || !map.getContainer() || !map.getLayer(id)) return;
-    } catch (_e) {
+    } catch {
       return;
     }
 
@@ -725,7 +725,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
   useEffect(() => {
     try {
       if (!map || !isLoaded || !map.getContainer() || !map.getLayer(id)) return;
-    } catch (_e) {
+    } catch {
       return;
     }
     try {
@@ -752,7 +752,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
   useEffect(() => {
     try {
       if (!map || !isLoaded || !map.getContainer() || !map.getLayer(id)) return;
-    } catch (_e) {
+    } catch {
       return;
     }
 
@@ -797,7 +797,7 @@ export const GeoJSONLayer: React.FC<GeoJSONLayerProps> = ({
   useEffect(() => {
     try {
       if (!map || !isLoaded || !map.getContainer() || !map.getLayer(id)) return;
-    } catch (_e) {
+    } catch {
       return;
     }
     try {

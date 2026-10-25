@@ -5,7 +5,8 @@ import React, {
   useCallback,
   useEffect,
 } from "react";
-import Joyride, {
+import {
+  Joyride,
   type CallBackProps,
   STATUS,
   type Step,

@@ -1,6 +1,6 @@
 import { baseConfig } from "./base";
 
-import type { PrettierConfig, TailwindConfig } from "./types";
+import type { TailwindConfig } from "./types";
 
 // Default config with Tailwind support
 export const config: TailwindConfig = {

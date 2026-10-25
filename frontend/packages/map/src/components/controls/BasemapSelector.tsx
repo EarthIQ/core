@@ -474,7 +474,7 @@ export const BasemapSelector: React.FC<BasemapSelectorProps> = ({
                 "visibility",
                 show ? "visible" : "none"
               );
-            } catch (_err) {
+            } catch {
               // Layer might not exist, ignore
             }
           }

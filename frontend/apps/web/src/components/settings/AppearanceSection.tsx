@@ -173,8 +173,14 @@ export default function AppearanceSection() {
             </div>
           </div>
           <div className="form-field">
-            <label className="form-label">Compact mode</label>
+            <label
+              className="form-label"
+              htmlFor="appearance-compact"
+            >
+              Compact mode
+            </label>
             <button
+              id="appearance-compact"
               aria-checked={prefs.compact_mode}
               role="switch"
               className={`relative h-7 w-12 cursor-pointer rounded-full transition-colors ${
@@ -211,8 +217,14 @@ export default function AppearanceSection() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="form-field">
-            <label className="form-label">Measurement units</label>
+            <label
+              className="form-label"
+              htmlFor="appearance-units"
+            >
+              Measurement units
+            </label>
             <select
+              id="appearance-units"
               className="input"
               value={prefs.map_units}
               onChange={(e) =>
@@ -224,8 +236,14 @@ export default function AppearanceSection() {
             </select>
           </div>
           <div className="form-field">
-            <label className="form-label">Default basemap</label>
+            <label
+              className="form-label"
+              htmlFor="appearance-basemap"
+            >
+              Default basemap
+            </label>
             <select
+              id="appearance-basemap"
               className="input"
               value={prefs.default_basemap}
               onChange={(e) => update({ default_basemap: e.target.value })}

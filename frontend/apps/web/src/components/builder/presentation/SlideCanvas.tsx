@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type CSSProperties } from "react";
 
-import { Button, cn } from "@packages/ui";
+import { cn } from "@packages/ui";
 import { AreaChart, BarChart, LineChart, PieChart } from "@packages/charts";
 import { Map as MapCanvas } from "@packages/map";
 

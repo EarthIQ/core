@@ -230,8 +230,14 @@ export default function ProfileSection() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="form-field">
-            <label className="form-label">Full name</label>
+            <label
+              className="form-label"
+              htmlFor="profile-full-name"
+            >
+              Full name
+            </label>
             <input
+              id="profile-full-name"
               className="input"
               placeholder="Ada Lovelace"
               value={form.full_name}
@@ -239,8 +245,14 @@ export default function ProfileSection() {
             />
           </div>
           <div className="form-field">
-            <label className="form-label">Job title</label>
+            <label
+              className="form-label"
+              htmlFor="profile-job-title"
+            >
+              Job title
+            </label>
             <input
+              id="profile-job-title"
               className="input"
               placeholder="Hydrologist"
               value={form.job_title}
@@ -248,8 +260,14 @@ export default function ProfileSection() {
             />
           </div>
           <div className="form-field">
-            <label className="form-label">Location</label>
+            <label
+              className="form-label"
+              htmlFor="profile-location"
+            >
+              Location
+            </label>
             <input
+              id="profile-location"
               className="input"
               placeholder="Bonn, Germany"
               value={form.location}
@@ -257,8 +275,14 @@ export default function ProfileSection() {
             />
           </div>
           <div className="form-field">
-            <label className="form-label">Phone</label>
+            <label
+              className="form-label"
+              htmlFor="profile-phone"
+            >
+              Phone
+            </label>
             <input
+              id="profile-phone"
               className="input"
               placeholder="+49 30 123456"
               value={form.phone}
@@ -266,8 +290,14 @@ export default function ProfileSection() {
             />
           </div>
           <div className="form-field sm:col-span-2">
-            <label className="form-label">Website / profile</label>
+            <label
+              className="form-label"
+              htmlFor="profile-website"
+            >
+              Website / profile
+            </label>
             <input
+              id="profile-website"
               className="input"
               placeholder="https://…"
               value={form.website}
@@ -275,8 +305,14 @@ export default function ProfileSection() {
             />
           </div>
           <div className="form-field sm:col-span-2">
-            <label className="form-label">Bio</label>
+            <label
+              className="form-label"
+              htmlFor="profile-bio"
+            >
+              Bio
+            </label>
             <textarea
+              id="profile-bio"
               className="input min-h-[5rem] resize-y"
               maxLength={4000}
               placeholder="A short line about what you work on…"
@@ -285,8 +321,14 @@ export default function ProfileSection() {
             />
           </div>
           <div className="form-field">
-            <label className="form-label">Timezone</label>
+            <label
+              className="form-label"
+              htmlFor="profile-timezone"
+            >
+              Timezone
+            </label>
             <select
+              id="profile-timezone"
               className="input"
               value={form.preferred_timezone}
               onChange={(e) => set("preferred_timezone", e.target.value)}
@@ -303,8 +345,14 @@ export default function ProfileSection() {
             </select>
           </div>
           <div className="form-field">
-            <label className="form-label">Avatar URL</label>
+            <label
+              className="form-label"
+              htmlFor="profile-avatar-url"
+            >
+              Avatar URL
+            </label>
             <input
+              id="profile-avatar-url"
               className="input"
               placeholder="https://…/me.jpg"
               value={form.avatar_url}
@@ -340,8 +388,14 @@ export default function ProfileSection() {
           </p>
         </div>
         <div className="form-field">
-          <label className="form-label">Current password</label>
+          <label
+            className="form-label"
+            htmlFor="profile-pw-current"
+          >
+            Current password
+          </label>
           <input
+            id="profile-pw-current"
             autoComplete="current-password"
             className="input"
             type="password"
@@ -351,8 +405,14 @@ export default function ProfileSection() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="form-field">
-            <label className="form-label">New password</label>
+            <label
+              className="form-label"
+              htmlFor="profile-pw-new"
+            >
+              New password
+            </label>
             <input
+              id="profile-pw-new"
               autoComplete="new-password"
               className="input"
               type="password"
@@ -361,8 +421,14 @@ export default function ProfileSection() {
             />
           </div>
           <div className="form-field">
-            <label className="form-label">Confirm new password</label>
+            <label
+              className="form-label"
+              htmlFor="profile-pw-confirm"
+            >
+              Confirm new password
+            </label>
             <input
+              id="profile-pw-confirm"
               autoComplete="new-password"
               className="input"
               type="password"

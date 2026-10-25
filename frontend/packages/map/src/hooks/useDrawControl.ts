@@ -242,7 +242,7 @@ export function useDrawControl(
       draw.off("deselect", handleSelectionChange);
       draw.off("finish", handleFinish);
     };
-  }, [drawRef.current, isReady, getSnapshot]);
+  }, [isReady, getSnapshot]);
 
   const setMode = useCallback((mode: DrawMode | null) => {
     if (!drawRef.current) return;

@@ -158,7 +158,7 @@ export const CompareControl = ({
         if (style) {
           setCapturedStyle(JSON.parse(JSON.stringify(style)));
         }
-      } catch (_e) {
+      } catch {
         setCapturedStyle(null);
       }
     } else if (wasActive && !nowActive) {
@@ -253,7 +253,7 @@ export const CompareControl = ({
             });
           }
         }
-      } catch (_e) {
+      } catch {
         /* ignore map padding errors */
       }
     };
@@ -266,7 +266,7 @@ export const CompareControl = ({
         if (rightMapInstance) {
           rightMapInstance.setPadding({ left: 0, top: 0, bottom: 0, right: 0 });
         }
-      } catch (_e) {
+      } catch {
         /* ignore map padding errors */
       }
     };
@@ -309,7 +309,7 @@ export const CompareControl = ({
       dragging = false;
       try {
         handle!.releasePointerCapture(e.pointerId);
-      } catch (_) {
+      } catch {
         /* ignore capture release errors */
       }
     }

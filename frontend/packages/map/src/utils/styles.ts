@@ -1,4 +1,5 @@
 import type { GeoJSON } from "geojson";
+import type { Expression } from "../types";
 
 export interface ColorStop {
   value: number;
@@ -7,8 +8,11 @@ export interface ColorStop {
 
 export interface StyleRule {
   property: string;
-  values: { value: any; style: Record<string, any> }[];
-  default?: Record<string, any>;
+  values: {
+    value: string | number | boolean;
+    style: Record<string, unknown>;
+  }[];
+  default?: Record<string, unknown>;
 }
 
 export const StyleUtils = {
@@ -19,7 +23,7 @@ export const StyleUtils = {
     property: string,
     stops: ColorStop[],
     type: "linear" | "exponential" | "cubic-bezier" = "linear"
-  ): any[] {
+  ): Expression {
     const sortedStops = [...stops].sort((a, b) => a.value - b.value);
 
     if (type === "linear") {
@@ -56,7 +60,7 @@ export const StyleUtils = {
     property: string,
     stops: ColorStop[],
     defaultColor: string = "#888888"
-  ): any[] {
+  ): Expression {
     const sortedStops = [...stops].sort((a, b) => a.value - b.value);
 
     return [
@@ -72,9 +76,9 @@ export const StyleUtils = {
    */
   matchCategory(
     property: string,
-    categories: { value: any; color: string }[],
+    categories: { value: string | number | boolean; color: string }[],
     defaultColor: string = "#888888"
-  ): any[] {
+  ): Expression {
     return [
       "match",
       ["get", property],
@@ -87,9 +91,9 @@ export const StyleUtils = {
    * Generate a case expression
    */
   caseExpression(
-    conditions: { condition: any[]; result: any }[],
-    fallback: any
-  ): any[] {
+    conditions: { condition: Expression; result: string | number | boolean }[],
+    fallback: string | number | boolean
+  ): Expression {
     return [
       "case",
       ...conditions.flatMap((c) => [c.condition, c.result]),
@@ -104,7 +108,7 @@ export const StyleUtils = {
     property: string,
     stops: { value: number; size: number }[],
     type: "linear" | "exponential" = "linear"
-  ): any[] {
+  ): Expression {
     const sortedStops = [...stops].sort((a, b) => a.value - b.value);
 
     return [
@@ -119,9 +123,9 @@ export const StyleUtils = {
    * Create zoom-based interpolation
    */
   zoomInterpolate(
-    stops: { zoom: number; value: any }[],
+    stops: { zoom: number; value: string | number | boolean }[],
     type: "linear" | "exponential" = "linear"
-  ): any[] {
+  ): Expression {
     const sortedStops = [...stops].sort((a, b) => a.zoom - b.zoom);
 
     return [
@@ -139,9 +143,9 @@ export const StyleUtils = {
     property: string,
     zoomStops: {
       zoom: number;
-      propertyStops: { value: number; result: any }[];
+      propertyStops: { value: number; result: string | number | boolean }[];
     }[]
-  ): any[] {
+  ): Expression {
     return [
       "interpolate",
       ["linear"],
@@ -428,12 +432,12 @@ export const StyleUtils = {
     breaks: number[],
     colors: string[],
     _styleType: "fill-color" | "circle-color" | "line-color" = "fill-color"
-  ): any[] {
+  ): Expression {
     if (breaks.length !== colors.length + 1) {
       console.warn("Number of colors should be one less than number of breaks");
     }
 
-    const stops: any[] = [];
+    const stops: Expression = [];
     for (let i = 0; i < colors.length; i++) {
       stops.push(breaks[i], colors[i]);
     }
@@ -449,7 +453,7 @@ export const StyleUtils = {
   /**
    * Create a heatmap color expression
    */
-  heatmapColor(intensity: "low" | "medium" | "high" = "medium"): any[] {
+  heatmapColor(intensity: "low" | "medium" | "high" = "medium"): Expression {
     const densities = {
       low: [0, 0.2, 0.4, 0.6, 0.8, 1],
       medium: [0, 0.1, 0.3, 0.5, 0.7, 1],
@@ -580,14 +584,14 @@ export const StyleUtils = {
    * Create hover/selected state expressions
    */
   withStates(
-    baseValue: any,
+    baseValue: string | number | boolean,
     states: {
-      hover?: any;
-      selected?: any;
-      active?: any;
+      hover?: string | number | boolean;
+      selected?: string | number | boolean;
+      active?: string | number | boolean;
     }
-  ): any[] {
-    const conditions: any[] = [];
+  ): Expression {
+    const conditions: Expression = [];
 
     if (states.active !== undefined) {
       conditions.push(
@@ -617,7 +621,7 @@ export const StyleUtils = {
   createLayerStyle(
     type: "fill" | "line" | "circle" | "symbol",
     options: {
-      color?: string | any[];
+      color?: string | Expression;
       opacity?: number;
       width?: number;
       radius?: number;
@@ -627,9 +631,9 @@ export const StyleUtils = {
       dasharray?: number[];
       blur?: number;
     }
-  ): { paint: Record<string, any>; layout: Record<string, any> } {
-    const paint: Record<string, any> = {};
-    const layout: Record<string, any> = {};
+  ): { paint: Record<string, unknown>; layout: Record<string, unknown> } {
+    const paint: Record<string, unknown> = {};
+    const layout: Record<string, unknown> = {};
 
     switch (type) {
       case "fill":

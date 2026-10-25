@@ -338,7 +338,7 @@ export const useWMSSource = (id: string) => {
 
   const getFeatureInfo = useCallback(
     (
-      lngLat: { lng: number; lat: number },
+      _lngLat: { lng: number; lat: number },
       _options: {
         layers?: string[];
         infoFormat?: string;
